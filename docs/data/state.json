@@ -69,15 +69,15 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-18T12:59:52+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-18T12:59:55+00:00",
+    "place": "repair:doorway",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire"
+    "note": "remove rubble to open the courtyard"
   },
   "needs": {
-    "rest": 66.0,
-    "warmth": 70.0,
+    "rest": 100.0,
+    "warmth": 100.0,
     "inspiration": 58.0,
     "spirit": 78.0
   },
@@ -131,5 +131,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-18T12:59:52+00:00"
+  "exported": "2026-11-18T12:59:55+00:00"
 }
