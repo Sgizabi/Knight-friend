@@ -30,22 +30,56 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 0
+    "wakeups": 1,
+    "last_wake": "2026-11-18T02:55:46+00:00"
   },
-  "plan": {},
+  "plan": {
+    "start": "2026-11-18T02:55:46+00:00",
+    "mood": "curious",
+    "steps": [
+      {
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "shape oak frame for glass"
+      },
+      {
+        "place": "repair:window",
+        "action": "work",
+        "minutes": 20,
+        "emote": "question",
+        "note": "clean window opening, test fit frame"
+      },
+      {
+        "place": "repair:hearth",
+        "action": "work",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "move loose stone, check stability"
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "heart",
+        "note": "rest, warm up"
+      }
+    ]
+  },
   "status": {
-    "awake": true,
-    "since": "2026-11-18T02:54:44+00:00",
-    "place": "desk",
-    "action": "write",
+    "awake": false,
+    "since": "2026-11-18T02:55:46+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "record today’s observations and set a simple goal for repair"
+    "note": ""
   },
   "needs": {
-    "rest": 70.0,
+    "rest": 66.0,
     "warmth": 70.0,
-    "inspiration": 70.0,
-    "spirit": 70.0
+    "inspiration": 58.0,
+    "spirit": 78.0
   },
   "keep": {
     "repairs": {
@@ -87,7 +121,15 @@
   ],
   "gallery": [],
   "projects": [],
-  "writings": [],
-  "interests": [],
-  "exported": "2026-11-18T02:54:44+00:00"
+  "writings": [
+    {
+      "title": "Inventory and Repair Plans",
+      "form": "list"
+    }
+  ],
+  "interests": [
+    "repair",
+    "craft"
+  ],
+  "exported": "2026-11-18T02:55:46+00:00"
 }

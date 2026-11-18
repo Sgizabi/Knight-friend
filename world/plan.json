@@ -1,0 +1,34 @@
+{
+  "start": "2026-11-18T02:55:46+00:00",
+  "mood": "curious",
+  "steps": [
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "shape oak frame for glass"
+    },
+    {
+      "place": "repair:window",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "clean window opening, test fit frame"
+    },
+    {
+      "place": "repair:hearth",
+      "action": "work",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "move loose stone, check stability"
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "heart",
+      "note": "rest, warm up"
+    }
+  ]
+}
