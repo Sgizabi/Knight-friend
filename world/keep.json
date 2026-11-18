@@ -1,0 +1,11 @@
+{
+  "repairs": {
+    "doorway": 0,
+    "hearth": 0,
+    "window": 0,
+    "stair": 0,
+    "wall": 0,
+    "roof": 0
+  },
+  "objects": []
+}
