@@ -30,61 +30,54 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 1,
-    "last_wake": "2026-11-18T02:55:46+00:00"
+    "wakeups": 2,
+    "last_wake": "2026-11-18T12:59:57+00:00"
   },
   "plan": {
-    "start": "2026-11-18T02:55:46+00:00",
-    "mood": "curious",
+    "start": "2026-11-18T12:59:57+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "workbench",
+        "place": "repair:doorway",
         "action": "work",
-        "minutes": 20,
+        "minutes": 30,
         "emote": "spark",
-        "note": "shape oak frame for glass"
-      },
-      {
-        "place": "repair:window",
-        "action": "work",
-        "minutes": 20,
-        "emote": "question",
-        "note": "clean window opening, test fit frame"
+        "note": "move the remaining slab and level the ground"
       },
       {
         "place": "repair:hearth",
         "action": "work",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "move loose stone, check stability"
+        "emote": "spark",
+        "note": "clear loose stones"
       },
       {
-        "place": "fire",
-        "action": "sit",
+        "place": "workbench",
+        "action": "draw",
         "minutes": 20,
-        "emote": "heart",
-        "note": "rest, warm up"
+        "emote": "spark",
+        "note": "sketch tool rack"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-18T12:59:55+00:00",
-    "place": "repair:doorway",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-18T12:59:57+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "remove rubble to open the courtyard"
+    "note": ""
   },
   "needs": {
-    "rest": 100.0,
+    "rest": 88.0,
     "warmth": 100.0,
     "inspiration": 58.0,
-    "spirit": 78.0
+    "spirit": 84.0
   },
   "keep": {
     "repairs": {
       "doorway": {
-        "done": 0,
+        "done": 1,
         "needed": 3
       },
       "hearth": {
@@ -131,5 +124,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-18T12:59:55+00:00"
+  "exported": "2026-11-18T12:59:57+00:00"
 }
