@@ -45,6 +45,9 @@ PAGE_TARGET = 6000
 PAGE_LIMIT = 7500
 LETTERS_REMEMBERED = 3  # earlier letters (and its replies) it is reminded of when a new one comes
 INVENT = "invent"       # the activity for coming up with a pastime of its own
+# The diary (and its reflection) runs a little less random than its creative work, which
+# trims flourishes without flattening it. 1.0 is the model's default.
+DIARY_TEMPERATURE = 0.7
 
 MOODS = ["content", "curious", "melancholy", "restless", "absorbed", "proud",
          "delighted", "wistful", "frustrated", "sleepy", "amused", "lonely"]
@@ -222,12 +225,13 @@ class Knight:
 
     # --- talking to its own mind -------------------------------------------------
 
-    def ask(self, task, prompt, max_tokens=1500, json_mode=True, effort="low"):
+    def ask(self, task, prompt, max_tokens=1500, json_mode=True, effort="low", temperature=1.0):
         messages = [
             {"role": "system", "content": SEED + self.who_am_i()},
             {"role": "user", "content": f"TASK: {task}\n\n{prompt}"},
         ]
-        reply = self.brain.chat(messages, max_tokens=max_tokens, json_mode=json_mode, effort=effort)
+        reply = self.brain.chat(messages, max_tokens=max_tokens, json_mode=json_mode, effort=effort,
+                                temperature=temperature)
         return parse_json(reply) if json_mode else reply
 
     def who_am_i(self):
@@ -679,6 +683,21 @@ class Knight:
             "Keep the diary to what happened. Do not end it with how you feel or what you will "
             "do next: your mood and plan go in their own fields below, and the keeper already "
             "sees those.\n"
+            "Write it the way you described your own voice: like talking to a friend who knows "
+            "the keep, not like a storyteller. Say what you thought about it, not only what "
+            "happened: an opinion, a small complaint, something that went wrong, something you "
+            "found funny. Keep your own humour; plain is not the same as dull.\n"
+            "Habits to drop, because they make it sound like a book instead of a person: "
+            "objects acting like people (a fire that approves, a stone that resists), "
+            "describing light, dust, shadows or sounds to set a mood, and ending on a neat image.\n"
+            "Only to show what plain sounds like (tone only; these are not yours, do not reuse "
+            "their subjects, words or jokes, and your own voice comes first):\n"
+            "  \"Spent the morning on the bookshelf. It still leans. I've decided it leans on "
+            "purpose now.\"\n"
+            "  \"Didn't get much done. Read for a bit, got bored, read something else. Not every "
+            "day has to count.\"\n"
+            "  \"Tried to draw the window three times. Gave up. Will try again when I'm less "
+            "annoyed with it.\"\n"
             "Then give your mood, which few topics are on your mind now, and plan the next two "
             "hours or so: 3-6 steps of where you'll be in the keep and what you'll be doing "
             "there (the keeper sees this play out). Mind how you feel: sleeping restores rest, "
@@ -690,7 +709,7 @@ class Knight:
             '"self_description": "", "plan": [{"place": "", "action": "", "minutes": 20, '
             '"emote": "", "note": ""}], "project_note": "", "project_done": false, '
             '"reply_to_keeper": ""}'
-        ), max_tokens=2200)
+        ), max_tokens=2200, temperature=DIARY_TEMPERATURE)
 
         mood = choice(data.get("mood"), MOODS, decision["mood"])
         emote = choice(data.get("emote"), EMOTES, "dots")
