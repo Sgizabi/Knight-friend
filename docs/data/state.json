@@ -30,54 +30,61 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 2,
-    "last_wake": "2026-11-18T12:59:57+00:00"
+    "wakeups": 3,
+    "last_wake": "2026-11-18T20:36:52+00:00"
   },
   "plan": {
-    "start": "2026-11-18T12:59:57+00:00",
+    "start": "2026-11-18T20:36:52+00:00",
     "mood": "content",
     "steps": [
       {
         "place": "repair:doorway",
         "action": "work",
-        "minutes": 30,
-        "emote": "spark",
-        "note": "move the remaining slab and level the ground"
-      },
-      {
-        "place": "repair:hearth",
-        "action": "work",
         "minutes": 20,
         "emote": "spark",
-        "note": "clear loose stones"
+        "note": "continue aligning stones"
       },
       {
         "place": "workbench",
-        "action": "draw",
+        "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "sketch tool rack"
+        "emote": "question",
+        "note": "shape a wooden frame for the glass"
+      },
+      {
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "record measurements and progress"
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "heart",
+        "note": "take a short break"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-18T20:36:50+00:00",
-    "place": "repair:doorway",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-18T20:36:52+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "Clear the remaining slab at the doorway and stabilize the rubble so the courtyard opens up."
+    "note": ""
   },
   "needs": {
-    "rest": 100.0,
+    "rest": 88.0,
     "warmth": 100.0,
     "inspiration": 58.0,
-    "spirit": 84.0
+    "spirit": 90.0
   },
   "keep": {
     "repairs": {
       "doorway": {
-        "done": 1,
+        "done": 2,
         "needed": 3
       },
       "hearth": {
@@ -124,5 +131,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-18T20:36:50+00:00"
+  "exported": "2026-11-18T20:36:52+00:00"
 }

@@ -1,8 +1,8 @@
 {
-  "awake": true,
-  "since": "2026-11-18T20:36:50+00:00",
-  "place": "repair:doorway",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-18T20:36:52+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "Clear the remaining slab at the doorway and stabilize the rubble so the courtyard opens up."
+  "note": ""
 }
