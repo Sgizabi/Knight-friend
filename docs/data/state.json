@@ -68,18 +68,63 @@
     ]
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-18T20:36:52+00:00",
+    "awake": true,
+    "since": "2026-11-18T21:24:17+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": ""
+    "note": "stirring by the fire"
   },
   "needs": {
     "rest": 88.0,
     "warmth": 100.0,
     "inspiration": 58.0,
     "spirit": 90.0
+  },
+  "needs_prev": {
+    "rest": 88.0,
+    "warmth": 100.0,
+    "inspiration": 58.0,
+    "spirit": 90.0
+  },
+  "needs_at": "2026-11-18T21:24:17+00:00",
+  "needs_model": {
+    "rates": {
+      "sleep": {
+        "rest": 0.35,
+        "warmth": -0.05,
+        "inspiration": 0.06
+      },
+      "fire": {
+        "warmth": 0.25,
+        "rest": 0.05
+      },
+      "away": {
+        "rest": -0.04,
+        "warmth": -0.2
+      },
+      "away_roofed": {
+        "rest": -0.04,
+        "warmth": -0.08
+      },
+      "work": {
+        "rest": -0.03
+      },
+      "gaze": {
+        "inspiration": 0.06
+      },
+      "dozing": {
+        "rest": 0.04,
+        "warmth": 0.03
+      }
+    },
+    "spirit_home": 55.0,
+    "spirit_settle_per_hour": 0.06,
+    "drift_max_hours": 48,
+    "hearth_warmth": 1.4,
+    "saturate_above": 60.0,
+    "saturate_min": 0.25,
+    "window_inspiration": 1.2
   },
   "keep": {
     "repairs": {
@@ -131,5 +176,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-18T20:36:52+00:00"
+  "exported": "2026-11-18T21:24:17+00:00"
 }

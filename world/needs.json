@@ -3,5 +3,11 @@
   "warmth": 100.0,
   "inspiration": 58.0,
   "spirit": 90.0,
-  "updated": "2026-11-18T20:36:52+00:00"
+  "updated": "2026-11-18T21:24:17+00:00",
+  "previous": {
+    "rest": 88.0,
+    "warmth": 100.0,
+    "inspiration": 58.0,
+    "spirit": 90.0
+  }
 }
