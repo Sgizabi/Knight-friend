@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .claude/
+
+# Notes for Claude stay on your own computer
+CLAUDE.md
+CLAUDE.local.md
