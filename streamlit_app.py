@@ -19,6 +19,7 @@ st.set_page_config(page_title="The Keep", page_icon="🔥", layout="centered")
 st.markdown("""
 <style>
   @import url('https://fonts.googleapis.com/css2?family=VT323&family=EB+Garamond:ital@0;1&display=swap');
+  :root { color-scheme: dark; }
   html, body, [class*="st-"] { font-family: 'EB Garamond', Georgia, serif; }
   h1, h2, h3, .stTabs [data-baseweb="tab"] { font-family: 'VT323', monospace !important; letter-spacing: .03em; }
   .stTabs [data-baseweb="tab"] { font-size: 1.25rem; }

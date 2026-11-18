@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- already dark: tells browsers with a "force dark mode" not to recolour it -->
+<meta name="color-scheme" content="dark">
 <title>The Keep</title>
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
-  :root { --ink:#efe4d0; --dim:#a8987f; --ember:#f0a04b; --panel:rgba(16,12,10,.78); --line:#4a3c30; }
+  :root { color-scheme:dark; --ink:#efe4d0; --dim:#a8987f; --ember:#f0a04b; --panel:rgba(16,12,10,.78); --line:#4a3c30; }
   html, body { margin:0; height:100%; background:#0b0908; color:var(--ink); font-family:'VT323', monospace; overflow:hidden; }
   #view { position:fixed; inset:0; }
   canvas { display:block; touch-action:none; }
@@ -728,6 +730,7 @@ function current(now) {
     const [place, action, emote, note] = DEMO_STEPS[Math.floor(now / 1000 / 16) % DEMO_STEPS.length];
     return { place, action, emote, note, awake: Math.floor(now / 1000 / 16) % 4 === 0 };
   }
+  if (loading) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'Finding the knight…' };
   if (!state?.identity?.name) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'It has not yet woken for the first time.' };
   const st = state.status || {};
   if (st.awake && now - Date.parse(st.since) < 50 * 60000) return { place: st.place || 'fire', action: st.action || 'sit', emote: 'dots', note: st.note || '', awake: true };
@@ -791,8 +794,13 @@ function showState() {
   $('needs').innerHTML = needs ? Object.entries(NEED_LOOK).map(([k, [label, color]]) =>
     `<div class="need">${label}<i><b style="width:${Math.round(needs[k] ?? 0)}%;background:${color}"></b></i></div>`).join('') : '';
 }
-function applyState(next) {
+// On the website the knight's state arrives a moment after the page loads. Until then we
+// don't know where it is, so when the first real state arrives it appears there directly
+// (rather than getting up from the bedroll and walking over, which looked like waking up).
+let loading = !state && !DEMO && ASSETS !== null, snapCamera = false;
+function applyState(next, fetched = false) {
   const key = JSON.stringify([next?.keep, next?.gallery, next?.projects, next?.writings]);
+  if (loading && fetched) { loading = false; goalKey = ''; snapCamera = true; }
   state = next;
   showState();
   if (key !== worldKey) { worldKey = key; buildWorld(state); }
@@ -846,6 +854,13 @@ function setCam(mode, note) {
   if (note) toast(note);
 }
 function updateCamera(dt) {
+  if (snapCamera && camMode === 'follow') {   // jump straight to a good view of where it really is
+    snapCamera = false;
+    K.J.hips.getWorldPosition(hipsWorld);
+    controls.target.copy(hipsWorld).add(new THREE.Vector3(0, lie > .5 ? .05 : .15, 0));
+    camera.position.copy(controls.target).add(goodView());
+    flyTo = null; settledKey = goalKey;
+  }
   if (camMode === 'follow') {
     K.J.hips.getWorldPosition(hipsWorld);
     const want = hipsWorld.clone(); want.y += lie > .5 ? .05 : .15;
@@ -1128,7 +1143,7 @@ async function refresh() {
   if (DEMO || ASSETS === null) return;
   try {
     const r = await fetch(`${ASSETS}data/state.json?t=${Date.now()}`, { cache: 'no-store' });
-    if (r.ok) applyState(await r.json());
+    if (r.ok) applyState(await r.json(), true);
   } catch { /* the knight is between pages; try again later */ }
 }
 updateSky(); setInterval(updateSky, 60000);
