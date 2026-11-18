@@ -32,16 +32,36 @@ jobs:
   wake:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      KNIGHT_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '' }}
+      KNIGHT_SESSION: ${{ (github.event.schedule == '37 2 * * *' || github.event.schedule == '17 3 * * *' || github.event.schedule == '57 3 * * *') && 'long' || inputs.session || 'short' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Is it time?
+        id: due
+        run: python brain/knight.py --is-due >> "$GITHUB_OUTPUT"
+      # A practice wake-up on a throwaway copy of its world (no AI, no internet, no commits).
+      # If the code is broken, this fails and the real wake-up below never runs, so a bad
+      # update can't touch the knight's real memories.
+      - name: Practice run first
+        if: steps.due.outputs.due == 'true'
+        env:
+          KNIGHT_SCHEDULED: ""
+          KNIGHT_PRACTICE: "1"
+          KNIGHT_ROUND_PAUSE: "0"
+        run: |
+          python -m py_compile brain/*.py streamlit_app.py
+          python brain/selftest.py
+          practice="$(mktemp -d)"
+          cp -r world docs "$practice"/
+          KNIGHT_ROOT="$practice" python brain/knight.py --fake
       - name: Wake the knight
+        if: steps.due.outputs.due == 'true'
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          KNIGHT_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '' }}
-          KNIGHT_SESSION: ${{ (github.event.schedule == '37 2 * * *' || github.event.schedule == '17 3 * * *' || github.event.schedule == '57 3 * * *') && 'long' || inputs.session || 'short' }}
         run: |
           git config user.name "the-knight"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -131,7 +131,11 @@ usage = read_json("world/usage.json", {})
 diary = read_json("world/recent.json", [])
 gallery = read_json("world/gallery.json", [])
 writings = read_lines("world/writings.jsonl")
-replies = read_lines("world/replies.jsonl")
+letters = read_lines("world/letters.jsonl")
+# before letters.jsonl, only answered letters were kept (in replies.jsonl)
+if not letters:
+    letters = read_lines("world/replies.jsonl")
+needs_history = read_lines("world/needs_history.jsonl")
 pages_url = ""
 if META.get("repo"):
     owner, repo = META["repo"].split("/", 1)
@@ -165,7 +169,7 @@ with tabs[0]:
     for entry in reversed(diary[-25:]):
         st.markdown(
             f"<div class='entry'><div class='when'>{escape(when(entry['time']))} · "
-            f"{escape(entry.get('activity', ''))} · <span class='mood'>{escape(entry.get('mood', ''))}"
+            f"{escape(entry.get('label') or entry.get('activity', ''))} · <span class='mood'>{escape(entry.get('mood', ''))}"
             f"</span></div>{escape(entry['text'])}</div>", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ gallery
@@ -238,11 +242,30 @@ with tabs[4]:
     if memory.get("summary"):
         st.markdown("### Its life so far, as it remembers it")
         st.markdown(f"<div class='entry'>{escape(memory['summary'])}</div>", unsafe_allow_html=True)
+    pastimes = memory.get("pastimes") or []
+    if pastimes:
+        st.markdown("### Pastimes it came up with")
+        st.caption("Things it invented for itself. Ones it stops doing fade away.")
+        st.markdown("\n".join(
+            f"- **{escape(p['name'])}**: {escape(p.get('about', ''))} "
+            f"<span class='muted'>(at the {escape(p.get('place', ''))}, done {p.get('times', 0)} "
+            f"time{'' if p.get('times', 0) == 1 else 's'})</span>" for p in pastimes), unsafe_allow_html=True)
     needs = keep_state.get("needs") or {}
+    before = keep_state.get("needs_prev") or {}
     if needs and identity.get("name"):
         st.markdown("### How it feels")
+        st.caption("As of its last wake-up; ▲▼ is the change since the one before. "
+                   "In the keep above, the bars move live with what it's doing.")
         for name, value in needs.items():
-            st.progress(min(1.0, max(0.0, value / 100)), text=f"{name} · {round(value)}/100")
+            change = round(value - before[name]) if name in before else 0
+            mark = f"  ▲{change}" if change > 0 else (f"  ▼{-change}" if change < 0 else "")
+            st.progress(min(1.0, max(0.0, value / 100)), text=f"{name} · {round(value)}/100{mark}")
+        if len(needs_history) >= 2:
+            import pandas as pd  # comes with streamlit
+            frame = pd.DataFrame(needs_history[-84:])  # about a week of wake-ups
+            frame["time"] = pd.to_datetime(frame["time"])
+            st.markdown("#### Over the last week")
+            st.line_chart(frame.set_index("time")[["rest", "warmth", "inspiration", "spirit"]], height=220)
     repairs = (keep_state.get("keep") or {}).get("repairs") or {}
     if repairs and identity.get("name"):
         st.markdown("### Mending the keep")
@@ -269,6 +292,11 @@ with tabs[5]:
     if META.get("repo"):
         st.markdown(f"[Write a letter (edit `world/letters.md` on GitHub)]"
                     f"(https://github.com/{META['repo']}/edit/{META.get('branch', 'main')}/world/letters.md)")
-    for item in reversed(replies[-10:]):
-        st.markdown(f"<div class='entry'><div class='when'>{escape(when(item['time']))} · its reply</div>"
-                    f"{escape(item['reply'])}</div>", unsafe_allow_html=True)
+    if not letters:
+        st.markdown("<p class='muted'>No letters yet.</p>", unsafe_allow_html=True)
+    for item in reversed(letters[-15:]):
+        reply = (f"<div class='when' style='margin-top:10px'>its reply</div><pre>{escape(item['reply'])}</pre>"
+                 if item.get("reply") else "<div class='muted' style='margin-top:8px'>It read this, "
+                 "but didn't write back.</div>")
+        st.markdown(f"<div class='entry'><div class='when'>{escape(when(item['time']))} · the letter</div>"
+                    f"<pre>{escape(item.get('letter', ''))}</pre>{reply}</div>", unsafe_allow_html=True)

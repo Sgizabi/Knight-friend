@@ -43,6 +43,8 @@ LONG_GAP_HOURS = 20  # the long evening session happens at most once a night
 # Small enough that rewriting a whole page fits in one request on Groq's free plan.
 PAGE_TARGET = 6000
 PAGE_LIMIT = 7500
+LETTERS_REMEMBERED = 3  # earlier letters (and its replies) it is reminded of when a new one comes
+INVENT = "invent"       # the activity for coming up with a pastime of its own
 
 MOODS = ["content", "curious", "melancholy", "restless", "absorbed", "proud",
          "delighted", "wistful", "frustrated", "sleepy", "amused", "lonely"]
@@ -182,7 +184,7 @@ def wake_is_due(session):
 
 def checkpoint(message):
     """In the cloud, save progress to GitHub so the website sees it mid-session."""
-    if os.environ.get("GITHUB_ACTIONS") != "true":
+    if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("KNIGHT_PRACTICE"):
         return
     try:
         subprocess.run(["git", "add", "world", "docs"], cwd=ROOT, check=True)
@@ -211,6 +213,11 @@ class Knight:
         self.diary = read_lines("diary.jsonl")
         self.keep = life.load_keep(WORLD)
         self.needs = life.load_needs(WORLD)
+        # how long since its needs were last saved (for the slow drift of time), and where they
+        # stood, so the page can show what changed this wake-up
+        self.needs_idle_minutes = minutes_since(self.needs.get("updated")) or 0
+        self.needs["previous"] = {n: self.needs[n] for n in life.NEEDS}
+        self.memory.setdefault("pastimes", [])
         self.events = []  # what happened this session, for reflection
 
     # --- talking to its own mind -------------------------------------------------
@@ -296,6 +303,14 @@ class Knight:
             parts.append(f"Something you happened upon today, by chance (you may ignore it): "
                          f"'{encounter['title']}': {encounter['extract']}")
         if letter:
+            earlier = read_lines("letters.jsonl")[-LETTERS_REMEMBERED:]
+            if earlier:
+                lines = []
+                for item in earlier:
+                    reply = item.get("reply") or "(you did not write back)"
+                    lines.append(f"- {ago(item.get('time'))}, they wrote: {item.get('letter', '')[:300]}"
+                                 f"\n  You replied: {reply[:300]}")
+                parts.append("Earlier letters between you and the keeper:\n" + "\n".join(lines))
             parts.append("A new letter has been left for you by the keeper, a person who looks "
                          "in on you from outside the keep. It reads:\n" + letter)
         return "\n\n".join(parts)
@@ -367,25 +382,43 @@ class Knight:
                      "You may keep working on one thing across rounds, or change course.")
         if self.events:
             extra += "\nEarlier this evening: " + "; ".join(e["summary"] for e in self.events)
+        pastimes = self.memory["pastimes"]
+        if pastimes:
+            extra += ("\n\nPastimes you came up with yourself (choose one by its [key] as the activity):\n"
+                      + "\n".join(f"- [{p['slug']}] {p['name']}: {p['about']}" for p in pastimes))
+        extra += (f"\n\nIf nothing here fits what you actually want to do, you may choose "
+                  f"'{INVENT}' and come up with a new pastime of your own, described in new_pastime "
+                  f"(name; about, one line; place, one of {life.places(self.keep)}; action, one of "
+                  f"{ACTIONS}; kind, one of {list(life.PASTIME_KINDS)}). Only invent when "
+                  "nothing above fits; most of the time something will.")
+        choices = ACTIVITIES + [p["slug"] for p in pastimes] + [INVENT]
         data = self.ask("decide", (
             f"{context}\n{extra}\n\nYou stir. What do you feel like doing now?\n"
-            f"activity must be one of {ACTIVITIES}. mood must be one of {MOODS}.\n"
+            f"activity must be one of {choices}. mood must be one of {MOODS}.\n"
             "subject: what it is about (a topic to study, a thing to draw or write about, a page "
             "to build, an object to craft, or for 'repair' the [key] of the part of the keep to "
             "mend). project: for 'build', the [slug] of an unfinished workshop project to "
             "continue, or 'new'.\n"
             'Reply as JSON: {"waking_thought": "", "mood": "", "activity": "", "subject": "", '
-            '"project": "", "intention": ""}'
-        ), max_tokens=900)
-        data["activity"] = choice(data.get("activity"), ACTIVITIES, "rest")
+            '"project": "", "intention": "", "new_pastime": {}}'
+        ), max_tokens=1000)
+        data["activity"] = choice(data.get("activity"), choices, "rest")
         data["mood"] = choice(data.get("mood"), MOODS, "content")
         data["subject"] = str(data.get("subject") or "")[:120]
         return data
 
     def act(self, decision):
+        if decision["activity"] == INVENT:
+            invented = self.invent(decision.get("new_pastime"))
+            decision["activity"] = invented["slug"] if invented else "wander"
         activity = decision["activity"]
-        handler = getattr(self, f"do_{activity}", None)
-        place, action = WHERE[activity]
+        pastime = self.pastime(activity)
+        if pastime:
+            place, action = pastime["place"], pastime["action"]
+            handler = lambda d: self.do_pastime(d, pastime)  # noqa: E731
+        else:
+            handler = getattr(self, f"do_{activity}", None)
+            place, action = WHERE[activity]
         if activity == "repair":  # walk to the part of the keep it means to mend
             open_jobs = [k for k in life.REPAIRS if not life.repaired(self.keep, k)]
             wanted = decision["subject"].lower()
@@ -400,10 +433,13 @@ class Knight:
             result = {"summary": f"tried to {activity} but the thought slipped away ({err})"}
         if result is None:
             result = {"summary": f"{activity}: {decision.get('waking_thought', '')}"}
-        life.change(self.needs, life.ACTIVITY_EFFECTS.get(activity, {}), self.keep)
+        effects = life.PASTIME_KINDS[pastime["kind"]] if pastime else life.ACTIVITY_EFFECTS.get(activity, {})
+        life.change(self.needs, effects, self.keep)
         if activity in ("draw", "write", "build", "craft"):
             life.change(self.needs, {"spirit": 8 if result.get("creation") or result.get("ok") else -6})
         result["activity"] = activity
+        if pastime:
+            result["label"] = pastime["name"]
         result["mood"] = decision["mood"]
         self.events.append(result)
         # evidence for beliefs it may form later ("mending things lifts me"): no AI involved
@@ -413,6 +449,53 @@ class Knight:
             "mood": decision["mood"], "before": needs_before,
             "after": {n: self.needs[n] for n in life.NEEDS}})
         print(f"  {activity}: {result['summary'][:120]}")
+
+    # --- pastimes of its own --------------------------------------------------------
+
+    def pastime(self, slug):
+        return next((p for p in self.memory["pastimes"] if p["slug"] == slug), None)
+
+    def invent(self, raw):
+        """Register a pastime it came up with. Returns it, or None if it didn't hold up."""
+        if not isinstance(raw, dict):
+            return None
+        name = str(raw.get("name") or "").strip()[:50]
+        about = str(raw.get("about") or "").strip()[:160]
+        if not name:
+            return None
+        allowed, why = self.check("name and description of a pastime", name, about)
+        if not allowed:
+            print(f"  [pastime held back: {why}]")
+            return None
+        pastimes = self.memory["pastimes"]
+        if len(pastimes) >= life.MAX_PASTIMES:  # room for a new one: the most neglected goes
+            pastimes.remove(min(pastimes, key=lambda p: p.get("strength", 0)))
+        slug = craft.slugify(name, 30)
+        taken = set(ACTIVITIES) | {INVENT} | {p["slug"] for p in pastimes}
+        while slug in taken:
+            slug = f"{slug}-{random.randint(2, 99)}"
+        pastime = {"slug": slug, "name": name, "about": about,
+                   "place": choice(raw.get("place"), life.places(self.keep), "fire"),
+                   "action": choice(raw.get("action"), ACTIONS, "sit"),
+                   "kind": choice(raw.get("kind"), list(life.PASTIME_KINDS), "thoughtful"),
+                   "invented": iso(), "times": 0, "strength": 1.0}
+        pastimes.append(pastime)
+        print(f"  came up with a new pastime: {name} ({pastime['kind']}, at the {pastime['place']})")
+        return pastime
+
+    def do_pastime(self, decision, pastime):
+        new = pastime["times"] == 0
+        pastime["times"] += 1
+        pastime["last"] = iso()
+        if not new:
+            pastime["strength"] = round(pastime.get("strength", 1.0) + 1.0, 3)
+        what = decision.get("intention") or decision.get("subject") or ""
+        if new:
+            return {"summary": f"came up with a new pastime of your own, {pastime['name']} "
+                               f"({pastime['about']}), and tried it for the first time"
+                               + (f": {what}" if what else ""), "ok": True}
+        return {"summary": f"spent time on your pastime {pastime['name']}" + (f": {what}" if what else ""),
+                "ok": True}
 
     def do_repair(self, decision):
         key, finished = life.repair(self.keep, decision["subject"])
@@ -611,7 +694,9 @@ class Knight:
 
         mood = choice(data.get("mood"), MOODS, decision["mood"])
         emote = choice(data.get("emote"), EMOTES, "dots")
+        label = self.events[0].get("label") if len(self.events) == 1 else None
         entry = {"time": iso(), "activity": decision["activity"] if len(self.events) == 1 else "evening",
+                 **({"label": label} if label else {}),
                  "mood": mood, "emote": emote,
                  "text": str(data.get("diary") or "").strip()[:2000] or "A quiet hour.",
                  "creations": [e["creation"] for e in self.events if e.get("creation")]}
@@ -640,8 +725,18 @@ class Knight:
                 project["status"] = "finished"
 
         reply = str(data.get("reply_to_keeper") or "").strip()
-        if letter and reply:
-            append_line("replies.jsonl", {"time": iso(), "letter": letter[:600], "reply": reply[:1500]})
+        if letter:  # every letter is kept, answered or not, so it (and visitors) can look back
+            append_line("letters.jsonl", {"time": iso(), "letter": letter[:1500], "reply": reply[:1500]})
+
+        # Its own pastimes fade like interests: a habit stays, a passing fancy is forgotten.
+        kept = []
+        for p in self.memory["pastimes"]:
+            p["strength"] = round(p.get("strength", 1.0) * 0.96, 3)
+            if p["strength"] >= 0.25:
+                kept.append(p)
+            else:
+                print(f"  let a pastime go: {p['name']}")
+        self.memory["pastimes"] = kept
 
         steps = []
         for step in (data.get("plan") or [])[:6]:
@@ -701,6 +796,7 @@ class Knight:
         if not self.identity.get("name"):
             self.birth()
         before = {n: self.needs[n] for n in life.NEEDS}
+        life.drift(self.needs, self.needs_idle_minutes)
         last_plan = load("plan.json", {})
         life.live_out_plan(self.needs, last_plan, self.keep)
         if last_plan.get("steps"):
@@ -733,7 +829,12 @@ def main():
     parser.add_argument("--session", choices=["short", "long"],
                         default=os.environ.get("KNIGHT_SESSION") or "short")
     parser.add_argument("--fake", action="store_true", help="test without calling any model")
+    parser.add_argument("--is-due", action="store_true",
+                        help="only say whether a scheduled wake-up is due (for the workflow)")
     args = parser.parse_args()
+    if args.is_due:
+        print(f"due={'true' if wake_is_due(args.session) else 'false'}")
+        return
 
     usage = load("usage.json", {})
     today = now().strftime("%Y-%m-%d")
@@ -781,6 +882,7 @@ def main():
             m: usage.get("by_model", {}).get(m, 0) + n for m, n in brain.tokens_by_model.items()}}
         save("usage.json", usage)
         knight.save_body()
+        append_line("needs_history.jsonl", {"time": iso(), **{n: knight.needs[n] for n in life.NEEDS}})
         site_builder.build(WORLD, DOCS)
         print(f"Tokens this wake-up: {brain.tokens_used} (today: {usage['tokens']})")
         checkpoint(f"{knight.identity.get('name', 'The knight')} rests")

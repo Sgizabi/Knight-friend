@@ -16,7 +16,9 @@
   #who { position:fixed; top:10px; left:10px; padding:6px 12px 8px; min-width:190px; max-width:calc(100vw - 40px); }
   #who h1 { margin:0; font-size:26px; font-weight:normal; line-height:1; }
   #who small { display:block; color:var(--dim); font-size:16px; margin:2px 0 6px; }
-  .need { display:grid; grid-template-columns:86px 1fr; align-items:center; gap:6px; font-size:16px; color:var(--dim); }
+  .need { display:grid; grid-template-columns:92px 1fr; align-items:center; gap:6px; font-size:16px; color:var(--dim); }
+  .need span { white-space:nowrap; }
+  #who .need small { display:inline; font-size:11px; color:var(--ink); }
   .need i { display:block; height:7px; border-radius:9px; background:#2a221c; overflow:hidden; }
   .need i b { display:block; height:100%; border-radius:9px; transition:width 1s; }
   #top { position:fixed; top:10px; right:10px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; max-width:60vw; }
@@ -790,10 +792,65 @@ function showState() {
   const id = state?.identity || {};
   $('name').textContent = id.name || 'A sleeping knight';
   $('epithet').textContent = id.epithet || (id.name ? '' : 'not yet woken');
-  const needs = state?.needs;
-  $('needs').innerHTML = needs ? Object.entries(NEED_LOOK).map(([k, [label, color]]) =>
-    `<div class="need">${label}<i><b style="width:${Math.round(needs[k] ?? 0)}%;background:${color}"></b></i></div>`).join('') : '';
+  renderNeeds();
 }
+// Its needs, live: the knight's own rules (sent in state.needs_model) applied to the plan it is
+// playing out, so the bars rise by the fire and fall at work, and match what it feels next wake.
+function liveNeeds(now) {
+  const base = state?.needs, m = state?.needs_model, plan = state?.plan || {};
+  const st = state?.status || {};
+  if (!base || !m || !m.rates) return base;
+  if (st.awake && now - Date.parse(st.since) < 50 * 60000) return base;   // awake: as it is
+  const n = { ...base };
+  const repairs = state?.keep?.repairs || {};
+  const mended = k => repairs[k] && repairs[k].done >= repairs[k].needed;
+  const change = deltas => {
+    for (const [k, d0] of Object.entries(deltas)) {
+      if (!(k in n)) continue;
+      let d = d0;
+      if (k === 'warmth' && d > 0 && mended('hearth')) d *= m.hearth_warmth;
+      if (k === 'inspiration' && d > 0 && mended('window')) d *= m.window_inspiration;
+      if (d > 0 && n[k] > m.saturate_above) d *= Math.max(m.saturate_min, (100 - n[k]) / (100 - m.saturate_above));
+      n[k] = Math.max(0, Math.min(100, n[k] + d));
+    }
+  };
+  const scaled = (rates, mins) => Object.fromEntries(Object.entries(rates).map(([k, v]) => [k, v * mins]));
+  const since = Date.parse(state.needs_at || plan.start || '');
+  if (Number.isFinite(since)) {   // spirit settles back toward the middle over time
+    const hours = Math.min(m.drift_max_hours, Math.max(0, (now - since) / 3600000));
+    n.spirit = m.spirit_home + (n.spirit - m.spirit_home) * Math.pow(1 - m.spirit_settle_per_hour, hours);
+  }
+  const start = Date.parse(plan.start || '');
+  if (!Number.isFinite(start)) return n;
+  let left = Math.max(0, (now - start) / 60000);
+  for (const s of plan.steps || []) {
+    if (left <= 0) break;
+    const mins = Math.min(left, s.minutes || 20); left -= mins;
+    let r;
+    if (s.action === 'sleep') r = { ...m.rates.sleep };
+    else if (s.place === 'fire') r = { ...m.rates.fire };
+    else r = { ...m.rates[mended('roof') ? 'away_roofed' : 'away'] };
+    const extras = [];
+    if (s.action === 'work') extras.push(m.rates.work);
+    if (s.action === 'gaze' || s.action === 'read') extras.push(m.rates.gaze);
+    for (const e of extras) for (const [k, v] of Object.entries(e || {})) r[k] = (r[k] || 0) + v;
+    change(scaled(r, mins));
+  }
+  if (left > 0) change(scaled(m.rates.dozing || {}, left));
+  return n;
+}
+function renderNeeds() {
+  const now = Date.now(), needs = liveNeeds(now);
+  if (!needs) { $('needs').innerHTML = ''; return; }
+  const earlier = liveNeeds(now - 5 * 60000) || needs;   // which way each is heading right now
+  $('needs').innerHTML = Object.entries(NEED_LOOK).map(([k, [label, color]]) => {
+    const v = needs[k] ?? 0, d = v - (earlier[k] ?? v);
+    const arrow = d > .05 ? ' <small title="rising">▲</small>' : d < -.05 ? ' <small title="falling">▼</small>' : '';
+    return `<div class="need" title="${label}: ${Math.round(v)}/100"><span>${label}${arrow}</span>` +
+           `<i><b style="width:${Math.round(v)}%;background:${color}"></b></i></div>`;
+  }).join('');
+}
+setInterval(renderNeeds, 10000);
 // On the website the knight's state arrives a moment after the page loads. Until then we
 // don't know where it is, so when the first real state arrives it appears there directly
 // (rather than getting up from the bedroll and walking over, which looked like waking up).

@@ -46,7 +46,8 @@ PAGE = """<!DOCTYPE html>
 # it: the home page's server can't always reach GitHub's raw-file server, and when it can't
 # it falls back to its own copy of the repository, which may be hours old.
 MIRRORED = ["identity.json", "memory.json", "plan.json", "status.json", "usage.json",
-            "recent.json", "gallery.json", "writings.jsonl", "replies.jsonl"]
+            "recent.json", "gallery.json", "writings.jsonl", "letters.jsonl", "replies.jsonl",
+            "needs_history.jsonl"]
 
 
 def mirror_world(world: Path, docs: Path):

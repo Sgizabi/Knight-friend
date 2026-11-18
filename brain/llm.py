@@ -148,13 +148,18 @@ class FakeBrain(Brain):
                                "quirks": ["names every rat"],
                                "first_words": "I wake. The fire is warm. Am I real? Only a test."})
         if task == "decide":
+            own = re.findall(r"^- \[([a-z0-9-]+)\] ", prompt, re.M)  # its own pastimes, if any
             activity = random.choice(["draw", "write", "study", "build", "craft", "repair",
-                                      "rest", "sleep", "wander"])
+                                      "rest", "sleep", "wander", "invent"] + own[-3:])
             subject = random.choice(["doorway", "stair", "hearth"]) if activity == "repair" else "old lighthouses"
             return json.dumps({"waking_thought": f"Perhaps I will {activity}.",
                                "mood": random.choice(moods), "activity": activity,
                                "subject": subject, "project": "new",
-                               "intention": "to see what happens"})
+                               "intention": "to see what happens",
+                               "new_pastime": {"name": random.choice(["Sorting glass", "Counting stairs", "Humming"]),
+                                               "about": "a practice pastime", "place": "workbench",
+                                               "action": "work", "kind": random.choice(
+                                                   ["restful", "creative", "physical", "thoughtful", "bogus"])}})
         if task == "craft":
             return json.dumps({"name": "A small lantern", "about": "to keep the dark polite",
                                "placement": random.choice(["floor", "table", "shelf", "wall"]),
@@ -195,7 +200,7 @@ class FakeBrain(Brain):
                     {"place": "bedroll", "action": "sleep", "minutes": 50, "emote": "zzz", "note": "napping"},
                 ],
                 "project_note": "add more ships", "project_done": False,
-                "reply_to_keeper": ""})
+                "reply_to_keeper": "Thank you for the letter." if "new letter" in prompt else ""})
         if task == "condense":
             return json.dumps({"summary": "I am a test knight who likes lighthouses.",
                                "add": [{"section": "quirks", "text": "talks to the bookshelf"},

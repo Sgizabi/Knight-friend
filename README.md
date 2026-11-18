@@ -14,8 +14,12 @@ interests grow (and fade) from its own choices.
 - **Evidence for beliefs**: every activity, and each stretch of its plan between wake-ups,
   is logged with how its needs changed (`world/evidence.jsonl`), ready for it to form
   beliefs like "resting by the fire lifts me" later.
-- **Needs**: rest, warmth, inspiration and spirit rise and fall with what it does; it's
-  told how it feels, and may act on it or push through.
+- **Needs**: rest, warmth, inspiration and spirit rise and fall with what it does and with
+  time (it gets cold away from the fire, spirit settles back toward the middle); it's told
+  how it feels, and may act on it or push through. The rates live in one table,
+  `NEED_RATES` in `brain/life.py`, and the 3D keep moves its bars live by the same rules.
+- **Pastimes of its own**: besides its usual activities it can invent new ones (up to 8),
+  which join its choices from then on and fade away if it stops doing them.
 - **A keep it rebuilds**: the doorway, hearth, window, tower stair, east wall and roof
   each take several sessions to mend. Some open new places (the courtyard, the tower top);
   some change its needs (a mended hearth warms better, a mended roof keeps warmth in).
@@ -60,7 +64,16 @@ evening `cron` lines in `wake.yml` and the same three times in its `KNIGHT_SESSI
 ## Talking to it
 
 Edit `world/letters.md` on GitHub and write below the line. The knight reads new letters on
-its next wake-up and may reply; replies appear in the *Letters* tab. Letters are public.
+its next wake-up and may reply. Every letter is kept (with its reply, if any) in
+`world/letters.jsonl`; the knight is reminded of the last few when a new one arrives, and
+the *Letters* tab shows the whole conversation. Letters are public.
+
+## Safety net
+
+Before each real wake-up, the workflow runs a practice wake-up on a throwaway copy of the
+knight's world (no AI, no internet, no commits). If that fails, the real wake-up is skipped,
+so a broken change can't touch the knight's memories. To run the same check yourself:
+`KNIGHT_PRACTICE=1 KNIGHT_ROOT=<a scratch folder with copies of world/ and docs/> py brain/knight.py --fake`.
 
 ## Waking it by hand
 

@@ -43,6 +43,20 @@ ACTIVITY_EFFECTS = {
     "repair": {"rest": -12, "warmth": 5, "spirit": 6},
 }
 
+# Pastimes it invents for itself. It picks the kind; the kind (not the knight) sets how
+# its needs move, so no invented pastime can be a shortcut to feeling perfect.
+PASTIME_KINDS = {
+    "restful":    {"rest": 8, "warmth": 4, "spirit": 2},
+    "creative":   {"inspiration": -10, "rest": -4, "spirit": 4},
+    "physical":   {"rest": -10, "warmth": 4, "spirit": 5},
+    "thoughtful": {"inspiration": 10, "rest": -3},
+}
+MAX_PASTIMES = 8
+
+# A mended hearth warms better; a mended window lifts inspiration more.
+HEARTH_WARMTH = 1.4
+WINDOW_INSPIRATION = 1.2
+
 PLACEMENTS = ["floor", "table", "shelf", "wall"]
 SHAPES = {"box": 3, "cylinder": 3, "cone": 2, "sphere": 1, "torus": 2}
 MAX_PARTS = 24
@@ -178,10 +192,65 @@ def save_needs(world: Path, needs):
 def change(needs, deltas, keep=None):
     for name, delta in deltas.items():
         if name == "warmth" and delta > 0 and keep and repaired(keep, "hearth"):
-            delta *= 1.4
+            delta *= HEARTH_WARMTH
         if name == "inspiration" and delta > 0 and keep and repaired(keep, "window"):
-            delta *= 1.2
+            delta *= WINDOW_INSPIRATION
+        if delta > 0 and needs[name] > SATURATE_ABOVE:
+            delta *= max(SATURATE_MIN, (100 - needs[name]) / (100 - SATURATE_ABOVE))
         needs[name] = round(max(0.0, min(100.0, needs[name] + delta)), 1)
+
+
+# How its needs move between wake-ups, per minute of the plan it plays out. This is the one
+# place to turn things up or down; the 3D keep reads the same numbers (via state.json) so
+# its bars move live in step with what the knight will feel when it next wakes.
+NEED_RATES = {
+    "sleep":   {"rest": .35, "warmth": -.05, "inspiration": .06},   # sleep restores rest, clears the head
+    "fire":    {"warmth": .25, "rest": .05},                        # sitting or working by the fire
+    "away":    {"rest": -.04, "warmth": -.2},                       # anywhere else, roof still open
+    "away_roofed": {"rest": -.04, "warmth": -.08},                  # anywhere else, roof mended
+    "work":    {"rest": -.03},                                      # extra, for hands-on work
+    "gaze":    {"inspiration": .06},                                # gazing or reading (extra)
+    "dozing":  {"rest": .04, "warmth": .03},                        # after the plan ran out, by the fire
+}
+# Spirit settles back toward this, by this share of the distance each hour, unless something
+# lifts it (a letter, a finished repair, a creation it's glad of) or lowers it.
+SPIRIT_HOME = 55.0
+# Gains get smaller near the top (going from 90 to 100 is harder than from 40 to 50), so
+# its needs don't sit pinned at 100. Above this level a gain is scaled down, to no less
+# than SATURATE_MIN of its size.
+SATURATE_ABOVE = 60.0
+SATURATE_MIN = 0.25
+SPIRIT_SETTLE_PER_HOUR = 0.06
+DRIFT_MAX_HOURS = 48
+
+
+def drift(needs, minutes):
+    """The slow pull of time, whatever it was doing: spirit eases back toward the middle."""
+    hours = max(0.0, min(DRIFT_MAX_HOURS, minutes / 60))
+    if hours <= 0:
+        return
+    gap = needs["spirit"] - SPIRIT_HOME
+    needs["spirit"] = round(SPIRIT_HOME + gap * (1 - SPIRIT_SETTLE_PER_HOUR) ** hours, 1)
+
+
+def step_rates(step, keep):
+    """The per-minute effect of one step of its plan."""
+    action, place = step.get("action"), step.get("place")
+    if action == "sleep":
+        rates = dict(NEED_RATES["sleep"])
+    elif place == "fire":
+        rates = dict(NEED_RATES["fire"])
+    else:
+        rates = dict(NEED_RATES["away_roofed" if repaired(keep, "roof") else "away"])
+    extras = []
+    if action == "work":
+        extras.append(NEED_RATES["work"])
+    if action in ("gaze", "read"):
+        extras.append(NEED_RATES["gaze"])
+    for extra in extras:
+        for name, value in extra.items():
+            rates[name] = rates.get(name, 0) + value
+    return rates
 
 
 def live_out_plan(needs, plan, keep):
@@ -191,23 +260,14 @@ def live_out_plan(needs, plan, keep):
     except (KeyError, TypeError, ValueError):
         return
     minutes_left = max(0.0, (_now() - start).total_seconds() / 60)
-    roof = repaired(keep, "roof")
     for step in plan.get("steps", []):
         if minutes_left <= 0:
             break
         m = min(minutes_left, step.get("minutes", 20))
         minutes_left -= m
-        action, place = step.get("action"), step.get("place")
-        if action == "sleep":
-            change(needs, {"rest": .35 * m, "warmth": -.02 * m}, keep)
-        elif place == "fire":
-            change(needs, {"warmth": .3 * m, "rest": .08 * m}, keep)
-        else:
-            change(needs, {"rest": -.03 * m, "warmth": (-.02 if roof else -.05) * m}, keep)
-        if action in ("gaze", "read"):
-            change(needs, {"inspiration": .05 * m}, keep)
+        change(needs, {k: v * m for k, v in step_rates(step, keep).items()}, keep)
     if minutes_left > 0:  # dozed by the fire after the plan ran out
-        change(needs, {"rest": .1 * minutes_left, "warmth": .1 * minutes_left}, keep)
+        change(needs, {k: v * minutes_left for k, v in NEED_RATES["dozing"].items()}, keep)
 
 
 def describe_needs(needs):
@@ -242,11 +302,20 @@ def export_state(world: Path, docs: Path):
     memory = _load(world / "memory.json", {})
     keep = load_keep(world)
     gallery = _load(world / "gallery.json", [])
+    needs = load_needs(world)
     state = {
         "identity": _load(world / "identity.json", {}),
         "plan": _load(world / "plan.json", {}),
         "status": _load(world / "status.json", {}),
-        "needs": {n: load_needs(world)[n] for n in NEEDS},
+        "needs": {n: needs[n] for n in NEEDS},
+        "needs_prev": needs.get("previous"),  # at the start of its last wake-up, for the ▲▼ marks
+        "needs_at": needs.get("updated"),
+        # the same rules the knight lives by, so the keep can move the bars live
+        "needs_model": {"rates": NEED_RATES, "spirit_home": SPIRIT_HOME,
+                        "spirit_settle_per_hour": SPIRIT_SETTLE_PER_HOUR,
+                        "drift_max_hours": DRIFT_MAX_HOURS, "hearth_warmth": HEARTH_WARMTH,
+                        "saturate_above": SATURATE_ABOVE, "saturate_min": SATURATE_MIN,
+                        "window_inspiration": WINDOW_INSPIRATION},
         "keep": {"repairs": {k: {"done": keep["repairs"][k], "needed": v["needed"]} for k, v in REPAIRS.items()},
                  "objects": keep["objects"][-16:]},
         "places": places(keep),

@@ -141,8 +141,15 @@ def _get_json(url, retry=True):
         raise
 
 
+def _offline():
+    """Practice runs (KNIGHT_PRACTICE) stay off the internet."""
+    return bool(os.environ.get("KNIGHT_PRACTICE"))
+
+
 def wiki_random():
     """A chance encounter: one random article, briefly."""
+    if _offline():
+        return {"title": "Practice", "extract": "A made-up article for a practice run."}
     try:
         data = _get_json("https://en.wikipedia.org/api/rest_v1/page/random/summary")
         return {"title": data.get("title", ""), "extract": (data.get("extract") or "")[:500]}
@@ -152,6 +159,8 @@ def wiki_random():
 
 def wiki_study(query):
     """Look something up properly. Returns (title, text) or None."""
+    if _offline():
+        return ("Practice", "A made-up article for a practice run, about " + str(query)[:60] + ".")
     try:
         params = urllib.parse.urlencode({"action": "query", "list": "search", "srsearch": query,
                                          "srlimit": 1, "format": "json"})
