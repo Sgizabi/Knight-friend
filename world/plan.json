@@ -1,34 +1,27 @@
 {
-  "start": "2026-11-18T20:36:52+00:00",
-  "mood": "content",
+  "start": "2026-11-18T21:24:22+00:00",
+  "mood": "proud",
   "steps": [
     {
-      "place": "repair:doorway",
+      "place": "repair:hearth",
       "action": "work",
       "minutes": 20,
       "emote": "spark",
-      "note": "continue aligning stones"
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "shape a wooden frame for the glass"
+      "note": "check loose stones around the hearth"
     },
     {
       "place": "desk",
       "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "record measurements and progress"
+      "minutes": 15,
+      "emote": "spark",
+      "note": "update inventory list"
     },
     {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "heart",
-      "note": "take a short break"
+      "place": "window",
+      "action": "gaze",
+      "minutes": 10,
+      "emote": "spark",
+      "note": "look at the view now that the doorway is clear"
     }
   ]
 }

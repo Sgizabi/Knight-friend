@@ -30,56 +30,49 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 3,
-    "last_wake": "2026-11-18T20:36:52+00:00"
+    "wakeups": 4,
+    "last_wake": "2026-11-18T21:24:22+00:00"
   },
   "plan": {
-    "start": "2026-11-18T20:36:52+00:00",
-    "mood": "content",
+    "start": "2026-11-18T21:24:22+00:00",
+    "mood": "proud",
     "steps": [
       {
-        "place": "repair:doorway",
+        "place": "repair:hearth",
         "action": "work",
         "minutes": 20,
         "emote": "spark",
-        "note": "continue aligning stones"
-      },
-      {
-        "place": "workbench",
-        "action": "work",
-        "minutes": 20,
-        "emote": "question",
-        "note": "shape a wooden frame for the glass"
+        "note": "check loose stones around the hearth"
       },
       {
         "place": "desk",
         "action": "write",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "record measurements and progress"
+        "minutes": 15,
+        "emote": "spark",
+        "note": "update inventory list"
       },
       {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "heart",
-        "note": "take a short break"
+        "place": "window",
+        "action": "gaze",
+        "minutes": 10,
+        "emote": "spark",
+        "note": "look at the view now that the doorway is clear"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-18T21:24:20+00:00",
-    "place": "repair:doorway",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-18T21:24:22+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "remove more rubble and widen the gap"
+    "note": ""
   },
   "needs": {
-    "rest": 84.9,
-    "warmth": 90.5,
+    "rest": 72.9,
+    "warmth": 91.8,
     "inspiration": 58.0,
-    "spirit": 88.3
+    "spirit": 95.7
   },
   "needs_prev": {
     "rest": 88.0,
@@ -87,7 +80,7 @@
     "inspiration": 58.0,
     "spirit": 90.0
   },
-  "needs_at": "2026-11-18T21:24:20+00:00",
+  "needs_at": "2026-11-18T21:24:22+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -129,7 +122,7 @@
   "keep": {
     "repairs": {
       "doorway": {
-        "done": 2,
+        "done": 3,
         "needed": 3
       },
       "hearth": {
@@ -162,7 +155,8 @@
     "desk",
     "easel",
     "workbench",
-    "bedroll"
+    "bedroll",
+    "courtyard"
   ],
   "gallery": [],
   "projects": [],
@@ -176,5 +170,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-18T21:24:20+00:00"
+  "exported": "2026-11-18T21:24:22+00:00"
 }
