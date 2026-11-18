@@ -1,0 +1,38 @@
+name: The knight wakes
+
+on:
+  schedule:
+    - cron: "17 */2 * * *"   # a short wake-up every two hours
+    - cron: "43 2 * * *"     # a long evening by the fire (about 9:40 PM US Eastern)
+  workflow_dispatch:          # the "Run workflow" button: wake it by hand
+    inputs:
+      session:
+        description: "How long should it stay awake?"
+        type: choice
+        options: [short, long]
+        default: short
+
+permissions:
+  contents: write
+
+concurrency:
+  group: knight
+  cancel-in-progress: false
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Wake the knight
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KNIGHT_SESSION: ${{ github.event.schedule == '43 2 * * *' && 'long' || inputs.session || 'short' }}
+        run: |
+          git config user.name "the-knight"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python brain/knight.py

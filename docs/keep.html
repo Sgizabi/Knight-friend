@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Keep</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#efe4d0; --dim:#a8987f; --ember:#f0a04b; --panel:rgba(16,12,10,.78); --line:#4a3c30; }
+  html, body { margin:0; height:100%; background:#0b0908; color:var(--ink); font-family:'VT323', monospace; overflow:hidden; }
+  #view { position:fixed; inset:0; }
+  canvas { display:block; touch-action:none; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  #who { position:fixed; top:10px; left:10px; padding:6px 12px 8px; min-width:190px; max-width:calc(100vw - 40px); }
+  #who h1 { margin:0; font-size:26px; font-weight:normal; line-height:1; }
+  #who small { display:block; color:var(--dim); font-size:16px; margin:2px 0 6px; }
+  .need { display:grid; grid-template-columns:86px 1fr; align-items:center; gap:6px; font-size:16px; color:var(--dim); }
+  .need i { display:block; height:7px; border-radius:9px; background:#2a221c; overflow:hidden; }
+  .need i b { display:block; height:100%; border-radius:9px; transition:width 1s; }
+  #top { position:fixed; top:10px; right:10px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; max-width:60vw; }
+  #top button, #top select { font:inherit; font-size:18px; color:var(--ink); background:var(--panel); border:1px solid var(--line);
+                             border-radius:99px; padding:1px 12px; cursor:pointer; }
+  #top button.on { color:#ffd27a; border-color:#b8742c; }
+  #badge { font-size:18px; padding:1px 12px; border-radius:99px; background:var(--panel); border:1px solid var(--line); color:var(--dim); }
+  #badge.awake { color:#ffd27a; border-color:#b8742c; box-shadow:0 0 12px rgba(240,160,75,.45); }
+  #badge.awake::before { content:'● '; animation:pulse 1.4s infinite; }
+  @keyframes pulse { 50% { opacity:.25; } }
+  #help { position:fixed; top:52px; right:10px; padding:8px 12px; font-size:17px; color:var(--dim); line-height:1.3; display:none; max-width:300px; }
+  #help b { color:var(--ink); font-weight:normal; }
+  #caption { position:fixed; left:50%; bottom:14px; transform:translateX(-50%); padding:4px 16px; text-align:center;
+             font-size:21px; max-width:min(92vw, 720px); }
+  #caption em { display:block; color:var(--dim); font-style:normal; font-size:17px; }
+  .bubble { position:fixed; transform:translate(-50%, -100%); background:#f6efe2; color:#1a120c; border:2px solid #1a120c;
+            border-radius:8px; padding:0 8px; font-size:24px; line-height:1.2; pointer-events:none; white-space:nowrap; transition:opacity .25s; }
+  .bubble::after { content:''; position:absolute; left:50%; bottom:-8px; margin-left:-6px; border:6px solid transparent;
+                   border-top-color:#1a120c; border-bottom:0; }
+  .bubble.anger { color:#b8261b; } .bubble.heart { color:#c2334a; } .bubble.music { color:#3d5b9c; }
+  #card { position:fixed; left:50%; top:14px; transform:translateX(-50%); padding:8px 16px; max-width:min(80vw, 420px);
+          text-align:center; display:none; font-size:20px; }
+  #card small { display:block; color:var(--dim); font-size:16px; }
+  #toast { position:fixed; top:52px; right:10px; color:var(--ember); font-size:17px; opacity:0; transition:opacity .4s; pointer-events:none; }
+  @media (max-width: 560px) {
+    #who { transform:scale(.85); transform-origin:top left; }
+    #top { top:auto; bottom:84px; right:8px; }
+    #help { top:auto; bottom:120px; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<div id="view"></div>
+<div id="who" class="panel"><h1 id="name"></h1><small id="epithet"></small><div id="needs"></div></div>
+<div id="top">
+  <span id="badge"></span>
+  <button id="cam" title="Follow the knight or roam freely (F)"></button>
+  <select id="quality" title="Graphics quality">
+    <option value="auto">Auto</option><option value="high">High</option>
+    <option value="medium">Medium</option><option value="low">Low</option>
+  </select>
+  <button id="helpbtn" title="Controls">?</button>
+</div>
+<div id="help" class="panel"></div>
+<div id="toast"></div>
+<div id="card" class="panel"></div>
+<div class="bubble" id="bubble"></div>
+<div id="caption" class="panel"></div>
+<script id="knight-data" type="application/json">__DATA__</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+                set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+// =====================================================================================
+// Where the knight's life comes from
+//   * on its website (GitHub Pages): data/state.json next to this page
+//   * inside the Streamlit page: injected into the script tag above
+//   * ?demo in the address: a made-up knight, for previewing the keep
+// =====================================================================================
+const params = new URLSearchParams(location.search);
+const DEMO = params.has('demo');
+let injected = null;
+try { injected = JSON.parse($('knight-data').textContent); } catch { /* not injected: we're on the website */ }
+let ASSETS = injected ? (injected.asset_base ?? null) : '';
+const svgCache = (injected && injected.svgs) || {};
+let state = injected ? injected.state : null;
+
+// =====================================================================================
+// Renderer, scene, camera
+// =====================================================================================
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;          // shadows are redrawn on our own schedule
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+$('view').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2('#0b0908', .05);
+const camera = new THREE.PerspectiveCamera(45, 1, .1, 80);
+camera.position.set(2.2, 2.6, 7.2);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, .9, 0);
+controls.enableDamping = true;
+controls.maxDistance = 12;
+controls.maxPolarAngle = 1.5;
+
+function resize() {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+// =====================================================================================
+// The faceted look, and baking everything that never moves into a few meshes
+// =====================================================================================
+function hash(x, y, z) { const s = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return s - Math.floor(s); }
+function rand(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+function facet(geo, amount = .01, seed = 0) {
+  if (geo.index) geo = geo.toNonIndexed();
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const kx = Math.round(x * 1000), ky = Math.round(y * 1000), kz = Math.round(z * 1000);
+    p.setXYZ(i, x + (hash(kx, ky, kz + seed) - .5) * amount, y + (hash(ky, kz, kx + seed) - .5) * amount,
+                z + (hash(kz, kx, ky + seed) - .5) * amount);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+const mats = {};
+function mat(color, metal = 0, rough = .9, extra = {}) {
+  const key = color + metal + rough + JSON.stringify(extra);
+  return mats[key] ??= new THREE.MeshStandardMaterial({ color, metalness: metal, roughness: rough, flatShading: true, ...extra });
+}
+const M = {
+  steel: mat('#9aa3ad', .6, .42), steelD: mat('#5f666e', .6, .5), steelL: mat('#c4cbd2', .65, .35),
+  visor: mat('#0a0b0d', .2, .9), tabard: mat('#3f5f48', 0, .95), tabardD: mat('#2f4a37', 0, .95),
+  cape: mat('#5a2b27', 0, .95, { side: THREE.DoubleSide }), leather: mat('#4a3424', .1, .8), plume: mat('#8e3428'),
+  stone: mat('#575049'), stoneD: mat('#3d3732'), stoneL: mat('#6b635a'), floor: mat('#3a332d'),
+  wood: mat('#6b4a30'), woodD: mat('#3f2b1c'), woodL: mat('#8a6440'), cloth: mat('#6a3f35'), paper: mat('#e3d6bb'),
+  grass: mat('#3e4a2c'), grassL: mat('#55633a'), dirt: mat('#2b241e'), iron: mat('#3a3a3c', .7, .5),
+  glass: new THREE.MeshStandardMaterial({ color: '#9fc3d8', transparent: true, opacity: .22, roughness: .1, metalness: .2, depthWrite: false }),
+};
+const cyl = (rt, rb, h, seg = 8) => new THREE.CylinderGeometry(rt, rb, h, seg, 1);
+const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+const ico = (r, d = 0) => new THREE.IcosahedronGeometry(r, d);
+const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _p = new THREE.Vector3();
+
+// A mesh that moves (the knight, props): kept separate.
+function part(parent, geo, material, pos = [0, 0, 0], o = {}) {
+  const m = new THREE.Mesh(facet(geo, o.jitter ?? .01, o.seed ?? 0), material);
+  m.position.set(...pos);
+  if (o.rot) m.rotation.set(...o.rot);
+  if (o.scale) m.scale.set(...o.scale);
+  m.castShadow = o.cast ?? true; m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+// A piece of the keep that never moves: baked into one mesh per material.
+let bake = new Map();
+function slab(geo, material, pos, o = {}) {
+  geo = facet(geo, o.jitter ?? .03, o.seed ?? 0);
+  _m4.compose(_p.set(...pos), _q.setFromEuler(_e.set(...(o.rot || [0, 0, 0]))), _s.set(...(o.scale || [1, 1, 1])));
+  geo.applyMatrix4(_m4);
+  if (!bake.has(material)) bake.set(material, []);
+  bake.get(material).push(geo);
+}
+const solids = [];   // what the camera can't see through
+function finishBake(group) {
+  solids.length = 0;
+  for (const [material, geos] of bake) {
+    const mesh = new THREE.Mesh(mergeGeometries(geos, false), material);
+    if (material !== M.dirt && material !== M.grass && material !== M.floor) solids.push(mesh);
+    mesh.castShadow = material !== M.floor && material !== M.grass && material !== M.dirt;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    geos.forEach(g => g.dispose());
+  }
+  bake = new Map();
+}
+// An invisible box you can click on to learn what something is.
+const clickables = [];
+function info(group, size, pos, title, sub) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(...size), new THREE.MeshBasicMaterial({ visible: false }));
+  m.position.set(...pos); m.userData.info = { title, sub };
+  group.add(m); clickables.push(m);
+  return m;
+}
+
+// =====================================================================================
+// The keep (rebuilt whenever the knight repairs something or makes something new)
+// =====================================================================================
+const WALL_H = .45;
+function wallRun(axis, fixed, from, to, rowsAt, opening, seed) {
+  const r = rand(seed);
+  let a = from, col = 0;
+  while (a < to - .05) {
+    const len = Math.min(.75 + r() * .35, to - a);
+    const rows = rowsAt(col, a + len / 2);
+    for (let row = 0; row < rows; row++) {
+      const off = (row % 2) * .22;
+      const center = Math.min(to - len / 2, a + len / 2 + (row % 2 ? -off : 0));
+      const y = row * WALL_H + WALL_H / 2;
+      if (opening && opening(center, y)) continue;
+      const pos = axis === 'x' ? [center, y, fixed] : [fixed, y, center];
+      slab(box(axis === 'x' ? len - .03 : .6, WALL_H - .03, axis === 'x' ? .6 : len - .03),
+           (row + col) % 3 === 0 ? M.stoneD : M.stone, pos, { seed: seed + col * 31 + row, jitter: .06 });
+    }
+    a += len; col++;
+  }
+}
+function rubble(cx, cz, spread, count, seed, scaleAll = 1, group = null) {
+  const r = rand(seed);
+  for (let i = 0; i < count; i++) {
+    const a = r() * Math.PI * 2, d = r() * spread, s = (.16 + r() * .22) * scaleAll;
+    const pos = [cx + Math.cos(a) * d, s * .5 * (1 - d / spread * .5) + r() * .1 * scaleAll, cz + Math.sin(a) * d];
+    slab(ico(s, 0), r() < .5 ? M.stone : M.stoneD, pos, { seed: seed + i, jitter: .08, scale: [1.2, .8, 1] });
+  }
+}
+const progress = (st, key) => {
+  const r = st?.keep?.repairs?.[key];
+  return r ? Math.min(1, r.done / r.needed) : 0;
+};
+
+let worldGroup = null, worldKey = '', easelCanvas = null, hearthDone = false;
+function buildWorld(st) {
+  if (worldGroup) {
+    scene.remove(worldGroup);
+    worldGroup.traverse(o => { if (o.isMesh) { o.geometry.dispose(); if (o.material.map) o.material.map.dispose(); } });
+  }
+  clickables.length = 0;
+  const g = worldGroup = new THREE.Group();
+  scene.add(g);
+
+  // ground: the hall's flagstones, the courtyard's grass, dirt beyond
+  const outside = new THREE.PlaneGeometry(60, 60, 30, 30); outside.rotateX(-Math.PI / 2);
+  slab(outside, M.dirt, [0, -.02, 0], { jitter: .25 });
+  const hall = new THREE.PlaneGeometry(11.2, 9.2, 22, 18); hall.rotateX(-Math.PI / 2);
+  slab(hall, M.floor, [0, 0, 0], { jitter: .04 });
+  for (let i = 0; i < 40; i++) slab(box(.9, .02, .9), i % 2 ? M.stoneD : M.floor,
+    [-5 + (i % 10) * 1.1 + (hash(i, 1, 2) - .5) * .2, .005, -3.6 + Math.floor(i / 10) * 2.2], { jitter: .05, seed: i });
+  const yard = new THREE.PlaneGeometry(5.6, 9.2, 10, 16); yard.rotateX(-Math.PI / 2);
+  slab(yard, M.grass, [-8.4, .01, 0], { jitter: .08 });
+
+  // walls: north (with the window), west (with the doorway), east (collapsed), south (low, open to the view)
+  const winP = progress(st, 'window'), doorP = progress(st, 'doorway'), wallP = progress(st, 'wall');
+  wallRun('x', -4.3, -5.6, 5.6, (c, a) => 9 - (a > 2 ? Math.floor(hash(c, 3, 1) * 3) : 0),
+          (a, y) => a > -3.35 && a < -1.85 && y > 1.3 && y < 3.15, 11);
+  slab(box(1.8, .3, .7), M.stoneL, [-2.6, 3.3, -4.3], { jitter: .04 });                 // window lintel
+  wallRun('z', -5.3, -4.3, 4.3, c => 8 - Math.floor(hash(c, 7, 2) * 2),
+          (a, y) => a > .35 && a < 1.65 && y < 2.4, 23);
+  slab(box(.7, .3, 1.6), M.stoneL, [-5.3, 2.55, 1.0], { jitter: .04 });                 // door lintel
+  const eastRows = wallP >= 1 ? 9 : 2 + Math.round(wallP * 6);
+  wallRun('z', 5.3, -4.3, 4.3, c => Math.max(1, eastRows - (wallP >= 1 ? 0 : Math.floor(hash(c, 5, 3) * 3))), null, 37);
+  if (wallP < 1) rubble(4.4, 2.9, 1.2, Math.round(16 * (1 - wallP)), 41);
+  wallRun('x', 4.3, -5.6, 5.6, c => 1 + Math.floor(hash(c, 9, 4) * 3), null, 53);
+  // courtyard: low outer walls, a dead tree, an old well
+  wallRun('z', -11.2, -4.3, 4.3, c => 2 + Math.floor(hash(c, 2, 8) * 2), null, 61);
+  wallRun('x', -4.3, -11.2, -5.6, c => 2 + Math.floor(hash(c, 4, 8) * 2), null, 67);
+  wallRun('x', 4.3, -11.2, -5.6, c => 1 + Math.floor(hash(c, 6, 8) * 2), null, 71);
+  slab(cyl(.16, .24, 2.4, 6), M.woodD, [-8.8, 1.2, -2.2], { jitter: .05 });
+  for (const [ry, rz, l, y] of [[.3, .9, 1.1, 1.9], [2.4, -.8, .9, 2.2], [4.2, .7, .8, 1.5], [1.2, -1.0, .7, 2.5]])
+    slab(cyl(.05, .09, l, 5), M.woodD, [-8.8 + Math.cos(ry) * l * .35, y + .3, -2.2 + Math.sin(ry) * l * .35], { rot: [0, ry, rz], jitter: .03 });
+  slab(cyl(.6, .65, .7, 9), M.stone, [-8.2, .35, 2.4], { jitter: .06 });
+  slab(cyl(.45, .45, .72, 9), M.visor, [-8.2, .37, 2.4], { jitter: 0 });
+  for (let i = 0; i < 26; i++) slab(new THREE.ConeGeometry(.06, .3 + hash(i, 2, 3) * .25, 4), i % 3 ? M.grassL : M.grass,
+    [-10.6 + hash(i, 5, 1) * 4.6, .15, -3.8 + hash(i, 1, 7) * 7.6], { jitter: .02 });
+  info(g, [1.2, 2.6, 1.2], [-8.8, 1.3, -2.2], 'A dead tree in the courtyard', '');
+
+  // the doorway: rubble until cleared, then a door hanging ajar
+  if (doorP < 1) {
+    rubble(-5.1, 1.0, .9, Math.round(14 * (1 - doorP)) + 2, 81, 1.3 - doorP * .6);
+    info(g, [1.4, 1.6, 1.6], [-5.0, .8, 1.0], 'Rubble choking the doorway', `${Math.round(doorP * 100)}% cleared`);
+  } else {
+    slab(box(.08, 2.2, 1.1), M.woodD, [-4.75, 1.1, 1.85], { rot: [0, -1.1, 0], jitter: .02 });
+    info(g, [.8, 2.3, 1.3], [-5.2, 1.15, 1.0], 'The doorway to the courtyard', 'cleared by the knight');
+  }
+  // the window: empty hole, then a frame, then glass and shutters
+  if (winP > 0) {
+    slab(box(1.5, .1, .14), M.woodD, [-2.6, 1.32, -4.02]); slab(box(1.5, .1, .14), M.woodD, [-2.6, 3.12, -4.02]);
+    slab(box(.1, 1.8, .14), M.woodD, [-3.32, 2.22, -4.02]); slab(box(.1, 1.8, .14), M.woodD, [-1.88, 2.22, -4.02]);
+    slab(box(.06, 1.8, .1), M.woodD, [-2.6, 2.22, -4.02]); slab(box(1.4, .06, .1), M.woodD, [-2.6, 2.22, -4.02]);
+  }
+  if (winP >= 1) {
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.75), M.glass); glass.position.set(-2.6, 2.22, -4.0); g.add(glass);
+    slab(box(.7, 1.7, .05), M.wood, [-3.75, 2.22, -3.75], { rot: [0, -1.1, 0], jitter: .02 });
+    slab(box(.7, 1.7, .05), M.wood, [-1.45, 2.22, -3.75], { rot: [0, 1.1, 0], jitter: .02 });
+  }
+  info(g, [1.6, 1.9, .3], [-2.6, 2.22, -4.1], winP >= 1 ? 'The mended window' : 'The broken window',
+       winP >= 1 ? 'glazed and shuttered by the knight' : `${Math.round(winP * 100)}% mended`);
+
+  // the roof: open sky over the hall, beams and then planks over the north half as it's mended
+  const roofP = progress(st, 'roof');
+  const beams = roofP >= 1 ? 5 : 2 + Math.round(roofP * 3);
+  [-3.8, -.6, -3.0, -2.2, -1.4].slice(0, beams).forEach((z, i) =>
+    slab(box(10.8, .22, .24), M.woodD, [0, 4.15, z], { rot: [0, 0, roofP < 1 && i < 2 ? (i ? .03 : -.04) : 0], jitter: .03, seed: i }));
+  if (roofP >= 1) for (let x = -5.2; x < 5.3; x += .55) slab(box(.5, .06, 3.9), M.wood, [x, 4.3, -2.35], { jitter: .02, seed: x * 10 });
+
+  // the hearth: scattered stones, then a proper raised hearth
+  const hearthP = progress(st, 'hearth'); hearthDone = hearthP >= 1;
+  if (hearthDone) {
+    slab(cyl(.75, .8, .12, 12), M.stoneL, [0, .06, 0], { jitter: .02 });
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2;
+      slab(box(.24, .2, .14), M.stone, [Math.cos(a) * .6, .2, Math.sin(a) * .6], { rot: [0, -a, 0], jitter: .02, seed: i }); }
+  } else {
+    for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2, wob = hearthP > 0 ? 0 : (hash(i, 4, 4) - .5) * .25;
+      slab(ico(.12, 0), i % 2 ? M.stone : M.stoneD, [Math.cos(a) * (.42 + wob), .07, Math.sin(a) * (.42 + wob)], { jitter: .05, seed: i, scale: [1, .7, 1] }); }
+  }
+  for (const [a, tilt] of [[0, .25], [2.1, .3], [4.2, .22]]) slab(cyl(.045, .05, .55, 6), M.woodD, [0, .12, 0], { rot: [Math.PI / 2 - tilt, a, 0], jitter: .015 });
+  info(g, [1, .5, 1], [0, .25, 0], hearthDone ? 'The mended hearth' : 'The fire', hearthDone ? 'rebuilt stone by stone' : `the hearth is ${Math.round(hearthP * 100)}% mended`);
+  slab(box(.5, .44, .42), M.stone, [-1.21, .22, .72], { rot: [0, 2.21, 0], jitter: .06, seed: 3 });      // the seat by the fire
+
+  // the tower stair (east side) and the lookout platform
+  const stairP = progress(st, 'stair'), steps = stairP >= 1 ? 8 : Math.round(stairP * 8);
+  for (let i = 0; i < 8; i++) {
+    const z = 2.6 - (i + .5) * (3.9 / 8), h = (i + 1) * .35;
+    if (i < steps) slab(box(.9, h, 3.9 / 8 + .02), i % 2 ? M.stone : M.stoneD, [4.35, h / 2, z], { jitter: .03, seed: 90 + i });
+  }
+  if (stairP < 1) rubble(4.3, -.3, 1.0, 10 - steps, 97);
+  const plank = stairP >= 1 ? 1 : .45;
+  for (let x = 3.75; x < 5.0; x += .25) if (hash(x * 10, 2, 2) < plank || stairP >= 1) slab(box(.23, .07, 2.7), M.wood, [x + .1, 2.8, -2.65], { jitter: .02, seed: x * 7 });
+  for (const [x, z] of [[3.8, -1.35], [3.8, -3.95], [4.95, -1.35]]) slab(box(.14, 2.8, .14), M.woodD, [x, 1.4, z], { jitter: .02 });
+  info(g, [1, 2.8, 3.9], [4.35, 1.4, .65], stairP >= 1 ? 'The tower stair' : 'The fallen tower stair', stairP >= 1 ? 'rebuilt by the knight' : `${Math.round(stairP * 100)}% rebuilt`);
+  info(g, [1, 1.2, 4.3], [5.3, .6, 0], wallP >= 1 ? 'The east wall' : 'The collapsed east wall', wallP >= 1 ? 'rebuilt by the knight' : `${Math.round(wallP * 100)}% rebuilt`);
+
+  // furniture: bookshelf, desk and stool, easel, workbench, bedroll
+  slab(box(1.4, 2.0, .38), M.woodD, [.4, 1.0, -3.8], { jitter: .02 });
+  for (const y of [.05, .55, 1.05, 1.55, 1.98]) slab(box(1.36, .05, .4), M.wood, [.4, y, -3.76], { jitter: .01 });
+  slab(box(.65, .05, 1.3), M.woodL, [-4.55, .78, -2.4], { jitter: .02 });
+  for (const [x, z] of [[-4.8, -2.95], [-4.3, -2.95], [-4.8, -1.85], [-4.3, -1.85]]) slab(box(.06, .76, .06), M.woodD, [x, .38, z], { jitter: .01 });
+  slab(cyl(.2, .18, .05, 8), M.wood, [-3.8, .44, -2.4]); slab(cyl(.04, .05, .42, 6), M.woodD, [-3.8, .21, -2.4]);
+  slab(box(.32, .01, .24), M.paper, [-4.45, .81, -2.45], { jitter: .002 }); slab(cyl(.04, .05, .07, 7), M.visor, [-4.65, .84, -2.15]);
+  slab(cyl(.035, .035, .16, 7), M.paper, [-4.7, .89, -2.95], { jitter: .003 });                         // candle
+  for (const [x, rz] of [[2.25, .12], [2.75, -.12]]) slab(box(.05, 2.0, .05), M.woodD, [x - .2, 1.0, 1.7], { rot: [0, 0, rz] });
+  slab(box(.05, 2.1, .05), M.woodD, [2.65, 1.0, 1.7], { rot: [0, 0, -.2] });
+  slab(box(.12, .05, .9), M.woodD, [2.48, 1.02, 1.7]);
+  slab(box(1.4, .06, .6), M.woodL, [2.9, .9, -3.5], { jitter: .02 });
+  for (const [x, z] of [[2.25, -3.75], [3.55, -3.75], [2.25, -3.25], [3.55, -3.25]]) slab(box(.07, .88, .07), M.woodD, [x, .44, z]);
+  slab(box(1.4, .8, .04), M.woodD, [2.9, 1.75, -3.98], { jitter: .01 });
+  slab(box(.04, .45, .04), M.wood, [2.5, 1.75, -3.94]); slab(box(.16, .06, .06), M.iron, [2.5, 1.98, -3.94]);   // hammer on the wall
+  slab(box(.4, .1, .02), M.iron, [3.0, 1.85, -3.94]); slab(box(.03, .3, .03), M.iron, [3.4, 1.7, -3.94]);
+  slab(box(2.0, .06, .72), M.cloth, [-3.15, .03, 2.7], { jitter: .03, seed: 5 });
+  slab(box(.4, .12, .5), mat('#8a7a5e'), [-4.0, .09, 2.7], { jitter: .04 });
+  slab(box(.45, .55, .35), M.leather, [-4.6, .28, 3.6], { jitter: .05 });
+
+  // what the knight has made: books, scrolls, the easel painting, pictures on the walls, objects
+  const projects = st?.projects || [];
+  const shelfRand = rand(17);
+  const bookColors = ['#7a3b22', '#3d5b6e', '#6e6a3a', '#5b3d5c', '#8a6a3a', '#355a43'];
+  let bx = -.22, shelf = 0;
+  const shelfYs = [.08, .58, 1.08, 1.58];
+  for (let i = 0; i < 18 + projects.length; i++) {
+    const isProject = i >= 18;
+    const w = isProject ? .07 : .04 + shelfRand() * .03, h = isProject ? .36 : .24 + shelfRand() * .12;
+    if (bx + w > 1.02) { bx = -.22; shelf++; if (shelf > 3) break; }
+    const y = shelfYs[shelf] + h / 2;
+    if (isProject) {
+      const p = projects[i - 18];
+      part(g, box(w, h, .26), mat(['#c2552f', '#3f7fa8', '#c9a24a', '#8c4fa0'][(i - 18) % 4], .1, .7), [bx + w / 2, y, -3.7], { jitter: .006, cast: false });
+      info(g, [w + .02, h, .3], [bx + w / 2, y, -3.65], p.title, `a workshop project (${p.status || 'in progress'})`);
+    } else slab(box(w, h, .24), mat(bookColors[i % bookColors.length], 0, .9), [bx + w / 2, y, -3.72], { jitter: .006 });
+    bx += w + .012;
+  }
+  (st?.writings || []).forEach((w, i) => {
+    part(g, cyl(.025, .025, .26, 6), M.paper, [-4.75 + (i % 3) * .1, .83 + Math.floor(i / 3) * .05, -2.0 + (i % 2) * .05], { rot: [0, 0, Math.PI / 2], cast: false });
+    info(g, [.3, .08, .1], [-4.65 + (i % 3) * .1, .83, -2.0], w.title, w.form || 'a piece of writing');
+  });
+  const gallery = (st?.gallery || []).slice().reverse();   // newest first
+  easelCanvas = new THREE.Mesh(new THREE.PlaneGeometry(.8, .6), new THREE.MeshStandardMaterial({ color: '#efe6d2', roughness: .9 }));
+  easelCanvas.position.set(2.45, 1.38, 1.7); easelCanvas.rotation.y = -Math.PI / 2; g.add(easelCanvas);
+  if (gallery[0]) { paint(easelCanvas, gallery[0].file); info(g, [.1, .62, .82], [2.45, 1.38, 1.7], gallery[0].title, 'its newest drawing, still on the easel'); }
+  const SLOTS = [[-1.0, 2.2, -3.98, 0], [1.75, 2.55, -3.98, 0], [2.9, 2.6, -3.95, 0],
+                 [-4.98, 2.2, -.8, Math.PI / 2], [-4.98, 2.1, 2.9, Math.PI / 2], [-4.98, 2.4, -2.4, Math.PI / 2]];
+  gallery.slice(1, 1 + SLOTS.length).forEach((d, i) => {
+    const [x, y, z, ry] = SLOTS[i];
+    const frame = new THREE.Group(); frame.position.set(x, y, z); frame.rotation.y = ry; g.add(frame);
+    part(frame, box(.86, .66, .05), M.woodD, [0, 0, 0], { jitter: .005 });
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(.76, .57), new THREE.MeshStandardMaterial({ color: '#efe6d2', roughness: .9 }));
+    pic.position.z = .03; frame.add(pic); paint(pic, d.file);
+    info(frame, [.88, .68, .1], [0, 0, 0], d.title, 'a drawing by the knight');
+  });
+  placeObjects(g, st?.keep?.objects || []);
+
+  finishBake(g);
+  g.traverse(o => { if (o.isMesh && o.material === M.glass) o.castShadow = false; });
+  shadowsDirty = true;
+}
+
+// draw one of the knight's drawings onto a canvas or frame
+function paint(mesh, file) {
+  const apply = text => {
+    if (!text) return;
+    let svg = text;
+    if (!/<svg[^>]*\swidth=/.test(svg)) svg = svg.replace('<svg', '<svg width="480" height="360"');
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = 480; c.height = 360;
+      const x = c.getContext('2d'); x.fillStyle = '#efe6d2'; x.fillRect(0, 0, 480, 360); x.drawImage(img, 0, 0, 480, 360);
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      mesh.material.map = tex; mesh.material.color.set('#ffffff'); mesh.material.needsUpdate = true;
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  };
+  if (svgCache[file]) return apply(svgCache[file]);
+  if (ASSETS === null) return;
+  fetch(ASSETS + file).then(r => r.ok ? r.text() : '').then(t => { svgCache[file] = t; apply(t); }).catch(() => {});
+}
+
+// objects the knight designed, set into fixed spots around the keep
+const OBJECT_SLOTS = {
+  floor: [[-2.0, 0, -1.8], [1.5, 0, -1.7], [-3.4, 0, -.3], [3.0, 0, 3.3], [-.9, 0, 3.1], [1.0, 0, 2.9], [-1.6, 0, -3.3], [-4.3, 0, -.2]],
+  table: [[-4.62, .805, -2.75], [-4.5, .805, -1.95], [2.4, .93, -3.45], [3.4, .93, -3.45]],
+  shelf: [[.05, 2.03, -3.76], [.8, 2.03, -3.76]],
+  wall:  [[-3.95, 1.7, -3.97, 0], [-4.97, 1.5, -1.5, Math.PI / 2]],
+};
+const MAX_SIZE = { floor: 1.2, table: .32, shelf: .3, wall: .75 };
+function placeObjects(g, objects) {
+  const used = { floor: [], table: [], shelf: [], wall: [] };
+  for (let i = objects.length - 1; i >= 0; i--) {
+    const o = objects[i], kind = OBJECT_SLOTS[o.placement] ? o.placement : 'floor';
+    if (used[kind].length < OBJECT_SLOTS[kind].length) used[kind].push(o);
+  }
+  for (const kind in used) used[kind].forEach((o, i) => {
+    const holder = new THREE.Group(), model = new THREE.Group();
+    for (const p of o.parts) {
+      let geo;
+      const s = p.size;
+      if (p.shape === 'box') geo = box(s[0], s[1], s[2]);
+      else if (p.shape === 'cylinder') geo = cyl(s[0], s[1], s[2], 8);
+      else if (p.shape === 'cone') geo = new THREE.ConeGeometry(s[0], s[1], 8);
+      else if (p.shape === 'sphere') geo = new THREE.SphereGeometry(s[0], 8, 6);
+      else geo = new THREE.TorusGeometry(s[0], s[1], 6, 12);
+      part(model, geo, mat(p.color, .1, .75), p.pos, { rot: p.rot, jitter: .006 });
+    }
+    const bounds = new THREE.Box3().setFromObject(model), size = bounds.getSize(new THREE.Vector3());
+    const scale = Math.min(1, MAX_SIZE[kind] / Math.max(size.x, size.y, size.z, .001));
+    model.scale.setScalar(scale);
+    model.position.set(-(bounds.min.x + size.x / 2) * scale, -bounds.min.y * scale, -(bounds.min.z + size.z / 2) * scale);
+    if (kind === 'wall') { model.position.y -= size.y * scale / 2; model.position.z += size.z * scale / 2 + .01; }
+    holder.add(model);
+    const [x, y, z, ry = hash(i, 3, 3) * 6] = OBJECT_SLOTS[kind][i];
+    holder.position.set(x, y, z); holder.rotation.y = ry;
+    g.add(holder);
+    info(holder, [size.x * scale + .1, size.y * scale + .1, size.z * scale + .1], [0, kind === 'wall' ? 0 : size.y * scale / 2, 0],
+         o.name, o.about || 'made by the knight');
+  });
+}
+
+// =====================================================================================
+// Fire, sky and light
+// =====================================================================================
+const fireLight = new THREE.PointLight('#ff8a3d', 32, 0, 2);
+fireLight.position.set(0, .65, 0); fireLight.castShadow = true;
+fireLight.shadow.bias = -.004; fireLight.shadow.radius = 3; fireLight.shadow.camera.far = 25;
+scene.add(fireLight);
+const candle = new THREE.PointLight('#ffb060', 1.2, 4, 2); candle.position.set(-4.7, 1.05, -2.95); scene.add(candle);
+const hemi = new THREE.HemisphereLight('#3a4a6a', '#1a110a', .6); scene.add(hemi);
+const sky = new THREE.DirectionalLight('#7088c0', .4); sky.position.set(-4, 9, -6); scene.add(sky);
+// a soft light from where you're looking, so the knight is never just a silhouette
+const fill = new THREE.DirectionalLight('#c8b8a0', .45); fill.position.set(.3, .6, 1); camera.add(fill); fill.target.position.set(0, 0, -1); camera.add(fill.target); scene.add(camera);
+const flames = [];
+for (const [r, h, color, n] of [[.16, .45, '#c4441b', 5], [.11, .38, '#f28c2c', 4], [.06, .28, '#ffd77a', 3]]) {
+  for (let i = 0; i < n; i++) {
+    const f = new THREE.Mesh(new THREE.ConeGeometry(r * (.6 + Math.random() * .4), h, 5),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const a = Math.random() * Math.PI * 2, d = Math.random() * .08;
+    f.position.set(Math.cos(a) * d, .15 + h / 2, Math.sin(a) * d);
+    f.userData = { h, phase: Math.random() * 10, speed: 6 + Math.random() * 6 };
+    scene.add(f); flames.push(f);
+  }
+}
+const candleFlame = new THREE.Mesh(new THREE.ConeGeometry(.015, .05, 5), new THREE.MeshBasicMaterial({ color: '#ffd77a' }));
+candleFlame.position.set(-4.7, 1.0, -2.95); scene.add(candleFlame);
+const EMBERS = 70, emberPos = new Float32Array(EMBERS * 3), emberLife = Float32Array.from({ length: EMBERS }, () => Math.random());
+const emberGeo = new THREE.BufferGeometry(); emberGeo.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+const embers = new THREE.Points(emberGeo, new THREE.PointsMaterial({ color: '#ffb35a', size: .035, transparent: true,
+  blending: THREE.AdditiveBlending, depthWrite: false }));
+scene.add(embers);
+const starGeo = new THREE.BufferGeometry(), starPos = [];
+for (let i = 0; i < 400; i++) { const a = Math.random() * Math.PI * 2, e = .15 + Math.random() * 1.3;
+  starPos.push(Math.cos(a) * Math.cos(e) * 45, Math.sin(e) * 45, Math.sin(a) * Math.cos(e) * 45); }
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: '#dfe6ff', size: .18, fog: false }));
+scene.add(stars);
+const moon = new THREE.Mesh(new THREE.SphereGeometry(1.4, 12, 8), new THREE.MeshBasicMaterial({ color: '#e9e3c8', fog: false }));
+moon.position.set(-14, 26, -30); scene.add(moon);
+
+function updateSky() {   // follows the viewer's own clock
+  const h = new Date().getHours() + new Date().getMinutes() / 60;
+  const night = h < 5 || h >= 20, dusk = !night && (h < 7 || h >= 17);
+  const look = night ? { bg: '#0a0d16', fog: '#0a0b10', d: .045, hs: '#2a3550', hg: '#2a1e16', hi: .75, sc: '#7088c0', si: .5, fi: .35 }
+             : dusk  ? { bg: '#4a3f5c', fog: '#3a3040', d: .04, hs: '#8a6a80', hg: '#3a2a1e', hi: 1.05, sc: '#ff9a5a', si: 1.0, fi: .45 }
+                     : { bg: '#8aa4bf', fog: '#7a8a99', d: .028, hs: '#b9cbe0', hg: '#4a3a2a', hi: 1.1, sc: '#fff1d6', si: 1.8, fi: .3 };
+  fill.intensity = look.fi;
+  scene.background = new THREE.Color(look.bg);
+  scene.fog.color.set(look.fog); scene.fog.density = look.d;
+  hemi.color.set(look.hs); hemi.groundColor.set(look.hg); hemi.intensity = look.hi;
+  sky.color.set(look.sc); sky.intensity = look.si;
+  sky.position.set(night ? -4 : 6, dusk ? 3 : 9, night ? -6 : -3);
+  stars.visible = moon.visible = night;
+}
+
+// =====================================================================================
+// The knight
+// =====================================================================================
+function buildKnight() {
+  const root = new THREE.Group(), J = {};
+  const hips = new THREE.Group(); hips.position.y = .95; root.add(hips); J.hips = hips;
+  part(hips, cyl(.17, .235, .26, 8), M.steel, [0, -.12, 0], { scale: [1, 1, .8] });
+  part(hips, cyl(.24, .245, .03, 8), M.steelD, [0, -.24, 0], { scale: [1, 1, .8] });
+  part(hips, cyl(.178, .178, .045, 8), M.leather, [0, .02, 0], { scale: [1, 1, .8] });
+  part(hips, box(.05, .045, .02), M.steelL, [0, .02, .145]);
+  part(hips, box(.22, .4, .025), M.tabard, [0, -.2, .19], { rot: [.06, 0, 0], jitter: .02 });
+  part(hips, box(.22, .44, .025), M.tabardD, [0, -.22, -.19], { rot: [-.06, 0, 0], jitter: .02 });
+  const torso = new THREE.Group(); torso.position.y = .04; hips.add(torso); J.torso = torso;
+  part(torso, cyl(.215, .17, .44, 8), M.steel, [0, .24, 0], { scale: [1, 1, .72] });
+  part(torso, ico(.17, 1), M.steel, [0, .3, .04], { scale: [1.15, .95, .72], jitter: .02 });
+  part(torso, box(.24, .3, .03), M.tabard, [0, .16, .15], { rot: [-.12, 0, 0], jitter: .015 });
+  part(torso, cyl(.1, .135, .09, 7), M.steelD, [0, .48, 0]);
+  const head = new THREE.Group(); head.position.y = .52; torso.add(head); J.head = head;
+  part(head, cyl(.112, .122, .2, 8), M.steel, [0, .1, 0], { jitter: .012 });
+  part(head, new THREE.SphereGeometry(.116, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), M.steel, [0, .2, 0], { jitter: .012 });
+  part(head, box(.15, .016, .03), M.visor, [0, .14, .108]);
+  part(head, box(.012, .2, .03), M.steelL, [0, .15, .113]);
+  for (const [x, y] of [[-.035, .07], [.035, .07], [-.035, .045], [.035, .045], [0, .045]]) part(head, box(.012, .012, .02), M.visor, [x, y, .117], { jitter: 0 });
+  part(head, new THREE.ConeGeometry(.035, .24, 5), M.plume, [0, .33, -.07], { rot: [-.9, 0, 0], jitter: .02 });
+  const arms = {};
+  for (const [side, s] of [['L', 1], ['R', -1]]) {
+    part(torso, new THREE.SphereGeometry(.135, 7, 4, 0, Math.PI * 2, 0, Math.PI * .55), M.steel, [s * .245, .44, 0],
+         { rot: [0, 0, -s * .4], scale: [1, .85, 1.05], jitter: .02, seed: s });
+    part(torso, cyl(.15, .15, .05, 7), M.steelD, [s * .265, .37, 0], { rot: [0, 0, -s * .5], scale: [1, 1, .9] });
+    const shoulder = new THREE.Group(); shoulder.position.set(s * .245, .41, 0); torso.add(shoulder);
+    const upper = new THREE.Group(); shoulder.add(upper);
+    part(upper, cyl(.062, .055, .26), M.steel, [0, -.14, 0]);
+    const elbow = new THREE.Group(); elbow.position.y = -.28; upper.add(elbow);
+    part(elbow, ico(.058, 0), M.steelD, [0, 0, -.01]);
+    part(elbow, cyl(.056, .046, .2), M.steel, [0, -.11, 0]);
+    part(elbow, cyl(.068, .05, .07), M.steelD, [0, -.2, 0]);
+    const hand = new THREE.Group(); hand.position.y = -.235; elbow.add(hand);
+    part(hand, box(.048, .09, .08), M.leather, [0, -.045, 0], { jitter: .01 });
+    part(hand, box(.016, .08, .078), M.steelL, [s * .03, -.04, 0], { jitter: .008 });
+    part(hand, box(.014, .02, .074), M.steelD, [s * .036, -.088, 0], { jitter: 0 });
+    const knuckle = new THREE.Group(); knuckle.position.y = -.09; hand.add(knuckle);
+    part(knuckle, box(.042, .05, .076), M.leather, [0, -.025, 0], { jitter: .008 });
+    part(knuckle, box(.012, .045, .07), M.steel, [s * .026, -.025, 0], { jitter: .006 });
+    const tip = new THREE.Group(); tip.position.y = -.05; knuckle.add(tip);
+    part(tip, box(.038, .042, .072), M.leather, [0, -.02, 0], { jitter: .008 });
+    part(tip, box(.011, .036, .066), M.steel, [s * .024, -.02, 0], { jitter: .006 });
+    const thumb = new THREE.Group(); thumb.position.set(-s * .01, -.025, .045); hand.add(thumb);
+    part(thumb, box(.026, .055, .026), M.leather, [0, -.027, 0], { jitter: .006 });
+    J['sh' + side] = upper; J['el' + side] = elbow;
+    arms[side] = { shoulder, upper, elbow, hand, knuckle, tip, thumb, side: s, a: .28, b: .3 };
+  }
+  for (const [side, s] of [['L', 1], ['R', -1]]) {
+    const thigh = new THREE.Group(); thigh.position.set(s * .1, -.06, 0); hips.add(thigh);
+    part(thigh, cyl(.088, .07, .42), M.steel, [0, -.21, 0]);
+    const knee = new THREE.Group(); knee.position.y = -.44; thigh.add(knee);
+    part(knee, ico(.068, 0), M.steelD, [0, 0, .035]);
+    part(knee, cyl(.068, .055, .36), M.steel, [0, -.19, 0]);
+    part(knee, box(.06, .26, .03), M.steelL, [0, -.2, .055], { jitter: .012 });
+    const ankle = new THREE.Group(); ankle.position.y = -.38; knee.add(ankle);
+    part(ankle, box(.11, .07, .22), M.steelD, [0, -.035, .045], { jitter: .02 });
+    part(ankle, new THREE.ConeGeometry(.055, .09, 5), M.steelD, [0, -.04, .19], { rot: [Math.PI / 2, 0, 0] });
+    J['th' + side] = thigh; J['kn' + side] = knee; J['an' + side] = ankle;
+  }
+  const capeGeo = new THREE.PlaneGeometry(.44, 1.02, 4, 10); capeGeo.translate(0, -.51, 0);
+  const cape = new THREE.Mesh(capeGeo, M.cape); cape.position.set(0, .44, -.165); cape.castShadow = true; torso.add(cape);
+  cape.userData.rest = Float32Array.from(capeGeo.attributes.position.array);
+  const scabbard = new THREE.Group(); scabbard.position.set(.24, -.04, .02); scabbard.rotation.set(.38, 0, .06); hips.add(scabbard);
+  part(scabbard, cyl(.03, .02, .8, 5), M.leather, [0, -.44, 0], { scale: [1, 1, .5] });
+  const sword = new THREE.Group();
+  part(sword, cyl(.03, .004, .82, 4), M.steelL, [0, -.43, 0], { scale: [1, 1, .3], jitter: .004 });
+  part(sword, box(.22, .03, .035), M.steelD, [0, -.02, 0]);
+  part(sword, cyl(.017, .017, .16, 6), M.leather, [0, .07, 0]);
+  part(sword, ico(.033, 0), M.steelD, [0, .17, 0]);
+  // things it holds: a book, a hammer, a quill, a brush
+  const book = new THREE.Group(); part(book, box(.22, .03, .16), M.cloth); part(book, box(.2, .012, .15), M.paper, [0, .018, 0]); root.add(book);
+  const tools = {};
+  tools.hammer = new THREE.Group(); part(tools.hammer, cyl(.014, .016, .34, 5), M.wood, [0, 0, .12], { rot: [Math.PI / 2, 0, 0] });
+  part(tools.hammer, box(.05, .05, .13), M.iron, [0, .0, .3], { rot: [0, Math.PI / 2, 0] });
+  tools.quill = new THREE.Group(); part(tools.quill, new THREE.ConeGeometry(.012, .24, 4), M.paper, [0, 0, .08], { rot: [Math.PI / 2, 0, 0] });
+  tools.brush = new THREE.Group(); part(tools.brush, cyl(.007, .009, .26, 5), M.wood, [0, 0, .09], { rot: [Math.PI / 2, 0, 0] });
+  part(tools.brush, cyl(.012, .004, .04, 5), mat('#9b3b2e'), [0, 0, .23], { rot: [Math.PI / 2, 0, 0] });
+  for (const t of Object.values(tools)) { t.position.set(0, -.1, .02); t.visible = false; arms.R.hand.add(t); }
+  root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(.6, 1.9, .5), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.position.y = .95; root.add(hit); hit.userData.knight = true;
+  return { root, J, arms, cape, sword, scabbard, book, tools, hit };
+}
+const K = buildKnight();
+scene.add(K.root);
+
+// =====================================================================================
+// Places, paths, poses
+// =====================================================================================
+const PI = Math.PI;
+const SPOTS = {
+  fire:      { p: [0, -1.35], yaw: 0, sit: { p: [-1.25, .75], yaw: 2.21, seat: .44 }, label: 'by the fire' },
+  window:    { p: [-2.6, -3.25], yaw: PI, label: 'at the window' },
+  bookshelf: { p: [.4, -2.95], yaw: PI, label: 'at the bookshelf' },
+  desk:      { p: [-3.85, -2.4], yaw: -PI / 2, seat: .46, label: 'at the desk' },
+  easel:     { p: [1.85, 1.7], yaw: PI / 2, label: 'at the easel' },
+  workbench: { p: [2.9, -2.7], yaw: PI, label: 'at the workbench' },
+  bedroll:   { p: [-2.2, 2.7], yaw: PI / 2, label: 'on the bedroll' },
+  courtyard: { p: [-7.4, 1.0], yaw: -PI / 2, label: 'in the courtyard' },
+  tower:     { p: [4.35, -2.6], yaw: PI / 2, label: 'atop the tower' },
+  'repair:doorway': { p: [-4.3, 1.0], yaw: -PI / 2, label: 'clearing the doorway' },
+  'repair:hearth':  { p: [-.8, -.95], yaw: .7, label: 'mending the hearth' },
+  'repair:window':  { p: [-2.6, -3.25], yaw: PI, label: 'mending the window' },
+  'repair:stair':   { p: [3.55, 1.6], yaw: PI / 2, label: 'rebuilding the stair' },
+  'repair:wall':    { p: [3.5, .4], yaw: PI / 2, label: 'rebuilding the east wall' },
+  'repair:roof':    { p: [.6, -1.9], yaw: PI, label: 'mending the roof' },
+};
+const DOOR_IN = new THREE.Vector3(-4.4, 0, 1.0), DOOR_OUT = new THREE.Vector3(-6.0, 0, 1.0);
+const STAIR_LOW = new THREE.Vector3(4.35, 0, 2.95), STAIR_HIGH = new THREE.Vector3(4.35, 0, -1.4);
+function groundAt(x, z) {
+  if (x > 3.85 && x < 4.85 && z <= 2.6 && z >= -1.3) return (2.6 - z) / 3.9 * 2.8;
+  if (x > 3.7 && z < -1.3) return 2.8;
+  return 0;
+}
+const region = (x, z) => x < -5.2 ? 'yard' : (groundAt(x, z) > 2 ? 'tower' : 'hall');
+function route(from, to) {
+  const a = region(from.x, from.z), b = region(to.x, to.z), path = [];
+  if (a === 'tower' && b !== 'tower') path.push(STAIR_HIGH, STAIR_LOW);
+  if (a === 'yard' && b !== 'yard') path.push(DOOR_OUT, DOOR_IN);
+  if (b === 'yard' && a !== 'yard') path.push(DOOR_IN, DOOR_OUT);
+  if (b === 'tower' && a !== 'tower') path.push(STAIR_LOW, STAIR_HIGH);
+  path.push(to);
+  // step around the fire rather than through it
+  const out = []; let prev = from;
+  for (const p of path) {
+    const d = p.clone().sub(prev), len = d.length();
+    if (len > .01) {
+      const t = THREE.MathUtils.clamp(-prev.dot(d) / (len * len), 0, 1);
+      const near = prev.clone().addScaledVector(d, t); near.y = 0;
+      if (near.length() < 1.0 && t > 0 && t < 1) out.push(near.lengthSq() < 1e-4 ? new THREE.Vector3(1.2, 0, 0) : near.setLength(1.25));
+    }
+    out.push(p.clone()); prev = p;
+  }
+  return out;
+}
+
+const DOWN = new THREE.Vector3(0, -1, 0), _qa = new THREE.Quaternion();
+const toQ = ([x, y, z]) => new THREE.Quaternion().setFromEuler(_e.set(x, y, z));
+function reach(arm, target) {
+  const torso = arm.shoulder.parent;
+  const t = target.clone(); K.root.localToWorld(t); torso.worldToLocal(t);
+  const s = arm.shoulder.position, d = t.clone().sub(s);
+  const c = THREE.MathUtils.clamp(d.length(), .05, arm.a + arm.b - .001), dir = d.normalize();
+  const A = Math.acos(THREE.MathUtils.clamp((arm.a ** 2 + c ** 2 - arm.b ** 2) / (2 * arm.a * c), -1, 1));
+  const pole = new THREE.Vector3(arm.side * .7, -.4, -1).normalize();
+  const u = dir.clone().applyAxisAngle(new THREE.Vector3().crossVectors(dir, pole).normalize(), A);
+  const qUpper = new THREE.Quaternion().setFromUnitVectors(DOWN, u);
+  const f = t.clone().sub(s.clone().addScaledVector(u, arm.a)).normalize().applyQuaternion(qUpper.clone().invert());
+  return [qUpper, new THREE.Quaternion().setFromUnitVectors(DOWN, f)];
+}
+
+const sitLegs = seat => seat > .3
+  ? { thL: [-1.5, 0, .08], thR: [-1.5, 0, -.08], knL: [1.45, 0, 0], knR: [1.45, 0, 0] }
+  : { thL: [-1.35, 0, .1], thR: [-1.35, 0, -.1], knL: [.3, 0, 0], knR: [.25, 0, 0] };
+function poseFor(action, spot, t, phase) {
+  const seat = spot.seat ?? 0;
+  const seatedHips = seat > .3 ? seat + .06 : .22;
+  const look = Math.sin(t * .35) * .2;
+  switch (action) {
+    case 'walk': return { hipsY: .95 - Math.abs(Math.cos(phase)) * .025, grip: .45, joints: {
+      torso: [.06, Math.sin(phase) * .08, 0], head: [.05, -Math.sin(phase) * .06, 0],
+      thL: [-.5 * Math.sin(phase), 0, 0], thR: [.5 * Math.sin(phase), 0, 0],
+      knL: [.15 + .6 * Math.max(0, Math.sin(phase + 1.4)), 0, 0], knR: [.15 + .6 * Math.max(0, Math.sin(phase + 1.4 + PI)), 0, 0],
+      anL: [-.1 * Math.sin(phase), 0, 0], anR: [.1 * Math.sin(phase), 0, 0],
+      shL: [.35 * Math.sin(phase), 0, .1], shR: [-.35 * Math.sin(phase), 0, -.1], elL: [-.35, 0, 0], elR: [-.35, 0, 0] } };
+    case 'vigil': return { hipsY: .95, sword: true, grip: 1.35, joints: { torso: [.04, 0, 0], head: [.28 + Math.sin(t * .5) * .03, 0, 0] },
+      ik: { L: [.035, 1.03, .3], R: [-.035, .94, .3] } };
+    case 'sit': return { hipsY: seatedHips, grip: .6, joints: { torso: [.28, 0, 0], head: [.2, look, 0], ...sitLegs(seat) },
+      ik: seat > .3 ? { L: [.15, .58, .42], R: [-.15, .58, .42] } : { L: [.17, .32, .55], R: [-.17, .32, .55] } };
+    case 'read': return seat > .3 || spot.sit
+      ? { hipsY: seatedHips, grip: .9, book: [0, .86, .45], joints: { torso: [.32, 0, 0], head: [.55, 0, 0], ...sitLegs(seat) },
+          ik: { L: [.11, .84, .44], R: [-.11, .84, .44] } }
+      : { hipsY: .95, grip: .9, book: [0, 1.22, .34], joints: { torso: [.05, 0, 0], head: [.5, Math.sin(t * .2) * .05, 0] },
+          ik: { L: [.11, 1.2, .33], R: [-.11, 1.2, .33] } };
+    case 'write': {
+      const wx = Math.sin(t * 3.2) * .05, wz = Math.cos(t * 2.1) * .02;
+      return { hipsY: seat > .3 ? seatedHips : .95, grip: 1.1, tool: 'quill',
+        joints: { torso: [.38, 0, 0], head: [.5, 0, 0], ...(seat > .3 ? sitLegs(seat) : {}) },
+        ik: { L: [.2, .82, .45], R: [-.08 + wx, .84, .46 + wz] } };
+    }
+    case 'draw': {
+      const a = t * 2.4;
+      return { hipsY: .95, grip: 1.1, tool: 'brush', joints: { torso: [.05, 0, 0], head: [.12, 0, 0] },
+        ik: { L: [.3, 1.0, .18], R: [-.08 + Math.cos(a) * .1, 1.35 + Math.sin(a * 1.3) * .1, .5] } };
+    }
+    case 'work': {
+      const p = (t * 1.3) % 1, up = p < .72 ? Math.sin(p / .72 * PI / 2) : 1 - (p - .72) / .28;
+      return { hipsY: .93, grip: 1.3, tool: 'hammer',
+        joints: { torso: [.22, 0, 0], head: [.35, 0, 0], shR: [-.9 - up * 1.4, 0, -.15], elR: [-.25 - up * .5, 0, 0] },
+        ik: { L: [.14, .92, .5] } };
+    }
+    case 'gaze': return { hipsY: .95, grip: .35, joints: { torso: [-.04, 0, 0], head: [-.35 + Math.sin(t * .3) * .05, look * .6, 0],
+      shL: [.15, 0, .08], shR: [.15, 0, -.08], elL: [-.6, 0, 0], elR: [-.6, 0, 0] } };
+    case 'sleep': return { hipsY: .95, lie: true, grip: .25, joints: { torso: [-.02 * Math.sin(t * 1.2), 0, 0], head: [-.1, .5, 0],
+      shL: [0, 0, .12], shR: [0, 0, -.12], elL: [-.3, 0, 0], elR: [-.3, 0, 0], knL: [.25, 0, 0], thL: [-.2, 0, 0] } };
+    default: return { hipsY: .95, grip: .35, joints: { head: [.05 + Math.sin(t * .4) * .05, look, 0],
+      shL: [0, 0, .1], shR: [0, 0, -.1], elL: [-.2, 0, 0], elR: [-.2, 0, 0] } };
+  }
+}
+const JOINTS = ['torso', 'head', 'shL', 'shR', 'elL', 'elR', 'thL', 'thR', 'knL', 'knR', 'anL', 'anR'];
+
+// =====================================================================================
+// What is it doing right now?  (its real plan, its live status, or the demo)
+// =====================================================================================
+const DEMO_STEPS = [['fire', 'vigil', 'dots', 'keeping watch over the fire'], ['bookshelf', 'read', 'question', 'reading about lighthouses'],
+  ['desk', 'write', 'music', 'writing a poem about candles'], ['easel', 'draw', 'heart', 'painting the view from the window'],
+  ['workbench', 'work', 'spark', 'making a lantern'], ['repair:doorway', 'work', 'sigh', 'hauling rubble'], ['courtyard', 'gaze', 'cloud', 'watching the clouds'],
+  ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['fire', 'sit', 'sigh', 'warming its hands'], ['bedroll', 'sleep', 'zzz', 'napping']];
+function current(now) {
+  if (window.__force) return window.__force;   // for testing poses and paths
+  if (DEMO) {
+    const [place, action, emote, note] = DEMO_STEPS[Math.floor(now / 1000 / 16) % DEMO_STEPS.length];
+    return { place, action, emote, note, awake: Math.floor(now / 1000 / 16) % 4 === 0 };
+  }
+  if (!state?.identity?.name) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'It has not yet woken for the first time.' };
+  const st = state.status || {};
+  if (st.awake && now - Date.parse(st.since) < 50 * 60000) return { place: st.place || 'fire', action: st.action || 'sit', emote: 'dots', note: st.note || '', awake: true };
+  const plan = state.plan || {};
+  let elapsed = (now - Date.parse(plan.start || 0)) / 60000;
+  for (const s of plan.steps || []) { if (elapsed < s.minutes) return s; elapsed -= s.minutes; }
+  if (elapsed < 90) return { place: 'fire', action: 'sit', emote: 'dots', note: 'dozing, waiting to stir again' };
+  return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'fast asleep until it stirs again' };
+}
+
+function demoState() {
+  const svg = (bg, fg, shape) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360"><rect width="480" height="360" fill="${bg}"/>${shape(fg)}</svg>`;
+  Object.assign(svgCache, {
+    'demo/1.svg': svg('#1b2233', '#ffd36b', c => `<rect x="215" y="120" width="50" height="200" fill="#ddd"/><circle cx="240" cy="105" r="26" fill="${c}"/><path d="M0 330 Q240 290 480 330 V360 H0Z" fill="#2b4a6a"/>`),
+    'demo/2.svg': svg('#e8d9b5', '#3d5b6e', c => `<circle cx="240" cy="180" r="110" fill="none" stroke="${c}" stroke-width="14"/><circle cx="240" cy="180" r="40" fill="#c2552f"/>`),
+    'demo/3.svg': svg('#2a3b2c', '#c9a24a', c => `<polygon points="60,300 200,90 340,300" fill="${c}"/><polygon points="220,300 330,140 440,300" fill="#8a6a3a"/>`),
+    'demo/4.svg': svg('#3a2a3a', '#f0a04b', c => `<circle cx="160" cy="170" r="60" fill="${c}"/><circle cx="320" cy="190" r="45" fill="#7aa0d8"/>`),
+  });
+  return {
+    identity: { name: 'Demo Knight', epithet: 'of the Preview' },
+    needs: { rest: 62, warmth: 81, inspiration: 44, spirit: 70 },
+    keep: { repairs: { doorway: { done: 3, needed: 3 }, hearth: { done: 1, needed: 2 }, window: { done: 2, needed: 2 },
+                       stair: { done: 3, needed: 3 }, wall: { done: 2, needed: 4 }, roof: { done: 1, needed: 4 } },
+            objects: [
+              { name: 'A small lantern', about: 'to keep the dark polite', placement: 'table', parts: [
+                { shape: 'box', size: [.2, .04, .2], pos: [0, .02, 0], rot: [0, 0, 0], color: '#3a2a1a' },
+                { shape: 'cylinder', size: [.07, .08, .22], pos: [0, .15, 0], rot: [0, 0, 0], color: '#f2c46b' },
+                { shape: 'cone', size: [.12, .1], pos: [0, .31, 0], rot: [0, 0, 0], color: '#3a2a1a' }] },
+              { name: 'A three-legged stool', about: 'for guests who never come', placement: 'floor', parts: [
+                { shape: 'cylinder', size: [.22, .22, .05], pos: [0, .45, 0], rot: [0, 0, 0], color: '#7a5638' },
+                { shape: 'cylinder', size: [.025, .03, .45], pos: [.12, .22, 0], rot: [0, 0, .15], color: '#5b3e28' },
+                { shape: 'cylinder', size: [.025, .03, .45], pos: [-.07, .22, .1], rot: [.12, 0, -.1], color: '#5b3e28' },
+                { shape: 'cylinder', size: [.025, .03, .45], pos: [-.07, .22, -.1], rot: [-.12, 0, -.1], color: '#5b3e28' }] },
+              { name: 'A model ship', about: 'it has never seen the sea', placement: 'shelf', parts: [
+                { shape: 'box', size: [.3, .06, .1], pos: [0, .03, 0], rot: [0, 0, 0], color: '#6b4a30' },
+                { shape: 'cylinder', size: [.008, .008, .22], pos: [0, .17, 0], rot: [0, 0, 0], color: '#3f2b1c' },
+                { shape: 'box', size: [.12, .12, .005], pos: [.02, .18, 0], rot: [0, 0, 0], color: '#e3d6bb' }] },
+              { name: 'A woven banner', about: 'green, like its tabard', placement: 'wall', parts: [
+                { shape: 'box', size: [.5, .8, .02], pos: [0, 0, 0], rot: [0, 0, 0], color: '#3f5f48' },
+                { shape: 'cylinder', size: [.015, .015, .62], pos: [0, .41, 0], rot: [0, 0, 1.57], color: '#5b3e28' }] }] },
+    places: ['fire', 'window', 'bookshelf', 'desk', 'easel', 'workbench', 'bedroll', 'courtyard', 'tower'],
+    gallery: [1, 2, 3, 4].map(i => ({ file: `demo/${i}.svg`, title: ['A lighthouse at night', 'The eye of the hearth', 'Two mountains', 'Two moons'][i - 1], time: '' })),
+    projects: [{ slug: 'a', title: 'The Lighthouse Ledger', status: 'in progress' }, { slug: 'b', title: 'A Bestiary of the Keep', status: 'finished' }],
+    writings: [{ title: 'Ode to a Candle', form: 'poem' }, { title: 'Complaint about the Rain', form: 'letter' }],
+    plan: { mood: 'curious' },
+  };
+}
+
+// =====================================================================================
+// HUD
+// =====================================================================================
+const NEED_LOOK = { rest: ['Rest', '#7aa0d8'], warmth: ['Warmth', '#f0a04b'], inspiration: ['Inspiration', '#b48ad8'], spirit: ['Spirit', '#7cc08a'] };
+const GLYPH = { music: '♪', exclaim: '!', question: '?', dots: '…', heart: '♥', zzz: 'z z', spark: '✦', cloud: '☁', sigh: '~', anger: '#' };
+const DOING = { sit: 'sitting', stand: 'standing', gaze: 'gazing out', read: 'reading', write: 'writing', draw: 'painting',
+                work: 'working', pace: 'pacing', sleep: 'asleep', vigil: 'keeping vigil', walk: 'walking' };
+function showState() {
+  const id = state?.identity || {};
+  $('name').textContent = id.name || 'A sleeping knight';
+  $('epithet').textContent = id.epithet || (id.name ? '' : 'not yet woken');
+  const needs = state?.needs;
+  $('needs').innerHTML = needs ? Object.entries(NEED_LOOK).map(([k, [label, color]]) =>
+    `<div class="need">${label}<i><b style="width:${Math.round(needs[k] ?? 0)}%;background:${color}"></b></i></div>`).join('') : '';
+}
+function applyState(next) {
+  const key = JSON.stringify([next?.keep, next?.gallery, next?.projects, next?.writings]);
+  state = next;
+  showState();
+  if (key !== worldKey) { worldKey = key; buildWorld(state); }
+}
+
+// =====================================================================================
+// Camera: follow (default) or free roam with WASD
+// =====================================================================================
+let camMode = 'follow', flyTo = null;
+const keys = new Set(), hipsWorld = new THREE.Vector3(), fwd = new THREE.Vector3(), right = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+// The camera must stay where it can see: inside the hall (open to the south), or inside the courtyard.
+function camBounds(x, z) {
+  return x < -5.2 ? { x0: -10.8, x1: -5.8, z0: -3.9, z1: 3.9 } : { x0: -4.6, x1: 4.6, z0: -3.7, z1: 9 };
+}
+function inside(b, x, z) { return x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1; }
+// A good angle on him: in front and a little to the side if there's room, otherwise
+// whichever angle around him stays inside the keep (so he's never seen through a wall).
+const sight = new THREE.Raycaster();
+function blocked(from, to) {    // how far along from→to the first solid thing is (or null)
+  const d = to.clone().sub(from), len = d.length();
+  sight.set(from, d.normalize()); sight.far = len;
+  const hit = sight.intersectObjects(solids, false)[0];
+  return hit ? hit.distance : null;
+}
+function goodView() {
+  K.J.hips.getWorldPosition(hipsWorld);
+  const b = camBounds(hipsWorld.x, hipsWorld.z), eye = hipsWorld.clone(); eye.y += .4;
+  for (const dist of [3.6, 2.7, 2.0, 1.5]) {
+    for (const turn of [.55, -.55, 1.2, -1.2, 1.9, -1.9, 2.6, -2.6, PI]) {
+      const a = yaw + turn, off = new THREE.Vector3(Math.sin(a) * dist, .95, Math.cos(a) * dist);
+      const at = hipsWorld.clone().add(off);
+      if (inside(b, at.x, at.z) && blocked(eye, at) === null) return off;
+    }
+  }
+  return new THREE.Vector3(0, 1.6, 2.5);
+}
+let lastSightCheck = 0, pullIn = null;
+let lastUserMove = -1e9, settledKey = '';
+controls.addEventListener('start', () => { lastUserMove = performance.now(); flyTo = null; });
+function toast(text) { const t = $('toast'); t.textContent = text; t.style.opacity = 1; clearTimeout(t._h); t._h = setTimeout(() => t.style.opacity = 0, 2000); }
+function setCam(mode, note) {
+  camMode = mode;
+  $('cam').textContent = mode === 'follow' ? '🎥 Following' : '🎥 Free';
+  $('cam').classList.toggle('on', mode === 'follow');
+  controls.minDistance = mode === 'follow' ? 1.3 : .2;
+  if (mode === 'follow') flyTo = goodView();
+  $('help').innerHTML = (mode === 'follow'
+    ? '<b>Following the knight.</b> Drag to swing around him, scroll or pinch to zoom.'
+    : '<b>Free camera.</b> WASD or arrows to move, Q / E down and up, drag to look.')
+    + '<br>Press <b>F</b> to switch. Click things to learn what they are.';
+  if (note) toast(note);
+}
+function updateCamera(dt) {
+  if (camMode === 'follow') {
+    K.J.hips.getWorldPosition(hipsWorld);
+    const want = hipsWorld.clone(); want.y += lie > .5 ? .05 : .15;
+    const before = controls.target.clone();
+    controls.target.lerp(want, 1 - Math.exp(-dt * 4));
+    camera.position.add(controls.target.clone().sub(before));
+    // when he settles somewhere new, glide to a fresh view (unless you've just moved the camera yourself)
+    if (!path.length && goalKey !== settledKey && performance.now() - lastUserMove > 6000) { settledKey = goalKey; flyTo = goodView(); }
+    if (flyTo) {
+      const offset = camera.position.clone().sub(controls.target).lerp(flyTo, 1 - Math.exp(-dt * 2.5));
+      camera.position.copy(controls.target).add(offset);
+      if (offset.distanceTo(flyTo) < .05) flyTo = null;
+    }
+    // if something gets between the camera and him, come in closer (checked a few times a second)
+    const nowT = performance.now();
+    if (nowT - lastSightCheck > 200) {
+      lastSightCheck = nowT;
+      const hitAt = blocked(controls.target, camera.position);
+      pullIn = hitAt === null ? null : Math.max(.9, hitAt - .25);
+      if (pullIn !== null && !flyTo && nowT - lastUserMove > 1500 && !path.length) { settledKey = ''; }   // look for a clearer angle
+    }
+    if (pullIn !== null) {
+      const off = camera.position.clone().sub(controls.target);
+      if (off.length() > pullIn) camera.position.copy(controls.target).add(off.setLength(off.length() + (pullIn - off.length()) * Math.min(1, dt * 8)));
+    }
+    // never behind a wall
+    const b = camBounds(hipsWorld.x, hipsWorld.z);
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, b.x0, b.x1);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, b.z0, b.z1);
+    camera.position.y = Math.max(camera.position.y, groundAt(camera.position.x, camera.position.z) + .4);
+  } else {
+    const speed = 3 * dt;
+    camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize(); right.crossVectors(fwd, UP);
+    const move = new THREE.Vector3();
+    if (keys.has('w') || keys.has('arrowup')) move.add(fwd);
+    if (keys.has('s') || keys.has('arrowdown')) move.sub(fwd);
+    if (keys.has('d') || keys.has('arrowright')) move.add(right);
+    if (keys.has('a') || keys.has('arrowleft')) move.sub(right);
+    if (move.lengthSq()) move.normalize().multiplyScalar(speed);
+    if (keys.has('e')) move.y += speed;
+    if (keys.has('q')) move.y -= speed;
+    camera.position.add(move); controls.target.add(move);
+    const cx = THREE.MathUtils.clamp(camera.position.x, -12, 8), cz = THREE.MathUtils.clamp(camera.position.z, -7, 9);
+    controls.target.x += cx - camera.position.x; controls.target.z += cz - camera.position.z;
+    camera.position.x = cx; camera.position.z = cz;
+    if (camera.position.y < .3) { controls.target.y += .3 - camera.position.y; camera.position.y = .3; }
+    if (camera.position.y > 7) { controls.target.y -= camera.position.y - 7; camera.position.y = 7; }
+  }
+}
+const MOVE_KEYS = ['w', 'a', 's', 'd', 'q', 'e', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+addEventListener('keydown', ev => {
+  if (ev.target.tagName === 'SELECT') return;
+  const k = ev.key.toLowerCase();
+  if (k === 'f') return setCam(camMode === 'follow' ? 'free' : 'follow');
+  if (MOVE_KEYS.includes(k)) {
+    ev.preventDefault();
+    if (camMode === 'follow' && k !== 'q' && k !== 'e') setCam('free', 'Free camera (F to follow again)');
+    keys.add(k);
+  }
+});
+addEventListener('keyup', ev => keys.delete(ev.key.toLowerCase()));
+addEventListener('blur', () => keys.clear());
+$('cam').onclick = e => { setCam(camMode === 'follow' ? 'free' : 'follow'); e.currentTarget.blur(); };
+$('helpbtn').onclick = () => { const h = $('help'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
+
+// click on something to learn what it is
+const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
+let downAt = null, cardTimer = 0;
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+  pointer.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(pointer, camera);
+  const hit = ray.intersectObjects([K.hit, ...clickables], false)[0];
+  const card = $('card');
+  if (!hit) { card.style.display = 'none'; return; }
+  if (hit.object.userData.knight) {
+    const id = state?.identity || {}, mood = state?.plan?.mood;
+    const likes = (state?.interests || []).slice(0, 3).join(', ');
+    card.innerHTML = `${esc(id.name || 'The knight')}<small>${mood ? 'feeling ' + esc(mood) : ''}${likes ? ' · on its mind: ' + esc(likes) : ''}</small>`;
+  } else {
+    const i = hit.object.userData.info;
+    card.innerHTML = `${esc(i.title)}${i.sub ? `<small>${esc(i.sub)}</small>` : ''}`;
+  }
+  card.style.display = 'block'; clearTimeout(cardTimer); cardTimer = setTimeout(() => card.style.display = 'none', 5000);
+});
+
+// =====================================================================================
+// Quality: automatic by default, so slow devices stay smooth rather than stutter
+// =====================================================================================
+const QUALITY = {
+  high:   { ratio: Math.min(devicePixelRatio, 2), shadows: true, map: 1024, hz: 30, embers: 70 },
+  medium: { ratio: Math.min(devicePixelRatio, 1.25), shadows: true, map: 512, hz: 12, embers: 45 },
+  low:    { ratio: Math.min(devicePixelRatio, 1) * .75, shadows: false, map: 256, hz: 0, embers: 25 },
+};
+const LEVELS = ['low', 'medium', 'high'];
+let qChoice = store.get('keep-quality') || 'auto';
+let qLevel = qChoice !== 'auto' ? qChoice : (matchMedia('(pointer: coarse)').matches ? 'medium' : 'high');
+let qStepsUp = 0, fpsFrames = 0, fpsSince = performance.now(), lastChange = 0, goodWindows = 0;
+function applyQuality(level) {
+  qLevel = level; const q = QUALITY[level];
+  renderer.setPixelRatio(q.ratio);
+  if (fireLight.castShadow !== q.shadows || fireLight.shadow.mapSize.x !== q.map) {
+    fireLight.castShadow = q.shadows;
+    fireLight.shadow.mapSize.set(q.map, q.map);
+    if (fireLight.shadow.map) { fireLight.shadow.map.dispose(); fireLight.shadow.map = null; }
+  }
+  emberGeo.setDrawRange(0, q.embers);
+  shadowsDirty = true; resize();
+}
+$('quality').value = qChoice;
+$('quality').onchange = e => {
+  qChoice = e.target.value; store.set('keep-quality', qChoice);
+  if (qChoice !== 'auto') applyQuality(qChoice);
+  e.target.blur();
+};
+function watchSpeed(now) {
+  fpsFrames++;
+  if (now - fpsSince < 2500) return;
+  const fps = fpsFrames * 1000 / (now - fpsSince);
+  fpsFrames = 0; fpsSince = now;
+  if (qChoice !== 'auto' || document.hidden) return;
+  const i = LEVELS.indexOf(qLevel);
+  if (fps < 40 && i > 0 && now - lastChange > 4000) { applyQuality(LEVELS[i - 1]); lastChange = now; goodWindows = 0; }
+  else if (fps > 57) {
+    if (++goodWindows >= 4 && i < 2 && qStepsUp < 2 && now - lastChange > 20000) { applyQuality(LEVELS[i + 1]); qStepsUp++; lastChange = now; goodWindows = 0; }
+  } else goodWindows = 0;
+}
+
+// =====================================================================================
+// The main loop
+// =====================================================================================
+const clock = new THREE.Clock();
+const pos = new THREE.Vector3(-2.2, 0, 2.7);
+let yaw = PI / 2, lie = 1, phase = 0, path = [], goalKey = '', shadowsDirty = true, lastShadow = 0, swordOut = null;
+const bubble = $('bubble'), headWorld = new THREE.Vector3();
+let nextBubble = 1500, bubbleUntil = 0, lastCaption = '';
+
+function setSword(planted) {
+  if (planted === swordOut) return;
+  swordOut = planted;
+  if (planted) { K.root.add(K.sword); K.sword.position.set(0, .86, .31); K.sword.rotation.set(0, 0, 0); }
+  else { K.scabbard.add(K.sword); K.sword.position.set(0, -.05, 0); K.sword.rotation.set(0, 0, 0); }
+}
+setSword(false);
+
+function tick(nowMs) {
+  const dt = Math.min(clock.getDelta(), .25), t = clock.elapsedTime, now = Date.now();
+  const k = 1 - Math.exp(-dt * 7);
+  const goal = current(now);
+  const spot0 = SPOTS[goal.place] || SPOTS.fire;
+  const spot = (goal.action === 'sit' || goal.action === 'read') && spot0.sit ? { ...spot0.sit, label: spot0.label } : spot0;
+  const target = new THREE.Vector3(spot.p[0], 0, spot.p[1]);
+  if (goal.action === 'pace') {
+    const side = new THREE.Vector3(Math.cos(spot.yaw), 0, -Math.sin(spot.yaw));
+    target.addScaledVector(side, Math.sin(t * .4) * .8);
+  }
+  const key = goal.place + '|' + goal.action;
+  if (key !== goalKey) {
+    if (!goalKey) { pos.copy(target); yaw = spot.yaw; lie = goal.action === 'sleep' ? 1 : 0; path = []; }   // first frame: just be there
+    else path = route(pos, target);
+    goalKey = key;
+  }
+  // walk the path, or settle into the pose
+  let pose, moving = false;
+  if (goal.action === 'pace' && !path.length && lie < .05) {     // pacing back and forth on the spot
+    const before = pos.clone(); pos.copy(target);
+    const v = pos.distanceTo(before);
+    if (v > 1e-4) {
+      moving = v > .002; phase += v * 6.2;
+      const want = Math.atan2(pos.x - before.x, pos.z - before.z);
+      yaw += Math.atan2(Math.sin(want - yaw), Math.cos(want - yaw)) * Math.min(1, dt * 5);
+    }
+    pose = poseFor(moving ? 'walk' : 'stand', spot, t, phase);
+  } else if (path.length) {
+    if (lie > .05) pose = poseFor('stand', spot, t, phase);    // get up first
+    else {
+      const next = path[0], d = next.clone().sub(pos); d.y = 0;
+      const dist = d.length(), step = Math.min(dist, 1.0 * dt);
+      if (dist < .03) path.shift();
+      else {
+        pos.addScaledVector(d.normalize(), step); phase += step * 6.2; moving = true;
+        const want = Math.atan2(d.x, d.z);
+        yaw += Math.atan2(Math.sin(want - yaw), Math.cos(want - yaw)) * Math.min(1, dt * 6);
+      }
+      pose = poseFor('walk', spot, t, phase);
+    }
+  } else {
+    pose = poseFor(goal.action, spot, t, phase);
+    yaw += Math.atan2(Math.sin(spot.yaw - yaw), Math.cos(spot.yaw - yaw)) * Math.min(1, dt * 4);
+  }
+  setSword(!!pose.sword && !moving);
+  lie += ((pose.lie ? 1 : 0) - lie) * k * .6;
+
+  K.root.position.set(pos.x, groundAt(pos.x, pos.z) + lie * .17, pos.z);
+  K.root.quaternion.setFromEuler(_e.set(-lie * PI / 2, 0, 0, 'YXZ')).premultiply(_qa.setFromAxisAngle(UP, yaw));
+  K.J.hips.position.y += (pose.hipsY - K.J.hips.position.y) * k;
+  for (const name of JOINTS) K.J[name].quaternion.slerp(toQ(pose.joints[name] || [0, 0, 0]), k);
+  if (pose.ik) {
+    K.root.updateMatrixWorld(true);
+    for (const side of ['L', 'R']) if (pose.ik[side]) {
+      const [qa, qb] = reach(K.arms[side], new THREE.Vector3(...pose.ik[side]));
+      K.J['sh' + side].quaternion.slerp(qa, k); K.J['el' + side].quaternion.slerp(qb, k);
+    }
+  }
+  const grip = pose.grip ?? .35;
+  for (const arm of Object.values(K.arms)) {
+    const c = -arm.side * grip;
+    arm.knuckle.rotation.z += (c - arm.knuckle.rotation.z) * k;
+    arm.tip.rotation.z += (c * 1.1 - arm.tip.rotation.z) * k;
+    arm.thumb.rotation.x += (-.5 - grip * .5 - arm.thumb.rotation.x) * k;
+  }
+  K.book.visible = !!pose.book && !moving;
+  if (K.book.visible) { K.book.position.set(...pose.book); K.book.rotation.set(-.5, 0, 0); }
+  for (const [name, tool] of Object.entries(K.tools)) tool.visible = pose.tool === name && !moving;
+
+  // the cape stirs, more when walking
+  const cp = K.cape.geometry.attributes.position, rest = K.cape.userData.rest;
+  for (let i = 0; i < cp.count; i++) {
+    const x = rest[i * 3], v = -rest[i * 3 + 1] / 1.02;
+    cp.setZ(i, -v * v * (.1 + (moving ? .12 : 0)) * (1 + Math.sin(t * 1.7 + x * 6 + v * 3) * .35) - v * .05);
+  }
+  cp.needsUpdate = true; K.cape.geometry.computeVertexNormals();
+
+  // fire (it flares when the knight is truly awake and thinking)
+  const flare = goal.awake ? 1.35 : 1, warm = hearthDone ? 1.15 : 1;
+  fireLight.intensity = (32 + Math.sin(t * 9) * 3 + Math.sin(t * 23) * 2 + Math.sin(t * 4.1) * 2) * flare * warm;
+  for (const f of flames) {
+    const s = (.8 + Math.sin(t * f.userData.speed + f.userData.phase) * .2 + Math.random() * .06) * flare;
+    f.scale.set(1, s, 1); f.position.y = .15 + f.userData.h * s / 2; f.rotation.y += dt * 1.5;
+  }
+  candle.intensity = 1.1 + Math.sin(t * 13) * .15; candleFlame.scale.y = 1 + Math.sin(t * 17) * .2;
+  for (let i = 0; i < EMBERS; i++) {
+    emberLife[i] += dt * (.25 + (i % 5) * .05) * flare; if (emberLife[i] > 1) emberLife[i] = 0;
+    const L = emberLife[i], a = i * 2.39;
+    emberPos[i * 3] = Math.cos(a) * .12 + Math.sin(t + i) * .1 * L;
+    emberPos[i * 3 + 1] = .25 + L * 1.3;
+    emberPos[i * 3 + 2] = Math.sin(a) * .12 + Math.cos(t * .8 + i) * .1 * L;
+  }
+  emberGeo.attributes.position.needsUpdate = true;
+
+  // speech bubble over its helm
+  K.J.head.getWorldPosition(headWorld); headWorld.y += lie > .5 ? .35 : .45;
+  headWorld.project(camera);
+  bubble.style.left = ((headWorld.x + 1) / 2 * innerWidth) + 'px';
+  bubble.style.top = ((1 - headWorld.y) / 2 * innerHeight) + 'px';
+  let show = false;
+  if (goal.awake) { show = true; bubble.textContent = '.'.repeat(1 + Math.floor(t * 2) % 3); }
+  else if (!moving && nowMs > nextBubble) { bubble.textContent = GLYPH[goal.emote] || '…'; bubbleUntil = nowMs + 3800; nextBubble = nowMs + 9000 + Math.random() * 7000; }
+  if (!goal.awake) show = !moving && nowMs < bubbleUntil;
+  bubble.style.opacity = show && headWorld.z < 1 ? 1 : 0;
+  bubble.className = 'bubble ' + (goal.emote || '');
+
+  // caption and badge
+  const first = (state?.identity?.name || 'The knight').split(' ')[0];
+  const doing = moving && goal.action !== 'pace' ? `walking ${(spot.label || '').replace(/^\w+ the /, 'to the ')}`
+              : goal.place.startsWith('repair:') ? spot.label : `${DOING[goal.action] || goal.action} ${spot.label || ''}`;
+  const caption = state?.identity?.name || DEMO ? `${first} is ${doing.trim()}.${goal.note ? `<em>${esc(goal.note)}</em>` : ''}`
+                                                : `A knight sleeps in the ruined keep.<em>${esc(goal.note)}</em>`;
+  if (caption !== lastCaption) { $('caption').innerHTML = caption; lastCaption = caption; }
+  $('badge').className = goal.awake ? 'awake' : '';
+  $('badge').textContent = goal.awake ? 'awake, thinking' : (state?.plan?.mood ? `feeling ${state.plan.mood}` : 'resting');
+
+  updateCamera(dt);
+  controls.update();
+  // shadows: redrawn a few times a second (the light itself flickers every frame)
+  const hz = QUALITY[qLevel].hz;
+  if (fireLight.castShadow && (shadowsDirty || (hz && nowMs - lastShadow > 1000 / hz))) {
+    renderer.shadowMap.needsUpdate = true; lastShadow = nowMs; shadowsDirty = false;
+  }
+  renderer.render(scene, camera);
+  watchSpeed(nowMs);
+  requestAnimationFrame(tick);
+}
+
+// =====================================================================================
+// Start
+// =====================================================================================
+async function refresh() {
+  if (DEMO || ASSETS === null) return;
+  try {
+    const r = await fetch(`${ASSETS}data/state.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (r.ok) applyState(await r.json());
+  } catch { /* the knight is between pages; try again later */ }
+}
+updateSky(); setInterval(updateSky, 60000);
+applyQuality(qLevel);
+setCam('follow');
+if (DEMO) state = demoState();
+applyState(state || {});
+refresh(); setInterval(refresh, 120000);
+resize();
+requestAnimationFrame(tick);
+window.__keep = { K, camera, controls, goodView, get quality() { return qLevel; }, setQuality: applyQuality };
+</script>
+</body>
+</html>
