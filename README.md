@@ -50,9 +50,12 @@ It runs entirely on free tiers:
 5. **Wake it for the first time**: in the repository's **Actions** tab, open
    *The knight wakes*, choose *Run workflow*. It picks its name on this first wake-up.
 
-From then on it wakes by itself: a short wake-up every two hours, and a long evening by
-the fire at about 9:40 PM US Eastern (change the second `cron` line in `wake.yml` to move it;
-times there are UTC).
+From then on it wakes by itself: a short wake-up about every two hours, and a long evening
+by the fire at about 9:40 PM US Eastern. GitHub drops some scheduled runs, so the workflow
+checks in three times an hour and the knight only wakes when it's due; a check-in that
+isn't due takes a few seconds and commits nothing. To move the evening, change the three
+evening `cron` lines in `wake.yml` and the same three times in its `KNIGHT_SESSION` line
+(times there are UTC).
 
 ## Talking to it
 

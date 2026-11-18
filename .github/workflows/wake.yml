@@ -2,9 +2,18 @@ name: The knight wakes
 
 on:
   schedule:
-    - cron: "17 */2 * * *"   # a short wake-up every two hours
-    - cron: "43 2 * * *"     # a long evening by the fire (about 9:40 PM US Eastern)
-  workflow_dispatch:          # the "Run workflow" button: wake it by hand
+    # GitHub runs scheduled jobs "best effort" and often drops some, so this checks in
+    # three times an hour; the knight itself only wakes once ~2 hours have passed
+    # (see WAKE_GAP_MINUTES in brain/knight.py). A check-in that isn't due takes a few
+    # seconds and commits nothing.
+    - cron: "7,27,47 * * * *"
+    # The long evening by the fire, about 9:40 PM US Eastern (times here are UTC).
+    # Three tries in case one is dropped; it only happens once a night.
+    # If you change these, change the same three lines in KNIGHT_SESSION below.
+    - cron: "37 2 * * *"
+    - cron: "17 3 * * *"
+    - cron: "57 3 * * *"
+  workflow_dispatch:          # the "Run workflow" button: wake it by hand (always wakes)
     inputs:
       session:
         description: "How long should it stay awake?"
@@ -31,7 +40,8 @@ jobs:
       - name: Wake the knight
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          KNIGHT_SESSION: ${{ github.event.schedule == '43 2 * * *' && 'long' || inputs.session || 'short' }}
+          KNIGHT_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '' }}
+          KNIGHT_SESSION: ${{ (github.event.schedule == '37 2 * * *' || github.event.schedule == '17 3 * * *' || github.event.schedule == '57 3 * * *') && 'long' || inputs.session || 'short' }}
         run: |
           git config user.name "the-knight"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import craft  # noqa: E402
 import life  # noqa: E402
 import site_builder  # noqa: E402
-from llm import CHECK_MODEL, Brain, FakeBrain, LLMError, parse_json  # noqa: E402
+from llm import CHECK_MODEL, TPM_LIMIT, Brain, FakeBrain, LLMError, parse_json  # noqa: E402
 
 ROOT = Path(os.environ.get("KNIGHT_ROOT", Path(__file__).resolve().parent.parent))
 WORLD = ROOT / "world"
@@ -35,6 +35,14 @@ DOCS = ROOT / "docs"
 DAILY_BUDGET = int(os.environ.get("KNIGHT_DAILY_BUDGET", "175000"))  # of 200,000 free
 LONG_ROUNDS = int(os.environ.get("KNIGHT_LONG_ROUNDS", "4"))
 ROUND_PAUSE = int(os.environ.get("KNIGHT_ROUND_PAUSE", "180"))
+# GitHub's schedule checks in every 20 minutes (it often drops runs); the knight only
+# actually wakes once this long has passed since it last woke, so it keeps to ~2 hours.
+WAKE_GAP_MINUTES = int(os.environ.get("KNIGHT_WAKE_GAP", "110"))
+LONG_GAP_HOURS = 20  # the long evening session happens at most once a night
+# Workshop pages: what the knight is asked to stay under, and the most that is kept.
+# Small enough that rewriting a whole page fits in one request on Groq's free plan.
+PAGE_TARGET = 6000
+PAGE_LIMIT = 7500
 
 MOODS = ["content", "curious", "melancholy", "restless", "absorbed", "proud",
          "delighted", "wistful", "frustrated", "sleepy", "amused", "lonely"]
@@ -76,6 +84,10 @@ Avoid stock fantasy phrasing (ancient, whispers of, echoes, forgotten battles, t
 years, the dance of the flames), grand poetic filler, and uplifting morals at the end. Use
 plain punctuation, not dashes. Short sentences are fine. Humour is welcome. Never sound
 like a narrator describing a knight; sound like yourself.
+Write the way a person tells a friend about their day: everyday modern words, one clear
+point per sentence, easy to follow on a first read. No old-fashioned or knightly phrasing.
+Mention your surroundings (the fire, the candle, the stone, your armour) only when something
+actually happened with them, not to set a scene.
 
 One rule of the keep: you never draw, build or describe religious symbols or imagery of
 any kind (no crosses, crucifixes, holy symbols, halos, temples or the like). Everything
@@ -148,6 +160,26 @@ def ago(stamp):
     return f"{int(hours // 24)} days ago"
 
 
+def minutes_since(stamp):
+    """Minutes since an ISO timestamp, or None if there isn't a readable one."""
+    try:
+        return (now() - dt.datetime.fromisoformat(stamp)).total_seconds() / 60
+    except (TypeError, ValueError):
+        return None
+
+
+def wake_is_due(session):
+    """Scheduled runs check in often; only wake if it's actually time. Runs started by
+    hand (or locally) always wake."""
+    if not os.environ.get("KNIGHT_SCHEDULED"):
+        return True
+    if session == "long":
+        since = minutes_since(load("memory.json", {}).get("last_long"))
+        return since is None or since >= LONG_GAP_HOURS * 60
+    since = minutes_since(load("identity.json", {}).get("last_wake"))
+    return since is None or since >= WAKE_GAP_MINUTES
+
+
 def checkpoint(message):
     """In the cloud, save progress to GitHub so the website sees it mid-session."""
     if os.environ.get("GITHUB_ACTIONS") != "true":
@@ -205,6 +237,8 @@ class Knight:
             items = list(sheet.get(section) or []) + [a["text"] for a in added.get(section, [])]
             if items:
                 lines.append(f"{section.capitalize()}: " + "; ".join(items))
+        lines.append("(Your traits and quirks are who you are, not things to mention. Let one "
+                     "show only when it really comes up, not every time you write.)")
         return "\n".join(lines)
 
     def check(self, kind, title, content):
@@ -485,15 +519,18 @@ class Knight:
         project = next((p for p in projects if p["slug"] == wanted and p.get("status") != "finished"), None)
         rules = ("A single self-contained HTML page with inline CSS and JavaScript. It must not load "
                  "anything from the internet (no external scripts, fonts, images or requests) and "
-                 "must not ask visitors for any information. Keep it under 12,000 characters.")
+                 f"must not ask visitors for any information. Keep it under {PAGE_TARGET:,} "
+                 "characters.")
         if project:
             current = (DOCS / "workshop" / f"{project['slug']}.html").read_text(encoding="utf-8")
-            current = current[:12000]
+            current = current.replace(craft.GUARD, "")[:PAGE_LIMIT]
             prompt = (f"You return to your workshop project '{project['title']}'.\n"
                       f"Your notes on it: {project.get('next', '')}\nToday's intention: "
                       f"{decision.get('intention', '')}\n\nThe current page:\n```html\n{current}\n```\n\n"
-                      f"Improve or extend it as you see fit. {rules}\nReply with 'TITLE: <title>', "
-                      "'ABOUT: <one line on what changed>', then the full new page in a ```html block.")
+                      f"Improve or extend it as you see fit. {rules} If it is already near that "
+                      "size, trim or simplify something before adding more.\nReply with "
+                      "'TITLE: <title>', 'ABOUT: <one line on what changed>', then the full new "
+                      "page in a ```html block.")
         else:
             prompt = (f"You go to your workshop to build something new: {decision['subject']}.\n"
                       f"Intention: {decision.get('intention', '')}\n{rules}\n"
@@ -501,12 +538,22 @@ class Knight:
                       "interactive map, a strange machine. Make it look like yours.\n"
                       "Reply with 'TITLE: <title>', 'ABOUT: <one line on what it is>', then the "
                       "page in a ```html block.")
-        reply = self.ask("build", prompt, max_tokens=4200, json_mode=False)
+        # Groq's free plan counts the prompt plus max_tokens against ~8,000 tokens a minute,
+        # so give the reply all the room that's left (the model's hidden thinking uses some).
+        prompt_estimate = (len(SEED) + len(self.who_am_i()) + len(prompt)) // 3 + 50
+        room = max(2500, min(7000, TPM_LIMIT - prompt_estimate))
+        reply = self.ask("build", prompt, max_tokens=room, json_mode=False)
         title = craft.header_value(reply, "TITLE") or (project or {}).get("title") or decision["subject"]
         about = craft.header_value(reply, "ABOUT")
+        if self.brain.last_finish == "length":  # cut off mid-page: keep what was there before
+            return {"summary": f"ran out of time before '{title}' was finished, so left it as it was"
+                               + ("; it may need to be simpler" if project else "")}
         page = craft.sanitize_html(reply)
         if not page:
             return {"summary": f"hammered at '{title}' but it would not hold together"}
+        if len(page) > PAGE_LIMIT + len(craft.GUARD):
+            return {"summary": f"built '{title}' but it grew too big for the shelf; "
+                               "kept the old version and will need to make it smaller"}
         allowed, why = self.check("web page (HTML code)", title, page)
         if not allowed:
             print(f"  [page held back: {why}]")
@@ -534,16 +581,25 @@ class Knight:
         project_part = ("\nYou worked on a workshop project; say in project_note what you'd like to "
                         "do next with it, and set project_done true if you consider it finished."
                         ) if getattr(self, "last_project", None) else ""
+        length = ("40-160 words; it was a long evening, so there may be more to say"
+                  if self.session == "long" else
+                  "15-90 words; one or two lines is fine when not much happened")
         data = self.ask("reflect", (
             f"{self.context(None, letter)}\n\nWhat you did just now:\n{happened}\n{letter_part}"
-            f"{project_part}\n\nBefore you settle, write in your diary (first person, 50-160 "
-            "words, honest, in your own voice). Write about what is new or different since your "
-            "last entry: what you did, noticed, thought or changed your mind about. Do not retell "
-            "details your recent entries already cover; a running habit or joke may come back "
-            "now and then, not every time. Then say how you feel, which few topics are on "
-            "your mind now, and plan the next two hours or so: 3-6 steps of where you'll be in "
-            "the keep and what you'll be doing there (the keeper sees this play out). Mind how "
-            "you feel: sleeping restores rest, the fire restores warmth.\n"
+            f"{project_part}\n\nBefore you settle, write in your diary (first person, honest, "
+            f"in your own voice, {length}). Write only about what is new since your last entry: "
+            "what you did, noticed, thought or changed your mind about. Let the length follow "
+            "what happened; do not pad a quiet hour.\n"
+            "Look at your recent diary above first. Do not reuse its images, comparisons or "
+            "phrases, and do not open the same way it did. A running joke may come back once in "
+            "a while, not in back-to-back entries.\n"
+            "Keep the diary to what happened. Do not end it with how you feel or what you will "
+            "do next: your mood and plan go in their own fields below, and the keeper already "
+            "sees those.\n"
+            "Then give your mood, which few topics are on your mind now, and plan the next two "
+            "hours or so: 3-6 steps of where you'll be in the keep and what you'll be doing "
+            "there (the keeper sees this play out). Mind how you feel: sleeping restores rest, "
+            "the fire restores warmth.\n"
             f"mood: one of {MOODS}. emote: one of {EMOTES}. place: one of {self.plan_places()}. "
             f"action: one of {ACTIONS}.\n"
             "self_description: rewrite it only if you feel you have changed; else ''.\n"
@@ -679,11 +735,6 @@ def main():
     parser.add_argument("--fake", action="store_true", help="test without calling any model")
     args = parser.parse_args()
 
-    WORLD.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY"):
-        save("meta.json", {"repo": os.environ["GITHUB_REPOSITORY"],
-                           "branch": os.environ.get("GITHUB_REF_NAME", "main")})
-
     usage = load("usage.json", {})
     today = now().strftime("%Y-%m-%d")
     if usage.get("date") != today:
@@ -693,6 +744,15 @@ def main():
         print("The knight sleeps deeply today (daily allowance nearly spent).")
         return
     session = args.session if remaining > 60000 else "short"
+    # Before anything is written: a scheduled check-in that isn't due leaves no trace.
+    if not wake_is_due(session):
+        print(f"Not time yet ({session} wake-up); the knight sleeps on.")
+        return
+
+    WORLD.mkdir(parents=True, exist_ok=True)
+    if os.environ.get("GITHUB_REPOSITORY"):
+        save("meta.json", {"repo": os.environ["GITHUB_REPOSITORY"],
+                           "branch": os.environ.get("GITHUB_REF_NAME", "main")})
 
     if args.fake:
         brain = FakeBrain()
@@ -703,6 +763,8 @@ def main():
         brain = Brain(key)
 
     knight = Knight(brain, session)
+    if session == "long":  # counted even if it fails, so a broken evening isn't retried all night
+        knight.memory["last_long"] = iso()
     knight.set_status(True, "fire", "sit", "dots", "stirring by the fire")
     checkpoint("The knight stirs")
     try:

@@ -29,6 +29,7 @@ class Brain:
         self.key = api_key
         self.windows = {}  # model -> [(timestamp, tokens)]
         self.tokens_by_model = {}
+        self.last_finish = None  # "length" when the last reply was cut off by max_tokens
 
     @property
     def tokens_used(self):
@@ -93,6 +94,7 @@ class Brain:
             used = (data.get("usage") or {}).get("total_tokens", estimate)
             self.windows[model].append((time.time(), used))
             self.tokens_by_model[model] = self.tokens_by_model.get(model, 0) + used
+            self.last_finish = data["choices"][0].get("finish_reason")
             return data["choices"][0]["message"].get("content") or ""
         raise LLMError(f"gave up after retries ({last_error})")
 
