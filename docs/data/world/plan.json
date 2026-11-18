@@ -1,0 +1,34 @@
+{
+  "start": "2026-11-18T20:36:52+00:00",
+  "mood": "content",
+  "steps": [
+    {
+      "place": "repair:doorway",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "continue aligning stones"
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "shape a wooden frame for the glass"
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "record measurements and progress"
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "heart",
+      "note": "take a short break"
+    }
+  ]
+}

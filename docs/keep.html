@@ -799,6 +799,11 @@ function showState() {
 // (rather than getting up from the bedroll and walking over, which looked like waking up).
 let loading = !state && !DEMO && ASSETS !== null, snapCamera = false;
 function applyState(next, fetched = false) {
+  // a cached copy can be older than what the page already has; never step back in time
+  if (fetched && state?.exported && next?.exported && next.exported < state.exported) {
+    if (loading) { loading = false; goalKey = ''; snapCamera = true; }
+    return;
+  }
   const key = JSON.stringify([next?.keep, next?.gallery, next?.projects, next?.writings]);
   if (loading && fetched) { loading = false; goalKey = ''; snapCamera = true; }
   state = next;
@@ -1151,7 +1156,7 @@ applyQuality(qLevel);
 setCam('follow');
 if (DEMO) state = demoState();
 applyState(state || {});
-refresh(); setInterval(refresh, 120000);
+refresh(); setInterval(refresh, 60000);
 resize();
 requestAnimationFrame(tick);
 window.__keep = { K, camera, controls, goodView, get quality() { return qLevel; }, setQuality: applyQuality };

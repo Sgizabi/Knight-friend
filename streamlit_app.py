@@ -4,6 +4,8 @@ import base64
 import datetime as dt
 import json
 import os
+import sys
+import time
 import urllib.request
 from html import escape
 from pathlib import Path
@@ -45,21 +47,45 @@ def local_meta():
 
 
 META = local_meta()
-RAW = (f"https://raw.githubusercontent.com/{META['repo']}/{META.get('branch', 'main')}"
-       if META.get("repo") and "KNIGHT_ROOT" not in os.environ else "")
+REMOTE = bool(META.get("repo")) and "KNIGHT_ROOT" not in os.environ
+RAW = f"https://raw.githubusercontent.com/{META['repo']}/{META.get('branch', 'main')}" if REMOTE else ""
+PAGES = ""  # the knight's own website (GitHub Pages), which also carries a copy of world/
+if REMOTE:
+    _owner, _repo = META["repo"].split("/", 1)
+    PAGES = f"https://{_owner.lower()}.github.io/{_repo}/"
+
+
+def _fetch(url):
+    request = urllib.request.Request(url, headers={"User-Agent": "knight-keep-home/1.0"})
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return response.read().decode("utf-8")
 
 
 @st.cache_data(ttl=120, show_spinner=False)
-def read_text(rel):
-    """Fresh from GitHub when deployed (the knight commits there), else from disk."""
+def read_source(rel):
+    """(text, where it came from). Fresh from the knight's website first, then GitHub's raw
+    files, then this app's own copy of the repository (which can be hours old)."""
+    remote = []
+    if PAGES:
+        site_path = rel[len("docs/"):] if rel.startswith("docs/") else f"data/{rel}"
+        remote.append(("its website", f"{PAGES}{site_path}?t={int(time.time())}"))
     if RAW:
+        remote.append(("GitHub", f"{RAW}/{rel}"))
+    for label, url in remote:
         try:
-            with urllib.request.urlopen(f"{RAW}/{rel}", timeout=10) as response:
-                return response.read().decode("utf-8")
-        except Exception:
-            pass
+            return _fetch(url), label
+        except Exception as err:  # shows in the app's logs (Manage app → logs)
+            print(f"[home page] couldn't read {rel} from {label}: {err}", file=sys.stderr)
     path = ROOT / rel
-    return path.read_text(encoding="utf-8") if path.exists() else None
+    if path.exists():
+        if remote:
+            print(f"[home page] using this app's saved copy of {rel}", file=sys.stderr)
+        return path.read_text(encoding="utf-8"), "a saved copy"
+    return None, ""
+
+
+def read_text(rel):
+    return read_source(rel)[0]
 
 
 def read_json(rel, default):
@@ -87,8 +113,10 @@ def when(stamp):
     except (TypeError, ValueError):
         return ""
     hours = (dt.datetime.now(dt.timezone.utc) - moment).total_seconds() / 3600
-    if hours < 1:
+    if hours < 1 / 30:
         return "just now"
+    if hours < 1:
+        return f"{int(hours * 60)} min ago"
     if hours < 24:
         return f"{int(hours)}h ago"
     days = int(hours // 24)
@@ -111,15 +139,22 @@ if META.get("repo"):
 
 # ------------------------------------------------------------------ the keep, in 3D
 # The same page the knight's website serves, with its current state handed in directly.
-# It keeps itself up to date by re-reading the knight's state from GitHub every two minutes.
 keep_state = read_json("docs/data/state.json", {})
 svgs = {g["file"]: read_text(f"docs/{g['file']}") or "" for g in keep_state.get("gallery", [])}
 keep_page = (APP / "docs" / "keep.html").read_text(encoding="utf-8")
-payload = json.dumps({"state": keep_state, "svgs": svgs, "asset_base": f"{RAW}/docs/" if RAW else None})
+# In the browser the keep re-reads its state from the website (GitHub Pages) every minute.
+payload = json.dumps({"state": keep_state, "svgs": svgs,
+                      "asset_base": PAGES or (f"{RAW}/docs/" if RAW else None)})
 components.html(keep_page.replace("__DATA__", payload.replace("</", "<\\/")), height=600)
-if pages_url:
-    st.markdown(f"<p class='muted' style='text-align:center'>Click the keep to use the keyboard · "
-                f"<a href='{pages_url}keep.html' target='_blank'>open it full screen</a></p>", unsafe_allow_html=True)
+# How fresh this page is, and where it got its data (handy when something looks out of date).
+sources = sorted({read_source(rel)[1] for rel in ("world/identity.json", "world/recent.json",
+                                                  "docs/data/state.json")} - {""})
+fresh = f"Last woke {when(identity.get('last_wake', '')) or '—'}"
+if sources:
+    fresh += " · read from " + " and ".join(sources)
+links = f" · <a href='{pages_url}keep.html' target='_blank'>open it full screen</a>" if pages_url else ""
+st.markdown(f"<p class='muted' style='text-align:center'>{escape(fresh)} · Click the keep to use the "
+            f"keyboard{links}</p>", unsafe_allow_html=True)
 
 tabs = st.tabs(["Diary", "Gallery", "Workshop", "Writings", "Mind", "Letters"])
 

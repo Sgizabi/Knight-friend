@@ -42,6 +42,22 @@ PAGE = """<!DOCTYPE html>
 """
 
 
+# What the Streamlit home page reads. A copy goes to docs/data/world/ so GitHub Pages serves
+# it: the home page's server can't always reach GitHub's raw-file server, and when it can't
+# it falls back to its own copy of the repository, which may be hours old.
+MIRRORED = ["identity.json", "memory.json", "plan.json", "status.json", "usage.json",
+            "recent.json", "gallery.json", "writings.jsonl", "replies.jsonl"]
+
+
+def mirror_world(world: Path, docs: Path):
+    target = docs / "data" / "world"
+    target.mkdir(parents=True, exist_ok=True)
+    for name in MIRRORED:
+        source = world / name
+        if source.exists():
+            (target / name).write_bytes(source.read_bytes())
+
+
 def _lines(path):
     if not path.exists():
         return []
@@ -64,6 +80,7 @@ def _json(path, default):
 def build(world: Path, docs: Path):
     docs.mkdir(parents=True, exist_ok=True)
     (docs / ".nojekyll").write_text("", encoding="utf-8")
+    mirror_world(world, docs)
     identity = _json(world / "identity.json", {})
     memory = _json(world / "memory.json", {})
     plan = _json(world / "plan.json", {})
