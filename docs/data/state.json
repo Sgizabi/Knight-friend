@@ -69,17 +69,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-18T21:24:17+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-18T21:24:20+00:00",
+    "place": "repair:doorway",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire"
+    "note": "remove more rubble and widen the gap"
   },
   "needs": {
-    "rest": 88.0,
-    "warmth": 100.0,
+    "rest": 84.9,
+    "warmth": 90.5,
     "inspiration": 58.0,
-    "spirit": 90.0
+    "spirit": 88.3
   },
   "needs_prev": {
     "rest": 88.0,
@@ -87,7 +87,7 @@
     "inspiration": 58.0,
     "spirit": 90.0
   },
-  "needs_at": "2026-11-18T21:24:17+00:00",
+  "needs_at": "2026-11-18T21:24:20+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -176,5 +176,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-18T21:24:17+00:00"
+  "exported": "2026-11-18T21:24:20+00:00"
 }
