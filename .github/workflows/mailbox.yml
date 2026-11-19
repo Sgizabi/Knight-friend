@@ -1,0 +1,41 @@
+name: Mailbox
+run-name: A letter for the knight
+
+# The friends' mailbox on the home page presses this (with its own limited key) to post a
+# letter. The letter is checked again here before it goes into world/inbox/; the knight
+# reads it on its next wake-up. See brain/letterbox.py.
+on:
+  workflow_dispatch:
+    inputs:
+      sender:
+        description: "Who it's from (a first name or nickname)"
+        required: true
+        type: string
+      letter:
+        description: "The letter"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check and post the letter
+        # The letter reaches the script as data (environment variables), never as part of a
+        # command, so nothing written in a letter can run as a command.
+        env:
+          SENDER: ${{ inputs.sender }}
+          LETTER: ${{ inputs.letter }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          git config user.name "the-knight"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python brain/letterbox.py deliver

@@ -6,3 +6,4 @@ __pycache__/
 # Notes for Claude stay on your own computer
 CLAUDE.md
 CLAUDE.local.md
+.streamlit/secrets.toml

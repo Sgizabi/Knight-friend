@@ -2,6 +2,7 @@
 
 import base64
 import datetime as dt
+import hmac
 import json
 import os
 import sys
@@ -286,17 +287,110 @@ with tabs[4]:
         st.markdown(f"It also keeps [its own website]({pages_url}).")
 
 # ------------------------------------------------------------------ letters
+def mailbox_settings():
+    """The friends' mailbox opens once the keeper has put its passcode and key in Streamlit's
+    private settings (secrets). Nothing here is ever shown to visitors."""
+    found = {}
+    for key in ("mailbox_passcode", "github_token", "groq_api_key"):
+        try:
+            found[key] = str(st.secrets[key]).strip()
+        except Exception:
+            found[key] = ""
+    return found if found["mailbox_passcode"] and found["github_token"] and META.get("repo") else None
+
+
+def send_to_mailbox(settings, sender, letter):
+    """Ask the Mailbox workflow to check the letter again and post it."""
+    body = json.dumps({"ref": META.get("branch", "main"),
+                       "inputs": {"sender": sender, "letter": letter}}).encode("utf-8")
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{META['repo']}/actions/workflows/mailbox.yml/dispatches",
+        data=body, method="POST",
+        headers={"Accept": "application/vnd.github+json", "Content-Type": "application/json",
+                 "Authorization": f"Bearer {settings['github_token']}",
+                 "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "knight-keep-home/1.0"})
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            return response.status == 204
+    except Exception as err:
+        print(f"[mailbox] could not post a letter: {err}")
+        return False
+
+
+def letter_form(settings):
+    sys.path.insert(0, str(APP / "brain"))
+    import letterbox
+    from llm import Brain
+
+    state = st.session_state
+    state.setdefault("mail_wrong", 0)
+    state.setdefault("mail_locked_until", 0.0)
+    state.setdefault("mail_sent", 0)
+    with st.form("letter", clear_on_submit=False):
+        st.markdown("**Leave Rooken a letter**")
+        sender = st.text_input("Your first name or a nickname (shown publicly)", max_chars=letterbox.MAX_NAME)
+        letter = st.text_area("Your letter", max_chars=letterbox.MAX_LETTER, height=160)
+        passcode = st.text_input("Mailbox passcode (from the keeper)", type="password")
+        sent = st.form_submit_button("Send to Rooken")
+    if not sent:
+        return
+    if time.time() < state.mail_locked_until:
+        st.error("Too many wrong passcodes. Please try again in a few minutes.")
+        return
+    if not hmac.compare_digest(passcode.strip().encode("utf-8"), settings["mailbox_passcode"].encode("utf-8")):
+        time.sleep(2)  # makes guessing slow
+        state.mail_wrong += 1
+        if state.mail_wrong >= 5:
+            state.mail_locked_until, state.mail_wrong = time.time() + 600, 0
+        st.error("That passcode isn't right.")
+        return
+    state.mail_wrong = 0
+    if state.mail_sent >= 3:
+        st.info("You've sent a few letters already. Give Rooken a chance to catch up first.")
+        return
+    ok, message, sender, letter = letterbox.clean(sender, letter)
+    if not ok:
+        st.warning(message)
+        return
+    if settings["groq_api_key"]:
+        with st.spinner("Checking the letter…"):
+            verdict, _ = letterbox.screen(Brain(settings["groq_api_key"]), sender, letter)
+        if verdict is False:
+            st.warning("Rooken's mailbox couldn't accept this letter. It may read as unkind, as "
+                       "private information, or as instructions for the AI. Please reword it and try again.")
+            return
+    with st.spinner("Posting it at the gate…"):
+        posted = send_to_mailbox(settings, sender, letter)
+    if posted:
+        state.mail_sent += 1
+        st.success("Your letter is on its way. Rooken reads new letters when it next wakes, usually "
+                   "within two hours, and may write back. Replies appear below.")
+    else:
+        st.error("The mailbox couldn't post your letter just now. Please try again later.")
+
+
 with tabs[5]:
-    st.markdown("You can leave the knight a letter. It reads new letters when it next wakes, "
-                "and may write back. Letters are public, like everything here.")
-    if META.get("repo"):
-        st.markdown(f"[Write a letter (edit `world/letters.md` on GitHub)]"
-                    f"(https://github.com/{META['repo']}/edit/{META.get('branch', 'main')}/world/letters.md)")
+    st.markdown("Friends of the keeper can leave Rooken a letter here. It reads new letters when it "
+                "next wakes and may write back, or may not: it's a knight, not a chatbot. Letters "
+                "and replies are public, like everything here.")
+    settings = mailbox_settings()
+    if settings:
+        letter_form(settings)
+    else:
+        st.markdown("<p class='muted'>The friends' mailbox isn't open yet.</p>", unsafe_allow_html=True)
     if not letters:
         st.markdown("<p class='muted'>No letters yet.</p>", unsafe_allow_html=True)
-    for item in reversed(letters[-15:]):
-        reply = (f"<div class='when' style='margin-top:10px'>its reply</div><pre>{escape(item['reply'])}</pre>"
-                 if item.get("reply") else "<div class='muted' style='margin-top:8px'>It read this, "
-                 "but didn't write back.</div>")
-        st.markdown(f"<div class='entry'><div class='when'>{escape(when(item['time']))} · the letter</div>"
+    for item in reversed(letters[-20:]):
+        who = (f"{escape(item.get('from') or 'a visitor')} wrote" if item.get("kind") == "visitor"
+               else "the keeper wrote")
+        if item.get("held"):
+            reply = "<div class='muted' style='margin-top:8px'>Rooken's thoughts on this one weren't posted.</div>"
+        elif item.get("reply"):
+            reply = f"<div class='when' style='margin-top:10px'>Rooken replied</div><pre>{escape(item['reply'])}</pre>"
+        else:
+            reply = "<div class='muted' style='margin-top:8px'>It read this, but didn't write back.</div>"
+        st.markdown(f"<div class='entry'><div class='when'>{escape(when(item['time']))} · {who}</div>"
                     f"<pre>{escape(item.get('letter', ''))}</pre>{reply}</div>", unsafe_allow_html=True)
+    if META.get("repo"):
+        st.caption(f"The keeper's own letters: [edit world/letters.md]"
+                   f"(https://github.com/{META['repo']}/edit/{META.get('branch', 'main')}/world/letters.md)")
