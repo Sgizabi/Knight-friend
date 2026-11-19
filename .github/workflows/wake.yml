@@ -1,4 +1,5 @@
 name: The knight wakes
+run-name: ${{ github.event_name == 'schedule' && 'Scheduled check-in' || ((inputs.check_in == true || inputs.check_in == 'true') && 'Alarm check-in' || 'Woken by hand') }}
 
 on:
   schedule:
@@ -13,13 +14,21 @@ on:
     - cron: "37 2 * * *"
     - cron: "17 3 * * *"
     - cron: "57 3 * * *"
-  workflow_dispatch:          # the "Run workflow" button: wake it by hand (always wakes)
+  # The "Run workflow" button. Pressed by hand, it always wakes the knight.
+  # The outside alarm clock (cron-job.org, every 20 minutes) presses it with check_in on,
+  # because GitHub's own schedule above has been unreliable: then it only wakes the
+  # knight if a wake-up is actually due, exactly like a scheduled check-in.
+  workflow_dispatch:
     inputs:
       session:
         description: "How long should it stay awake?"
         type: choice
         options: [short, long]
         default: short
+      check_in:
+        description: "Just a check-in (only wake if it's time)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -33,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      KNIGHT_SCHEDULED: ${{ github.event_name == 'schedule' && '1' || '' }}
+      KNIGHT_SCHEDULED: ${{ (github.event_name == 'schedule' || inputs.check_in == true || inputs.check_in == 'true') && '1' || '' }}
       KNIGHT_SESSION: ${{ (github.event.schedule == '37 2 * * *' || github.event.schedule == '17 3 * * *' || github.event.schedule == '57 3 * * *') && 'long' || inputs.session || 'short' }}
     steps:
       - uses: actions/checkout@v4

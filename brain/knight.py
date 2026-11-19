@@ -173,6 +173,21 @@ def minutes_since(stamp):
         return None
 
 
+EVENING_UTC = (2.5, 4.5)  # the long evening by the fire: about 9:30-11:30 PM US Eastern
+
+
+def pick_session(session):
+    """A scheduled check-in in the evening becomes the long evening by the fire, once a
+    night. (GitHub's own evening alarms get dropped, so any check-in then will do.)"""
+    if session != "short" or not os.environ.get("KNIGHT_SCHEDULED"):
+        return session
+    hour = now().hour + now().minute / 60
+    since = minutes_since(load("memory.json", {}).get("last_long"))
+    if EVENING_UTC[0] <= hour < EVENING_UTC[1] and (since is None or since >= LONG_GAP_HOURS * 60):
+        return "long"
+    return session
+
+
 def wake_is_due(session):
     """Scheduled runs check in often; only wake if it's actually time. Runs started by
     hand (or locally) always wake."""
@@ -851,6 +866,7 @@ def main():
     parser.add_argument("--is-due", action="store_true",
                         help="only say whether a scheduled wake-up is due (for the workflow)")
     args = parser.parse_args()
+    args.session = pick_session(args.session)
     if args.is_due:
         print(f"due={'true' if wake_is_due(args.session) else 'false'}")
         return
