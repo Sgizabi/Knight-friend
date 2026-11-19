@@ -1,27 +1,20 @@
 {
-  "start": "2026-11-19T05:01:32+00:00",
-  "mood": "restless",
+  "start": "2026-11-19T07:01:35+00:00",
+  "mood": "sleepy",
   "steps": [
     {
-      "place": "workbench",
+      "place": "repair:stair",
       "action": "work",
-      "minutes": 30,
-      "emote": "sigh",
-      "note": "Try to shape a wooden brace for the window frame."
-    },
-    {
-      "place": "desk",
-      "action": "write",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "List needed materials for the stair repair."
+      "emote": "zzz",
+      "note": "Fit a new wedge on the broken stair rung"
     },
     {
       "place": "fire",
       "action": "sit",
-      "minutes": 15,
-      "emote": "sigh",
-      "note": "Take a short break, let the fire warm me."
+      "minutes": 20,
+      "emote": "zzz",
+      "note": "Warm up before tackling the roof"
     }
   ]
 }

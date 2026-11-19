@@ -30,49 +30,42 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 7,
-    "last_wake": "2026-11-19T05:01:32+00:00"
+    "wakeups": 8,
+    "last_wake": "2026-11-19T07:01:36+00:00"
   },
   "plan": {
-    "start": "2026-11-19T05:01:32+00:00",
-    "mood": "restless",
+    "start": "2026-11-19T07:01:35+00:00",
+    "mood": "sleepy",
     "steps": [
       {
-        "place": "workbench",
+        "place": "repair:stair",
         "action": "work",
-        "minutes": 30,
-        "emote": "sigh",
-        "note": "Try to shape a wooden brace for the window frame."
-      },
-      {
-        "place": "desk",
-        "action": "write",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "List needed materials for the stair repair."
+        "emote": "zzz",
+        "note": "Fit a new wedge on the broken stair rung"
       },
       {
         "place": "fire",
         "action": "sit",
-        "minutes": 15,
-        "emote": "sigh",
-        "note": "Take a short break, let the fire warm me."
+        "minutes": 20,
+        "emote": "zzz",
+        "note": "Warm up before tackling the roof"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T07:00:31+00:00",
+    "awake": false,
+    "since": "2026-11-19T07:01:36+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": "let my body recover so I can keep repairing later"
+    "note": ""
   },
   "needs": {
-    "rest": 11.8,
-    "warmth": 79.8,
+    "rest": 23.8,
+    "warmth": 95.4,
     "inspiration": 34.6,
-    "spirit": 94.8
+    "spirit": 95.3
   },
   "needs_prev": {
     "rest": 11.7,
@@ -80,7 +73,7 @@
     "inspiration": 34.6,
     "spirit": 100.0
   },
-  "needs_at": "2026-11-19T07:00:31+00:00",
+  "needs_at": "2026-11-19T07:01:36+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -498,5 +491,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T07:00:31+00:00"
+  "exported": "2026-11-19T07:01:36+00:00"
 }
