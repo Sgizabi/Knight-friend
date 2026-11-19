@@ -30,42 +30,49 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 11,
-    "last_wake": "2026-11-19T13:01:34+00:00"
+    "wakeups": 12,
+    "last_wake": "2026-11-19T15:01:38+00:00"
   },
   "plan": {
-    "start": "2026-11-19T13:01:34+00:00",
-    "mood": "frustrated",
+    "start": "2026-11-19T15:01:38+00:00",
+    "mood": "proud",
     "steps": [
       {
-        "place": "repair:stair",
-        "action": "work",
+        "place": "tower",
+        "action": "gaze",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "finish aligning the last slab"
+        "emote": "spark",
+        "note": "check the view and note any roof gaps"
       },
       {
-        "place": "fire",
-        "action": "sit",
+        "place": "workbench",
+        "action": "work",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "warm hands and plan next repair"
+        "emote": "spark",
+        "note": "tweak the lantern oil seal"
+      },
+      {
+        "place": "repair:roof",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "measure the opening and plan a patch"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T15:00:35+00:00",
-    "place": "repair:stair",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-19T15:01:38+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "tighten the last slab and sand the edges so it holds firm"
+    "note": ""
   },
   "needs": {
-    "rest": 4.2,
-    "warmth": 89.0,
+    "rest": 0.0,
+    "warmth": 90.9,
     "inspiration": 22.6,
-    "spirit": 84.4
+    "spirit": 93.7
   },
   "needs_prev": {
     "rest": 0.0,
@@ -73,7 +80,7 @@
     "inspiration": 22.6,
     "spirit": 88.2
   },
-  "needs_at": "2026-11-19T15:00:35+00:00",
+  "needs_at": "2026-11-19T15:01:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -127,7 +134,7 @@
         "needed": 2
       },
       "stair": {
-        "done": 2,
+        "done": 3,
         "needed": 3
       },
       "wall": {
@@ -598,7 +605,8 @@
     "easel",
     "workbench",
     "bedroll",
-    "courtyard"
+    "courtyard",
+    "tower"
   ],
   "gallery": [],
   "projects": [],
@@ -612,5 +620,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T15:00:35+00:00"
+  "exported": "2026-11-19T15:01:38+00:00"
 }
