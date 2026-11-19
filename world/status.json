@@ -1,8 +1,8 @@
 {
-  "awake": true,
-  "since": "2026-11-19T09:00:27+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-19T09:01:30+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "Create a simple oil-tight stopper for the portable lantern."
+  "note": ""
 }

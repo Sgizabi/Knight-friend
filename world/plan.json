@@ -1,20 +1,20 @@
 {
-  "start": "2026-11-19T07:01:35+00:00",
-  "mood": "sleepy",
+  "start": "2026-11-19T09:01:30+00:00",
+  "mood": "frustrated",
   "steps": [
     {
-      "place": "repair:stair",
+      "place": "workbench",
       "action": "work",
-      "minutes": 20,
-      "emote": "zzz",
-      "note": "Fit a new wedge on the broken stair rung"
+      "minutes": 30,
+      "emote": "spark",
+      "note": "Adjust seal edge and test again"
     },
     {
       "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "zzz",
-      "note": "Warm up before tackling the roof"
+      "action": "work",
+      "minutes": 30,
+      "emote": "spark",
+      "note": "Re‑mortar loose stones"
     }
   ]
 }
