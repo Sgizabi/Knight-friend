@@ -730,11 +730,14 @@ const DEMO_STEPS = [['fire', 'vigil', 'dots', 'keeping watch over the fire'], ['
   ['desk', 'write', 'music', 'writing a poem about candles'], ['easel', 'draw', 'heart', 'painting the view from the window'],
   ['workbench', 'work', 'spark', 'making a lantern'], ['repair:doorway', 'work', 'sigh', 'hauling rubble'], ['courtyard', 'gaze', 'cloud', 'watching the clouds'],
   ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['fire', 'sit', 'sigh', 'warming its hands'], ['bedroll', 'sleep', 'zzz', 'napping']];
+const DEMO_MOODS = ['proud', 'curious', 'content', 'delighted', 'frustrated', 'restless', 'wistful', 'absorbed', 'melancholy', 'sleepy', 'amused', 'lonely'];
 function current(now) {
   if (window.__force) return window.__force;   // for testing poses and paths
   if (DEMO) {
-    const [place, action, emote, note] = DEMO_STEPS[Math.floor(now / 1000 / 16) % DEMO_STEPS.length];
-    return { place, action, emote, note, awake: Math.floor(now / 1000 / 16) % 4 === 0 };
+    const step = Math.floor(now / 1000 / 16);
+    const [place, action, emote, note] = DEMO_STEPS[step % DEMO_STEPS.length];
+    if (state?.plan) state.plan.mood = DEMO_MOODS[step % DEMO_MOODS.length];   // preview each mood's body language
+    return { place, action, emote, note, awake: step % 4 === 0 };
   }
   if (loading) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'Finding the knight…' };
   if (!state?.identity?.name) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'It has not yet woken for the first time.' };
@@ -1123,6 +1126,26 @@ let yaw = PI / 2, lie = 1, phase = 0, path = [], goalKey = '', shadowsDirty = tr
 const bubble = $('bubble'), headWorld = new THREE.Vector3();
 let nextBubble = 1500, bubbleUntil = 0, lastCaption = '';
 
+let wasClose = false;
+
+// How each mood shows in its body: small offsets on top of whatever it's doing.
+// (Its mood comes from its own reflection; this only makes it visible.)
+const addJ = (a = [0, 0, 0], b = [0, 0, 0]) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const MOOD_POSE = {
+  melancholy: t => ({ torso: [.13, 0, 0], head: [.3, Math.sin(t * .25) * .08, 0], droop: true }),      // slumped, eyes down
+  lonely:     t => ({ torso: [.1, 0, 0], head: [.2, Math.sin(t * .3) * .3, 0], droop: true }),         // looking about for someone
+  wistful:    t => ({ torso: [.03, 0, 0], head: [-.14, Math.sin(t * .2) * .3, .07] }),                // gazing off, head tilted
+  sleepy:     t => ({ torso: [.09, 0, 0], head: [.22 + Math.max(0, Math.sin(t * .7)) * .22, 0, Math.sin(t * .35) * .05], droop: true }), // nodding off
+  curious:    t => ({ head: [-.05, Math.sin(t * .5) * .2, Math.sin(t * .45) * .24] }),               // head cocked this way and that
+  proud:      t => ({ torso: [-.09, 0, 0], head: [-.18, 0, 0] }),                                       // chest out, chin up
+  delighted:  t => ({ head: [-.06, 0, Math.sin(t * 3) * .1], bounce: Math.abs(Math.sin(t * 4)) * .016 }), // a little bounce
+  amused:     t => ({ head: [0, Math.sin(t * 1.3) * .1, Math.sin(t * 2.2) * .08], bounce: Math.max(0, Math.sin(t * 6)) * .006 }),
+  restless:   t => ({ torso: [0, Math.sin(t * .8) * .13, 0], head: [0, Math.sin(t * .9) * .45, 0] }), // shifting, looking around
+  frustrated: t => ({ torso: [.06, 0, 0], head: [.12, (Math.sin(t * .5) > .6 ? Math.sin(t * 7) * .08 : 0), 0], handsOnHips: true }), // hands on hips, the odd head shake
+  absorbed:   t => ({ head: [.15, 0, 0] }),                                                              // eyes on the work
+  content:    t => ({ head: [0, 0, Math.sin(t * .4) * .06] }),                                           // easy, gently swaying
+};
+
 // -------------------------------------------------------------------------------------
 // Little things visitors can do. All of this happens only on the visitor's own screen:
 // nothing is saved or sent anywhere, so none of it ever reaches Rooken's mind.
@@ -1220,13 +1243,26 @@ function tick(nowMs) {
     pose = { ...pose, book: undefined,
              joints: { ...pose.joints, shL: [-2.75, 0, .35 + wave], elL: [-.35, 0, 0], head: [Math.min(head[0], .1), awayAngle(), 0] },
              ik: pose.ik?.R ? { R: pose.ik.R } : undefined };
-  } else if (!moving && lie < .3 && goal.action !== 'sleep') {
-    // it notices when you come close, and glances your way
-    K.J.hips.getWorldPosition(hipsWorld);
-    if (camera.position.distanceTo(hipsWorld) < 1.9) {
-      const head = pose.joints.head || [0, 0, 0];
-      pose = { ...pose, joints: { ...pose.joints, head: [head[0] * .5, awayAngle() * .7, 0] } };
-    }
+  }
+  // its mood, acted out with its whole body (a helmet hides any face)
+  const moodPose = MOOD_POSE[state?.plan?.mood]?.(t);
+  if (moodPose && lie < .3 && !(t < reactUntil)) {
+    const j = { ...pose.joints };
+    if (moodPose.torso) j.torso = addJ(j.torso, moving ? [moodPose.torso[0], 0, 0] : moodPose.torso);
+    if (moodPose.head) j.head = addJ(j.head, moving ? [moodPose.head[0] * .6, 0, 0] : moodPose.head);   // walking: eyes ahead
+    if (moodPose.droop && !pose.ik) { j.shL = addJ(j.shL, [0, 0, -.07]); j.shR = addJ(j.shR, [0, 0, .07]); }
+    let hipsY = pose.hipsY, ik = pose.ik;
+    if (!moving && !seated && moodPose.bounce) hipsY += moodPose.bounce;
+    if (moodPose.handsOnHips && !moving && !seated && !pose.ik && !pose.tool) ik = { L: [.23, .98, .02], R: [-.23, .98, .02] };
+    pose = { ...pose, joints: j, hipsY, ik };
+  }
+  // it notices when you come close: glances your way (and shows how it's feeling, below)
+  K.J.hips.getWorldPosition(hipsWorld);
+  const camDist = camera.position.distanceTo(hipsWorld);
+  const closeNow = camDist < 1.9 && !moving && lie < .3 && goal.action !== 'sleep' && !(t < reactUntil);
+  if (closeNow) {
+    const head = pose.joints.head || [0, 0, 0];
+    pose = { ...pose, joints: { ...pose.joints, head: [head[0] * .5, awayAngle() * .7, head[2]] } };
   }
   setSword(!!pose.sword && !moving);
   lie += ((pose.lie ? 1 : 0) - lie) * k * .6;
@@ -1288,18 +1324,30 @@ function tick(nowMs) {
   }
   emberGeo.attributes.position.needsUpdate = true;
 
-  // speech bubble over its helm
-  K.J.head.getWorldPosition(headWorld); headWorld.y += lie > .5 ? .35 : .45;
+  // speech bubble over its helm; when that spot is off screen (camera close), beside the helm instead
+  K.J.head.getWorldPosition(headWorld);
+  const headScreen = headWorld.clone().project(camera);
+  headWorld.y += lie > .5 ? .35 : .45;
   headWorld.project(camera);
-  bubble.style.left = ((headWorld.x + 1) / 2 * innerWidth) + 'px';
-  bubble.style.top = ((1 - headWorld.y) / 2 * innerHeight) + 'px';
+  let bx = (headWorld.x + 1) / 2 * innerWidth, by = (1 - headWorld.y) / 2 * innerHeight;
+  if (by < 70) {
+    bx = (headScreen.x + 1) / 2 * innerWidth + Math.min(innerWidth * .18, 160);
+    by = THREE.MathUtils.clamp((1 - headScreen.y) / 2 * innerHeight, 110, innerHeight - 90);
+  }
+  bubble.style.left = THREE.MathUtils.clamp(bx, 40, innerWidth - 40) + 'px';
+  bubble.style.top = by + 'px';
   let show = false;
   if (goal.awake) { show = true; bubble.textContent = '.'.repeat(1 + Math.floor(t * 2) % 3); }
   else if (!moving && nowMs > nextBubble) { bubble.textContent = GLYPH[goal.emote] || '…'; bubbleUntil = nowMs + 3800; nextBubble = nowMs + 9000 + Math.random() * 7000; }
+  // when you come close, it lets you see how it's feeling
+  if (closeNow && !wasClose && !goal.awake && !moving) {
+    bubble.textContent = GLYPH[goal.emote] || '…'; bubbleUntil = nowMs + 3500; nextBubble = nowMs + 9000 + Math.random() * 5000;
+  }
+  wasClose = closeNow ? true : (camDist > 2.4 ? false : wasClose);   // a little slack, so it doesn't flicker
   if (!goal.awake) show = !moving && nowMs < bubbleUntil;
   const greeting = t < reactUntil;
   if (greeting) { show = true; bubble.textContent = reactGlyph; }
-  bubble.style.opacity = show && headWorld.z < 1 ? 1 : 0;
+  bubble.style.opacity = show && headScreen.z < 1 ? 1 : 0;
   bubble.className = 'bubble ' + (greeting ? (reactGlyph === '♥' ? 'heart' : reactGlyph === '♪' ? 'music' : '') : (goal.emote || ''));
 
   // caption and badge
@@ -1343,6 +1391,7 @@ refresh(); setInterval(refresh, 60000);
 resize();
 requestAnimationFrame(tick);
 window.__keep = { K, camera, controls, goodView, greet, tossLog, get quality() { return qLevel; }, setQuality: applyQuality,
+  setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
   get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
 </script>
