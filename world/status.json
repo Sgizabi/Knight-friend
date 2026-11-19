@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-19T19:00:33+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-19T19:00:37+00:00",
+  "place": "bedroll",
+  "action": "sleep",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "recover",
+  "thought": "My body is too tired to lift a stone. I need to lie down before I collapse."
 }
