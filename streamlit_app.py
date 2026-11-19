@@ -12,7 +12,6 @@ from html import escape
 from pathlib import Path
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 APP = Path(__file__).resolve().parent
 ROOT = Path(os.environ.get("KNIGHT_ROOT", APP))
@@ -232,7 +231,7 @@ keep_page = (APP / "docs" / "keep.html").read_text(encoding="utf-8")
 # In the browser the keep re-reads its state from the website (GitHub Pages) every minute.
 payload = json.dumps({"state": keep_state, "svgs": svgs,
                       "asset_base": PAGES or (f"{RAW}/docs/" if RAW else None)})
-components.html(keep_page.replace("__DATA__", payload.replace("</", "<\\/")), height=600)
+st.iframe(keep_page.replace("__DATA__", payload.replace("</", "<\\/")), height=600)
 # How fresh this page is, and where it got its data (handy when something looks out of date).
 sources = sorted({read_source(rel)[1] for rel in ("world/identity.json", "world/recent.json",
                                                   "docs/data/state.json")} - {""})
@@ -380,7 +379,7 @@ with tabs[3]:
         page = read_text(f"docs/workshop/{chosen['slug']}.html")
         if page:
             # A walled-off frame: the page can run its own code but cannot reach this site.
-            components.html(f"<iframe sandbox='allow-scripts' srcdoc=\"{escape(page, quote=True)}\" "
+            st.iframe(f"<iframe sandbox='allow-scripts' srcdoc=\"{escape(page, quote=True)}\" "
                             "style='width:100%;height:560px;border:1px solid #3a2f27;border-radius:10px;"
                             "background:#fff'></iframe>", height=575)
         if pages_url:
