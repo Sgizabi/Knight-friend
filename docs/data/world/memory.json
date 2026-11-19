@@ -1,12 +1,25 @@
 {
   "summary": "I wake on cold stone, my armor clinking as I move. I light a candle and count the steps on the broken stair before I climb. I talk to the fire like a coworker; it hums when I plan. I measure wood and stone with my thumb, and I collect cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones into place and noting crack patterns. I try to patch the window frame, but the wood warps and the glass stays whole. I keep an oil lantern that leaks, a rusted dagger on the desk, and an ink bottle half full. I write inventory lists and catalog broken things. I trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I joke that the stone is stubborn and the fire is a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality and quiet work, and I keep the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 10.295,
-    "craft": 10.295
+    "repair": 10.883,
+    "craft": 10.883
   },
   "projects": [],
   "letters_seen": "",
-  "entries_since_condense": 5,
+  "entries_since_condense": 6,
   "pastimes": [],
-  "last_long": "2026-11-19T02:30:23+00:00"
+  "last_long": "2026-11-19T02:30:23+00:00",
+  "recent_thoughts": [
+    "Stone crackles, fire hums, mind drifts to the next wall.",
+    "Stone sighs, fire hums, I could watch the flames a while."
+  ],
+  "last_glance": "2026-11-19T18:30:28+00:00",
+  "visits_seen_until": "2026-11-19T18:55:35+00:00",
+  "visits_today": {
+    "date": "20261119",
+    "gift_each": {},
+    "knock": 1
+  },
+  "questions_waiting": [],
+  "questions_date": "20261119"
 }

@@ -1,0 +1,33 @@
+{
+  "days": [
+    {
+      "date": "20261119",
+      "items": [
+        {
+          "id": "t20261119-0",
+          "text": "That oil seal still leaking like gossip?"
+        },
+        {
+          "id": "t20261119-1",
+          "text": "Thumb still throbbing from the hammer?"
+        },
+        {
+          "id": "t20261119-2",
+          "text": "Stair feels steady enough for a climb?"
+        },
+        {
+          "id": "t20261119-3",
+          "text": "Did the mortar’s grit ruin the wall’s look?"
+        },
+        {
+          "id": "t20261119-4",
+          "text": "Why the fire crackles louder when you work?"
+        },
+        {
+          "id": "t20261119-5",
+          "text": "What’s the weirdest thing you’ve found in the rubble?"
+        }
+      ]
+    }
+  ]
+}

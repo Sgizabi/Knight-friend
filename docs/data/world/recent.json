@@ -109,5 +109,13 @@
     "emote": "question",
     "text": "I added a new layer of mortar to the east wall and it set faster than I expected. The mix was a bit gritty, so I brushed off the excess before it hardened. I realized I used the same stone for the corner as I did for the stair, which might cause a color clash later. The fire crackled louder when I leaned on the workbench, almost like it wanted a break.",
     "creations": []
+  },
+  {
+    "time": "2026-11-19T19:01:40+00:00",
+    "activity": "sleep",
+    "mood": "sleepy",
+    "emote": "zzz",
+    "text": "I slept on the bedroll until the fire dimmed. Woke feeling the stone still cold under my back, but my thumb stopped throbbing.",
+    "creations": []
   }
 ]

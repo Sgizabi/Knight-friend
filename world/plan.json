@@ -1,32 +1,54 @@
 {
-  "start": "2026-11-19T17:01:33+00:00",
-  "mood": "restless",
+  "start": "2026-11-19T19:01:40+00:00",
+  "mood": "sleepy",
   "steps": [
     {
-      "place": "repair:wall",
-      "action": "work",
-      "minutes": 30,
-      "emote": "question",
-      "note": "continue mortar, smooth surface"
+      "place": "bedroll",
+      "action": "sleep",
+      "minutes": 90,
+      "emote": "zzz",
+      "note": "too tired to keep going",
+      "thoughts": []
     },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
-      "note": "refine oil seal"
+      "emote": "zzz",
+      "note": "start roof patch pieces",
+      "thoughts": [
+        "Roof gap still lets wind in"
+      ]
     },
     {
       "place": "fire",
       "action": "sit",
-      "minutes": 15,
-      "emote": "question",
-      "note": "warm up"
+      "minutes": 20,
+      "emote": "zzz",
+      "note": "",
+      "thoughts": [
+        "Fire seems less demanding now"
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "zzz",
+      "note": "update inventory",
+      "thoughts": [
+        "Need to note extra glass shards"
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "zzz",
+      "note": "",
+      "thoughts": [
+        "Gate visitors left nothing"
+      ]
     }
-  ],
-  "applied_until": "2026-11-19T18:30:28+00:00",
-  "live_thought": {
-    "text": "Stone sighs, fire hums, I could watch the flames a while.",
-    "time": "2026-11-19T18:30:28+00:00"
-  }
+  ]
 }
