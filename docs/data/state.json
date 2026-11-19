@@ -62,17 +62,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-19T17:00:27+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-19T17:00:30+00:00",
+    "place": "repair:wall",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire"
+    "note": "continue mending the collapsed east wall, one stone at a time"
   },
   "needs": {
-    "rest": 0.0,
-    "warmth": 90.9,
-    "inspiration": 22.6,
-    "spirit": 93.7
+    "rest": 2.4,
+    "warmth": 80.2,
+    "inspiration": 24.0,
+    "spirit": 89.2
   },
   "needs_prev": {
     "rest": 0.0,
@@ -80,7 +80,7 @@
     "inspiration": 22.6,
     "spirit": 93.7
   },
-  "needs_at": "2026-11-19T17:00:27+00:00",
+  "needs_at": "2026-11-19T17:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -620,5 +620,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T17:00:27+00:00"
+  "exported": "2026-11-19T17:00:30+00:00"
 }
