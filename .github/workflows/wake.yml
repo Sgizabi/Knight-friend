@@ -67,11 +67,14 @@ jobs:
           practice="$(mktemp -d)"
           cp -r world docs "$practice"/
           KNIGHT_ROOT="$practice" python brain/knight.py --fake
+      # Does what the check above decided: a full wake-up, a night's sleep (no AI), or a
+      # light check-in (one passing thought, maybe a change of plan).
       - name: Wake the knight
         if: steps.due.outputs.due == 'true'
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          MODE: ${{ steps.due.outputs.mode }}
         run: |
           git config user.name "the-knight"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          python brain/knight.py
+          python brain/knight.py --mode "$MODE"

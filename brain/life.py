@@ -253,21 +253,35 @@ def step_rates(step, keep):
     return rates
 
 
+def _overlap_minutes(a0, a1, b0, b1):
+    return max(0.0, (min(a1, b1) - max(a0, b0)).total_seconds() / 60)
+
+
 def live_out_plan(needs, plan, keep):
-    """Apply the effects of the plan it played out since it last woke."""
+    """Apply the effects of the plan it has played out since it last woke.
+
+    Only the stretch not yet counted: a light check-in or a night's sleep in between
+    catches its needs up and marks the plan with applied_until, so the same hours are
+    never counted twice."""
     try:
         start = dt.datetime.fromisoformat(plan["start"])
     except (KeyError, TypeError, ValueError):
         return
-    minutes_left = max(0.0, (_now() - start).total_seconds() / 60)
+    now, counted_from = _now(), start
+    try:
+        counted_from = max(start, dt.datetime.fromisoformat(plan["applied_until"]))
+    except (KeyError, TypeError, ValueError):
+        pass
+    t = start
     for step in plan.get("steps", []):
-        if minutes_left <= 0:
-            break
-        m = min(minutes_left, step.get("minutes", 20))
-        minutes_left -= m
-        change(needs, {k: v * m for k, v in step_rates(step, keep).items()}, keep)
-    if minutes_left > 0:  # dozed by the fire after the plan ran out
-        change(needs, {k: v * minutes_left for k, v in NEED_RATES["dozing"].items()}, keep)
+        end = t + dt.timedelta(minutes=step.get("minutes", 20))
+        m = _overlap_minutes(t, end, counted_from, now)
+        if m > 0:
+            change(needs, {k: v * m for k, v in step_rates(step, keep).items()}, keep)
+        t = end
+    m = _overlap_minutes(t, now, counted_from, now)   # dozed by the fire after the plan ran out
+    if m > 0:
+        change(needs, {k: v * m for k, v in NEED_RATES["dozing"].items()}, keep)
 
 
 def describe_needs(needs):

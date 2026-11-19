@@ -188,13 +188,18 @@ class FakeBrain(Brain):
         if task == "study":
             return json.dumps({"notes": "Lighthouses once burned whale oil. Strange.",
                                "sparks": ["draw a lighthouse at night"]})
+        if task == "glance":
+            return json.dumps({"thought": "Still eleven steps. Still counting them.",
+                               "change_plan": random.random() < .3,
+                               "plan": [{"place": "bedroll", "action": "sleep", "minutes": 40, "note": "a nap"}]})
         if task == "reflect":
             return json.dumps({
                 "diary": "A test entry. I did a thing and felt a feeling about it.",
                 "mood": random.choice(moods), "emote": random.choice(emotes),
                 "interests": ["lighthouses", "candles"], "self_description": "",
                 "plan": [
-                    {"place": "fire", "action": "sit", "minutes": 20, "emote": "dots", "note": "thinking"},
+                    {"place": "fire", "action": "sit", "minutes": 20, "emote": "dots", "note": "thinking",
+                     "thoughts": ["The fire's lazy today. Same.", "Should check the wall later."]},
                     {"place": "window", "action": "gaze", "minutes": 15, "emote": "sigh", "note": "watching the sea"},
                     {"place": "workbench", "action": "work", "minutes": 30, "emote": "spark", "note": "tinkering"},
                     {"place": "bedroll", "action": "sleep", "minutes": 50, "emote": "zzz", "note": "napping"},

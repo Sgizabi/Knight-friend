@@ -39,6 +39,9 @@
   .bubble::after { content:''; position:absolute; left:50%; bottom:-8px; margin-left:-6px; border:6px solid transparent;
                    border-top-color:#1a120c; border-bottom:0; }
   .bubble.anger { color:#b8261b; } .bubble.heart { color:#c2334a; } .bubble.music { color:#3d5b9c; }
+  /* its passing thoughts: a wider, softer bubble that fits a sentence */
+  .bubble.thought { white-space:normal; width:max-content; max-width:min(250px, 70vw); font-size:18px; line-height:1.25;
+                    padding:5px 11px; border-radius:14px; text-align:left; color:#2a1d14; }
   #card { position:fixed; left:50%; top:14px; transform:translateX(-50%); padding:8px 16px; max-width:min(80vw, 420px);
           text-align:center; display:none; font-size:20px; }
   #card small { display:block; color:var(--dim); font-size:16px; }
@@ -741,6 +744,12 @@ const DEMO_STEPS = [['fire', 'vigil', 'dots', 'keeping watch over the fire'], ['
   ['workbench', 'work', 'spark', 'making a lantern'], ['repair:doorway', 'work', 'sigh', 'hauling rubble'], ['courtyard', 'gaze', 'cloud', 'watching the clouds'],
   ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['fire', 'sit', 'sigh', 'warming its hands'],
   ['window', 'pace', 'dots', 'pacing, thinking it over'], ['bedroll', 'sleep', 'zzz', 'napping']];
+const DEMO_THOUGHTS = [["The fire's quiet tonight. Suits me.", "Somebody should fix that roof. Probably me."],
+  ["Chapter three. Still no lighthouse in it.", "Who writes a book this heavy?"], ["Candles rhyme with nothing. Annoying."],
+  ["The window's crooked, so the painting is too."], ["This lantern leaks. Like the last one."],
+  ["Rubble today. Rubble tomorrow. Good rubble, though."], ["Weeds everywhere. My weeds."],
+  ["You can see three hills from up here. Counted twice."], ["Warm hands, cold feet. Typical."],
+  ["Eleven steps, then turn. Eleven back."], ["Five more minutes."]];
 const DEMO_MOODS = ['proud', 'curious', 'content', 'delighted', 'frustrated', 'restless', 'wistful', 'absorbed', 'melancholy', 'sleepy', 'amused', 'lonely'];
 function current(now) {
   if (window.__force) return window.__force;   // for testing poses and paths
@@ -748,12 +757,13 @@ function current(now) {
     const step = Math.floor(now / 1000 / 16);
     const [place, action, emote, note] = DEMO_STEPS[step % DEMO_STEPS.length];
     if (state?.plan) state.plan.mood = DEMO_MOODS[step % DEMO_MOODS.length];   // preview each mood's body language
-    return { place, action, emote, note, awake: step % 4 === 0 };
+    const thoughts = DEMO_THOUGHTS[step % DEMO_THOUGHTS.length];
+    return { place, action, emote, note, thoughts, thought: thoughts[0], awake: step % 4 === 0 };
   }
   if (loading) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'Finding the knight…' };
   if (!state?.identity?.name) return { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'It has not yet woken for the first time.' };
   const st = state.status || {};
-  if (st.awake && now - Date.parse(st.since) < 50 * 60000) return { place: st.place || 'fire', action: st.action || 'sit', emote: 'dots', note: st.note || '', awake: true };
+  if (st.awake && now - Date.parse(st.since) < 50 * 60000) return { place: st.place || 'fire', action: st.action || 'sit', emote: 'dots', note: st.note || '', thought: st.thought || '', awake: true };
   const plan = state.plan || {};
   let elapsed = (now - Date.parse(plan.start || 0)) / 60000;
   for (const s of plan.steps || []) { if (elapsed < s.minutes) return s; elapsed -= s.minutes; }
@@ -840,10 +850,16 @@ function liveNeeds(now) {
   }
   const start = Date.parse(plan.start || '');
   if (!Number.isFinite(start)) return n;
-  let left = Math.max(0, (now - start) / 60000);
+  // only the stretch not already counted (a light check-in or a night's sleep catches its
+  // needs up and marks how far it got), so nothing is counted twice
+  const applied = Date.parse(plan.applied_until || '');
+  const from = Number.isFinite(applied) ? Math.max(start, applied) : start;
+  const overlap = (a, b) => Math.max(0, (Math.min(b, now) - Math.max(a, from)) / 60000);
+  let t0 = start;
   for (const s of plan.steps || []) {
-    if (left <= 0) break;
-    const mins = Math.min(left, s.minutes || 20); left -= mins;
+    const t1 = t0 + (s.minutes || 20) * 60000, mins = overlap(t0, t1);
+    t0 = t1;
+    if (mins <= 0) continue;
     let r;
     if (s.action === 'sleep') r = { ...m.rates.sleep };
     else if (s.place === 'fire') r = { ...m.rates.fire };
@@ -854,7 +870,8 @@ function liveNeeds(now) {
     for (const e of extras) for (const [k, v] of Object.entries(e || {})) r[k] = (r[k] || 0) + v;
     change(scaled(r, mins));
   }
-  if (left > 0) change(scaled(m.rates.dozing || {}, left));
+  const dozed = overlap(t0, now);   // after its plan ran out, dozing by the fire
+  if (dozed > 0) change(scaled(m.rates.dozing || {}, dozed));
   return n;
 }
 function renderNeeds() {
@@ -1135,7 +1152,16 @@ const clock = new THREE.Clock();
 const pos = new THREE.Vector3(-2.2, 0, 2.7);
 let yaw = PI / 2, lie = 1, phase = 0, path = [], goalKey = '', shadowsDirty = true, lastShadow = 0, swordOut = null;
 const bubble = $('bubble'), headWorld = new THREE.Vector3();
-let nextBubble = 1500, bubbleUntil = 0, lastCaption = '';
+let nextBubble = 1500, bubbleUntil = 0, lastCaption = '', bubbleIsThought = false, thoughtTurn = 0;
+// Its passing thoughts: written by Rooken itself, at its last wake-up (one or two for each
+// step of its plan) or at its latest light check-in (fresher, so shown more often).
+function pickThought(goal, now) {
+  const live = state?.plan?.live_thought;
+  const fresh = live && now - Date.parse(live.time) < 35 * 60000 ? live.text : '';
+  const pool = [...(goal.thoughts || [])];
+  if (fresh) pool.unshift(fresh, fresh);
+  return pool.length ? pool[(thoughtTurn++) % pool.length] : '';
+}
 
 let wasClose = false;
 
@@ -1349,21 +1375,35 @@ function tick(nowMs) {
     bx = (headScreen.x + 1) / 2 * innerWidth + Math.min(innerWidth * .18, 160);
     by = THREE.MathUtils.clamp((1 - headScreen.y) / 2 * innerHeight, 110, innerHeight - 90);
   }
-  bubble.style.left = THREE.MathUtils.clamp(bx, 40, innerWidth - 40) + 'px';
+  const edge = bubbleIsThought ? Math.min(140, innerWidth / 2) : 40;   // wide thought bubbles stay on screen
+  bubble.style.left = THREE.MathUtils.clamp(bx, edge, innerWidth - edge) + 'px';
   bubble.style.top = by + 'px';
   let show = false;
-  if (goal.awake) { show = true; bubble.textContent = '.'.repeat(1 + Math.floor(t * 2) % 3); }
-  else if (!moving && nowMs > nextBubble) { bubble.textContent = GLYPH[goal.emote] || '…'; bubbleUntil = nowMs + 3800; nextBubble = nowMs + 9000 + Math.random() * 7000; }
-  // when you come close, it lets you see how it's feeling
+  if (goal.awake) {        // really thinking right now: its actual waking thought, between the dots
+    show = true;
+    const th = goal.thought && Math.floor(t / 6) % 2 === 0 ? goal.thought : '';
+    bubble.textContent = th || '.'.repeat(1 + Math.floor(t * 2) % 3);
+    bubbleIsThought = !!th;
+  } else if (!moving && nowMs > nextBubble) {   // now and then: a passing thought, or how it feels
+    const th = Math.random() < .65 ? pickThought(goal, now) : '';
+    bubble.textContent = th || GLYPH[goal.emote] || '…';
+    bubbleIsThought = !!th;
+    bubbleUntil = nowMs + (th ? 7000 : 3800);
+    nextBubble = nowMs + 11000 + Math.random() * 8000;
+  }
+  // when you come close, it lets you see what's on its mind (or how it's feeling)
   if (closeNow && !wasClose && !goal.awake && !moving) {
-    bubble.textContent = GLYPH[goal.emote] || '…'; bubbleUntil = nowMs + 3500; nextBubble = nowMs + 9000 + Math.random() * 5000;
+    const th = pickThought(goal, now);
+    bubble.textContent = th || GLYPH[goal.emote] || '…'; bubbleIsThought = !!th;
+    bubbleUntil = nowMs + (th ? 6500 : 3500); nextBubble = nowMs + 11000 + Math.random() * 5000;
   }
   wasClose = closeNow ? true : (camDist > 2.4 ? false : wasClose);   // a little slack, so it doesn't flicker
   if (!goal.awake) show = !moving && nowMs < bubbleUntil;
   const greeting = t < reactUntil;
-  if (greeting) { show = true; bubble.textContent = reactGlyph; }
+  if (greeting) { show = true; bubble.textContent = reactGlyph; bubbleIsThought = false; }
   bubble.style.opacity = show && headScreen.z < 1 ? 1 : 0;
-  bubble.className = 'bubble ' + (greeting ? (reactGlyph === '♥' ? 'heart' : reactGlyph === '♪' ? 'music' : '') : (goal.emote || ''));
+  bubble.className = 'bubble ' + (greeting ? (reactGlyph === '♥' ? 'heart' : reactGlyph === '♪' ? 'music' : '')
+                                           : bubbleIsThought ? 'thought' : (goal.emote || ''));
 
   // caption and badge
   const first = (state?.identity?.name || 'The knight').split(' ')[0];
