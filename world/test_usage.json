@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-19",
+  "tokens": 10461,
+  "by_model": {
+    "qwen/qwen3.8-27b": 9580,
+    "openai/gpt-oss-safeguard-20b": 881
+  },
+  "runs": [
+    {
+      "note": "backup model wake-up test",
+      "tokens": 10461
+    }
+  ]
+}
