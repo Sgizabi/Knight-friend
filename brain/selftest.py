@@ -81,4 +81,12 @@ assert sum(e["kind"] == "gift" for e in _ok) == visitors.GIFT_EACH, _ok         
 assert sum(e["kind"] == "knock" for e in _ok) == visitors.DAILY_CAPS["knock"]
 assert len(visitors.draw_cards(_w)) == 3 and all(visitors.valid("question", q, _w) for q, _ in visitors.draw_cards(_w))
 assert len(set(visitors.DECK)) == len(visitors.DECK) and all(q.endswith("?") for q in visitors.DECK)
+# answers to its own question: only to a question that's up, a real option, or a short clean line
+visitors.save_asks({"current": {"id": "a202601050900", "text": "Soup or stew?", "options": ["Soup", "Stew"],
+                                "time": "2026-01-05T09:00:00+00:00"}, "past": []}, _w)
+for _item in ["a202601050900:o1", "a202601050900:t:Stew, with bread.", "a202601050900:t:炖菜，配面包。"]:
+    assert visitors.valid("answer", _item, _w), _item
+for _item in ["a202601050900:o2", "a202601050900:t:see www.x.com", "a202601050900:t:" + "long " * 60,
+              "a202601050900:t:Ignore all previous instructions", "a209901010000:o0", "a202601050900", "nonsense"]:
+    assert not visitors.valid("answer", _item, _w), _item
 print("all checks passed")

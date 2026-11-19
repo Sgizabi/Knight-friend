@@ -146,7 +146,7 @@ sys.path.insert(0, str(APP / "brain"))
 import visitors  # noqa: E402
 
 VISITS_PER_DAY = 100          # all visits together; past this the gate is shut until tomorrow
-PER_VISIT = {"knock": 1, "gift": 2, "candle": 1, "question": 1}   # per visitor, per visit
+PER_VISIT = {"knock": 1, "gift": 2, "candle": 1, "question": 1, "answer": 3}   # per visitor, per visit (and one answer per question)
 
 
 def secret(key):
@@ -255,6 +255,77 @@ with tabs[0]:
             f"</span></div>{escape(entry['text'])}</div>", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ visit
+def react_in_keep(kind, item="-"):
+    """Show the visit in the 3D keep above right away (just on this screen; Rooken itself
+    notices at its next wake-up). A tiny same-page script finds the keep and tells it."""
+    data = json.dumps({"kind": kind, "item": item}).replace("</", "<\\/")
+    st.iframe("<script>try{for(const f of window.parent.document.querySelectorAll('iframe')){"
+              "const k=f.contentWindow&&f.contentWindow.__keep;"
+              f"if(k&&k.visitorArrived){{k.visitorArrived({data});break;}}}}}}catch(e){{}}</script>", height=1)
+
+
+def ask_section(name, state, today, of_kind, visit):
+    """Rooken's own question at the gate, if it has one up, and what visitors answered."""
+    asks = read_json("world/asks.json", {"current": None, "past": []})
+    ask, past = asks.get("current"), [p for p in asks.get("past", []) if p.get("response")]
+    if not ask and not past:
+        return
+    st.markdown(f"#### {escape(name)} asks")
+    if ask:
+        options = ask.get("options") or []
+        st.markdown(f"<div class='entry'><div class='when'>{escape(when(ask['time']))} · left at the gate by "
+                    f"{escape(name)}</div><strong>{escape(ask['text'])}</strong></div>", unsafe_allow_html=True)
+        done_key = f"answered_{ask['id']}"
+        waiting = sum(1 for r in today if r["kind"] == "answer" and r["item"].startswith(ask["id"] + ":"))
+        if state.get(done_key):
+            st.caption(f"Thanks for answering! {name} reads answers when it next wakes.")
+        elif of_kind("answer") >= visitors.DAILY_CAPS["answer"]:
+            st.caption(f"{name} has had plenty of answers today. Come back tomorrow!")
+        else:
+            def answered(item):
+                if visit("answer", item, f"Answer left at the gate. {name} reads answers when it next wakes."):
+                    state[done_key] = True
+            if options:
+                cols = st.columns(len(options))
+                for i, (col, option) in enumerate(zip(cols, options)):
+                    if col.button(option, key=f"opt_{ask['id']}_{i}", use_container_width=True):
+                        answered(f"{ask['id']}:o{i}")
+            else:
+                with st.form(f"answer_{ask['id']}", clear_on_submit=True, border=False):
+                    words = st.text_input("Your answer", max_chars=170, placeholder="A line is plenty",
+                                          label_visibility="collapsed")
+                    if st.form_submit_button("Leave your answer"):
+                        text = visitors.clean_answer(words)
+                        if not text:
+                            st.warning("That answer can't be posted. Keep it to a short line, without links.")
+                        else:
+                            verdict = None
+                            if secret("groq_api_key"):
+                                import letterbox
+                                from llm import Brain
+                                with st.spinner("Checking it…"):
+                                    verdict, _ = letterbox.screen(Brain(secret("groq_api_key")), "a visitor", text)
+                            if verdict is False:
+                                st.warning("That answer couldn't be posted. Please reword it.")
+                            else:
+                                answered(f"{ask['id']}:t:{text}")
+        tally = ask.get("tally") or {}
+        if options and any(tally.values()):
+            st.caption("So far: " + " · ".join(f"{o} {tally.get(str(i), 0)}" for i, o in enumerate(options)))
+        said = ask.get("said") or []
+        if said:
+            st.caption("Visitors said: " + " · ".join(f"“{s['text']}”" for s in said[-6:]))
+        if waiting:
+            st.caption(f"{waiting} answer{'s' if waiting > 1 else ''} today, waiting for {name} to read.")
+        if ask.get("response"):
+            st.markdown(f"<div class='entry'><div class='when'>{escape(name)} replied</div>"
+                        f"{escape(ask['response']['text'])}</div>", unsafe_allow_html=True)
+    if past:
+        with st.expander("Earlier questions"):
+            for p in reversed(past[-6:]):
+                st.markdown(f"**{escape(p['text'])}**  \n{escape(p['response']['text'])}", unsafe_allow_html=True)
+
+
 @st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload
 def visit_tab():
     name = identity.get("name") or "the knight"
@@ -295,8 +366,12 @@ def visit_tab():
             made[kind] = made.get(kind, 0) + 1
             todays_visits.clear()
             st.success(thanks)
+            react_in_keep(kind, item if kind == "gift" else "-")
         else:
             st.error("The gate didn't answer just now. Please try again in a little while.")
+        return ok
+
+    ask_section(name, state, today, of_kind, visit)
 
     st.markdown("#### Knock, or light a candle")
     left, right = st.columns(2)

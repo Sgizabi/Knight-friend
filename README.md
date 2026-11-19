@@ -91,6 +91,15 @@ it, the rest lift its spirit. It may answer a card or two (`world/answers.jsonl`
 then, leave something at the gate (`world/gate.json`). Gifts it keeps pile up by the door in the
 3D keep; candles glow in its window, read live from GitHub while someone's watching.
 
+**Rooken asks.** Now and then the knight leaves a question of its own at the gate
+(`world/asks.json`), with a few options or none. Visitors answer once per question, by
+picking an option or writing a short line (checked like letters, shown to it as answers,
+never orders). It reads them at its next wake-up (a small batch of written ones; picks are
+just counted), may say something back, and takes the question down when it likes (or after
+36 hours). While someone's watching, the keep shows visits as they happen, just on their
+screen: it turns toward the door at a knock, a candle appears in the window, and gifts wait
+outside the door until it wakes and brings them in.
+
 ## Safety net
 
 Before each real wake-up, the workflow runs a practice wake-up on a throwaway copy of the

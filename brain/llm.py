@@ -237,7 +237,12 @@ class FakeBrain(Brain):
                 "reply_to_keeper": "Thank you for the letter." if "new letter" in prompt else "",
                 "answers": [{"card": 1, "answer": "The hammer. It never argues."},
                             {"card": 7, "answer": "Out of range, should be ignored."}] if "[1] " in prompt else [],
-                "leave_at_gate": "A flat stone, good for skipping." if "leave_at_gate" in prompt else ""})
+                "leave_at_gate": "A flat stone, good for skipping." if "leave_at_gate" in prompt else "",
+                "ask_response": "Most of you said soup. Noted, and slightly worrying." if "ask_response" in prompt else "",
+                "close_ask": False,
+                "ask_visitors": {"question": "Which is worse: a leaky roof or a wobbly stair?",
+                                 "options": ["Leaky roof", "Wobbly stair", "Leaky roof", "Both, obviously", "x" * 80]}
+                if "ask_visitors" in prompt else {}})
         if task == "questions":
             return json.dumps({"questions": ["How is the lighthouse page coming along?",
                                              "What did the wall teach you this week?", "too short?",

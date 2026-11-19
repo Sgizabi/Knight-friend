@@ -39,10 +39,14 @@ GIFTS = {
     "book:tools": ("a book about old tools", "📙 A book about old tools"),
     "book:birds": ("a book about birds", "📕 A book about birds"),
 }
-KINDS = ["knock", "gift", "candle", "question"]
-DAILY_CAPS = {"knock": 30, "gift": 12, "candle": 20, "question": 10}   # per day, all visitors together
+KINDS = ["knock", "gift", "candle", "question", "answer"]
+DAILY_CAPS = {"knock": 30, "gift": 12, "candle": 20, "question": 10, "answer": 40}   # per day, all visitors
 GIFT_EACH = 3                                                           # of any one gift, per day
-TITLE = re.compile(r"^Visit · (knock|gift|candle|question) · (.*)$")
+TITLE = re.compile(r"^Visit · (knock|gift|candle|question|answer) · (.*)$")
+# Rooken's own question at the gate, and visitors' answers to it
+ASK_OPEN_HOURS = 36          # a question closes on its own after this long
+ANSWER_TOKENS = 45           # a written answer: a line (~170 characters in English, fewer in some languages)
+ANSWERS_READ_TOKENS = 320    # written answers it reads per wake-up (option picks are just counted)
 
 
 def _now():
@@ -111,6 +115,52 @@ def draw_cards(world=WORLD, k=3, rng=random, pool=None):
 
 
 # --------------------------------------------------------------------------
+# Rooken asks: one question of its own at the gate at a time
+# --------------------------------------------------------------------------
+
+def load_asks(world=WORLD):
+    try:
+        return json.loads((world / "asks.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"current": None, "past": []}
+
+
+def save_asks(asks, world=WORLD):
+    (world / "asks.json").write_text(json.dumps(asks, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def find_ask(ask_id, world=WORLD):
+    """The question with this id, if it's open (or closed within the last day)."""
+    asks = load_asks(world)
+    for ask in [asks.get("current")] + list(asks.get("past", []))[-3:]:
+        if ask and ask.get("id") == ask_id:
+            if ask is asks.get("current"):
+                return ask
+            closed = ask.get("closed") or ask.get("time", "")
+            if closed and dt.datetime.fromisoformat(closed) > _now() - dt.timedelta(days=1):
+                return ask
+    return None
+
+
+def clean_answer(text):
+    """A visitor's written answer, as one tidy line, or None if it can't be posted."""
+    import letterbox   # here, so the workflow's quick checks don't need it otherwise
+    text = re.sub(r"\s+", " ", str(text or "")).strip()
+    ok, _, _, text = letterbox.clean("a visitor", text)
+    if not ok or len(text) < 2 or letterbox.estimate_tokens(text) > ANSWER_TOKENS:
+        return None
+    return text
+
+
+def parse_answer(item):
+    """'a202611191900:o2' (picked option 2) or 'a202611191900:t:some words' -> (ask id, kind, value)."""
+    m = re.fullmatch(r"(a\d{12}):(?:o(\d)|t:(.+))", (item or "").strip(), re.S)
+    if not m:
+        return None
+    return (m.group(1), "option", int(m.group(2))) if m.group(2) is not None else (m.group(1), "text", m.group(3))
+
+
+# --------------------------------------------------------------------------
 # Validating a visit (the workflow) and reading visits (the knight)
 # --------------------------------------------------------------------------
 
@@ -122,6 +172,14 @@ def valid(kind, item, world=WORLD):
         return item in GIFTS
     if kind == "question":
         return question_text(item, world) is not None
+    if kind == "answer":
+        parsed = parse_answer(item)
+        ask = find_ask(parsed[0], world) if parsed else None
+        if not ask:
+            return False
+        if parsed[1] == "option":
+            return parsed[2] < len(ask.get("options") or [])
+        return clean_answer(parsed[2]) == parsed[2].strip()
     return False
 
 
@@ -216,10 +274,16 @@ def check():
     """For the Visit workflow: fail the run unless the visit is valid (an invalid visit is ignored)."""
     kind, item = os.environ.get("KIND", ""), os.environ.get("ITEM", "-")
     if not valid(kind, item):
-        sys.exit(f"not a valid visit: {kind!r} {item!r}")
+        sys.exit("not a valid visit")
     if kind == "candle" and not is_candle_time():
         sys.exit("candles are for the evening and the night")
-    print(f"A visit: {kind} {item}")
+    if kind == "answer" and parse_answer(item)[1] == "text" and os.environ.get("GROQ_API_KEY"):
+        import letterbox
+        from llm import Brain
+        verdict, _ = letterbox.screen(Brain(os.environ["GROQ_API_KEY"]), "a visitor", parse_answer(item)[2])
+        if verdict is False:
+            sys.exit("the checker held this answer back")   # the reason isn't logged: the run is public
+    print(f"A visit: {kind}")
 
 
 if __name__ == "__main__" and sys.argv[1:] == ["check"]:
