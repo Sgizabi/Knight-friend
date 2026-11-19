@@ -71,15 +71,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-19T21:30:24+00:00",
+    "applied_until": "2026-11-19T22:00:29+00:00",
     "live_thought": {
-      "text": "The flames dance, reminding me the stone still listens.",
-      "time": "2026-11-19T21:30:24+00:00"
+      "text": "The fire cracks, the stone feels steady beneath me.",
+      "time": "2026-11-19T22:00:29+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-19T21:30:25+00:00",
+    "since": "2026-11-19T22:00:30+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -87,18 +87,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 59.1,
+    "warmth": 75.8,
+    "inspiration": 30.6,
+    "spirit": 87.0
+  },
+  "needs_prev": {
     "rest": 59.3,
     "warmth": 77.4,
     "inspiration": 30.6,
     "spirit": 88.0
   },
-  "needs_prev": {
-    "rest": 60.3,
-    "warmth": 79.5,
-    "inspiration": 30.6,
-    "spirit": 89.0
-  },
-  "needs_at": "2026-11-19T21:30:25+00:00",
+  "needs_at": "2026-11-19T22:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -641,7 +641,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 3,
-    "updated": "2026-11-19T21:30:24+00:00",
+    "updated": "2026-11-19T22:00:29+00:00",
     "seen_until": "2026-11-19T20:55:29+00:00"
   },
   "gifts": [],
@@ -651,5 +651,5 @@
       "text": "A smooth stone from my pocket, fits nicely in a fire pit."
     }
   ],
-  "exported": "2026-11-19T21:30:25+00:00"
+  "exported": "2026-11-19T22:00:30+00:00"
 }
