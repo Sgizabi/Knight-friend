@@ -1,8 +1,8 @@
 {
-  "awake": true,
-  "since": "2026-11-19T05:00:29+00:00",
-  "place": "repair:window",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-19T05:01:32+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue mending the window frame and fitting glass"
+  "note": ""
 }

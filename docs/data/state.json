@@ -30,49 +30,49 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 6,
-    "last_wake": "2026-11-19T02:40:39+00:00"
+    "wakeups": 7,
+    "last_wake": "2026-11-19T05:01:32+00:00"
   },
   "plan": {
-    "start": "2026-11-19T02:40:39+00:00",
+    "start": "2026-11-19T05:01:32+00:00",
     "mood": "restless",
     "steps": [
       {
         "place": "workbench",
         "action": "work",
         "minutes": 30,
-        "emote": "question",
-        "note": "Fix the lantern oil leak."
+        "emote": "sigh",
+        "note": "Try to shape a wooden brace for the window frame."
       },
       {
-        "place": "window",
-        "action": "sit",
-        "minutes": 25,
-        "emote": "question",
-        "note": "Replace warped wood with a straight piece."
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "List needed materials for the stair repair."
       },
       {
         "place": "fire",
         "action": "sit",
         "minutes": 15,
-        "emote": "question",
-        "note": "Warm up and think about the next repair."
+        "emote": "sigh",
+        "note": "Take a short break, let the fire warm me."
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T05:00:29+00:00",
-    "place": "repair:window",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-19T05:01:32+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue mending the window frame and fitting glass"
+    "note": ""
   },
   "needs": {
-    "rest": 23.7,
-    "warmth": 82.3,
+    "rest": 11.7,
+    "warmth": 85.4,
     "inspiration": 34.6,
-    "spirit": 94.0
+    "spirit": 100.0
   },
   "needs_prev": {
     "rest": 23.3,
@@ -80,7 +80,7 @@
     "inspiration": 34.6,
     "spirit": 100.0
   },
-  "needs_at": "2026-11-19T05:00:29+00:00",
+  "needs_at": "2026-11-19T05:01:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -130,7 +130,7 @@
         "needed": 2
       },
       "window": {
-        "done": 1,
+        "done": 2,
         "needed": 2
       },
       "stair": {
@@ -498,5 +498,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T05:00:29+00:00"
+  "exported": "2026-11-19T05:01:32+00:00"
 }
