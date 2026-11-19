@@ -85,11 +85,16 @@
           "Gate visitors left nothing"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-19T19:30:30+00:00",
+    "live_thought": {
+      "text": "Cold stone under me, fire's whisper keeps the night at bay.",
+      "time": "2026-11-19T19:30:30+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-19T19:01:41+00:00",
+    "since": "2026-11-19T19:30:30+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -97,18 +102,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 53.0,
+    "warmth": 73.0,
+    "inspiration": 26.1,
+    "spirit": 86.1
+  },
+  "needs_prev": {
     "rest": 42.9,
     "warmth": 74.4,
     "inspiration": 24.0,
     "spirit": 87.0
   },
-  "needs_prev": {
-    "rest": 1.7,
-    "warmth": 77.7,
-    "inspiration": 24.0,
-    "spirit": 87.7
-  },
-  "needs_at": "2026-11-19T19:01:41+00:00",
+  "needs_at": "2026-11-19T19:30:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -650,10 +655,10 @@
   ],
   "visits": {
     "candles_tonight": 0,
-    "knocks_today": 1,
-    "updated": "2026-11-19T19:01:41+00:00"
+    "knocks_today": 2,
+    "updated": "2026-11-19T19:30:30+00:00"
   },
   "gifts": [],
   "gate": [],
-  "exported": "2026-11-19T19:01:41+00:00"
+  "exported": "2026-11-19T19:30:30+00:00"
 }
