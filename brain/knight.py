@@ -578,11 +578,10 @@ class Knight:
         if pastimes:
             extra += ("\n\nPastimes you came up with yourself (choose one by its [key] as the activity):\n"
                       + "\n".join(f"- [{p['slug']}] {p['name']}: {p['about']}" for p in pastimes))
-        extra += (f"\n\nIf nothing here fits what you actually want to do, you may choose "
-                  f"'{INVENT}' and come up with a new pastime of your own, described in new_pastime "
-                  f"(name; about, one line; place, one of {life.places(self.keep)}; action, one of "
-                  f"{ACTIONS}; kind, one of {list(life.PASTIME_KINDS)}). Only invent when "
-                  "nothing above fits; most of the time something will.")
+        extra += (f"\n\nIf you want something none of these give you, you can choose '{INVENT}' and "
+                  "come up with a pastime of your own, described in new_pastime (name; about, one "
+                  f"line; place, one of {life.places(self.keep)}; action, one of {ACTIONS}; kind, one "
+                  f"of {list(life.PASTIME_KINDS)}).")
         activities = list(ACTIVITIES)
         if not any(not life.repaired(self.keep, k) for k in life.REPAIRS):
             activities.remove("repair")          # the keep is whole: nothing left to mend
