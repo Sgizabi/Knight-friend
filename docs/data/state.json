@@ -55,17 +55,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-19T02:30:26+00:00",
-    "place": "repair:hearth",
+    "since": "2026-11-19T02:33:28+00:00",
+    "place": "workbench",
     "action": "work",
     "emote": "dots",
-    "note": "continue mending the hearth stones and mortar"
+    "note": "create a small handheld lantern to carry light when I explore the courtyard or climb the tower"
   },
   "needs": {
-    "rest": 63.3,
-    "warmth": 79.7,
+    "rest": 51.3,
+    "warmth": 83.3,
     "inspiration": 58.6,
-    "spirit": 90.4
+    "spirit": 96.9
   },
   "needs_prev": {
     "rest": 63.4,
@@ -73,7 +73,7 @@
     "inspiration": 58.6,
     "spirit": 89.5
   },
-  "needs_at": "2026-11-19T02:30:26+00:00",
+  "needs_at": "2026-11-19T02:33:28+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -119,7 +119,7 @@
         "needed": 3
       },
       "hearth": {
-        "done": 1,
+        "done": 2,
         "needed": 2
       },
       "window": {
@@ -163,5 +163,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T02:30:26+00:00"
+  "exported": "2026-11-19T02:33:28+00:00"
 }
