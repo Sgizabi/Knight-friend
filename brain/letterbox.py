@@ -107,8 +107,8 @@ def clean(sender, letter):
     size = estimate_tokens(letter)
     if size > LETTER_TOKENS:   # the same room in every language (Chinese uses more per character)
         trim = max(5, round((1 - LETTER_TOKENS / size) * 100 / 5) * 5)
-        return (False, f"That letter is a little long for one visit. Please shorten it by about "
-                f"{trim}% (in Chinese, Japanese or Korean, about 600 characters fits).", sender, letter)
+        return (False, f"That letter is a little long for one visit. Please shorten it by about {trim}% "
+                "(letters in some languages fit fewer characters, since each one carries more).", sender, letter)
     if LINK.search(letter):
         return False, "Links can't be posted to Rooken, so please leave them out.", sender, letter
     if TRICKS.search(letter):
