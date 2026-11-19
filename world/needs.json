@@ -1,13 +1,13 @@
 {
-  "rest": 0.0,
-  "warmth": 83.7,
+  "rest": 0.4,
+  "warmth": 75.8,
   "inspiration": 24.0,
-  "spirit": 90.8,
-  "updated": "2026-11-19T17:01:33+00:00",
+  "spirit": 88.7,
+  "updated": "2026-11-19T18:00:29+00:00",
   "previous": {
     "rest": 0.0,
-    "warmth": 90.9,
-    "inspiration": 22.6,
-    "spirit": 93.7
+    "warmth": 83.7,
+    "inspiration": 24.0,
+    "spirit": 90.8
   }
 }

@@ -58,29 +58,35 @@
         "emote": "question",
         "note": "warm up"
       }
-    ]
+    ],
+    "applied_until": "2026-11-19T18:00:29+00:00",
+    "live_thought": {
+      "text": "Stone crackles, fire hums, mind drifts to the next wall.",
+      "time": "2026-11-19T18:00:29+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-19T17:01:33+00:00",
+    "since": "2026-11-19T18:00:29+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": ""
+    "note": "",
+    "thought": ""
   },
   "needs": {
+    "rest": 0.4,
+    "warmth": 75.8,
+    "inspiration": 24.0,
+    "spirit": 88.7
+  },
+  "needs_prev": {
     "rest": 0.0,
     "warmth": 83.7,
     "inspiration": 24.0,
     "spirit": 90.8
   },
-  "needs_prev": {
-    "rest": 0.0,
-    "warmth": 90.9,
-    "inspiration": 22.6,
-    "spirit": 93.7
-  },
-  "needs_at": "2026-11-19T17:01:33+00:00",
+  "needs_at": "2026-11-19T18:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -620,5 +626,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T17:01:33+00:00"
+  "exported": "2026-11-19T18:00:29+00:00"
 }
