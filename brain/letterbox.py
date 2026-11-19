@@ -32,10 +32,13 @@ ROOT = Path(os.environ.get("KNIGHT_ROOT", Path(__file__).resolve().parent.parent
 WORLD = ROOT / "world"
 INBOX = WORLD / "inbox"
 
-MAX_LETTER = 1200
+MAX_LETTER = 2000   # about a page
 MAX_NAME = 30
 DAILY_LIMIT = int(os.environ.get("KNIGHT_MAILBOX_DAILY", "20"))  # visitor letters per day, all friends together
 READ_PER_WAKE = 3
+# Letters it reads in one wake-up, in total characters: keeps its biggest request inside
+# Groq's free per-minute limit. The rest wait for the next wake-up (it always reads one).
+READ_CHARS_PER_WAKE = 3000
 
 LINK = re.compile(r"(https?://|www\.|\b[\w-]+\.(com|net|org|io|gg|ly|co|xyz|me|app|dev|info)\b)", re.I)
 # Only unmistakable attempts at instructing the AI; ordinary turns of phrase must pass.
@@ -125,20 +128,25 @@ def post(sender, letter, world=WORLD):
     return path
 
 
-def take_unread(world=WORLD, limit=READ_PER_WAKE):
-    """The oldest unread letters (the rest wait for the next wake-up)."""
-    letters = []
-    for path in sorted((world / "inbox").glob("*.json"))[:limit]:
+def take_unread(world=WORLD, limit=READ_PER_WAKE, max_chars=READ_CHARS_PER_WAKE):
+    """The oldest unread letters, within the per-wake-up limits (the rest wait)."""
+    letters, total = [], 0
+    for path in sorted((world / "inbox").glob("*.json")):
+        if len(letters) >= limit:
+            break
         try:
             item = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             path.unlink(missing_ok=True)
             continue
         ok, _, sender, letter = clean(item.get("from"), item.get("letter"))
-        if ok:  # checked again here, in case a file got in some other way
-            letters.append({"file": path, "time": item.get("time"), "from": sender, "letter": letter})
-        else:
+        if not ok:  # checked again here, in case a file got in some other way
             path.unlink(missing_ok=True)
+            continue
+        if letters and total + len(letter) > max_chars:
+            break   # enough reading for one wake-up; this one waits (keeping the order)
+        letters.append({"file": path, "time": item.get("time"), "from": sender, "letter": letter})
+        total += len(letter)
     return letters
 
 
