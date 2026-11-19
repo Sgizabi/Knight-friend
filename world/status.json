@@ -1,8 +1,8 @@
 {
   "awake": true,
-  "since": "2026-11-19T02:30:23+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-19T02:30:26+00:00",
+  "place": "repair:hearth",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire"
+  "note": "continue mending the hearth stones and mortar"
 }
