@@ -342,6 +342,8 @@ def export_state(world: Path, docs: Path):
         "visits": {**_load(world / "visits.json", {}), "seen_until": memory.get("visits_seen_until")},
         "gifts": [g["item"] for g in _load(world / "gifts.json", [])][-24:],
         "gate": _load(world / "gate.json", [])[-1:],
+        # several failed check-ins in a row (a broken model, key or network): the pages say so
+        "health": {k: v for k, v in _load(world / "health.json", {}).items() if k in ("unwell", "failing_since")},
         "exported": _now().replace(microsecond=0).isoformat(),
     }
     _save(docs / "data" / "state.json", state)

@@ -26,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from llm import CHECK_MODEL, Brain, LLMError, _char_cost, estimate_tokens  # noqa: E402,F401
+from llm import Brain, LLMError, _char_cost, estimate_tokens  # noqa: E402,F401
 
 ROOT = Path(os.environ.get("KNIGHT_ROOT", Path(__file__).resolve().parent.parent))
 WORLD = ROOT / "world"
@@ -122,7 +122,7 @@ def screen(brain, sender, letter):
     messages = [{"role": "system", "content": POLICY},
                 {"role": "user", "content": f"TASK: check\n\nA letter signed {sender!r}:\n\n{letter}"}]
     try:
-        reply = brain.chat(messages, max_tokens=500, model=CHECK_MODEL, effort="low", temperature=0.1)
+        reply = brain.chat(messages, max_tokens=500, model="check", effort="low", temperature=0.1)
     except LLMError as err:
         return None, str(err)
     verdict = next((w for w in reply.upper().replace(":", " ").split() if w in ("ALLOW", "BLOCK")), "")
@@ -201,7 +201,7 @@ def deliver():
         return
     key = os.environ.get("GROQ_API_KEY")
     if key:
-        verdict, reason = screen(Brain(key), sender, letter)
+        verdict, reason = screen(Brain(key, world=WORLD, remember=False), sender, letter)
         if verdict is False:
             print("Not posted: the checker held it back.")   # the reason isn't logged: the run is public
             return

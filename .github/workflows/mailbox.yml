@@ -35,6 +35,8 @@ jobs:
           SENDER: ${{ inputs.sender }}
           LETTER: ${{ inputs.letter }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          KNIGHT_MODEL: ${{ vars.KNIGHT_MODEL }}              # optional repo variables; empty = built-in list
+          KNIGHT_CHECK_MODEL: ${{ vars.KNIGHT_CHECK_MODEL }}
         run: |
           git config user.name "the-knight"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

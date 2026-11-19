@@ -33,4 +33,6 @@ jobs:
           KIND: ${{ inputs.kind }}
           ITEM: ${{ inputs.item }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}   # only used to check written answers
+          KNIGHT_MODEL: ${{ vars.KNIGHT_MODEL }}              # optional repo variables; empty = built-in list
+          KNIGHT_CHECK_MODEL: ${{ vars.KNIGHT_CHECK_MODEL }}
         run: python3 brain/visitors.py check

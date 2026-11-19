@@ -280,7 +280,7 @@ def check():
     if kind == "answer" and parse_answer(item)[1] == "text" and os.environ.get("GROQ_API_KEY"):
         import letterbox
         from llm import Brain
-        verdict, _ = letterbox.screen(Brain(os.environ["GROQ_API_KEY"]), "a visitor", parse_answer(item)[2])
+        verdict, _ = letterbox.screen(Brain(os.environ["GROQ_API_KEY"], world=WORLD, remember=False), "a visitor", parse_answer(item)[2])
         if verdict is False:
             sys.exit("the checker held this answer back")   # the reason isn't logged: the run is public
     print(f"A visit: {kind}")

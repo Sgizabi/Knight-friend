@@ -29,13 +29,14 @@ import life  # noqa: E402
 import letterbox  # noqa: E402
 import site_builder  # noqa: E402
 import visitors as visits  # noqa: E402
-from llm import CHECK_MODEL, TPM_LIMIT, Brain, FakeBrain, LLMError, parse_json  # noqa: E402
+from llm import (Brain, DailyLimit, FakeBrain, LLMError, chosen_models, parse_json, read_meta,  # noqa: E402
+                 TPM_LIMIT, tests_today, write_meta)
 
 ROOT = Path(os.environ.get("KNIGHT_ROOT", Path(__file__).resolve().parent.parent))
 WORLD = ROOT / "world"
 DOCS = ROOT / "docs"
 
-DAILY_BUDGET = int(os.environ.get("KNIGHT_DAILY_BUDGET", "175000"))  # of 200,000 free
+DAILY_BUDGET = int(os.environ.get("KNIGHT_DAILY_BUDGET") or "175000")  # of 200,000 free
 LONG_ROUNDS = int(os.environ.get("KNIGHT_LONG_ROUNDS", "4"))
 ROUND_PAUSE = int(os.environ.get("KNIGHT_ROUND_PAUSE", "180"))
 # GitHub's schedule checks in every 20 minutes (it often drops runs); the knight only
@@ -181,7 +182,8 @@ NIGHT_UTC = (5.0, 12.0)   # about midnight to 7 AM US Eastern: the knight sleeps
 EXHAUSTED = 15            # below this, its plan must include a proper sleep
 SPENT = 5                 # at or below this, it's too tired for heavy work until it sleeps
 HEAVY_WORK = {"repair", "build", "craft"}
-GLANCE_BUDGET = 140000    # light check-ins stop once the day's usage passes this
+GLANCE_SHARE = 0.8        # light check-ins stop once the day's usage passes this share of its cap
+UNWELL_AFTER = 4          # failed check-ins in a row before the pages say it seems unwell
 GLANCE_GAP_MINUTES = 25
 
 
@@ -260,13 +262,60 @@ def check_in_mode(session):
     status = load("status.json", {})
     if status.get("awake") and since(status.get("since")) < 50:
         return "none"
-    usage = load("usage.json", {})
-    if usage.get("date") == now().strftime("%Y-%m-%d") and usage.get("tokens", 0) >= GLANCE_BUDGET:
+    if spent_today(today_usage()) >= GLANCE_SHARE * daily_budget():
         return "none"                                   # a heavy day: full wake-ups come first
     if (since(identity.get("last_wake")) >= GLANCE_GAP_MINUTES
             and since(load("memory.json", {}).get("last_glance")) >= GLANCE_GAP_MINUTES):
         return "glance"
     return "none"
+
+
+def daily_budget():
+    """Its own daily cap: the keeper's setting, or just under a smaller daily limit Groq has
+    told it about for the model it uses now (learned the day it ran into it)."""
+    learned = (read_meta(WORLD).get("daily_limits") or {}).get(chosen_models(WORLD)["main"])
+    return min(DAILY_BUDGET, int(learned * .875)) if learned else DAILY_BUDGET
+
+
+def today_usage():
+    usage = load("usage.json", {})
+    if usage.get("date") != now().strftime("%Y-%m-%d"):
+        usage = {"date": now().strftime("%Y-%m-%d"), "tokens": 0, "wakeups": 0}
+    return usage
+
+
+def spent_today(usage):
+    """What today has used of the shared allowance: its own use plus the keeper's recorded tests.
+    After Groq has said "no more today", the day counts as spent."""
+    if usage.get("limit_reached"):
+        return 10 ** 9
+    return usage.get("tokens", 0) + tests_today(WORLD, set(chosen_models(WORLD).values()))
+
+
+def learn_limit(err, usage):
+    """Groq refused for the day: remember its real limit (so tomorrow's cap sits just under it)
+    and call it a day."""
+    usage["limit_reached"] = True
+    if err.limit and err.model == chosen_models(WORLD)["main"]:
+        limits = read_meta(WORLD).get("daily_limits") or {}
+        write_meta(WORLD, {"daily_limits": {**limits, err.model: err.limit}})
+        print(f"[Groq's daily limit for {err.model} is {err.limit}; its own cap is now {daily_budget()}]")
+    else:
+        print(f"[{err}]")
+
+
+def note_health(outcome):
+    """Count check-ins that failed in a row (a broken model, key or network), so the pages can
+    say it seems unwell. An early night because the allowance ran out isn't a failure."""
+    health = load("health.json", {})
+    if outcome == "failed":
+        health["failed_in_row"] = health.get("failed_in_row", 0) + 1
+        health.setdefault("failing_since", iso())
+        health["last_failure"] = iso()
+    else:
+        health = {"failed_in_row": 0, "last_ok": iso()}
+    health["unwell"] = health.get("failed_in_row", 0) >= UNWELL_AFTER
+    save("health.json", health)
 
 
 PHRASE_STOP = {"i", "the", "a", "an", "to", "and", "of", "it", "in", "on", "my", "me", "was", "is",
@@ -382,7 +431,7 @@ class Knight:
         messages = [{"role": "system", "content": policy},
                     {"role": "user", "content": f"TASK: check\n\nA {kind} titled {title!r}:\n\n{content[:9000]}"}]
         try:
-            reply = self.brain.chat(messages, max_tokens=600, model=CHECK_MODEL, effort="low",
+            reply = self.brain.chat(messages, max_tokens=600, model="check", effort="low",
                                     temperature=0.2)
         except LLMError as err:
             return False, f"the check could not run ({err})"
@@ -774,7 +823,8 @@ class Knight:
         # Groq's free plan counts the prompt plus max_tokens against ~8,000 tokens a minute,
         # so give the reply all the room that's left (the model's hidden thinking uses some).
         prompt_estimate = (len(SEED) + len(self.who_am_i()) + len(prompt)) // 3 + 50
-        room = max(2500, min(7000, TPM_LIMIT - prompt_estimate))
+        tpm = self.brain.tpm.get(self.brain.models["main"], TPM_LIMIT)
+        room = max(2500, min(7000, tpm - prompt_estimate))
         reply = self.ask("build", prompt, max_tokens=room, json_mode=False)
         title = craft.header_value(reply, "TITLE") or (project or {}).get("title") or decision["subject"]
         about = craft.header_value(reply, "ABOUT")
@@ -1115,15 +1165,17 @@ class Knight:
                 "before": before, "after": {n: self.needs[n] for n in life.NEEDS}})
         return last_plan
 
-    def sleep_on(self, last_plan):
+    def sleep_on(self, last_plan, early=False):
         """At night a tired knight simply sleeps: no thinking, no diary, just rest.
-        (No AI is used. Letters wait at the gate until morning.)"""
+        (No AI is used. Letters wait at the gate until morning.) early: its mind's allowance ran
+        out for the day, so it turns in early instead."""
         plan = {"start": iso(), "mood": last_plan.get("mood") or "sleepy", "applied_until": iso(),
                 "steps": [{"place": "bedroll", "action": "sleep", "minutes": 120, "emote": "zzz",
-                           "note": "asleep for the night"}]}
+                           "note": "turned in early" if early else "asleep for the night"}]}
         save("plan.json", plan)
         self.identity["last_wake"] = iso()   # so the next check comes about two hours later
-        self.identity["nights_slept_through"] = self.identity.get("nights_slept_through", 0) + 1
+        if not early:
+            self.identity["nights_slept_through"] = self.identity.get("nights_slept_through", 0) + 1
 
     def glance(self):
         """A light check-in between wake-ups: one passing thought, and a chance to change the
@@ -1430,11 +1482,8 @@ def main():
         night_sleep()
         return
 
-    usage = load("usage.json", {})
-    today = now().strftime("%Y-%m-%d")
-    if usage.get("date") != today:
-        usage = {"date": today, "tokens": 0, "wakeups": 0}
-    remaining = DAILY_BUDGET - usage["tokens"]
+    usage = today_usage()
+    remaining = daily_budget() - spent_today(usage)
     if remaining < 15000:
         print("The knight sleeps deeply today (daily allowance nearly spent).")
         return
@@ -1446,7 +1495,7 @@ def main():
 
     WORLD.mkdir(parents=True, exist_ok=True)
     if os.environ.get("GITHUB_REPOSITORY"):
-        save("meta.json", {"repo": os.environ["GITHUB_REPOSITORY"],
+        write_meta(WORLD, {"repo": os.environ["GITHUB_REPOSITORY"],
                            "branch": os.environ.get("GITHUB_REF_NAME", "main")})
 
     if args.fake:
@@ -1455,7 +1504,7 @@ def main():
         key = os.environ.get("GROQ_API_KEY") or _key_from_dotenv()
         if not key:
             sys.exit("No GROQ_API_KEY found (set it as a GitHub secret, or in a local .env file).")
-        brain = Brain(key)
+        brain = Brain(key, world=WORLD)
 
     if mode == "glance":
         glance_once(brain, usage)
@@ -1466,10 +1515,20 @@ def main():
         knight.memory["last_long"] = iso()
     knight.set_status(True, "fire", "sit", "dots", "stirring by the fire")
     checkpoint("The knight stirs")
+    outcome = "failed"                   # until it gets through the wake-up
     try:
         knight.live()
+        outcome = "ok"
+    except DailyLimit as err:            # Groq's allowance ran out mid-wake-up: an early night
+        learn_limit(err, usage)
+        knight.sleep_on(load("plan.json", {}), early=True)
+        outcome = "early night"
     finally:
-        knight.set_status(False)
+        if outcome == "early night":
+            knight.set_status(False, "bedroll", "sleep", "zzz", "turned in early")
+        else:
+            knight.set_status(False)
+        note_health(outcome)
         save("identity.json", knight.identity) if knight.identity else None
         save("memory.json", knight.memory)
         recent = knight.diary[-60:]
@@ -1511,11 +1570,17 @@ def night_sleep():
 def glance_once(brain, usage):
     """A light check-in: a passing thought, maybe a change of plan. Its usage is counted too."""
     knight = Knight(brain, "short")
+    outcome = "ok"
     try:
         knight.glance()
+    except DailyLimit as err:
+        learn_limit(err, usage)
+        outcome = "early night"
     except LLMError as err:
         print(f"[glance skipped: {err}]")
+        outcome = "failed"
     finally:
+        note_health(outcome)
         note_visits()
         knight.set_status(False)              # saves its needs and what the keep reads
         save("memory.json", knight.memory)

@@ -76,6 +76,9 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           MODE: ${{ steps.due.outputs.mode }}
+          KNIGHT_MODEL: ${{ vars.KNIGHT_MODEL }}              # optional repo variables; empty = built-in list
+          KNIGHT_CHECK_MODEL: ${{ vars.KNIGHT_CHECK_MODEL }}
+          KNIGHT_DAILY_BUDGET: ${{ vars.KNIGHT_DAILY_BUDGET }}
         run: |
           git config user.name "the-knight"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

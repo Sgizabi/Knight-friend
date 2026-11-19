@@ -129,7 +129,10 @@ part of the knight's real memories.
 ## How it stays safe and free
 
 - **Allowance**: the knight tracks its own token use and stops at 175,000 of the free
-  200,000 per day; long sessions are skipped if not enough is left.
+  200,000 per day; long sessions are skipped if not enough is left. If Groq ever allows
+  less, it learns the new limit and turns in early instead of failing. If its model is
+  retired, it moves to a backup. [MAINTAINING.md](MAINTAINING.md) is the keeper's guide:
+  how to tell it's healthy, and what to change if something breaks.
 - **Everything public is checked**: a second model reviews each drawing, piece of writing
   and web page before it's published, and anything it blocks is discarded.
 - **Its web pages are fenced in**: they can't load anything from the internet, contact other
@@ -146,7 +149,7 @@ of its own. The knight, its keep and all of its code and writing are original.
 
 - `brain/knight.py`: the waking life (decide, act, reflect, remember)
 - `brain/life.py`: its needs, the state of the keep, crafted objects, and the data the 3D keep reads
-- `brain/llm.py`: talking to Groq, paced to the free limits
+- `brain/llm.py`: talking to Groq, paced to the free limits, with backup models
 - `brain/letterbox.py`: the friends' mailbox; `brain/visitors.py`: knocks, gifts, candles, question cards
 - `brain/craft.py`: cleaning drawings and pages; Wikipedia lookups
 - `brain/site_builder.py`: builds its website in `docs/`
@@ -154,3 +157,4 @@ of its own. The knight, its keep and all of its code and writing are original.
 - `docs/data/state.json`: the knight's current state, rewritten whenever it wakes
 - `streamlit_app.py`: the home page
 - `world/`: its memory: identity, diary, interests, plans, needs, the keep, letters
+- `MAINTAINING.md`: the keeper's guide (health, settings, keys, testing with the real key)

@@ -232,6 +232,24 @@ keep_page = (APP / "docs" / "keep.html").read_text(encoding="utf-8")
 payload = json.dumps({"state": keep_state, "svgs": svgs,
                       "asset_base": PAGES or (f"{RAW}/docs/" if RAW else None)})
 st.iframe(keep_page.replace("__DATA__", payload.replace("</", "<\\/")), height=600)
+
+
+def seems_unwell(state):
+    """Several check-ins failed in a row, or none got through for half a day (its alarm may have
+    stopped): the keeper should take a look (see MAINTAINING.md)."""
+    if (state.get("health") or {}).get("unwell"):
+        return True
+    try:
+        quiet = dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(state.get("needs_at") or "")
+    except (TypeError, ValueError):
+        return False
+    return quiet > dt.timedelta(hours=12)
+
+
+if seems_unwell(keep_state):
+    st.markdown(f"<p class='muted' style='text-align:center;color:#d9a7a0'>{escape(identity.get('name', 'The knight').split()[0])} "
+                "seems unwell: its last few check-ins didn't go through. It should be back soon.</p>",
+                unsafe_allow_html=True)
 # How fresh this page is, and where it got its data (handy when something looks out of date).
 sources = sorted({read_source(rel)[1] for rel in ("world/identity.json", "world/recent.json",
                                                   "docs/data/state.json")} - {""})
@@ -304,7 +322,7 @@ def ask_section(name, state, today, of_kind, visit):
                                 import letterbox
                                 from llm import Brain
                                 with st.spinner("Checking it…"):
-                                    verdict, _ = letterbox.screen(Brain(secret("groq_api_key")), "a visitor", text)
+                                    verdict, _ = letterbox.screen(Brain(secret("groq_api_key"), world=ROOT / "world", remember=False), "a visitor", text)
                             if verdict is False:
                                 st.warning("That answer couldn't be posted. Please reword it.")
                             else:
@@ -606,7 +624,7 @@ def letter_form(settings):
         return
     if settings["groq_api_key"]:
         with st.spinner("Checking the letter…"):
-            verdict, _ = letterbox.screen(Brain(settings["groq_api_key"]), sender, letter)
+            verdict, _ = letterbox.screen(Brain(settings["groq_api_key"], world=ROOT / "world", remember=False), sender, letter)
         if verdict is False:
             st.warning("Rooken's mailbox couldn't accept this letter. It may read as unkind, as "
                        "private information, or as instructions for the AI. Please reword it and try again.")
