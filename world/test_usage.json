@@ -1,10 +1,10 @@
 {
   "date": "2026-11-19",
-  "tokens": 24335,
+  "tokens": 27854,
   "by_model": {
     "qwen/qwen3.8-27b": 9580,
     "openai/gpt-oss-safeguard-20b": 881,
-    "openai/gpt-oss-120b": 12885,
+    "openai/gpt-oss-120b": 16404,
     "openai/gpt-oss-20b": 989
   },
   "runs": [
@@ -19,6 +19,10 @@
     {
       "note": "building design test",
       "tokens": 3402
+    },
+    {
+      "note": "diary repeat test",
+      "tokens": 3519
     }
   ]
 }
