@@ -77,11 +77,16 @@
           "Hope the rest eases the thumb"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-19T23:30:23+00:00",
+    "live_thought": {
+      "text": "The fire crackles, stone's cold under my boots.",
+      "time": "2026-11-19T23:30:23+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-19T23:02:39+00:00",
+    "since": "2026-11-19T23:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -89,18 +94,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 48.4,
+    "warmth": 78.8,
+    "inspiration": 30.6,
+    "spirit": 86.3
+  },
+  "needs_prev": {
     "rest": 49.4,
     "warmth": 81.0,
     "inspiration": 30.6,
     "spirit": 87.2
   },
-  "needs_prev": {
-    "rest": 60.2,
-    "warmth": 76.3,
-    "inspiration": 30.6,
-    "spirit": 86.0
-  },
-  "needs_at": "2026-11-19T23:02:39+00:00",
+  "needs_at": "2026-11-19T23:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -659,7 +664,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 4,
-    "updated": "2026-11-19T23:02:39+00:00",
+    "updated": "2026-11-19T23:30:23+00:00",
     "seen_until": "2026-11-19T22:55:30+00:00"
   },
   "gifts": [],
@@ -672,5 +677,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-19T23:02:39+00:00"
+  "exported": "2026-11-19T23:30:24+00:00"
 }
