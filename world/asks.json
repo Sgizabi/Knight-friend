@@ -11,7 +11,11 @@
     "tally": {
       "2": 1
     },
-    "said": []
+    "said": [],
+    "response": {
+      "text": "Birch burns steady, but it splinters. Good for a quick flare.",
+      "time": "2026-11-19T23:01:36+00:00"
+    }
   },
   "past": []
 }

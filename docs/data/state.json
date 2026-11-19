@@ -30,67 +30,69 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 15,
-    "last_wake": "2026-11-19T21:01:40+00:00"
+    "wakeups": 16,
+    "last_wake": "2026-11-19T23:02:39+00:00"
   },
   "plan": {
-    "start": "2026-11-19T21:01:40+00:00",
-    "mood": "curious",
+    "start": "2026-11-19T23:01:36+00:00",
+    "mood": "restless",
     "steps": [
       {
-        "place": "repair:wall",
+        "place": "courtyard",
         "action": "work",
         "minutes": 20,
         "emote": "question",
-        "note": "continue mortar",
+        "note": "",
         "thoughts": [
-          "Will the new layer match the old?",
-          "Stone still cold under hand."
+          "Stone chips everywhere, like tiny complaints"
         ]
       },
       {
         "place": "fire",
-        "action": "stand",
+        "action": "sit",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "stoke fire",
+        "emote": "question",
+        "note": "",
         "thoughts": [
-          "Fire likes extra logs",
-          "It crackles like a coworker."
+          "Fire still acts like a demanding coworker"
         ]
       },
       {
         "place": "desk",
         "action": "write",
         "minutes": 20,
-        "emote": "dots",
-        "note": "update inventory",
+        "emote": "question",
+        "note": "",
         "thoughts": [
-          "Need to note new shards",
-          "Maybe craft a new shelf."
+          "Need to log the new forge stones"
+        ]
+      },
+      {
+        "place": "bedroll",
+        "action": "sleep",
+        "minutes": 20,
+        "emote": "question",
+        "note": "",
+        "thoughts": [
+          "Hope the rest eases the thumb"
         ]
       }
-    ],
-    "applied_until": "2026-11-19T22:30:23+00:00",
-    "live_thought": {
-      "text": "The fire flickers, stone cool, I could linger a bit.",
-      "time": "2026-11-19T22:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T23:00:32+00:00",
-    "place": "raise:0",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-19T23:02:39+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "begin construction of the forge to get proper tools for future repairs and crafts",
-    "thought": "The stair feels solid but the roof gap still lets the cold in. I could use a forge to make better tools and speed up the work."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 61.4,
-    "warmth": 77.0,
+    "rest": 49.4,
+    "warmth": 81.0,
     "inspiration": 30.6,
-    "spirit": 85.8
+    "spirit": 87.2
   },
   "needs_prev": {
     "rest": 60.2,
@@ -98,7 +100,7 @@
     "inspiration": 30.6,
     "spirit": 86.0
   },
-  "needs_at": "2026-11-19T23:00:32+00:00",
+  "needs_at": "2026-11-19T23:02:39+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -615,7 +617,20 @@
         "made": "2026-11-19T09:00:30+00:00"
       }
     ],
-    "buildings": [],
+    "buildings": [
+      {
+        "key": "forge",
+        "name": "the forge",
+        "about": "a small stone hut with a chimney, bellows and an anvil",
+        "place": "forge",
+        "plot": 0,
+        "done": 1,
+        "needed": 5,
+        "kind": null,
+        "look": null,
+        "finished": null
+      }
+    ],
     "plots": 4
   },
   "places": [
@@ -643,9 +658,9 @@
   ],
   "visits": {
     "candles_tonight": 0,
-    "knocks_today": 3,
-    "updated": "2026-11-19T22:30:23+00:00",
-    "seen_until": "2026-11-19T20:55:29+00:00"
+    "knocks_today": 4,
+    "updated": "2026-11-19T23:02:39+00:00",
+    "seen_until": "2026-11-19T22:55:30+00:00"
   },
   "gifts": [],
   "gate": [
@@ -657,5 +672,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-19T23:00:32+00:00"
+  "exported": "2026-11-19T23:02:39+00:00"
 }
