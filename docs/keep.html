@@ -65,6 +65,7 @@
     <option value="auto">Auto</option><option value="high">High</option>
     <option value="medium">Medium</option><option value="low">Low</option>
   </select>
+  <button id="logbtn" title="Toss a log on the fire (only on your screen: Rooken doesn't see it)">🪵</button>
   <button id="helpbtn" title="Controls">?</button>
 </div>
 <div id="help" class="panel"></div>
@@ -912,7 +913,8 @@ function setCam(mode, note) {
   $('help').innerHTML = (mode === 'follow'
     ? '<b>Following the knight.</b> Drag to swing around him, scroll or pinch to zoom.'
     : '<b>Free camera.</b> WASD or arrows to move, Q / E down and up, drag to look.')
-    + '<br>Press <b>F</b> to switch. Click things to learn what they are.';
+    + '<br>Press <b>F</b> to switch. Click things to learn what they are.'
+    + '<br>Click Rooken to say hello. 🪵 tosses a log on the fire. (Both just for you: they don\'t reach Rooken.)';
   if (note) toast(note);
 }
 function updateCamera(dt) {
@@ -1000,6 +1002,7 @@ renderer.domElement.addEventListener('pointerup', e => {
   const card = $('card');
   if (!hit) { card.style.display = 'none'; return; }
   if (hit.object.userData.knight) {
+    greet();
     const id = state?.identity || {}, mood = state?.plan?.mood;
     const likes = (state?.interests || []).slice(0, 3).join(', ');
     card.innerHTML = `${esc(id.name || 'The knight')}<small>${mood ? 'feeling ' + esc(mood) : ''}${likes ? ' · on its mind: ' + esc(likes) : ''}</small>`;
@@ -1061,6 +1064,34 @@ let yaw = PI / 2, lie = 1, phase = 0, path = [], goalKey = '', shadowsDirty = tr
 const bubble = $('bubble'), headWorld = new THREE.Vector3();
 let nextBubble = 1500, bubbleUntil = 0, lastCaption = '';
 
+// -------------------------------------------------------------------------------------
+// Little things visitors can do. All of this happens only on the visitor's own screen:
+// nothing is saved or sent anywhere, so none of it ever reaches Rooken's mind.
+// -------------------------------------------------------------------------------------
+let reactStart = -10, reactUntil = -10, reactGlyph = '';
+function greet() {          // click Rooken: it turns to you and waves (or mumbles in its sleep)
+  const t = clock.elapsedTime;
+  if (t < reactUntil - 1) return;     // already mid-wave
+  reactStart = t; reactUntil = t + 2.6;
+  reactGlyph = lie > .5 ? 'z z' : ['!', '♪', '♥', '!'][Math.floor(Math.random() * 4)];
+}
+const logs = [];
+let logFlareUntil = -10, lastToss = -10;
+function tossLog() {        // 🪵: a log arcs from where you are into the fire, which flares up
+  const t = clock.elapsedTime;
+  if (t - lastToss < 2.5) return;
+  lastToss = t;
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const start = camera.position.clone().addScaledVector(dir, .6); start.y -= .35;
+  const end = new THREE.Vector3((Math.random() - .5) * .15, .2, (Math.random() - .5) * .15);
+  const mesh = new THREE.Mesh(facet(cyl(.045, .05, .5, 6), .015), M.woodD);
+  mesh.castShadow = true; scene.add(mesh);
+  const far = start.distanceTo(end);
+  logs.push({ mesh, start, end, t0: t, dur: Math.min(1.5, .45 + far * .12), lift: .7 + far * .12,
+              spin: new THREE.Vector3(Math.random() * 7, Math.random() * 7, Math.random() * 7) });
+}
+$('logbtn').onclick = e => { tossLog(); e.currentTarget.blur(); };
+
 function setSword(planted) {
   if (planted === swordOut) return;
   swordOut = planted;
@@ -1112,7 +1143,31 @@ function tick(nowMs) {
     }
   } else {
     pose = poseFor(goal.action, spot, t, phase);
-    yaw += Math.atan2(Math.sin(spot.yaw - yaw), Math.cos(spot.yaw - yaw)) * Math.min(1, dt * 4);
+    if (!(t < reactUntil && lie < .3)) yaw += Math.atan2(Math.sin(spot.yaw - yaw), Math.cos(spot.yaw - yaw)) * Math.min(1, dt * 4);
+  }
+  // say hello: standing, it turns to face you; seated, it just looks up. Either way it waves.
+  const seated = (pose.hipsY ?? .95) < .8;
+  const awayAngle = () => {   // where you are, relative to where it faces
+    const local = K.root.worldToLocal(camera.position.clone());
+    return THREE.MathUtils.clamp(Math.atan2(local.x, local.z), -.9, .9);
+  };
+  if (t < reactUntil && !moving && lie < .3) {
+    if (!seated) {
+      const toCam = Math.atan2(camera.position.x - pos.x, camera.position.z - pos.z);
+      yaw += Math.atan2(Math.sin(toCam - yaw), Math.cos(toCam - yaw)) * Math.min(1, dt * 5);
+    }
+    const wave = Math.sin((t - reactStart) * 9) * .3;
+    const head = pose.joints.head || [0, 0, 0];
+    pose = { ...pose, book: undefined,
+             joints: { ...pose.joints, shL: [-2.75, 0, .35 + wave], elL: [-.35, 0, 0], head: [Math.min(head[0], .1), awayAngle(), 0] },
+             ik: pose.ik?.R ? { R: pose.ik.R } : undefined };
+  } else if (!moving && lie < .3 && goal.action !== 'sleep') {
+    // it notices when you come close, and glances your way
+    K.J.hips.getWorldPosition(hipsWorld);
+    if (camera.position.distanceTo(hipsWorld) < 1.9) {
+      const head = pose.joints.head || [0, 0, 0];
+      pose = { ...pose, joints: { ...pose.joints, head: [head[0] * .5, awayAngle() * .7, 0] } };
+    }
   }
   setSword(!!pose.sword && !moving);
   lie += ((pose.lie ? 1 : 0) - lie) * k * .6;
@@ -1147,8 +1202,18 @@ function tick(nowMs) {
   }
   cp.needsUpdate = true; K.cape.geometry.computeVertexNormals();
 
-  // fire (it flares when the knight is truly awake and thinking)
-  const flare = goal.awake ? 1.35 : 1, warm = hearthDone ? 1.15 : 1;
+  // logs visitors toss, flying into the fire
+  for (let i = logs.length - 1; i >= 0; i--) {
+    const L = logs[i], u = (t - L.t0) / L.dur;
+    if (u >= 1) { scene.remove(L.mesh); L.mesh.geometry.dispose(); logs.splice(i, 1); logFlareUntil = t + 3.5; continue; }
+    L.mesh.position.lerpVectors(L.start, L.end, u);
+    L.mesh.position.y += Math.sin(u * PI) * L.lift;
+    L.mesh.rotation.set(L.spin.x * u, L.spin.y * u, L.spin.z * u);
+    shadowsDirty = true;
+  }
+  // fire (it flares when the knight is truly awake and thinking, or when a log lands)
+  const logFlare = t < logFlareUntil ? 1 + .65 * ((logFlareUntil - t) / 3.5) : 1;
+  const flare = Math.max(goal.awake ? 1.35 : 1, logFlare), warm = hearthDone ? 1.15 : 1;
   fireLight.intensity = (32 + Math.sin(t * 9) * 3 + Math.sin(t * 23) * 2 + Math.sin(t * 4.1) * 2) * flare * warm;
   for (const f of flames) {
     const s = (.8 + Math.sin(t * f.userData.speed + f.userData.phase) * .2 + Math.random() * .06) * flare;
@@ -1173,8 +1238,10 @@ function tick(nowMs) {
   if (goal.awake) { show = true; bubble.textContent = '.'.repeat(1 + Math.floor(t * 2) % 3); }
   else if (!moving && nowMs > nextBubble) { bubble.textContent = GLYPH[goal.emote] || '…'; bubbleUntil = nowMs + 3800; nextBubble = nowMs + 9000 + Math.random() * 7000; }
   if (!goal.awake) show = !moving && nowMs < bubbleUntil;
+  const greeting = t < reactUntil;
+  if (greeting) { show = true; bubble.textContent = reactGlyph; }
   bubble.style.opacity = show && headWorld.z < 1 ? 1 : 0;
-  bubble.className = 'bubble ' + (goal.emote || '');
+  bubble.className = 'bubble ' + (greeting ? (reactGlyph === '♥' ? 'heart' : reactGlyph === '♪' ? 'music' : '') : (goal.emote || ''));
 
   // caption and badge
   const first = (state?.identity?.name || 'The knight').split(' ')[0];
@@ -1216,7 +1283,9 @@ applyState(state || {});
 refresh(); setInterval(refresh, 60000);
 resize();
 requestAnimationFrame(tick);
-window.__keep = { K, camera, controls, goodView, get quality() { return qLevel; }, setQuality: applyQuality };
+window.__keep = { K, camera, controls, goodView, greet, tossLog, get quality() { return qLevel; }, setQuality: applyQuality,
+  get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
+  get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
 </script>
 </body>
 </html>
