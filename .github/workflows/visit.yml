@@ -1,0 +1,35 @@
+name: Visit
+run-name: "Visit · ${{ inputs.kind }} · ${{ inputs.item }}"
+
+# Visitors on the home page knock, leave a gift, light a candle or ask a question; the page
+# presses this (with its own limited key). The run only checks the visit is valid and its
+# title records what it was. Nothing is written to the repository: Rooken reads the visits
+# when it wakes, and applies the daily caps itself. See brain/visitors.py.
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "What the visitor did"
+        required: true
+        type: choice
+        options: [knock, gift, candle, question]
+      item:
+        description: "Which gift, or which question card ('-' for none)"
+        required: false
+        default: "-"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the visit
+        env:
+          KIND: ${{ inputs.kind }}
+          ITEM: ${{ inputs.item }}
+        run: python3 brain/visitors.py check

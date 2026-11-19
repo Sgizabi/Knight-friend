@@ -338,6 +338,10 @@ def export_state(world: Path, docs: Path):
                      for p in (memory.get("projects") or [])][-14:],
         "writings": [{"title": w["title"], "form": w.get("form", "")} for w in _lines(world / "writings.jsonl")[-6:]],
         "interests": list((memory.get("interests") or {}).keys())[:5],
+        # what visitors left: candles tonight / knocks today, the gifts it kept, what it left back
+        "visits": _load(world / "visits.json", {}),
+        "gifts": [g["item"] for g in _load(world / "gifts.json", [])][-24:],
+        "gate": _load(world / "gate.json", [])[-1:],
         "exported": _now().replace(microsecond=0).isoformat(),
     }
     _save(docs / "data" / "state.json", state)

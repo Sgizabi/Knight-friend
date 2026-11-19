@@ -142,9 +142,91 @@ if META.get("repo"):
     owner, repo = META["repo"].split("/", 1)
     pages_url = f"https://{owner.lower()}.github.io/{repo}/"
 
+# ------------------------------------------------------------------ visits (knock, gift, candle, question)
+sys.path.insert(0, str(APP / "brain"))
+import visitors  # noqa: E402
+
+VISITS_PER_DAY = 100          # all visits together; past this the gate is shut until tomorrow
+PER_VISIT = {"knock": 1, "gift": 2, "candle": 1, "question": 1}   # per visitor, per visit
+
+
+def secret(key):
+    try:
+        return str(st.secrets[key]).strip()
+    except Exception:
+        return ""
+
+
+def keeper_day_start():
+    now = dt.datetime.now(dt.timezone.utc)
+    return (now - dt.timedelta(hours=5)).replace(hour=0, minute=0, second=0, microsecond=0) + dt.timedelta(hours=5)
+
+
+@st.cache_data(ttl=45, show_spinner=False)
+def todays_visits():
+    """Visits since yesterday evening, straight from the Visit runs on GitHub, or None."""
+    if not META.get("repo"):
+        return None
+    since = keeper_day_start() - dt.timedelta(hours=6)          # back to 6 PM yesterday, for candles
+    url = (f"https://api.github.com/repos/{META['repo']}/actions/workflows/visit.yml/runs?per_page=100"
+           f"&created=%3E%3D{since.strftime('%Y-%m-%dT%H:%M:%SZ')}")
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "knight-keep-home/1.0"}
+    if secret("github_token"):
+        headers["Authorization"] = f"Bearer {secret('github_token')}"
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=10) as r:
+            runs = json.load(r).get("workflow_runs", [])
+    except Exception as err:
+        print(f"[visits] couldn't read today's visits: {err}", file=sys.stderr)
+        return None
+    found = []
+    for run in runs:
+        parsed = visitors.parse_title(run.get("display_title"))
+        if parsed and run.get("conclusion") not in ("failure", "cancelled"):
+            found.append({"kind": parsed[0], "item": parsed[1],
+                          "time": run.get("created_at", "").replace("Z", "+00:00")})
+    return found
+
+
+def visit_counts(found):
+    """Knocks today and candles in the window now, as the keep shows them."""
+    if found is None:
+        return None
+    now = dt.datetime.now(dt.timezone.utc)
+    start = keeper_day_start().isoformat()
+    evening = (now - dt.timedelta(hours=5)).replace(hour=18, minute=0, second=0, microsecond=0) + dt.timedelta(hours=5)
+    if now < evening:
+        evening -= dt.timedelta(days=1)
+    knocks = sum(1 for r in found if r["kind"] == "knock" and r["time"] >= start)
+    candles = sum(1 for r in found if r["kind"] == "candle" and r["time"] >= evening.isoformat())
+    return {"knocks_today": min(knocks, visitors.DAILY_CAPS["knock"]),
+            "candles_tonight": min(candles, visitors.DAILY_CAPS["candle"]) if visitors.is_candle_time() else 0,
+            "updated": now.replace(microsecond=0).isoformat()}
+
+
+def send_visit(kind, item="-"):
+    """Press the Visit workflow's button; its run checks the visit and records it."""
+    body = json.dumps({"ref": META.get("branch", "main"), "inputs": {"kind": kind, "item": item}}).encode("utf-8")
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{META['repo']}/actions/workflows/visit.yml/dispatches",
+        data=body, method="POST",
+        headers={"Accept": "application/vnd.github+json", "Content-Type": "application/json",
+                 "Authorization": f"Bearer {secret('github_token')}",
+                 "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "knight-keep-home/1.0"})
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            return response.status == 204
+    except Exception as err:
+        print(f"[visits] could not record a visit: {err}", file=sys.stderr)
+        return False
+
+
 # ------------------------------------------------------------------ the keep, in 3D
 # The same page the knight's website serves, with its current state handed in directly.
 keep_state = read_json("docs/data/state.json", {})
+live_counts = visit_counts(todays_visits())
+if live_counts:
+    keep_state["visits"] = live_counts
 svgs = {g["file"]: read_text(f"docs/{g['file']}") or "" for g in keep_state.get("gallery", [])}
 keep_page = (APP / "docs" / "keep.html").read_text(encoding="utf-8")
 # In the browser the keep re-reads its state from the website (GitHub Pages) every minute.
@@ -161,7 +243,7 @@ links = f" · <a href='{pages_url}keep.html' target='_blank'>open it full screen
 st.markdown(f"<p class='muted' style='text-align:center'>{escape(fresh)} · Click the keep to use the "
             f"keyboard{links}</p>", unsafe_allow_html=True)
 
-tabs = st.tabs(["Diary", "Gallery", "Workshop", "Writings", "Mind", "Letters", "About"])
+tabs = st.tabs(["Diary", "Visit", "Gallery", "Workshop", "Writings", "Mind", "Letters", "About"])
 
 # ------------------------------------------------------------------ diary
 with tabs[0]:
@@ -173,8 +255,104 @@ with tabs[0]:
             f"{escape(entry.get('label') or entry.get('activity', ''))} · <span class='mood'>{escape(entry.get('mood', ''))}"
             f"</span></div>{escape(entry['text'])}</div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------------ gallery
+# ------------------------------------------------------------------ visit
+@st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload
+def visit_tab():
+    name = identity.get("name") or "the knight"
+    state = st.session_state
+    state.setdefault("visits_made", {})
+    found = todays_visits()
+    counts = visit_counts(found) or keep_state.get("visits") or {}
+    pile = keep_state.get("gifts") or []
+    st.markdown(f"Stop by the gate. You can't go in, and {escape(name)} won't come out to chat, but it "
+                "notices who came by when it next wakes (usually within two hours). No passcode needed, "
+                "and nothing you do here can change who it is.")
+    cols = st.columns(3)
+    cols[0].metric("Knocks today", counts.get("knocks_today", 0))
+    cols[1].metric("Candles in the window", counts.get("candles_tonight", 0))
+    cols[2].metric("Gifts it has kept", len(pile))
+
+    if not (secret("github_token") and META.get("repo")):
+        st.markdown("<p class='muted'>The gate isn't open yet.</p>", unsafe_allow_html=True)
+        return
+    start = keeper_day_start().isoformat()
+    today = [r for r in (found or []) if r["time"] >= start]
+    if len(today) >= VISITS_PER_DAY:
+        st.info(f"The gate is quiet for today: {escape(name)} has had a lot of visitors. Come back tomorrow!")
+        return
+    of_kind = lambda kind: sum(1 for r in today if r["kind"] == kind)
+
+    def visit(kind, item, thanks):
+        made = state.visits_made
+        if made.get(kind, 0) >= PER_VISIT[kind]:
+            st.info("That's plenty for one visit. Come back another time!")
+            return
+        if of_kind(kind) >= visitors.DAILY_CAPS[kind]:
+            st.info(f"{escape(name)} has had plenty of those today. Come back tomorrow!")
+            return
+        with st.spinner("At the gate…"):
+            ok = send_visit(kind, item)
+        if ok:
+            made[kind] = made.get(kind, 0) + 1
+            todays_visits.clear()
+            st.success(thanks)
+        else:
+            st.error("The gate didn't answer just now. Please try again in a little while.")
+
+    st.markdown("#### Knock, or light a candle")
+    left, right = st.columns(2)
+    if left.button("🚪 Knock on the gate", use_container_width=True):
+        visit("knock", "-", f"Knock knock. {name} will hear about it when it next wakes.")
+    evening = visitors.is_candle_time()
+    if right.button("🕯️ Light a candle in the window", use_container_width=True, disabled=not evening,
+                    help=None if evening else "Candles are for the evening and night (6 PM to 7 AM, US Eastern)."):
+        visit("candle", "-", "A small light in the window. It shows in the keep above in a minute or two.")
+
+    st.markdown("#### Leave a gift by the door")
+    gifts_today = [r["item"] for r in today if r["kind"] == "gift"]
+    choices = {label: gid for gid, (_, label) in visitors.GIFTS.items()
+               if gifts_today.count(gid) < visitors.GIFT_EACH}
+    if choices:
+        g1, g2 = st.columns([3, 2])
+        picked = g1.selectbox("Gift", list(choices), label_visibility="collapsed")
+        if g2.button("Leave it by the door", use_container_width=True):
+            visit("gift", choices[picked], f"Left by the door. {name} will find it when it next wakes.")
+    else:
+        st.markdown("<p class='muted'>The doorstep is full for today.</p>", unsafe_allow_html=True)
+
+    st.markdown("#### Leave a question card")
+    st.caption(f"Pick one of three cards. {name} may answer when it wakes, or may not; answers appear below.")
+    pool = read_json("world/questions.json", {"days": []})
+    if "cards" not in state:
+        state.cards = visitors.draw_cards(pool=pool)
+    texts = {qid: text for qid, text in state.cards}
+    chosen = st.radio("Cards", list(texts), format_func=texts.get, label_visibility="collapsed")
+    q1, q2 = st.columns(2)
+    if q1.button("Leave this card at the gate", use_container_width=True):
+        visit("question", chosen, f"Card left at the gate. {name} may answer it when it next wakes.")
+    if q2.button("Draw three other cards", use_container_width=True):
+        state.cards = visitors.draw_cards(pool=pool)
+        st.rerun(scope="fragment")
+
+    gate = keep_state.get("gate") or []
+    if gate:
+        st.markdown("#### Left at the gate for visitors")
+        st.markdown(f"<div class='entry'><div class='when'>{escape(when(gate[-1]['time']))} · from {escape(name)}"
+                    f"</div>{escape(gate[-1]['text'])}</div>", unsafe_allow_html=True)
+    answers = read_lines("world/answers.jsonl")
+    st.markdown(f"#### {escape(name)} answered")
+    if not answers:
+        st.markdown("<p class='muted'>No answers yet.</p>", unsafe_allow_html=True)
+    for a in reversed(answers[-10:]):
+        st.markdown(f"<div class='entry'><div class='when'>{escape(when(a['time']))} · "
+                    f"{escape(a['question'])}</div>{escape(a['answer'])}</div>", unsafe_allow_html=True)
+
+
 with tabs[1]:
+    visit_tab()
+
+# ------------------------------------------------------------------ gallery
+with tabs[2]:
     if not gallery:
         st.markdown("<p class='muted'>Nothing on the walls yet.</p>", unsafe_allow_html=True)
     else:
@@ -189,7 +367,7 @@ with tabs[1]:
         st.markdown(f"<div class='gal'>{''.join(cells)}</div>", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ workshop
-with tabs[2]:
+with tabs[3]:
     projects = sorted(memory.get("projects") or [], key=lambda p: p.get("updated", ""), reverse=True)
     if not projects:
         st.markdown("<p class='muted'>The workbench is bare.</p>", unsafe_allow_html=True)
@@ -209,7 +387,7 @@ with tabs[2]:
             st.markdown(f"[Open it on the knight's own website]({pages_url}workshop/{chosen['slug']}.html)")
 
 # ------------------------------------------------------------------ writings
-with tabs[3]:
+with tabs[4]:
     if not writings:
         st.markdown("<p class='muted'>No writings yet.</p>", unsafe_allow_html=True)
     for w in reversed(writings[-20:]):
@@ -218,7 +396,7 @@ with tabs[3]:
                     f"<pre>{escape(w['text'])}</pre></div>", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ mind
-with tabs[4]:
+with tabs[5]:
     if identity.get("self_description"):
         st.markdown(f"### In its own words\n> {identity['self_description']}")
     sheet, added = identity.get("sheet") or {}, identity.get("added") or {}
@@ -369,7 +547,7 @@ def letter_form(settings):
         st.error("The mailbox couldn't post your letter just now. Please try again later.")
 
 
-with tabs[5]:
+with tabs[6]:
     st.markdown("Friends of the keeper can leave Rooken a letter here. It reads new letters when it "
                 "next wakes and may write back, or may not: it's a knight, not a chatbot. Letters "
                 "and replies are public, like everything here.")
@@ -396,7 +574,7 @@ with tabs[5]:
                    f"(https://github.com/{META['repo']}/edit/{META.get('branch', 'main')}/world/letters.md)")
 
 # ------------------------------------------------------------------ about
-with tabs[6]:
+with tabs[7]:
     name = identity.get("name") or "the knight"
     epithet = identity.get("epithet") or ""
     keep_link = f"{pages_url}keep.html" if pages_url else ""
@@ -437,6 +615,9 @@ as scrolls on its desk, and the objects it designs appear in the keep.
 
 - **Watch it.** The camera follows it by default; press **F** (or use WASD) to fly around freely.
 - **Say hello.** Click it and it waves. Click things in the keep to learn what they are.
+- **Visit the gate** (the *Visit* tab, no passcode): knock, leave a small gift by the door, light a
+  candle in the window in the evening, or leave a question card. It notices on its next wake-up,
+  and may answer a card or leave something at the gate in return.
 - **Write it a letter** on the *Letters* tab (you'll need the passcode from the keeper). It reads
   letters on its next wake-up and may write back, or may not. It has a mind of its own, so it
   might not take your suggestions!

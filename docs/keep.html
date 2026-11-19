@@ -98,6 +98,7 @@ const store = { get(k) { try { return localStorage.getItem(k); } catch { return 
 // =====================================================================================
 const params = new URLSearchParams(location.search);
 const DEMO = params.has('demo');
+const HOME = 'https://knight-friend.streamlit.app';   // its home page, where visitors knock, leave gifts and so on
 let injected = null;
 try { injected = JSON.parse($('knight-data').textContent); } catch { /* not injected: we're on the website */ }
 let ASSETS = injected ? (injected.asset_base ?? null) : '';
@@ -401,10 +402,102 @@ function buildWorld(st) {
     info(frame, [.88, .68, .1], [0, 0, 0], d.title, 'a drawing by the knight');
   });
   placeObjects(g, st?.keep?.objects || []);
+  giftPile(g, st?.gifts || []);
 
   finishBake(g);
   g.traverse(o => { if (o.isMesh && o.material === M.glass) o.castShadow = false; });
   shadowsDirty = true;
+}
+
+// What visitors left by the door (the gifts it kept; logs went on the fire), in a small pile
+// just inside the doorway.
+const BOOK_COLORS = { 'book:sea': '#3d6e9e', 'book:stars': '#2b3a6b', 'book:tools': '#b0662a', 'book:birds': '#9e3b2f' };
+const GIFT_WORDS = { pebble: ['a pebble', 'pebbles'], feather: ['a feather', 'feathers'], oak: ['a scrap of oak', 'scraps of oak'],
+                     candle: ['a candle', 'candles'], book: ['a book', 'books'] };
+function giftPile(g, gifts) {
+  if (!gifts.length) return;
+  const count = k => gifts.filter(x => k === 'book' ? x.startsWith('book:') : x === k).length;
+  const r = rand(311);
+  gifts.filter(x => x.startsWith('book:')).slice(-6).forEach((b, i) =>       // a stack of books
+    slab(box(.26, .055, .2), mat(BOOK_COLORS[b] || '#6e6a3a', 0, .85), [-4.72, .03 + i * .058, -.95],
+         { rot: [0, (r() - .5) * .5, 0], jitter: .004, seed: i }));
+  for (let i = 0; i < Math.min(6, count('pebble')); i++)                       // a few pebbles
+    slab(ico(.04 + r() * .015, 0), i % 2 ? M.stoneL : M.stone, [-4.55 + (r() - .5) * .22, .03, -.25 + (r() - .5) * .2],
+         { jitter: .012, seed: 40 + i, scale: [1.2, .7, 1] });
+  for (let i = 0; i < Math.min(4, count('feather')); i++)                      // feathers, lying flat
+    slab(new THREE.ConeGeometry(.028, .24, 4), mat(i % 2 ? '#e8e4dc' : '#b9b2a6'), [-4.38 - i * .05, .012, -.6 + i * .07],
+         { rot: [PI / 2, 0, .4 + i * .7], scale: [1, 1, .25], jitter: .003, seed: 60 + i });
+  for (let i = 0; i < Math.min(4, count('oak')); i++)                          // scraps of oak
+    slab(box(.2, .05, .08), i % 2 ? M.woodL : M.wood, [-4.85, .025 + i * .05, -.3 + (r() - .5) * .06],
+         { rot: [0, (r() - .5) * .7, 0], jitter: .01, seed: 80 + i });
+  for (let i = 0; i < Math.min(4, count('candle')); i++)                       // spare candles (unlit)
+    slab(cyl(.025, .027, .13, 7), M.paper, [-4.45 + i * .07, .065, -1.2 + (i % 2) * .06], { jitter: .003, seed: 90 + i });
+  const parts = Object.entries(GIFT_WORDS).map(([k, [one, many]]) => { const n = count(k); return n ? (n === 1 ? one : `${n} ${many}`) : ''; })
+    .filter(Boolean);
+  const said = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts.at(-1) : parts[0];
+  info(g, [.8, .4, 1.3], [-4.65, .2, -.6], 'Gifts from visitors', `${said}, left by the door`);
+}
+
+// Candles visitors light in the window, in the evening and at night. Their light is always
+// in the scene (at zero when there are none) so lighting a candle never stalls the renderer.
+const windowGlow = new THREE.PointLight('#ffb060', 0, 4.5, 2); windowGlow.position.set(-2.6, 1.7, -4.15); scene.add(windowGlow);
+const windowCandles = new THREE.Group(); scene.add(windowCandles);
+let candlesShown = -1, candleFlames = [];
+function setWindowCandles(n) {
+  const shown = Math.min(16, n);
+  if (shown === candlesShown) { if (windowCandles.userData.info) windowCandles.userData.info.userData.info.sub = `${n} lit by visitors tonight`; return; }
+  candlesShown = shown;
+  windowCandles.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
+  windowCandles.clear(); candleFlames = [];
+  const i0 = clickables.indexOf(windowCandles.userData.info); if (i0 >= 0) clickables.splice(i0, 1);
+  windowCandles.userData.info = null;
+  if (!shown) { shadowsDirty = true; return; }
+  const r = rand(523), flameMat = new THREE.MeshBasicMaterial({ color: '#ffa63d', toneMapped: false });
+  for (let i = 0; i < shown; i++) {
+    const row = i % 2, col = Math.floor(i / 2), h = .07 + r() * .07;
+    const x = -3.2 + col * (1.2 / 7) + (row ? .07 : 0) + (r() - .5) * .03, z = row ? -4.42 : -4.2;   // two rows along the sill
+    part(windowCandles, cyl(.022, .025, h, 7), mat('#efe3c8'), [x, 1.37 + h / 2, z], { jitter: .002, cast: false });
+    const f = new THREE.Mesh(new THREE.ConeGeometry(.013, .048, 5), flameMat);
+    f.position.set(x, 1.37 + h + .022, z); f.userData.phase = r() * 6; windowCandles.add(f); candleFlames.push(f);
+  }
+  windowCandles.userData.info = info(windowCandles, [1.4, .36, .64], [-2.6, 1.53, -4.16], 'Candles in the window', `${n} lit by visitors tonight`);
+  shadowsDirty = true;
+}
+// The keeper's clock (US Eastern), which decides when candles can be lit and when they burn down.
+const keeperHour = () => ((Date.now() / 3600000 - 5) % 24 + 24) % 24;
+const candleTime = () => { const h = keeperHour(); return h >= 18 || h < 7; };
+function lastEvening() {   // 6 PM US Eastern, today if it's past, otherwise yesterday
+  const d = new Date(Date.now() - 5 * 3600000); d.setUTCHours(18, 0, 0, 0);
+  let t = d.getTime() + 5 * 3600000; if (t > Date.now()) t -= 86400000;
+  return new Date(t);
+}
+// While someone's watching, the keep asks GitHub itself how many candles have been lit tonight
+// (each visit is a run of the Visit workflow), so a candle shows up within a couple of minutes.
+const REPO = (() => {
+  try { const m = /^https:\/\/([^.]+)\.github\.io\/([^/]+)\//.exec(new URL(ASSETS || '', location.href).href); return m ? `${m[1]}/${m[2]}` : null; }
+  catch { return null; }
+})();
+let liveCandles = null;
+async function refreshVisits() {
+  if (DEMO || !REPO || !candleTime()) return showCandles();
+  try {
+    const since = lastEvening().toISOString().slice(0, 19) + 'Z';
+    const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/visit.yml/runs?status=success&per_page=100&created=%3E%3D${since}`);
+    if (r.ok) {
+      const runs = (await r.json()).workflow_runs || [];
+      liveCandles = { n: runs.filter(x => /^Visit · candle · /.test(x.display_title || '')).length, at: Date.now() };
+    }
+  } catch { /* GitHub busy or out of reach: the last saved count stands */ }
+  showCandles();
+}
+function showCandles() {
+  let n = 0;
+  if (DEMO) n = state?.visits?.candles_tonight || 0;
+  else if (candleTime()) {
+    if (liveCandles && Date.now() - liveCandles.at < 10 * 60000) n = liveCandles.n;
+    else if (state?.visits?.updated && new Date(state.visits.updated) >= lastEvening()) n = state.visits.candles_tonight || 0;
+  }
+  setWindowCandles(Math.min(20, n));
 }
 
 // draw one of the knight's drawings onto a canvas or frame
@@ -806,6 +899,8 @@ function demoState() {
     projects: [{ slug: 'a', title: 'The Lighthouse Ledger', status: 'in progress' }, { slug: 'b', title: 'A Bestiary of the Keep', status: 'finished' }],
     writings: [{ title: 'Ode to a Candle', form: 'poem' }, { title: 'Complaint about the Rain', form: 'letter' }],
     plan: { mood: 'curious' },
+    visits: { candles_tonight: +(params.get('candles') ?? 6), knocks_today: 4 },
+    gifts: ['pebble', 'book:sea', 'feather', 'pebble', 'oak', 'book:birds', 'candle', 'book:stars', 'pebble', 'feather'],
   };
 }
 
@@ -896,11 +991,15 @@ function applyState(next, fetched = false) {
     if (loading) { loading = false; goalKey = ''; snapCamera = true; }
     return;
   }
-  const key = JSON.stringify([next?.keep, next?.gallery, next?.projects, next?.writings]);
+  const key = JSON.stringify([next?.keep, next?.gallery, next?.projects, next?.writings, next?.gifts]);
   if (loading && fetched) { loading = false; goalKey = ''; snapCamera = true; }
   state = next;
   showState();
-  if (key !== worldKey) { worldKey = key; buildWorld(state); }
+  if (key !== worldKey) {
+    worldKey = key; buildWorld(state);
+    if (windowCandles.userData.info) clickables.push(windowCandles.userData.info);   // the rebuild cleared it
+  }
+  showCandles();
 }
 
 // =====================================================================================
@@ -967,7 +1066,9 @@ function setCam(mode, note) {
       + 'straight down / up. Drag to look around, or click empty space to lock the mouse (Esc to '
       + 'release). Scroll to glide forward or back.')
     + '<br>Press <b>F</b> to switch. Click things to learn what they are.'
-    + '<br>Click Rooken to say hello. 🪵 tosses a log on the fire. (Both just for you: they don\'t reach Rooken.)';
+    + '<br>Click Rooken to say hello. 🪵 tosses a log on the fire. (Both just for you: they don\'t reach Rooken.)'
+    + (injected ? '<br>To knock, leave a gift, light a candle or leave a question (these do reach it), use the <b>Visit</b> tab below.'
+                : `<br>To knock, leave a gift, light a candle or leave a question (these do reach it), visit <a href="${HOME}" target="_blank">its home page</a>.`);
   if (note) toast(note);
 }
 function updateCamera(dt) {
@@ -1356,6 +1457,10 @@ function tick(nowMs) {
     f.scale.set(1, s, 1); f.position.y = .15 + f.userData.h * s / 2; f.rotation.y += dt * 1.5;
   }
   candle.intensity = 1.1 + Math.sin(t * 13) * .15; candleFlame.scale.y = 1 + Math.sin(t * 17) * .2;
+  if (candleFlames.length) {   // visitors' candles in the window
+    windowGlow.intensity = (.5 + Math.sqrt(candleFlames.length) * .35) * (1 + Math.sin(t * 11) * .08 + Math.sin(t * 5.3) * .05);
+    for (const f of candleFlames) f.scale.y = 1 + Math.sin(t * 15 + f.userData.phase) * .22;
+  } else windowGlow.intensity = 0;
   for (let i = 0; i < EMBERS; i++) {
     emberLife[i] += dt * (.25 + (i % 5) * .05) * flare; if (emberLife[i] > 1) emberLife[i] = 0;
     const L = emberLife[i], a = i * 2.39;
@@ -1443,9 +1548,17 @@ setCam('follow');
 if (DEMO) state = demoState();
 applyState(state || {});
 refresh(); setInterval(refresh, 60000);
+refreshVisits(); setInterval(refreshVisits, 150000);   // ~24 times an hour at most, well within GitHub's limit
 resize();
 requestAnimationFrame(tick);
 window.__keep = { K, camera, controls, goodView, greet, tossLog, get quality() { return qLevel; }, setQuality: applyQuality,
+  view(p, at) {   // free camera at p, looking at `at` (for testing)
+    if (camMode !== 'free') setCam('free');
+    camera.position.set(...p); camera.lookAt(...at);
+    const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ'); lookYaw = e.y; lookPitch = e.x; flyVel.set(0, 0, 0);
+  },
+  updateSky,
+  setCandles: n => { liveCandles = { n, at: Date.now() }; state = { ...(state || {}), visits: { candles_tonight: n } }; showCandles(); },
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
   get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };

@@ -68,6 +68,23 @@ its next wake-up and may reply. Every letter is kept (with its reply, if any) in
 `world/letters.jsonl`; the knight is reminded of the last few when a new one arrives, and
 the *Letters* tab shows the whole conversation. Letters are public.
 
+## Visiting the gate
+
+Anyone can visit on the home page's *Visit* tab (no passcode, nothing typed): knock, leave a
+gift from a fixed menu (a log for the fire, a candle, a pebble, a feather, a scrap of oak, or a
+book about the sea, the stars, old tools or birds), light a candle in the window (6 PM to 7 AM
+US Eastern), or leave a question card drawn from a deck. The deck is `brain/question_deck.json`
+plus a few cards the knight's mind writes once a day about its own life lately (checked like
+anything public, kept in `world/questions.json`).
+
+Each visit is a run of the **Visit** workflow (`.github/workflows/visit.yml`), which only checks
+the visit is valid; nothing is committed. On its next wake-up the knight reads the visits since
+it last looked (`brain/visitors.py`), applies the daily caps itself (30 knocks, 12 gifts with at
+most 3 of any one, 20 candles, 10 cards), and feels them a little: logs warm it, books inspire
+it, the rest lift its spirit. It may answer a card or two (`world/answers.jsonl`) and, now and
+then, leave something at the gate (`world/gate.json`). Gifts it keeps pile up by the door in the
+3D keep; candles glow in its window, read live from GitHub while someone's watching.
+
 ## Safety net
 
 Before each real wake-up, the workflow runs a practice wake-up on a throwaway copy of the
@@ -115,6 +132,7 @@ of its own. The knight, its keep and all of its code and writing are original.
 - `brain/knight.py`: the waking life (decide, act, reflect, remember)
 - `brain/life.py`: its needs, the state of the keep, crafted objects, and the data the 3D keep reads
 - `brain/llm.py`: talking to Groq, paced to the free limits
+- `brain/letterbox.py`: the friends' mailbox; `brain/visitors.py`: knocks, gifts, candles, question cards
 - `brain/craft.py`: cleaning drawings and pages; Wikipedia lookups
 - `brain/site_builder.py`: builds its website in `docs/`
 - `docs/keep.html`: the 3D keep (served by GitHub Pages, embedded in Streamlit)

@@ -205,7 +205,15 @@ class FakeBrain(Brain):
                     {"place": "bedroll", "action": "sleep", "minutes": 50, "emote": "zzz", "note": "napping"},
                 ],
                 "project_note": "add more ships", "project_done": False,
-                "reply_to_keeper": "Thank you for the letter." if "new letter" in prompt else ""})
+                "reply_to_keeper": "Thank you for the letter." if "new letter" in prompt else "",
+                "answers": [{"card": 1, "answer": "The hammer. It never argues."},
+                            {"card": 7, "answer": "Out of range, should be ignored."}] if "[1] " in prompt else [],
+                "leave_at_gate": "A flat stone, good for skipping." if "leave_at_gate" in prompt else ""})
+        if task == "questions":
+            return json.dumps({"questions": ["How is the lighthouse page coming along?",
+                                             "What did the wall teach you this week?", "too short?",
+                                             "Why do you count the stairs?", "no question mark",
+                                             "Why do you count the stairs?"]})
         if task == "condense":
             return json.dumps({"summary": "I am a test knight who likes lighthouses.",
                                "add": [{"section": "quirks", "text": "talks to the bookshelf"},
