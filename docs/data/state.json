@@ -30,49 +30,49 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 12,
-    "last_wake": "2026-11-19T15:01:38+00:00"
+    "wakeups": 13,
+    "last_wake": "2026-11-19T17:01:33+00:00"
   },
   "plan": {
-    "start": "2026-11-19T15:01:38+00:00",
-    "mood": "proud",
+    "start": "2026-11-19T17:01:33+00:00",
+    "mood": "restless",
     "steps": [
       {
-        "place": "tower",
-        "action": "gaze",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "check the view and note any roof gaps"
+        "place": "repair:wall",
+        "action": "work",
+        "minutes": 30,
+        "emote": "question",
+        "note": "continue mortar, smooth surface"
       },
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "tweak the lantern oil seal"
+        "emote": "question",
+        "note": "refine oil seal"
       },
       {
-        "place": "repair:roof",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "measure the opening and plan a patch"
+        "place": "fire",
+        "action": "sit",
+        "minutes": 15,
+        "emote": "question",
+        "note": "warm up"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T17:00:30+00:00",
-    "place": "repair:wall",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-19T17:01:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue mending the collapsed east wall, one stone at a time"
+    "note": ""
   },
   "needs": {
-    "rest": 2.4,
-    "warmth": 80.2,
+    "rest": 0.0,
+    "warmth": 83.7,
     "inspiration": 24.0,
-    "spirit": 89.2
+    "spirit": 90.8
   },
   "needs_prev": {
     "rest": 0.0,
@@ -80,7 +80,7 @@
     "inspiration": 22.6,
     "spirit": 93.7
   },
-  "needs_at": "2026-11-19T17:00:30+00:00",
+  "needs_at": "2026-11-19T17:01:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -138,7 +138,7 @@
         "needed": 3
       },
       "wall": {
-        "done": 0,
+        "done": 1,
         "needed": 4
       },
       "roof": {
@@ -620,5 +620,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T17:00:30+00:00"
+  "exported": "2026-11-19T17:01:33+00:00"
 }

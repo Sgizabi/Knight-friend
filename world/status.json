@@ -1,8 +1,8 @@
 {
-  "awake": true,
-  "since": "2026-11-19T17:00:30+00:00",
-  "place": "repair:wall",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-19T17:01:33+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue mending the collapsed east wall, one stone at a time"
+  "note": ""
 }

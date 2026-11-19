@@ -1,27 +1,27 @@
 {
-  "start": "2026-11-19T15:01:38+00:00",
-  "mood": "proud",
+  "start": "2026-11-19T17:01:33+00:00",
+  "mood": "restless",
   "steps": [
     {
-      "place": "tower",
-      "action": "gaze",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "check the view and note any roof gaps"
+      "place": "repair:wall",
+      "action": "work",
+      "minutes": 30,
+      "emote": "question",
+      "note": "continue mortar, smooth surface"
     },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "tweak the lantern oil seal"
+      "emote": "question",
+      "note": "refine oil seal"
     },
     {
-      "place": "repair:roof",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "measure the opening and plan a patch"
+      "place": "fire",
+      "action": "sit",
+      "minutes": 15,
+      "emote": "question",
+      "note": "warm up"
     }
   ]
 }

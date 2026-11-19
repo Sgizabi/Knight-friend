@@ -1,9 +1,9 @@
 {
   "date": "2026-11-19",
-  "tokens": 58437,
-  "wakeups": 8,
+  "tokens": 63579,
+  "wakeups": 9,
   "by_model": {
-    "openai/gpt-oss-120b": 55645,
+    "openai/gpt-oss-120b": 60787,
     "openai/gpt-oss-20b": 2792
   }
 }
