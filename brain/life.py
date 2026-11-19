@@ -41,6 +41,7 @@ ACTIVITY_EFFECTS = {
     "build":  {"inspiration": -16, "rest": -7},
     "craft":  {"inspiration": -12, "rest": -8, "warmth": 3},
     "repair": {"rest": -12, "warmth": 5, "spirit": 6},
+    "raise":  {"rest": -12, "warmth": 5, "spirit": 4},
 }
 
 # Pastimes it invents for itself. It picks the kind; the kind (not the knight) sets how
@@ -88,6 +89,7 @@ def load_keep(world: Path):
     for k in REPAIRS:
         keep["repairs"].setdefault(k, 0)
     keep.setdefault("objects", [])
+    keep.setdefault("buildings", [])
     return keep
 
 
@@ -104,7 +106,7 @@ def places(keep):
     for key, info in REPAIRS.items():
         if info.get("unlocks") and repaired(keep, key):
             found.append(info["unlocks"])
-    return found
+    return found + [b["place"] for b in finished_buildings(keep)]
 
 
 def describe_keep(keep):
@@ -117,7 +119,194 @@ def describe_keep(keep):
     text = "The state of your keep:\n" + "\n".join(lines)
     if objects:
         text += "\nThings you have made for the keep: " + ", ".join(o["name"] for o in objects)
+    built = finished_buildings(keep)
+    if built:
+        text += "\nWhat you have built in the courtyard: " + "; ".join(
+            f"{b['name']} [{b['place']}] ({building_effect(b)})" for b in built)
+    going = under_way(keep)
+    if going:
+        text += f"\nUnder way in the courtyard: {going['name']} ({going['done']}/{going['needed']} of the work done)"
     return text
+
+
+# --------------------------------------------------------------------------
+# Building in the courtyard: a few plots, one building at a time, from a short catalogue
+# or of its own design. Its design is a choice of safe parts (walls, roof, size, accent,
+# one feature), so whatever it picks the keep can build it well, and it can be walked into.
+# --------------------------------------------------------------------------
+
+PLOTS = 4
+STRUCTURES = {
+    "woodshed":   {"name": "the woodshed", "needed": 3,
+                   "about": "an open-fronted timber lean-to for drying logs, with a chopping block",
+                   "effect": "dry logs: the fire warms you a little more",
+                   "rates": {"rest": -.04, "warmth": -.12}},
+    "forge":      {"name": "the forge", "needed": 5,
+                   "about": "a small stone hut with a chimney, bellows and an anvil",
+                   "effect": "proper tools: repairs, crafting and building tire you less",
+                   "rates": {"warmth": .12, "rest": -.04}},
+    "glasshouse": {"name": "the glasshouse", "needed": 4,
+                   "about": "salvaged panes over a potting bench, warm even in winter",
+                   "effect": "time among the seedlings lifts your inspiration",
+                   "rates": {"warmth": -.03, "rest": -.02, "inspiration": .07}},
+    "bathhouse":  {"name": "the bathhouse", "needed": 4,
+                   "about": "a timber hut with a wooden tub and a stove",
+                   "effect": "a hot soak restores warmth and rest",
+                   "rates": {"warmth": .22, "rest": .08}},
+}
+OWN = "own"
+OWN_NEEDED = 4
+# its own buildings: the kind it picks (not the knight) sets how a stay there moves its needs
+OWN_KINDS = {
+    "restful":    {"rest": .06, "warmth": .04},
+    "creative":   {"inspiration": .03, "rest": -.03, "warmth": -.06},
+    "physical":   {"rest": -.05, "warmth": .05},
+    "thoughtful": {"inspiration": .05, "rest": -.02, "warmth": -.06},
+}
+LOOK = {
+    "walls": ["stone", "timber", "wattle"],
+    "roof": ["gable", "lean-to", "flat"],
+    "size": ["small", "medium"],
+    "accent": ["rust red", "sea blue", "moss green", "plum", "ochre", "slate grey", "bone white"],
+    "feature": ["chimney", "bench", "shelves", "lantern", "awning", "flower boxes", "weathervane"],
+}
+WOODSHED_FIRE = 1.15      # the fire's warmth, with dry logs to hand
+FORGE_EASE = .75          # the tiring part of repairs, crafting and building, with proper tools
+
+
+def finished_buildings(keep):
+    return [b for b in keep.get("buildings", []) if b.get("finished")]
+
+
+def under_way(keep):
+    return next((b for b in keep.get("buildings", []) if not b.get("finished")), None)
+
+
+def has_building(keep, key):
+    return any(b.get("key") == key for b in finished_buildings(keep))
+
+
+def free_plots(keep):
+    taken = {b.get("plot") for b in keep.get("buildings", [])}
+    return [i for i in range(PLOTS) if i not in taken]
+
+
+def can_raise(keep):
+    """Building needs the courtyard open, and either a building under way or a free plot."""
+    return repaired(keep, "doorway") and bool(under_way(keep) or free_plots(keep))
+
+
+def catalogue_left(keep):
+    """Catalogue buildings it hasn't built (or started) yet: one of each."""
+    used = {b.get("key") for b in keep.get("buildings", [])}
+    return [k for k in STRUCTURES if k not in used]
+
+
+def building_effect(b):
+    if b.get("key") in STRUCTURES:
+        return STRUCTURES[b["key"]]["effect"]
+    return {"restful": "a restful place", "creative": "a place to make things",
+            "physical": "a place for hard work", "thoughtful": "a place to think"}.get(b.get("kind"), "")
+
+
+def describe_building_options(keep):
+    """For its choices: what it could build now (only when it can)."""
+    if not can_raise(keep):
+        return ""
+    going = under_way(keep)
+    if going:
+        return (f"\nYou are building {going['name']} in the courtyard ({going['done']}/{going['needed']} "
+                "of the work done). 'raise' carries on with it; one building at a time.")
+    lines = [f"- [{k}] {STRUCTURES[k]['name']}: {STRUCTURES[k]['about']} ({STRUCTURES[k]['needed']} sessions; "
+             f"once built, {STRUCTURES[k]['effect']})" for k in catalogue_left(keep)]
+    lines.append(f"- [{OWN}] a building of your own design: you decide what it is and what it's for "
+                 f"({OWN_NEEDED} sessions)")
+    return (f"\nThe courtyard has room for {len(free_plots(keep))} more building(s). You could start one "
+            "with 'raise' (subject: the [key], or what you'd build of your own):\n" + "\n".join(lines))
+
+
+def _slug(text):
+    return re.sub(r"[^a-z0-9]+", "-", str(text).lower()).strip("-")[:24].strip("-")
+
+
+def start_building(keep, key, design=None):
+    """Begin a building on the next free plot. design: for its own (already cleaned)."""
+    plots = free_plots(keep)
+    if not plots or under_way(keep) or not repaired(keep, "doorway"):
+        return None
+    if key in STRUCTURES and key in catalogue_left(keep):
+        info = STRUCTURES[key]
+        b = {"key": key, "name": info["name"], "about": info["about"], "place": key, "needed": info["needed"]}
+    elif key == OWN and design:
+        taken = set(places(keep)) | set(STRUCTURES) | {"courtyard", "tower"} | {
+            x.get("place") for x in keep.get("buildings", [])}
+        place = _slug(re.sub(r"^the\s+", "", design["name"], flags=re.I)) or "my-building"
+        n = 2
+        while place in taken:
+            place = f"{place[:20]}-{n}"
+            n += 1
+        b = {"key": OWN, "name": design["name"], "about": design["about"], "place": place,
+             "needed": OWN_NEEDED, "kind": design["kind"], "look": design["look"]}
+    else:
+        return None
+    b.update({"plot": plots[0], "done": 0, "started": _now().replace(microsecond=0).isoformat(), "finished": None})
+    keep["buildings"].append(b)
+    return b
+
+
+def raise_work(keep):
+    """One session's work on the building under way. Returns (building, finished_now)."""
+    b = under_way(keep)
+    if not b:
+        return None, False
+    b["done"] = min(b["needed"], b["done"] + 1)
+    if b["done"] >= b["needed"]:
+        b["finished"] = _now().replace(microsecond=0).isoformat()
+        return b, True
+    return b, False
+
+
+def validate_building(data):
+    """Clean up a building it designed: a name, what it's for, its kind and its look, each
+    from the allowed choices. Returns a safe design or None."""
+    if not isinstance(data, dict):
+        return None
+    name = re.sub(r"\s+", " ", str(data.get("name") or "")).strip(" .")[:40]
+    if len(name) < 3 or not re.search(r"[A-Za-z]", name):
+        return None
+    look_in = data.get("look") if isinstance(data.get("look"), dict) else data
+    look = {}
+    for part, options in LOOK.items():
+        value = str(look_in.get(part, "")).lower().strip()
+        look[part] = value if value in options else options[0]
+    kind = str(data.get("kind", "")).lower()
+    return {"name": name, "about": re.sub(r"\s+", " ", str(data.get("about") or "")).strip()[:140],
+            "kind": kind if kind in OWN_KINDS else "restful", "look": look}
+
+
+def activity_effects(activity, keep):
+    """How an activity moves its needs, given what it has built (a forge eases heavy work)."""
+    effects = dict(ACTIVITY_EFFECTS.get(activity, {}))
+    if activity in ("repair", "craft", "raise") and has_building(keep, "forge") and effects.get("rest", 0) < 0:
+        effects["rest"] = round(effects["rest"] * FORGE_EASE, 1)
+    return effects
+
+
+def place_rates(keep):
+    """Per-minute effects of staying in each building it has finished."""
+    out = {}
+    for b in finished_buildings(keep or {}):
+        rates = STRUCTURES[b["key"]]["rates"] if b.get("key") in STRUCTURES else OWN_KINDS.get(b.get("kind"), {})
+        out[b["place"]] = dict(rates)
+    return out
+
+
+def rates_for(keep):
+    """NEED_RATES as they are for it now (dry logs make the fire warmer)."""
+    rates = {k: dict(v) for k, v in NEED_RATES.items()}
+    if keep and has_building(keep, "woodshed"):
+        rates["fire"]["warmth"] = round(rates["fire"]["warmth"] * WOODSHED_FIRE, 4)
+    return rates
 
 
 def repair(keep, wanted):
@@ -236,17 +425,20 @@ def drift(needs, minutes):
 def step_rates(step, keep):
     """The per-minute effect of one step of its plan."""
     action, place = step.get("action"), step.get("place")
+    base, inside = rates_for(keep), place_rates(keep)
     if action == "sleep":
-        rates = dict(NEED_RATES["sleep"])
+        rates = dict(base["sleep"])
     elif place == "fire":
-        rates = dict(NEED_RATES["fire"])
+        rates = dict(base["fire"])
+    elif place in inside:
+        rates = dict(inside[place])
     else:
-        rates = dict(NEED_RATES["away_roofed" if repaired(keep, "roof") else "away"])
+        rates = dict(base["away_roofed" if repaired(keep, "roof") else "away"])
     extras = []
     if action == "work":
-        extras.append(NEED_RATES["work"])
+        extras.append(base["work"])
     if action in ("gaze", "read"):
-        extras.append(NEED_RATES["gaze"])
+        extras.append(base["gaze"])
     for extra in extras:
         for name, value in extra.items():
             rates[name] = rates.get(name, 0) + value
@@ -325,13 +517,17 @@ def export_state(world: Path, docs: Path):
         "needs_prev": needs.get("previous"),  # at the start of its last wake-up, for the ▲▼ marks
         "needs_at": needs.get("updated"),
         # the same rules the knight lives by, so the keep can move the bars live
-        "needs_model": {"rates": NEED_RATES, "spirit_home": SPIRIT_HOME,
+        "needs_model": {"rates": rates_for(keep), "place_rates": place_rates(keep), "spirit_home": SPIRIT_HOME,
                         "spirit_settle_per_hour": SPIRIT_SETTLE_PER_HOUR,
                         "drift_max_hours": DRIFT_MAX_HOURS, "hearth_warmth": HEARTH_WARMTH,
                         "saturate_above": SATURATE_ABOVE, "saturate_min": SATURATE_MIN,
                         "window_inspiration": WINDOW_INSPIRATION},
         "keep": {"repairs": {k: {"done": keep["repairs"][k], "needed": v["needed"]} for k, v in REPAIRS.items()},
-                 "objects": keep["objects"][-16:]},
+                 "objects": keep["objects"][-16:],
+                 # its courtyard buildings, finished or under way, and where each one stands
+                 "buildings": [{k: b.get(k) for k in ("key", "name", "about", "place", "plot", "done", "needed",
+                                                      "kind", "look", "finished")} for b in keep.get("buildings", [])],
+                 "plots": PLOTS},
         "places": places(keep),
         "gallery": [{"file": g["file"], "title": g["title"], "time": g["time"]} for g in gallery[-7:]],
         "projects": [{"slug": p["slug"], "title": p["title"], "status": p.get("status", "")}

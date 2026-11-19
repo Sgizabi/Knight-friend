@@ -97,4 +97,21 @@ _m = llm.TPD.search("on tokens per day (TPD): Limit 200000, Used 199000, Request
 assert _m and _m.groups() == ("200000", "199000")
 assert all(llm.LADDER[r] and llm.chosen_models(_w)[r] in llm.LADDER[r] + [llm.OVERRIDE[r]] for r in llm.LADDER)
 assert llm.tests_today(_w) == 0
+# building in the courtyard: only once the doorway's clear, one at a time, a plot each, safe designs
+_k = {"repairs": {k: 0 for k in life.REPAIRS}, "objects": [], "buildings": []}
+assert not life.can_raise(_k) and life.start_building(_k, "woodshed") is None
+_k["repairs"]["doorway"] = 3
+assert life.can_raise(_k) and life.start_building(_k, "woodshed")["plot"] == 0
+assert life.start_building(_k, "forge") is None                         # one at a time
+for _ in range(3):
+    _b, _done = life.raise_work(_k)
+assert _done and "woodshed" in life.places(_k) and life.rates_for(_k)["fire"]["warmth"] > life.NEED_RATES["fire"]["warmth"]
+assert life.step_rates({"place": "woodshed", "action": "sit"}, _k) == life.STRUCTURES["woodshed"]["rates"]
+assert life.start_building(_k, "woodshed") is None                      # one of each from the catalogue
+_d = life.validate_building({"name": "Map Room", "about": "maps", "kind": "sneaky",
+                             "look": {"walls": "gold", "roof": "lean-to", "feature": "<script>"}})
+assert _d["kind"] == "restful" and _d["look"]["walls"] == "stone" and _d["look"]["roof"] == "lean-to"
+assert _d["look"]["feature"] in life.LOOK["feature"] and life.validate_building({"name": "x"}) is None
+_b = life.start_building(_k, life.OWN, _d)
+assert _b["place"] == "map-room" and _b["plot"] == 1 and _b["place"] not in life.places(_k)
 print("all checks passed")

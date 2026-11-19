@@ -23,6 +23,12 @@ interests grow (and fade) from its own choices.
 - **A keep it rebuilds**: the doorway, hearth, window, tower stair, east wall and roof
   each take several sessions to mend. Some open new places (the courtyard, the tower top);
   some change its needs (a mended hearth warms better, a mended roof keeps warmth in).
+- **Buildings of its own choosing**: once the doorway's clear it may raise buildings on four
+  plots in the courtyard, one at a time over several sessions: a woodshed, forge,
+  glasshouse or bathhouse, or one it designs itself (it names it, says what it's for, and
+  picks walls, roof, size, colour and one feature from a set of safe parts). Each changes
+  its life a little, and it can walk into them; inside, the keep lifts the roof to look in.
+  Nothing religious is ever built.
 - **Its creations live in the keep**: drawings hang on the walls (the newest on the
   easel), workshop projects stand as books on the shelf, writings lie as scrolls on the
   desk, and objects it designs from simple shapes appear in 3D. Click anything to see

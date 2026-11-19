@@ -56,13 +56,14 @@ DIARY_TEMPERATURE = 0.7
 MOODS = ["content", "curious", "melancholy", "restless", "absorbed", "proud",
          "delighted", "wistful", "frustrated", "sleepy", "amused", "lonely"]
 EMOTES = ["music", "exclaim", "question", "dots", "heart", "zzz", "spark", "cloud", "sigh", "anger"]
-ACTIVITIES = ["draw", "write", "study", "build", "craft", "repair", "rest", "sleep", "wander"]
+ACTIVITIES = ["draw", "write", "study", "build", "craft", "repair", "raise", "rest", "sleep", "wander"]
 SHEET_SECTIONS = ["traits", "values", "fears", "quirks"]
 ACTIONS = ["sit", "stand", "gaze", "read", "write", "draw", "work", "pace", "sleep", "vigil"]
 WHERE = {  # where each activity happens, for the animation
     "draw": ("easel", "draw"), "write": ("desk", "write"), "study": ("bookshelf", "read"),
     "build": ("workbench", "work"), "craft": ("workbench", "work"), "rest": ("fire", "sit"),
     "sleep": ("bedroll", "sleep"), "wander": ("window", "pace"), "repair": ("fire", "work"),
+    "raise": ("courtyard", "work"),
 }
 
 SEED = """You are a knight. You woke, some time ago, beside a small fire in a ruined stone keep,
@@ -181,7 +182,7 @@ EVENING_UTC = (2.5, 4.5)  # the long evening by the fire: about 9:30-11:30 PM US
 NIGHT_UTC = (5.0, 12.0)   # about midnight to 7 AM US Eastern: the knight sleeps through the night
 EXHAUSTED = 15            # below this, its plan must include a proper sleep
 SPENT = 5                 # at or below this, it's too tired for heavy work until it sleeps
-HEAVY_WORK = {"repair", "build", "craft"}
+HEAVY_WORK = {"repair", "build", "craft", "raise"}
 GLANCE_SHARE = 0.8        # light check-ins stop once the day's usage passes this share of its cap
 UNWELL_AFTER = 4          # failed check-ins in a row before the pages say it seems unwell
 GLANCE_GAP_MINUTES = 25
@@ -585,17 +586,22 @@ class Knight:
         activities = list(ACTIVITIES)
         if not any(not life.repaired(self.keep, k) for k in life.REPAIRS):
             activities.remove("repair")          # the keep is whole: nothing left to mend
+        if life.can_raise(self.keep):
+            extra += "\n" + life.describe_building_options(self.keep)
+        else:
+            activities.remove("raise")           # no courtyard yet, or no room left in it
         if self.needs["rest"] <= SPENT:          # its body sets a limit its will can't push past
             activities = [a for a in activities if a not in HEAVY_WORK]
-            extra += ("\n\nYou are utterly spent. Heavy work (repairing, building, crafting) is "
+            extra += ("\n\nYou are utterly spent. Heavy work (repairing, building, crafting, raising) is "
                       "beyond you until you've slept.")
         choices = activities + [p["slug"] for p in pastimes] + [INVENT]
         data = self.ask("decide", (
             f"{context}\n{extra}\n\nYou stir. What do you feel like doing now?\n"
             f"activity must be one of {choices}. mood must be one of {MOODS}.\n"
             "subject: what it is about (a topic to study, a thing to draw or write about, a page "
-            "to build, an object to craft, or for 'repair' the [key] of the part of the keep to "
-            "mend). project: for 'build', the [slug] of an unfinished workshop project to "
+            "to build, an object to craft, for 'repair' the [key] of the part of the keep to "
+            "mend, or for 'raise' the [key] of a building to start or what you'd build of your own). "
+            "project: for 'build', the [slug] of an unfinished workshop project to "
             "continue, or 'new'.\n"
             'Reply as JSON: {"waking_thought": "", "mood": "", "activity": "", "subject": "", '
             '"project": "", "intention": "", "new_pastime": {}}'
@@ -622,6 +628,10 @@ class Knight:
             wanted = decision["subject"].lower()
             site = next((k for k in open_jobs if k in wanted), open_jobs[0] if open_jobs else None)
             place = f"repair:{site}" if site else "fire"
+        if activity == "raise":   # walk out to the plot it's building on
+            going = life.under_way(self.keep)
+            plot = going["plot"] if going else (life.free_plots(self.keep) or [None])[0]
+            place = f"raise:{plot}" if plot is not None else "courtyard"
         self.set_status(True, place, action, "dots", decision.get("intention") or decision["subject"],
                         thought=decision.get("waking_thought", ""))
         checkpoint(f"{self.identity['name']} goes to the {place}")
@@ -632,7 +642,7 @@ class Knight:
             result = {"summary": f"tried to {activity} but the thought slipped away ({err})"}
         if result is None:
             result = {"summary": f"{activity}: {decision.get('waking_thought', '')}"}
-        effects = life.PASTIME_KINDS[pastime["kind"]] if pastime else life.ACTIVITY_EFFECTS.get(activity, {})
+        effects = life.PASTIME_KINDS[pastime["kind"]] if pastime else life.activity_effects(activity, self.keep)
         life.change(self.needs, effects, self.keep)
         if activity in ("draw", "write", "build", "craft"):
             life.change(self.needs, {"spirit": 8 if result.get("creation") or result.get("ok") else -6})
@@ -706,6 +716,60 @@ class Knight:
             return {"summary": f"finished mending {info['name']}! Now {info['effect']}", "ok": True}
         return {"summary": f"worked on mending {info['name']} ({done}/{info['needed']} of the work done)",
                 "ok": True}
+
+    def do_raise(self, decision):
+        """A session's work on a building in the courtyard; the first one starts it (a building
+        from the catalogue, or one it designs itself)."""
+        going, started = life.under_way(self.keep), False
+        if not going:
+            wanted = decision["subject"].lower()
+            key = next((k for k in life.catalogue_left(self.keep) if k in wanted), None)
+            if key:
+                going = life.start_building(self.keep, key)
+            else:
+                design = self.design_building(decision["subject"])
+                if not design:
+                    return {"summary": "paced out the courtyard and sketched ideas for a building in the dirt, "
+                                       "but nothing felt right yet", "ok": False}
+                going = life.start_building(self.keep, life.OWN, design)
+            if not going:
+                return {"summary": "looked over the courtyard, but there's no room left to build", "ok": False}
+            started = True
+        b, finished = life.raise_work(self.keep)
+        if finished:
+            life.change(self.needs, {"spirit": 20})
+            return {"summary": f"finished building {b['name']} in the courtyard! Now {life.building_effect(b)}",
+                    "ok": True}
+        return {"summary": f"{'started building' if started else 'worked on'} {b['name']} in the courtyard "
+                           f"({b['about']}; {b['done']}/{b['needed']} of the work done)", "ok": True}
+
+    def design_building(self, idea):
+        """Its own building: it decides what and what for; the look is a choice of safe parts."""
+        idea = str(idea or "").strip()
+        hint = (f"You had this in mind: {idea[:120]}. " if idea and idea.lower() not in ("own", "[own]", "my own")
+                else "")
+        look = "; ".join(f"{part}: one of {options}" for part, options in life.LOOK.items())
+        data = self.ask("design", (
+            f"{life.describe_keep(self.keep)}\n\n"
+            "You're about to build something of your own in the courtyard: a small building, about "
+            f"three paces across, that you can walk into. {hint}Decide what it is and what it's for in "
+            "your life here. Keep it plain and real: something you could put up by hand from stone, "
+            "timber and wattle. Nothing religious (no shrines, chapels or temples).\n"
+            "- name: what you call it, 2-5 words\n"
+            "- about: one plain line on what it's for\n"
+            f"- kind: one of {list(life.OWN_KINDS)}, what you'd mostly do there\n"
+            f"- look: {look} (accent is the colour of its door and shutters)\n"
+            'Reply as JSON: {"name": "", "about": "", "kind": "", "look": {"walls": "", "roof": "", '
+            '"size": "", "accent": "", "feature": ""}}'
+        ), max_tokens=900)
+        design = life.validate_building(data)
+        if not design:
+            return None
+        allowed, why = self.check("building in the courtyard", design["name"], f"{design['name']}: {design['about']}")
+        if not allowed:
+            print(f"  [building design held back: {why}]")
+            return None
+        return design
 
     def do_craft(self, decision):
         data = self.ask("craft", (

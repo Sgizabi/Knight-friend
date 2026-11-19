@@ -164,6 +164,12 @@ const M = {
   grass: mat('#3e4a2c'), grassL: mat('#55633a'), dirt: mat('#2b241e'), iron: mat('#3a3a3c', .7, .5),
   glass: new THREE.MeshStandardMaterial({ color: '#9fc3d8', transparent: true, opacity: .22, roughness: .1, metalness: .2, depthWrite: false }),
 };
+const BM = {   // the courtyard buildings
+  thatch: mat('#8f7848', 0, 1), shingle: mat('#4e3524'), slate: mat('#42474d', .1, .8), daub: mat('#a8916c'),
+  clay: mat('#9a5a3a'), leaf: mat('#5f7d3c'), leafL: mat('#7c9a48'), water: mat('#5d7a86', .2, .25),
+  ember: new THREE.MeshStandardMaterial({ color: '#ff7a2a', emissive: '#ff5a10', emissiveIntensity: 2.2, roughness: .6, flatShading: true, toneMapped: false }),
+  lamp: new THREE.MeshStandardMaterial({ color: '#ffc46b', emissive: '#ffb050', emissiveIntensity: 1.6, roughness: .5, flatShading: true, toneMapped: false }),
+};
 const cyl = (rt, rb, h, seg = 8) => new THREE.CylinderGeometry(rt, rb, h, seg, 1);
 const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
 const ico = (r, d = 0) => new THREE.IcosahedronGeometry(r, d);
@@ -262,8 +268,13 @@ function buildWorld(st) {
   slab(hall, M.floor, [0, 0, 0], { jitter: .04 });
   for (let i = 0; i < 40; i++) slab(box(.9, .02, .9), i % 2 ? M.stoneD : M.floor,
     [-5 + (i % 10) * 1.1 + (hash(i, 1, 2) - .5) * .2, .005, -3.6 + Math.floor(i / 10) * 2.2], { jitter: .05, seed: i });
-  const yard = new THREE.PlaneGeometry(5.6, 9.2, 10, 16); yard.rotateX(-Math.PI / 2);
-  slab(yard, M.grass, [-8.4, .01, 0], { jitter: .08 });
+  const yard = new THREE.PlaneGeometry(11.9, 9.2, 22, 16); yard.rotateX(-Math.PI / 2);
+  slab(yard, M.grass, [-11.25, .01, 0], { jitter: .08 });
+  // a worn path from the door, past the well and the old tree, between the building plots
+  const lane = new THREE.PlaneGeometry(10.6, 1.0, 20, 2); lane.rotateX(-Math.PI / 2);
+  slab(lane, M.dirt, [-11.35, .02, .1], { jitter: .03 });
+  for (let i = 0; i < 22; i++) slab(box(.34 + hash(i, 4, 4) * .2, .04, .3 + hash(i, 5, 5) * .15), i % 3 ? M.stoneL : M.stone,
+    [-6.3 - i * .48 + (hash(i, 1, 1) - .5) * .15, .03, .1 + (hash(i, 2, 2) - .5) * .5], { rot: [0, hash(i, 3, 3), 0], jitter: .02, seed: i });
 
   // walls: north (with the window), west (with the doorway), east (collapsed), south (low, open to the view)
   const winP = progress(st, 'window'), doorP = progress(st, 'doorway'), wallP = progress(st, 'wall');
@@ -278,16 +289,20 @@ function buildWorld(st) {
   if (wallP < 1) rubble(4.4, 2.9, 1.2, Math.round(16 * (1 - wallP)), 41);
   wallRun('x', 4.3, -5.6, 5.6, c => 1 + Math.floor(hash(c, 9, 4) * 3), null, 53);
   // courtyard: low outer walls, a dead tree, an old well
-  wallRun('z', -11.2, -4.3, 4.3, c => 2 + Math.floor(hash(c, 2, 8) * 2), null, 61);
-  wallRun('x', -4.3, -11.2, -5.6, c => 2 + Math.floor(hash(c, 4, 8) * 2), null, 67);
-  wallRun('x', 4.3, -11.2, -5.6, c => 1 + Math.floor(hash(c, 6, 8) * 2), null, 71);
+  wallRun('z', -17.2, -4.3, 4.3, c => 2 + Math.floor(hash(c, 2, 8) * 2), null, 61);
+  wallRun('x', -4.3, -17.2, -5.6, c => 2 + Math.floor(hash(c, 4, 8) * 2), null, 67);
+  wallRun('x', 4.3, -17.2, -5.6, c => 1 + Math.floor(hash(c, 6, 8) * 2), null, 71);
   slab(cyl(.16, .24, 2.4, 6), M.woodD, [-8.8, 1.2, -2.2], { jitter: .05 });
   for (const [ry, rz, l, y] of [[.3, .9, 1.1, 1.9], [2.4, -.8, .9, 2.2], [4.2, .7, .8, 1.5], [1.2, -1.0, .7, 2.5]])
     slab(cyl(.05, .09, l, 5), M.woodD, [-8.8 + Math.cos(ry) * l * .35, y + .3, -2.2 + Math.sin(ry) * l * .35], { rot: [0, ry, rz], jitter: .03 });
   slab(cyl(.6, .65, .7, 9), M.stone, [-8.2, .35, 2.4], { jitter: .06 });
   slab(cyl(.45, .45, .72, 9), M.visor, [-8.2, .37, 2.4], { jitter: 0 });
-  for (let i = 0; i < 26; i++) slab(new THREE.ConeGeometry(.06, .3 + hash(i, 2, 3) * .25, 4), i % 3 ? M.grassL : M.grass,
-    [-10.6 + hash(i, 5, 1) * 4.6, .15, -3.8 + hash(i, 1, 7) * 7.6], { jitter: .02 });
+  const builtOn = (x, z) => (st?.keep?.buildings || []).some(b => PLOTS[b.plot] && Math.abs(x - PLOTS[b.plot][0]) < 1.7 && Math.abs(z - PLOTS[b.plot][1]) < 1.5);
+  for (let i = 0; i < 60; i++) {
+    const x = -16.6 + hash(i, 5, 1) * 10.6, z = -3.8 + hash(i, 1, 7) * 7.6;
+    if (Math.abs(z - .1) < .6 || builtOn(x, z)) continue;          // not on the path, not inside a building
+    slab(new THREE.ConeGeometry(.06, .3 + hash(i, 2, 3) * .25, 4), i % 3 ? M.grassL : M.grass, [x, .15, z], { jitter: .02 });
+  }
   info(g, [1.2, 2.6, 1.2], [-8.8, 1.3, -2.2], 'A dead tree in the courtyard', '');
 
   // the doorway: rubble until cleared, then a door hanging ajar
@@ -404,10 +419,328 @@ function buildWorld(st) {
   });
   placeObjects(g, st?.keep?.objects || []);
   giftPile(g, st?.gifts || []);
+  buildYard(g, st);
 
   finishBake(g);
   g.traverse(o => { if (o.isMesh && o.material === M.glass) o.castShadow = false; });
   shadowsDirty = true;
+}
+
+// =====================================================================================
+// The courtyard's buildings: four plots off the path from the door. Each goes up in
+// stages (footings, walls rising, a full frame, then roof and fittings), from the
+// catalogue or to its own design (a choice of safe parts), and can be walked into.
+// =====================================================================================
+const PLOTS = [[-11.9, -2.5, 0], [-11.9, 2.7, Math.PI], [-15.2, -2.5, 0], [-15.2, 2.7, Math.PI]];   // x, z, turn (door to the path)
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+const ACCENT = { 'rust red': '#8e3b26', 'sea blue': '#3b5f7e', 'moss green': '#4f6a3a', plum: '#5e3a5a', ochre: '#b0802f',
+                 'slate grey': '#5b636b', 'bone white': '#d8cdb4' };
+const KINDS = {
+  woodshed:   { w: 2.8, d: 2.0, h: 2.0, walls: 'timber', roof: 'lean-to', roofMat: 'shingle', open: true },
+  forge:      { w: 2.8, d: 2.4, h: 2.0, walls: 'stone', roof: 'gable', roofMat: 'slate', accent: '#5b636b', chimney: true },
+  glasshouse: { w: 2.8, d: 2.2, h: 1.9, walls: 'glass', roof: 'gable', roofMat: 'glass', accent: '#4f6a3a' },
+  bathhouse:  { w: 2.6, d: 2.4, h: 2.0, walls: 'timber', roof: 'gable', roofMat: 'shingle', accent: '#3b5f7e', feature: 'lantern' },
+};
+function specFor(b) {
+  if (KINDS[b.key]) return { ...KINDS[b.key] };
+  const L = b.look || {}, med = L.size === 'medium';
+  return { w: med ? 2.9 : 2.4, d: med ? 2.4 : 2.0, h: med ? 2.1 : 1.95, walls: L.walls || 'stone', roof: L.roof || 'gable',
+           roofMat: { stone: 'slate', timber: 'shingle', wattle: 'thatch' }[L.walls] || 'thatch',
+           accent: ACCENT[L.accent] || '#6b4a30', feature: L.feature, chimney: L.feature === 'chimney', own: true, kind: b.kind };
+}
+// a plot's own frame: x across the front, z out of the door toward the path, turned into place
+function plotFrame(i) {
+  const [cx, cz, turn] = PLOTS[i], c = Math.cos(turn), s = Math.sin(turn);
+  const qT = new THREE.Quaternion().setFromAxisAngle(Y_AXIS, turn);
+  const w = (lx, lz) => [cx + lx * c + lz * s, cz - lx * s + lz * c];
+  const at = ([lx, ly, lz]) => { const [x, z] = w(lx, lz); return [x, ly, z]; };
+  const rotW = rot => {
+    const e = new THREE.Euler().setFromQuaternion(qT.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(...(rot || [0, 0, 0])))));
+    return [e.x, e.y, e.z];
+  };
+  return {
+    at, turn,
+    put: (geo, material, pos, o = {}) => slab(geo, material, at(pos), { ...o, rot: rotW(o.rot) }),
+    piece: (parent, geo, material, pos, o = {}) => part(parent, geo, material, at(pos), { ...o, rot: rotW(o.rot) }),
+    yaw: (dx, dz) => Math.atan2(dx * c + dz * s, -dx * s + dz * c),   // facing a local direction
+  };
+}
+// one straight wall (local, along x or z, a0 < a1), up to `top`, leaving gaps for doors and windows
+function plotWall(F, kind, axis, fixed, a0, a1, top, gaps, th, seed) {
+  const L = a1 - a0, r = rand(seed);
+  const pos = (a, y) => axis === 'x' ? [a0 + a, y, fixed] : [fixed, y, a0 + a];
+  const size = (len, h, t = th) => axis === 'x' ? box(len, h, t) : box(t, h, len);
+  const free = (y0, y1) => {
+    let out = [[0, L]];
+    for (const g of gaps) if (g.y0 < y1 && g.y1 > y0)
+      out = out.flatMap(([s, e]) => [[s, Math.min(e, g.a0)], [Math.max(s, g.a1), e]]).filter(([s, e]) => e - s > .04);
+    return out;
+  };
+  const posts = [0, L, ...gaps.flatMap(g => [g.a0, g.a1])];
+  if (kind === 'stone' || kind === 'glass') {
+    const courseTop = kind === 'glass' ? Math.min(top, .45) : top;
+    for (let y = 0, row = 0; y < courseTop - .02; y += .3, row++) {
+      const h = Math.min(.3, courseTop - y);
+      for (const [s, e] of free(y, y + h)) {
+        let a = s + (row % 2 ? .12 : 0) * (e - s > .5 ? 1 : 0);
+        if (a > s) F.put(size(a - s - .02, h - .02), M.stone, pos(s + (a - s) / 2, y + h / 2), { jitter: .03, seed: seed + row });
+        while (a < e - .02) {
+          const len = Math.min(.32 + r() * .2, e - a);
+          F.put(size(len - .02, h - .02), (row + Math.floor(a * 3)) % 3 ? M.stoneL : M.stone, pos(a + len / 2, y + h / 2),
+                { jitter: .04, seed: seed + row * 17 + Math.floor(a * 10) });
+          a += len;
+        }
+      }
+    }
+    if (kind === 'glass' && top > .45) {      // a timber frame with panes above a low stone base
+      const h = top - .45;
+      for (let a = 0; a <= L + .01; a += L / Math.max(1, Math.round(L / .7))) F.put(size(.07, h, .08), M.woodD, pos(Math.min(a, L), .45 + h / 2), { jitter: .005 });
+      F.put(size(L, .07, .1), M.woodD, pos(L / 2, top - .03), { jitter: .005 });
+      for (const [s, e] of free(.5, top)) F.put(size(e - s - .04, h - .1, .012), M.glass, pos((s + e) / 2, .45 + h / 2), { jitter: 0 });
+    }
+  } else if (kind === 'timber') {
+    for (const a of posts) F.put(size(.12, top, th + .04), M.woodD, pos(Math.min(L - .06, Math.max(.06, a)), top / 2), { jitter: .01 });
+    for (let y = 0, row = 0; y < top - .02; y += .2, row++) {
+      const h = Math.min(.2, top - y);
+      for (const [s, e] of free(y, y + h)) F.put(size(e - s, h - .02, .07), row % 2 ? M.wood : M.woodL, pos((s + e) / 2, y + h / 2), { jitter: .012, seed: seed + row });
+    }
+  } else {                                     // wattle and daub between dark posts
+    const stakes = [...posts]; for (let a = .9; a < L - .4; a += .9) stakes.push(a);
+    for (const a of stakes) F.put(size(.1, top, th + .03), M.woodD, pos(Math.min(L - .05, Math.max(.05, a)), top / 2), { jitter: .01 });
+    if (top > 1.1) F.put(size(L, .1, th + .03), M.woodD, pos(L / 2, 1.05), { jitter: .01 });
+    for (let y = 0; y < top - .02; y += .55) {
+      const h = Math.min(.55, top - y);
+      for (const [s, e] of free(y, y + h)) F.put(size(e - s, h - .01, th - .02), BM.daub, pos((s + e) / 2, y + h / 2), { jitter: .02 });
+    }
+  }
+  for (const g of gaps) if (top > g.y1 && g.y0 < .1) F.put(size(g.a1 - g.a0 + .3, .14, th + .04), M.woodD, pos((g.a0 + g.a1) / 2, g.y1 + .07), { jitter: .01 });
+}
+// a triangle of wall under a roof's end (points as local [z, y])
+function plotGableEnd(F, material, x, pts, th) {
+  const shape = new THREE.Shape(pts.map(([z, y]) => new THREE.Vector2(-z, y)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: th, bevelEnabled: false });
+  geo.rotateY(Math.PI / 2); geo.translate(-th / 2, 0, 0);
+  F.put(geo, material, [x, 0, 0], { jitter: .01 });
+}
+const ROOF_MAT = () => ({ thatch: BM.thatch, shingle: BM.shingle, slate: BM.slate, glass: M.glass });
+const WALL_MAT = kind => ({ stone: M.stone, timber: M.wood, wattle: BM.daub, glass: M.glass })[kind] || M.stone;
+
+let yardGlowBase = 0;
+const yardGlow = new THREE.PointLight('#ff7a30', 0, 5, 2); scene.add(yardGlow);   // the forge, once there is one
+const buildingZones = [], yardSpots = [];
+function buildYard(g, st) {
+  for (const k of yardSpots) delete SPOTS[k];
+  yardSpots.length = 0; buildingZones.length = 0; yardGlowBase = 0;
+  // somewhere to stand at every plot, even before a building is begun on it
+  PLOTS.forEach((_, i) => {
+    const F = plotFrame(i), [x, , z] = F.at([.35, 0, 2.15]);
+    SPOTS[`raise:${i}`] = { p: [x, z], yaw: F.yaw(0, -1), label: 'at the plot in the courtyard' }; yardSpots.push(`raise:${i}`);
+  });
+  for (const b of st?.keep?.buildings || []) if (b.plot >= 0 && b.plot < PLOTS.length) buildPlot(g, b);
+}
+const theName = name => /^the /i.test(name) ? 'the ' + name.slice(4) : 'the ' + name;
+function buildPlot(g, b) {
+  const F = plotFrame(b.plot), S = specFor(b), W = S.w, D = S.d, H = S.h;
+  const p = Math.min(1, (b.done || 0) / (b.needed || 1)), finished = !!b.finished;
+  const stage = finished ? 3 : p < .34 ? 0 : p < .67 ? 1 : 2;
+  const top = stage === 0 ? .22 : stage === 1 ? H * .5 : H;
+  const th = S.walls === 'stone' ? .3 : S.walls === 'glass' ? .1 : .16;
+  const seed = 700 + b.plot * 97;
+  const wallKind = stage === 0 ? 'stone' : S.walls;
+  const door = { a0: W / 2 - .45, a1: W / 2 + .45, y0: 0, y1: 1.95 };
+  const sideLen = D - 2 * th, win = { a0: sideLen / 2 - .25, a1: sideLen / 2 + .25, y0: 1.0, y1: 1.5 };
+  // floor, walls (the front left open on a woodshed)
+  if (stage > 0) F.put(box(W - .1, .04, D - .1), S.walls === 'stone' ? M.stoneL : M.woodL, [0, .02, 0], { jitter: .01 });
+  plotWall(F, wallKind, 'x', -D / 2 + th / 2, -W / 2, W / 2, top, [], th, seed);
+  if (!S.open) plotWall(F, wallKind, 'x', D / 2 - th / 2, -W / 2, W / 2, top, [door], th, seed + 1);
+  const sideGaps = S.open || S.walls === 'glass' ? [] : [win];
+  for (const sx of [-1, 1]) plotWall(F, wallKind, 'z', sx * (W / 2 - th / 2), -D / 2 + th, D / 2 - th, top, sideGaps, th, seed + 2 + sx);
+  if (S.open && stage > 0) for (const sx of [-1, 1]) F.put(box(.14, H + .45, .14), M.woodD, [sx * (W / 2 - .07), (H + .45) / 2, D / 2 - .07], { jitter: .01 });
+  const roofTop = S.roof === 'gable' ? (S.roofMat === 'glass' ? .7 : .9) : S.roof === 'lean-to' ? .45 : .2;
+  // the work in progress: materials, scaffolding, a ladder, the bare rafters
+  if (!finished) {
+    const pile = S.walls === 'stone' ? M.stone : M.wood;
+    for (let i = 0; i < 5; i++) {
+      const r = hash(b.plot, i, 3);
+      if (S.walls === 'stone') F.put(box(.34, .2, .24), i % 2 ? M.stone : M.stoneD, [W / 2 - .2 - (i % 3) * .36, .1 + Math.floor(i / 3) * .2, D / 2 + .6 + r * .05], { jitter: .04, seed: i });
+      else F.put(box(1.4, .06, .16), i % 2 ? pile : M.woodL, [W / 2 - .75, .03 + i * .06, D / 2 + .6 + (r - .5) * .06], { rot: [0, (r - .5) * .1, 0], jitter: .01 });
+    }
+    F.put(cyl(.2, .17, .22, 9), M.woodD, [-W / 2 + .35, .11, D / 2 + .55], { jitter: .02 });   // a tub of mortar or pegs
+    for (const sx of [-1, 1]) F.put(box(.07, .9, .07), M.woodD, [sx * (W / 2 + .05), .45, D / 2 + .05], { jitter: .01 });   // corner stakes
+    if (stage >= 1) {
+      for (const sx of [-1, 1]) F.put(cyl(.04, .05, top + .5, 6), M.woodD, [sx * (W / 2 - .2), (top + .5) / 2, D / 2 + .45], { jitter: .005 });
+      F.put(box(W - .2, .05, .3), M.woodL, [0, Math.max(.5, top - .35), D / 2 + .45], { jitter: .01 });
+    }
+    if (stage === 2) {
+      F.put(box(.06, 2.3, .06), M.woodD, [W / 2 - .7, 1.12, D / 2 + .35], { rot: [-.22, 0, 0] });
+      F.put(box(.06, 2.3, .06), M.woodD, [W / 2 - .3, 1.12, D / 2 + .35], { rot: [-.22, 0, 0] });
+      for (let y = .25; y < 2.2; y += .3) F.put(box(.42, .04, .04), M.woodL, [W / 2 - .5, y, D / 2 + .35 + .22 * (1.12 - y)]);
+      if (S.roof === 'gable') {
+        F.put(box(W + .2, .1, .1), M.woodD, [0, H + roofTop, 0]);
+        const a = Math.atan2(roofTop, D / 2), l = Math.hypot(roofTop, D / 2);
+        for (const x of [-W / 2 + .1, 0, W / 2 - .1]) for (const sz of [-1, 1])
+          F.put(box(.07, .07, l), M.woodD, [x, H + roofTop / 2, sz * D / 4], { rot: [sz * a, 0, 0] });
+      }
+    }
+  }
+  const roof = new THREE.Group(); g.add(roof);
+  if (finished) {
+    const rm = ROOF_MAT()[S.roofMat], wm = WALL_MAT(S.walls), roofTh = S.roofMat === 'thatch' ? .2 : .1;
+    if (S.roof === 'gable') {
+      plotGableEnd(F, wm, -W / 2 + th / 2, [[-D / 2, H], [D / 2, H], [0, H + roofTop]], th);
+      plotGableEnd(F, wm, W / 2 - th / 2, [[-D / 2, H], [D / 2, H], [0, H + roofTop]], th);
+      const hs = D / 2 + .28, a = Math.atan2(roofTop, hs), l = Math.hypot(roofTop, hs);
+      for (const sz of [-1, 1]) {
+        F.piece(roof, box(W + .4, roofTh, l), rm, [0, H + roofTop / 2 + roofTh / 2, sz * hs / 2], { rot: [sz * a, 0, 0], jitter: S.roofMat === 'thatch' ? .05 : .01 });
+        if (S.roofMat === 'glass') for (const x of [-W / 2 - .15, -W / 6, W / 6, W / 2 + .15])
+          F.piece(roof, box(.06, .06, l), M.woodD, [x, H + roofTop / 2 + .06, sz * hs / 2], { rot: [sz * a, 0, 0] });
+        else for (let k = 1; k < 4; k++) {   // rows of shingles, slates or bundled thatch
+          const along = (k / 4 - .5) * l;
+          F.piece(roof, box(W + .42, .04, .07), rm, [0, H + roofTop / 2 + roofTh + .01 - sz * Math.sin(a) * along * sz, sz * (hs / 2 + Math.cos(a) * along)], { rot: [sz * a, 0, 0], cast: false });
+        }
+      }
+      F.piece(roof, box(W + .46, .1, .18), S.roofMat === 'glass' ? M.woodD : rm, [0, H + roofTop + roofTh / 2 + .02, 0], { jitter: .01 });
+    } else if (S.roof === 'lean-to') {
+      for (const x of [-W / 2 + th / 2, W / 2 - th / 2]) plotGableEnd(F, wm, x, [[-D / 2, H], [D / 2, H], [D / 2, H + roofTop]], S.open ? .14 : th);
+      const span = D + .55, a = Math.atan2(roofTop, span), l = Math.hypot(roofTop, span);
+      F.piece(roof, box(W + .4, roofTh, l), rm, [0, H + roofTop / 2 + roofTh / 2, .05], { rot: [-a, 0, 0], jitter: .02 });
+    } else {
+      F.piece(roof, box(W + .3, .12, D + .3), M.woodD, [0, H + .06, 0], { jitter: .01 });
+      F.piece(roof, box(W + .1, .1, D + .1), M.grass, [0, H + .17, 0], { jitter: .04 });
+      for (let i = 0; i < 9; i++) F.piece(roof, new THREE.ConeGeometry(.05, .22, 4), i % 2 ? M.grassL : M.grass,
+        [(hash(i, b.plot, 1) - .5) * W, H + .3, (hash(b.plot, i, 2) - .5) * D], { cast: false });
+    }
+    // the door, hung ajar; shutters by the windows
+    if (!S.open) {
+      // a planked door with iron straps, hung ajar (swung in)
+      const hinge = [-.45, D / 2 - th / 2], swing = 1.1, along = d => [hinge[0] + d * Math.cos(swing), hinge[1] - d * Math.sin(swing)];
+      const shade = new THREE.Color(S.accent);
+      for (let i = 0; i < 4; i++) {
+        const [x, z] = along(.105 + i * .21);
+        F.put(box(.2, 1.9, .05), mat('#' + shade.clone().multiplyScalar(i % 2 ? .88 : 1).getHexString()), [x, .97, z], { rot: [0, swing, 0], jitter: .008 });
+      }
+      for (const y of [.45, 1.5]) { const [x, z] = along(.42); F.put(box(.8, .06, .07), M.iron, [x, y, z], { rot: [0, swing, 0], jitter: .004 }); }
+      if (sideGaps.length) for (const sx of [-1, 1]) for (const sz of [-1, 1])
+        F.put(box(.04, .5, .26), mat(S.accent), [sx * (W / 2 + .03), 1.25, sz * .4], { jitter: .005 });
+    }
+    furnish(F, b, S, W, D, H, th, roofTop);
+    const [x0, , z0] = F.at([-W / 2 + th, 0, -D / 2 + th]), [x1, , z1] = F.at([W / 2 - th, 0, D / 2 - th]);
+    const zone = { box: { x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1) },
+                   front: new THREE.Vector3(...F.at([0, 0, D / 2 + .75])), roof, b };
+    buildingZones.push(zone);
+    const inside = S.inside || [0, .2], [ix, , iz] = F.at([inside[0], 0, inside[1]]);
+    const seatAt = S.seat || [-W / 2 + .55, -.1, 1.57], [sx, , sz] = F.at([seatAt[0], 0, seatAt[1]]);
+    SPOTS[b.place] = { p: [ix, iz], yaw: F.yaw(...(S.face || [0, -1])), sit: { p: [sx, sz], yaw: F.yaw(Math.sin(seatAt[2]), Math.cos(seatAt[2])), seat: .45 },
+                       label: `in ${theName(b.name)}` };
+    yardSpots.push(b.place);
+  } else {
+    SPOTS[`raise:${b.plot}`].label = `on ${theName(b.name)}`;
+  }
+  const title = b.name.charAt(0).toUpperCase() + b.name.slice(1);
+  info(g, [W + .2, H + roofTop + .3, D + .2], F.at([0, (H + roofTop + .3) / 2, 0]), title,
+       finished ? b.about : `being built: ${b.done} of ${b.needed} sessions · ${b.about}`);
+}
+// what's inside: the catalogue's own fittings, or for its own buildings, a few things for
+// what it means to do there, a bench, and the feature it chose
+function furnish(F, b, S, W, D, H, th, roofTop) {
+  const back = -D / 2 + th, k = b.key;
+  if (k === 'woodshed') {
+    for (let layer = 0; layer < 4; layer++) for (let x = -W / 2 + .3; x < W / 2 - .2; x += .19)
+      F.put(cyl(.085, .085, .5, 7), (Math.round(x * 10) + layer) % 3 ? M.wood : M.woodD, [x + (layer % 2) * .09, .09 + layer * .16, back + .32], { rot: [Math.PI / 2, 0, 0], jitter: .01 });
+    F.put(cyl(.22, .25, .45, 9), M.woodD, [.75, .22, .25], { jitter: .02 });
+    F.put(box(.035, .035, .6), M.wood, [.75, .58, .3], { rot: [.9, .4, 0] }); F.put(box(.12, .14, .03), M.iron, [.72, .47, .08], { rot: [.9, .4, 0] });
+    F.put(cyl(.2, .22, .4, 9), M.wood, [-.75, .2, .35], { jitter: .02 });                 // a stump to sit on
+    S.seat = [-.75, .35, 0]; S.inside = [.35, .3]; S.face = [.4, -.05];
+  } else if (k === 'forge') {
+    const hx = -W / 2 + th + .45, hz = back + .42;
+    F.put(box(.9, .75, .8), M.stone, [hx, .375, hz], { jitter: .04 });
+    F.put(box(.6, .04, .5), BM.ember, [hx, .77, hz], { jitter: .02 });
+    F.put(new THREE.ConeGeometry(.62, .55, 4), M.stoneD, [hx, 1.55, hz], { rot: [0, Math.PI / 4, 0], jitter: .03 });
+    F.put(box(.42, H + roofTop + .6 - 1.75, .42), M.stoneD, [hx, (1.75 + H + roofTop + .6) / 2, hz - .05], { jitter: .03 });
+    F.put(box(.5, .14, .5), M.stone, [hx, H + roofTop + .67, hz - .05], { jitter: .03 });
+    F.put(cyl(.17, .22, .45, 8), M.woodD, [.45, .22, -.1]); F.put(box(.44, .14, .17), M.iron, [.45, .52, -.1], { jitter: .005 });
+    F.put(new THREE.ConeGeometry(.07, .22, 6), M.iron, [.78, .53, -.1], { rot: [0, 0, -Math.PI / 2] });
+    F.put(box(.36, .2, .5), M.leather, [hx + .62, .5, hz + .05], { rot: [0, 0, .25], jitter: .02 });   // bellows
+    F.put(cyl(.17, .17, .05, 8), M.wood, [W / 2 - .55, .45, .5]);
+    for (const [dx, dz] of [[.1, .1], [-.1, .1], [0, -.12]]) F.put(cyl(.02, .025, .44, 5), M.woodD, [W / 2 - .55 + dx, .22, .5 + dz]);
+    S.seat = [W / 2 - .55, .5, -1.57]; S.inside = [.05, .4]; S.face = [.5, -.6];
+    const [x, , z] = F.at([hx, 0, hz]); yardGlow.position.set(x, 1.0, z); yardGlowBase = 2.6;
+  } else if (k === 'glasshouse') {
+    for (const sx of [-1, 1]) {
+      F.put(box(.5, .06, D - .7), M.woodL, [sx * (W / 2 - .4), .75, 0], { jitter: .01 });
+      for (const z of [-D / 2 + .5, D / 2 - .5]) F.put(box(.05, .75, .05), M.woodD, [sx * (W / 2 - .4), .375, z]);
+      for (let i = 0; i < 4; i++) {
+        const z = -D / 2 + .55 + i * (D - 1.1) / 3;
+        F.put(cyl(.075, .055, .13, 7), BM.clay, [sx * (W / 2 - .4), .845, z], { jitter: .005 });
+        F.put(new THREE.ConeGeometry(.07, .18 + hash(i, sx, 4) * .12, 5), i % 2 ? BM.leaf : BM.leafL, [sx * (W / 2 - .4), 1.0, z], { jitter: .01 });
+      }
+    }
+    F.put(box(.4, .4, .4), M.woodL, [0, .2, back + .35], { jitter: .02 });
+    S.seat = [0, back + .35, 0]; S.inside = [0, .1];
+  } else if (k === 'bathhouse') {
+    F.put(cyl(.6, .55, .6, 14), M.wood, [-.35, .3, -.25], { jitter: .01 });
+    for (const y of [.15, .45]) F.put(cyl(.615, .6, .04, 14), M.iron, [-.35, y, -.25]);
+    F.put(cyl(.54, .54, .02, 14), BM.water, [-.35, .55, -.25], { jitter: 0 });
+    F.put(box(.45, .55, .45), M.iron, [W / 2 - th - .32, .275, back + .3], { jitter: .01 });
+    F.put(cyl(.06, .06, H + roofTop + .4 - .55, 6), M.iron, [W / 2 - th - .32, (H + roofTop + .4 + .55) / 2, back + .3]);
+    F.put(box(.32, .06, .9), M.wood, [W / 2 - th - .25, .45, .45], { jitter: .01 });
+    for (const z of [.1, .8]) F.put(box(.05, .45, .05), M.woodD, [W / 2 - th - .25, .22, z]);
+    S.seat = [W / 2 - th - .25, .45, -1.57]; S.inside = [.3, .45]; S.face = [-.65, -.7];
+  } else {                                        // its own design
+    const kind = b.kind || 'restful';
+    if (kind === 'restful') {
+      F.put(box(.75, .12, 1.3), M.cloth, [W / 2 - th - .45, .06, back + .75], { jitter: .02 });
+      F.put(box(.4, .1, .28), BM.daub, [W / 2 - th - .45, .15, back + .25], { jitter: .02 });
+    } else if (kind === 'creative') {
+      F.put(box(1.0, .05, .5), M.woodL, [.2, .8, back + .35], { jitter: .01 });
+      for (const [dx, dz] of [[-.45, -.2], [.45, -.2], [-.45, .2], [.45, .2]]) F.put(box(.05, .78, .05), M.woodD, [.2 + dx, .39, back + .35 + dz]);
+      for (let i = 0; i < 3; i++) F.put(cyl(.05, .05, .12, 7), mat(['#8e3b26', '#3b5f7e', '#b0802f'][i]), [-.1 + i * .16, .88, back + .3]);
+    } else if (kind === 'physical') {
+      F.put(box(.9, .1, .1), M.woodD, [.2, .55, back + .5]);
+      for (const sx of [-1, 1]) F.put(box(.06, .6, .06), M.woodD, [.2 + sx * .38, .3, back + .5], { rot: [0, 0, sx * .25] });
+      F.put(cyl(.09, .09, 1.1, 7), M.wood, [.2, .7, back + .5], { rot: [0, 0, Math.PI / 2] });
+    } else {
+      F.put(box(.8, .05, .45), M.woodL, [.25, .76, back + .3], { jitter: .01 });
+      for (const [dx, dz] of [[-.35, -.18], [.35, -.18], [-.35, .18], [.35, .18]]) F.put(box(.05, .74, .05), M.woodD, [.25 + dx, .37, back + .3 + dz]);
+      F.put(box(.22, .04, .16), M.paper, [.15, .8, back + .3], { jitter: .002 });
+      F.put(cyl(.025, .025, .1, 6), M.paper, [.5, .83, back + .25]);
+    }
+    // a bench along one side, for sitting
+    F.put(box(.34, .06, .95), M.wood, [-W / 2 + th + .22, .45, 0], { jitter: .01 });
+    for (const z of [-.35, .35]) F.put(box(.05, .45, .05), M.woodD, [-W / 2 + th + .22, .22, z]);
+    S.seat = [-W / 2 + th + .25, 0, Math.PI / 2]; S.inside = [.15, .25];
+    const f = S.feature;
+    if (f === 'chimney') {
+      F.put(box(.5, H + roofTop + .7, .5), M.stoneD, [W / 2 - .5, (H + roofTop + .7) / 2, -D / 2 + .05], { jitter: .03 });
+      F.put(box(.6, .12, .6), M.stone, [W / 2 - .5, H + roofTop + .76, -D / 2 + .05], { jitter: .03 });
+    } else if (f === 'bench') {
+      F.put(box(.95, .06, .3), M.wood, [W / 2 - .65, .42, D / 2 + .38], { jitter: .01 });
+      for (const x of [-.35, .35]) F.put(box(.05, .42, .05), M.woodD, [W / 2 - .65 + x, .21, D / 2 + .38]);
+    } else if (f === 'shelves') {
+      for (const y of [1.1, 1.5]) F.put(box(1.0, .04, .22), M.woodL, [-.2, y, back + .12], { jitter: .005 });
+      for (let i = 0; i < 5; i++) F.put(cyl(.04, .045, .12, 6), mat(['#9a5a3a', '#6b635a', '#3b5f7e'][i % 3]), [-.6 + i * .2, 1.18 + (i % 2) * .4, back + .12]);
+    } else if (f === 'lantern') {
+      F.put(box(.04, .04, .25), M.iron, [.75, 1.9, D / 2 + .12]);
+      F.put(box(.12, .16, .12), BM.lamp, [.75, 1.78, D / 2 + .22], { jitter: .004 });
+      F.put(new THREE.ConeGeometry(.1, .08, 4), M.iron, [.75, 1.9, D / 2 + .22], { rot: [0, Math.PI / 4, 0] });
+    } else if (f === 'awning') {
+      F.put(box(1.4, .04, .75), mat(S.accent), [0, 2.08, D / 2 + .35], { rot: [.32, 0, 0], jitter: .01 });
+      for (const sx of [-1, 1]) F.put(box(.05, 1.95, .05), M.woodD, [sx * .68, .97, D / 2 + .68]);
+    } else if (f === 'flower boxes') {
+      for (const sx of [-1, 1]) {
+        F.put(box(.16, .14, .62), M.woodD, [sx * (W / 2 + .1), .95, 0], { jitter: .01 });
+        for (let i = 0; i < 5; i++) F.put(ico(.05, 0), mat(['#c2552f', '#d8b04a', '#b46aa0', '#e3d6bb'][i % 4]), [sx * (W / 2 + .1), 1.06, -.24 + i * .12], { jitter: .01 });
+      }
+    } else if (f === 'weathervane') {
+      F.put(cyl(.015, .015, .6, 5), M.iron, [W / 4, H + roofTop + .3, 0]);
+      F.put(box(.36, .03, .02), M.iron, [W / 4, H + roofTop + .55, 0]);
+      F.put(new THREE.ConeGeometry(.04, .1, 4), M.iron, [W / 4 + .2, H + roofTop + .55, 0], { rot: [0, 0, -Math.PI / 2] });
+    }
+  }
+  if (k === 'bathhouse') {                  // the bathhouse's lantern by the door
+    F.put(box(.04, .04, .25), M.iron, [.75, 1.9, D / 2 + .12]);
+    F.put(box(.12, .16, .12), BM.lamp, [.75, 1.78, D / 2 + .22], { jitter: .004 });
+  }
 }
 
 // What visitors left by the door (the gifts it kept; logs went on the fire), in a small pile
@@ -685,6 +1018,7 @@ function updateSky() {   // follows the viewer's own clock
   sky.color.set(look.sc); sky.intensity = look.si;
   sky.position.set(night ? -4 : 6, dusk ? 3 : 9, night ? -6 : -3);
   stars.visible = moon.visible = night;
+  BM.lamp.emissiveIntensity = night ? 2.2 : dusk ? 1.3 : .35;
 }
 
 // =====================================================================================
@@ -806,12 +1140,16 @@ function groundAt(x, z) {
   return 0;
 }
 const region = (x, z) => x < -5.2 ? 'yard' : (groundAt(x, z) > 2 ? 'tower' : 'hall');
+const zoneAt = (x, z, pad = 0) => buildingZones.find(zn => x >= zn.box.x0 - pad && x <= zn.box.x1 + pad && z >= zn.box.z0 - pad && z <= zn.box.z1 + pad);
 function route(from, to) {
   const a = region(from.x, from.z), b = region(to.x, to.z), path = [];
+  const za = zoneAt(from.x, from.z, .1), zb = zoneAt(to.x, to.z, .1);
+  if (za && za !== zb) path.push(za.front);                   // out through its own door first
   if (a === 'tower' && b !== 'tower') path.push(STAIR_HIGH, STAIR_LOW);
   if (a === 'yard' && b !== 'yard') path.push(DOOR_OUT, DOOR_IN);
   if (b === 'yard' && a !== 'yard') path.push(DOOR_IN, DOOR_OUT);
   if (b === 'tower' && a !== 'tower') path.push(STAIR_LOW, STAIR_HIGH);
+  if (zb && zb !== za) path.push(zb.front);                   // and in at the door
   path.push(to);
   // step around the fire rather than through it
   const out = []; let prev = from;
@@ -908,13 +1246,16 @@ const JOINTS = ['torso', 'head', 'shL', 'shR', 'elL', 'elR', 'thL', 'thR', 'knL'
 const DEMO_STEPS = [['fire', 'vigil', 'dots', 'keeping watch over the fire'], ['bookshelf', 'read', 'question', 'reading about lighthouses'],
   ['desk', 'write', 'music', 'writing a poem about candles'], ['easel', 'draw', 'heart', 'painting the view from the window'],
   ['workbench', 'work', 'spark', 'making a lantern'], ['repair:doorway', 'work', 'sigh', 'hauling rubble'], ['courtyard', 'gaze', 'cloud', 'watching the clouds'],
-  ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['fire', 'sit', 'sigh', 'warming its hands'],
+  ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['forge', 'work', 'spark', 'at the anvil'],
+  ['raise:3', 'work', 'dots', 'putting up the glasshouse'], ['map-room', 'sit', 'question', 'poring over a map'],
+  ['fire', 'sit', 'sigh', 'warming its hands'],
   ['window', 'pace', 'dots', 'pacing, thinking it over'], ['bedroll', 'sleep', 'zzz', 'napping']];
 const DEMO_THOUGHTS = [["The fire's quiet tonight. Suits me.", "Somebody should fix that roof. Probably me."],
   ["Chapter three. Still no lighthouse in it.", "Who writes a book this heavy?"], ["Candles rhyme with nothing. Annoying."],
   ["The window's crooked, so the painting is too."], ["This lantern leaks. Like the last one."],
   ["Rubble today. Rubble tomorrow. Good rubble, though."], ["Weeds everywhere. My weeds."],
-  ["You can see three hills from up here. Counted twice."], ["Warm hands, cold feet. Typical."],
+  ["You can see three hills from up here. Counted twice."], ["Hot iron, cold tea."], ["Four panes up. Twenty to go."],
+  ["The third hill is in the wrong place again."], ["Warm hands, cold feet. Typical."],
   ["Eleven steps, then turn. Eleven back."], ["Five more minutes."]];
 const DEMO_MOODS = ['proud', 'curious', 'content', 'delighted', 'frustrated', 'restless', 'wistful', 'absorbed', 'melancholy', 'sleepy', 'amused', 'lonely'];
 function current(now) {
@@ -966,7 +1307,15 @@ function demoState() {
                 { shape: 'box', size: [.12, .12, .005], pos: [.02, .18, 0], rot: [0, 0, 0], color: '#e3d6bb' }] },
               { name: 'A woven banner', about: 'green, like its tabard', placement: 'wall', parts: [
                 { shape: 'box', size: [.5, .8, .02], pos: [0, 0, 0], rot: [0, 0, 0], color: '#3f5f48' },
-                { shape: 'cylinder', size: [.015, .015, .62], pos: [0, .41, 0], rot: [0, 0, 1.57], color: '#5b3e28' }] }] },
+                { shape: 'cylinder', size: [.015, .015, .62], pos: [0, .41, 0], rot: [0, 0, 1.57], color: '#5b3e28' }] }],
+            buildings: params.has('bare') ? [] : [
+              { key: 'forge', name: 'the forge', about: 'a small stone hut with a chimney, bellows and an anvil', place: 'forge', plot: 0, done: 5, needed: 5, finished: 'x' },
+              { key: 'own', name: 'The Map Room', about: 'where the maps of the hills get drawn', place: 'map-room', plot: 1, done: 4, needed: 4, kind: 'thoughtful', finished: 'x',
+                look: { walls: params.get('walls') || 'timber', roof: params.get('roof') || 'gable', size: params.get('size') || 'medium',
+                        accent: params.get('accent') || 'sea blue', feature: params.get('feature') || 'lantern' } },
+              { key: params.get('third') || 'bathhouse', name: 'the bathhouse', about: 'a timber hut with a wooden tub and a stove', place: params.get('third') || 'bathhouse', plot: 2, done: 4, needed: 4, finished: 'x' },
+              { key: 'glasshouse', name: 'the glasshouse', about: 'salvaged panes over a potting bench', place: 'glasshouse', plot: 3,
+                done: +(params.get('stage') ?? 2), needed: 4, finished: params.get('stage') === '4' ? 'x' : null }] },
     places: ['fire', 'window', 'bookshelf', 'desk', 'easel', 'workbench', 'bedroll', 'courtyard', 'tower'],
     gallery: [1, 2, 3, 4].map(i => ({ file: `demo/${i}.svg`, title: ['A lighthouse at night', 'The eye of the hearth', 'Two mountains', 'Two moons'][i - 1], time: '' })),
     projects: [{ slug: 'a', title: 'The Lighthouse Ledger', status: 'in progress' }, { slug: 'b', title: 'A Bestiary of the Keep', status: 'finished' }],
@@ -1084,7 +1433,7 @@ let camMode = 'follow', flyTo = null;
 const keys = new Set(), hipsWorld = new THREE.Vector3(), fwd = new THREE.Vector3(), right = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
 // The camera must stay where it can see: inside the hall (open to the south), or inside the courtyard.
 function camBounds(x, z) {
-  return x < -5.2 ? { x0: -10.8, x1: -5.8, z0: -3.9, z1: 3.9 } : { x0: -4.6, x1: 4.6, z0: -3.7, z1: 9 };
+  return x < -5.2 ? { x0: -16.8, x1: -5.8, z0: -3.9, z1: 3.9 } : { x0: -4.6, x1: 4.6, z0: -3.7, z1: 9 };
 }
 function inside(b, x, z) { return x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1; }
 // A good angle on him: in front and a little to the side if there's room, otherwise
@@ -1099,6 +1448,13 @@ function blocked(from, to) {    // how far along from→to the first solid thing
 function goodView() {
   K.J.hips.getWorldPosition(hipsWorld);
   const b = camBounds(hipsWorld.x, hipsWorld.z), eye = hipsWorld.clone(); eye.y += .4;
+  if (zoneAt(hipsWorld.x, hipsWorld.z)) {        // inside a building: look down on it, roof lifted
+    for (const turn of [.55, -.55, 1.2, -1.2, PI]) {
+      const a = yaw + turn, off = new THREE.Vector3(Math.sin(a) * 1.5, 2.9, Math.cos(a) * 1.5);
+      const at = hipsWorld.clone().add(off);
+      if (inside(b, at.x, at.z)) return off;
+    }
+  }
   for (const dist of [3.6, 2.7, 2.0, 1.5]) {
     for (const turn of [.55, -.55, 1.2, -1.2, 1.9, -1.9, 2.6, -2.6, PI]) {
       const a = yaw + turn, off = new THREE.Vector3(Math.sin(a) * dist, .95, Math.cos(a) * dist);
@@ -1203,7 +1559,7 @@ function updateCamera(dt) {
       camera.position.addScaledVector(fwd, step); scrollGlide -= step;
     }
     // stay above the floor and around the keep
-    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -12, 8);
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -18, 8);
     camera.position.z = THREE.MathUtils.clamp(camera.position.z, -7, 9);
     camera.position.y = THREE.MathUtils.clamp(camera.position.y, groundAt(camera.position.x, camera.position.z) + .25, 7);
   }
@@ -1617,6 +1973,12 @@ function tick(nowMs) {
   $('badge').textContent = goal.awake ? 'awake, thinking' : unwell ? 'seems unwell'
                          : (state?.plan?.mood ? `feeling ${state.plan.mood}` : 'resting');
   $('badge').title = unwell ? "Its last few check-ins didn't go through. It should be back soon." : '';
+
+  for (const zn of buildingZones) {
+    const show = !(zoneAt(pos.x, pos.z) === zn || zoneAt(camera.position.x, camera.position.z, .2) === zn);
+    if (zn.roof.visible !== show) { zn.roof.visible = show; shadowsDirty = true; }
+  }
+  yardGlow.intensity = yardGlowBase * (.85 + .1 * Math.sin(t * 7.3) + .05 * Math.sin(t * 17.1));
 
   updateCamera(dt);
   if (camMode === 'follow') controls.update();   // in free mode we steer the camera ourselves

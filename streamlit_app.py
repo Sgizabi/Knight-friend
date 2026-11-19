@@ -544,6 +544,16 @@ with tabs[5]:
             done, needed = r["done"], r["needed"]
             label = "mended" if done >= needed else f"{done}/{needed}"
             st.progress(min(1.0, done / needed), text=f"{name} · {label}")
+    buildings = (keep_state.get("keep") or {}).get("buildings") or []
+    if buildings:
+        st.markdown("### Built in the courtyard")
+        for b in buildings:
+            title = b["name"][:1].upper() + b["name"][1:]
+            if b.get("finished"):
+                st.markdown(f"- **{escape(title)}**: {escape(b.get('about') or '')}")
+            else:
+                st.progress(min(1.0, b["done"] / max(1, b["needed"])),
+                            text=f"{title} · going up ({b['done']}/{b['needed']}): {b.get('about') or ''}")
     made = (keep_state.get("keep") or {}).get("objects") or []
     if made:
         st.markdown("### Things it has made for the keep")

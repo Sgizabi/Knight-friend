@@ -362,9 +362,11 @@ class FakeBrain(Brain):
                                "first_words": "I wake. The fire is warm. Am I real? Only a test."})
         if task == "decide":
             own = re.findall(r"^- \[([a-z0-9-]+)\] ", prompt, re.M)  # its own pastimes, if any
-            activity = random.choice(["draw", "write", "study", "build", "craft", "repair",
+            activity = random.choice(["draw", "write", "study", "build", "craft", "repair", "raise",
                                       "rest", "sleep", "wander", "invent"] + own[-3:])
-            subject = random.choice(["doorway", "stair", "hearth"]) if activity == "repair" else "old lighthouses"
+            subject = (random.choice(["doorway", "stair", "hearth"]) if activity == "repair" else
+                       random.choice(["woodshed", "forge", "own", "a hut for my maps"]) if activity == "raise"
+                       else "old lighthouses")
             return json.dumps({"waking_thought": f"Perhaps I will {activity}.",
                                "mood": random.choice(moods), "activity": activity,
                                "subject": subject, "project": "new",
@@ -432,6 +434,11 @@ class FakeBrain(Brain):
                                              "What did the wall teach you this week?", "too short?",
                                              "Why do you count the stairs?", "no question mark",
                                              "Why do you count the stairs?"]})
+        if task == "design":
+            return json.dumps({"name": random.choice(["The Reading Nook", "Map Room", "a"]),
+                               "about": "a dry corner for books and maps", "kind": "thoughtful",
+                               "look": {"walls": random.choice(["timber", "stone", "glass"]), "roof": "gable",
+                                        "size": "small", "accent": "sea blue", "feature": "lantern"}})
         if task == "condense":
             return json.dumps({"summary": "I am a test knight who likes lighthouses.",
                                "add": [{"section": "quirks", "text": "talks to the bookshelf"},
