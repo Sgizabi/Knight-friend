@@ -4,7 +4,7 @@
     "hearth": 2,
     "window": 2,
     "stair": 3,
-    "wall": 1,
+    "wall": 2,
     "roof": 0
   },
   "objects": [

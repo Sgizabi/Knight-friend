@@ -1,0 +1,15 @@
+{
+  "current": {
+    "id": "a202611192101",
+    "time": "2026-11-19T21:01:40+00:00",
+    "text": "Which wood burns longest?",
+    "options": [
+      "Oak",
+      "Pine",
+      "Birch"
+    ],
+    "tally": {},
+    "said": []
+  },
+  "past": []
+}
