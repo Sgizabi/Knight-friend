@@ -20,6 +20,34 @@ CHECK_MODEL = os.environ.get("KNIGHT_CHECK_MODEL", "openai/gpt-oss-20b")
 TPM_LIMIT = int(os.environ.get("KNIGHT_TPM", "7400"))
 
 
+def _char_cost(ch):
+    o = ord(ch)
+    if o < 128:
+        return .25                                   # English and other plain Latin text
+    if 0x1F000 <= o or 0x2600 <= o <= 0x27BF or 0xFE00 <= o <= 0xFE0F:
+        return 2.0                                   # emoji and pictographs
+    if 0x1100 <= o <= 0x11FF or 0xAC00 <= o <= 0xD7AF:
+        return 1.0                                   # Korean
+    if 0x2E80 <= o <= 0x9FFF or 0xF900 <= o <= 0xFAFF or 0xFF00 <= o <= 0xFFEF:
+        return .85                                   # Chinese, Japanese
+    if 0x0E00 <= o <= 0x0E7F:
+        return .6                                    # Thai
+    if 0x80 <= o <= 0x24F or 0x1E00 <= o <= 0x1EFF:
+        return .6                                    # accented Latin (French, Vietnamese...)
+    if 0x0400 <= o <= 0x04FF:
+        return .4                                    # Cyrillic
+    return .45                                       # Arabic, Hindi and the rest
+
+
+def estimate_tokens(text):
+    """Roughly how much of its AI allowance a text uses, in any language. Measured on its
+    model (2026-11-19), tokens per character: English ~0.23, Spanish/French ~0.25-0.28,
+    Vietnamese/Russian/Arabic/Hindi ~0.33-0.38, Thai ~0.5, Chinese/Japanese/Korean ~0.78,
+    emoji ~1.9. The weights above lean a little high, so it never underestimates much."""
+    return round(sum(_char_cost(ch) for ch in str(text or "")))
+
+
+
 class LLMError(Exception):
     pass
 
@@ -47,7 +75,8 @@ class Brain:
     def chat(self, messages, max_tokens=1500, model=None, json_mode=False,
              effort="low", temperature=1.0):
         model = model or MAIN_MODEL
-        estimate = sum(len(m["content"]) for m in messages) // 3 + max_tokens
+        # a little over the measured size, so pacing never undercounts (Chinese uses ~3x English per character)
+        estimate = int(sum(estimate_tokens(m["content"]) for m in messages) * 1.15) + max_tokens
         body = {
             "model": model,
             "messages": messages,

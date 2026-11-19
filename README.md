@@ -68,6 +68,12 @@ its next wake-up and may reply. Every letter is kept (with its reply, if any) in
 `world/letters.jsonl`; the knight is reminded of the last few when a new one arrives, and
 the *Letters* tab shows the whole conversation. Letters are public.
 
+Friends can write in any language and Rooken replies in theirs (its diary stays in English).
+Letter sizes are counted in estimated tokens rather than characters (`estimate_tokens` in
+`brain/llm.py`, measured on its model), so every language gets the same room: about a page
+in English, ~600 characters in Chinese, Japanese or Korean. On days with friends' letters it
+thinks a little harder when replying.
+
 ## Visiting the gate
 
 Anyone can visit on the home page's *Visit* tab (no passcode, nothing typed): knock, leave a

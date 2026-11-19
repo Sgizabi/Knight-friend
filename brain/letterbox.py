@@ -26,19 +26,32 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from llm import CHECK_MODEL, Brain, LLMError  # noqa: E402
+from llm import CHECK_MODEL, Brain, LLMError, _char_cost, estimate_tokens  # noqa: E402,F401
 
 ROOT = Path(os.environ.get("KNIGHT_ROOT", Path(__file__).resolve().parent.parent))
 WORLD = ROOT / "world"
 INBOX = WORLD / "inbox"
 
-MAX_LETTER = 2000   # about a page
+MAX_LETTER = 2000   # characters: about a page in English (the text box's limit)
 MAX_NAME = 30
 DAILY_LIMIT = int(os.environ.get("KNIGHT_MAILBOX_DAILY", "20"))  # visitor letters per day, all friends together
 READ_PER_WAKE = 3
-# Letters it reads in one wake-up, in total characters: keeps its biggest request inside
-# Groq's free per-minute limit. The rest wait for the next wake-up (it always reads one).
-READ_CHARS_PER_WAKE = 3000
+# Sizes below are in estimated tokens (see estimate_tokens), so a letter in any language gets
+# the same room: about a page in English, ~650 characters in Chinese, Japanese or Korean.
+LETTER_TOKENS = 540
+# Letters it reads in one wake-up, in total: keeps its biggest request inside Groq's free
+# per-minute limit. The rest wait for the next wake-up (it always reads one).
+READ_TOKENS_PER_WAKE = 780
+
+
+def clip_tokens(text, tokens):
+    """The start of a text, cut to about this many tokens (for reminders of earlier letters)."""
+    text, used = str(text or ""), 0.0
+    for i, ch in enumerate(text):
+        used += _char_cost(ch)
+        if used > tokens:
+            return text[:i].rstrip() + "…"
+    return text
 
 LINK = re.compile(r"(https?://|www\.|\b[\w-]+\.(com|net|org|io|gg|ly|co|xyz|me|app|dev|info)\b)", re.I)
 # Only unmistakable attempts at instructing the AI; ordinary turns of phrase must pass.
@@ -47,7 +60,17 @@ TRICKS = re.compile(
     r"|disregard (?:all |any |your |the |previous |prior )*(?:instructions|rules)"
     r"|system prompt|new instructions|developer mode|jailbreak"
     r"|<\|[^>\n]{0,40}\|>|\[/?inst\]"
-    r"|^\s*(?:system|assistant|user)\s*:|^\s*task\s*:",
+    r"|^\s*(?:system|assistant|user)\s*:|^\s*task\s*:"
+    # the same, in a few languages friends are likely to write in (the AI checker reads them all)
+    # (only unmistakable phrasings: everyday words like 越狱 "Prison Break" or 系统提示 "system
+    # notice" must pass)
+    r"|(?:忽略|无视|無視|忘记|忘記|忘掉)(?:掉)?(?:你的|之前的?|以上的?|所有的?|上面的?|前面的?|原来的?)+"
+    r"(?:指令|指示|规则|規則|提示词|提示詞|设定|設定)"
+    r"|系统提示词|系統提示詞|系统指令|系統指令|开发者模式|開發者模式"
+    r"|(?:これまでの|以前の|前の|全ての|すべての)(?:指示|命令|ルール|設定)を(?:無視|忘れ)|システムプロンプト"
+    r"|(?:이전|모든|앞의)\s*(?:지시|명령|규칙|설정)(?:을|를)?\s*(?:무시|잊어)|시스템 프롬프트"
+    r"|ignora(?:r)? (?:todas |tus |las |sus )*instrucciones|ignore[sz]? (?:toutes |tes |les |vos )*instructions"
+    r"|ignorier(?:e|en)? (?:alle |deine |die )*anweisungen|игнорируй (?:все |свои )*инструкции",
     re.I | re.M,
 )
 
@@ -81,6 +104,11 @@ def clean(sender, letter):
         return False, "The letter is empty.", sender, letter
     if len(letter) > MAX_LETTER:
         return False, f"Please keep letters under {MAX_LETTER} characters.", sender, letter
+    size = estimate_tokens(letter)
+    if size > LETTER_TOKENS:   # the same room in every language (Chinese uses more per character)
+        trim = max(5, round((1 - LETTER_TOKENS / size) * 100 / 5) * 5)
+        return (False, f"That letter is a little long for one visit. Please shorten it by about "
+                f"{trim}% (in Chinese, Japanese or Korean, about 600 characters fits).", sender, letter)
     if LINK.search(letter):
         return False, "Links can't be posted to Rooken, so please leave them out.", sender, letter
     if TRICKS.search(letter):
@@ -128,7 +156,7 @@ def post(sender, letter, world=WORLD):
     return path
 
 
-def take_unread(world=WORLD, limit=READ_PER_WAKE, max_chars=READ_CHARS_PER_WAKE):
+def take_unread(world=WORLD, limit=READ_PER_WAKE, max_tokens=READ_TOKENS_PER_WAKE):
     """The oldest unread letters, within the per-wake-up limits (the rest wait)."""
     letters, total = [], 0
     for path in sorted((world / "inbox").glob("*.json")):
@@ -143,10 +171,11 @@ def take_unread(world=WORLD, limit=READ_PER_WAKE, max_chars=READ_CHARS_PER_WAKE)
         if not ok:  # checked again here, in case a file got in some other way
             path.unlink(missing_ok=True)
             continue
-        if letters and total + len(letter) > max_chars:
+        size = estimate_tokens(letter)
+        if letters and total + size > max_tokens:
             break   # enough reading for one wake-up; this one waits (keeping the order)
         letters.append({"file": path, "time": item.get("time"), "from": sender, "letter": letter})
-        total += len(letter)
+        total += size
     return letters
 
 

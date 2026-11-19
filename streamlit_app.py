@@ -549,7 +549,8 @@ def letter_form(settings):
 with tabs[6]:
     st.markdown("Friends of the keeper can leave Rooken a letter here. It reads new letters when it "
                 "next wakes and may write back, or may not: it's a knight, not a chatbot. Letters "
-                "and replies are public, like everything here.")
+                "and replies are public, like everything here. Write in any language: it answers in yours "
+                "(its diary stays in English).")
     settings = mailbox_settings()
     if settings:
         letter_form(settings)
