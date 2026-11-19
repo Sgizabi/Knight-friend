@@ -55,17 +55,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-19T09:00:25+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-19T09:00:27+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire"
+    "note": "Create a simple oil-tight stopper for the portable lantern."
   },
   "needs": {
-    "rest": 23.8,
-    "warmth": 95.4,
+    "rest": 26.6,
+    "warmth": 94.0,
     "inspiration": 34.6,
-    "spirit": 95.3
+    "spirit": 90.7
   },
   "needs_prev": {
     "rest": 23.8,
@@ -73,7 +73,7 @@
     "inspiration": 34.6,
     "spirit": 95.3
   },
-  "needs_at": "2026-11-19T09:00:25+00:00",
+  "needs_at": "2026-11-19T09:00:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -491,5 +491,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T09:00:25+00:00"
+  "exported": "2026-11-19T09:00:27+00:00"
 }
