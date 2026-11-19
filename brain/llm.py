@@ -37,7 +37,11 @@ GONE_WORDS = ("decommissioned", "model_not_found", "does not exist", "not found"
 def _char_cost(ch):
     o = ord(ch)
     if o < 128:
-        return .25                                   # English and other plain Latin text
+        if ch.isalpha() or ch == " ":
+            return .22                               # English and other plain Latin text
+        if ch.isdigit():
+            return .35                               # numbers go in short runs
+        return 1.0                                   # symbols, newlines: code and markup are dense
     if 0x1F000 <= o or 0x2600 <= o <= 0x27BF or 0xFE00 <= o <= 0xFE0F:
         return 2.0                                   # emoji and pictographs
     if 0x1100 <= o <= 0x11FF or 0xAC00 <= o <= 0xD7AF:
@@ -55,7 +59,8 @@ def _char_cost(ch):
 
 def estimate_tokens(text):
     """Roughly how much of its AI allowance a text uses, in any language. Measured on its
-    model (2026-11-19), tokens per character: English ~0.23, Spanish/French ~0.25-0.28,
+    model (2026-11-19), tokens per character: English prose ~0.23 (HTML or code ~0.47, since
+    symbols cost about a token each), Spanish/French ~0.25-0.28,
     Vietnamese/Russian/Arabic/Hindi ~0.33-0.38, Thai ~0.5, Chinese/Japanese/Korean ~0.78,
     emoji ~1.9. The weights above lean a little high, so it never underestimates much."""
     return round(sum(_char_cost(ch) for ch in str(text or "")))

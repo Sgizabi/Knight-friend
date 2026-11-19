@@ -867,7 +867,9 @@ class Knight:
                         "guess about your own keep), and never retell the writer's story as if it were "
                         "yours. Reply in the language the letter is written in, still as yourself: your "
                         "humour and habits come along, in the plain everyday words you'd use with a "
-                        "friend, not formal or textbook (your diary stays in English).")
+                        "friend, not formal or textbook. If a letter mixes languages, reply in the one "
+                        "most of it is written in, or in English if it's evenly mixed. Your diary and "
+                        "passing thoughts stay in English.")
         letter_part = ("\nYou read the keeper's letter today. If you wish, write a reply to them in "
                        f"reply_to_keeper (otherwise leave it empty). {reply_length}") if letter else ""
         visitors = getattr(self, "visitors", None) or []
@@ -955,7 +957,7 @@ class Knight:
             "time of day. Mind how you feel: sleeping restores rest, the fire restores warmth."
             f"{sleep_part}\n"
             "For each step, give one or two passing thoughts: what goes through your head while "
-            "you're there, in your voice, under 15 words each. Small and in the moment (a "
+            "you're there, in your voice and in English, under 15 words each. Small and in the moment (a "
             "complaint, a joke, something you notice or wonder), not a summary of the diary, and "
             "not repeating each other. Visitors see them float above your helm.\n"
             f"mood: one of {MOODS}. emote: one of {EMOTES}. place: one of {self.plan_places()}. "
@@ -1203,7 +1205,7 @@ class Knight:
             f"{life.describe_needs(self.needs)}\nYour mood: {plan.get('mood', '')}.\n"
             f"The last thing you wrote in your diary: {(self.diary[-1]['text'] if self.diary else '')[:300]}\n"
             + (f"Thoughts you've had lately (don't repeat them): {'; '.join(lately)}\n" if lately else "")
-            + "\nOne passing thought, right now: under 15 words, in your voice, about what's in front "
+            + "\nOne passing thought, right now: under 15 words, in your voice and in English, about what's in front "
             "of you or on your mind. If how you feel calls for it (cold, exhausted, bored), you may "
             "change the rest of your plan; otherwise keep it.\n"
             f"place: one of {self.plan_places()}. action: one of {ACTIONS}.\n"
