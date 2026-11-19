@@ -8,7 +8,9 @@
       "Pine",
       "Birch"
     ],
-    "tally": {},
+    "tally": {
+      "2": 1
+    },
     "said": []
   },
   "past": []

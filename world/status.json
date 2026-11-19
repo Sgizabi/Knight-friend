@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-19T23:00:28+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-19T23:00:32+00:00",
+  "place": "raise:0",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "begin construction of the forge to get proper tools for future repairs and crafts",
+  "thought": "The stair feels solid but the roof gap still lets the cold in. I could use a forge to make better tools and speed up the work."
 }
