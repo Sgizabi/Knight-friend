@@ -713,6 +713,16 @@ function poseFor(action, spot, t, phase) {
         joints: { torso: [.22, 0, 0], head: [.35, 0, 0], shR: [-.9 - up * 1.4, 0, -.15], elR: [-.25 - up * .5, 0, 0] },
         ik: { L: [.14, .92, .5] } };
     }
+    // a thoughtful stroll: hands clasped behind its back, shorter steps, head a little forward
+    case 'stroll': return { hipsY: .95 - Math.abs(Math.cos(phase)) * .014, grip: .9, behind: true, joints: {
+      torso: [.1, Math.sin(phase) * .05, 0], head: [.14, -Math.sin(phase) * .04, 0],
+      thL: [-.36 * Math.sin(phase), 0, 0], thR: [.36 * Math.sin(phase), 0, 0],
+      knL: [.12 + .45 * Math.max(0, Math.sin(phase + 1.4)), 0, 0], knR: [.12 + .45 * Math.max(0, Math.sin(phase + 1.4 + PI)), 0, 0],
+      anL: [-.08 * Math.sin(phase), 0, 0], anR: [.08 * Math.sin(phase), 0, 0] },
+      ik: { L: [.04, 1.0, -.25], R: [-.04, .97, -.26] } };
+    case 'muse': return { hipsY: .95, grip: .9, behind: true,          // standing still, hands behind its back
+      joints: { torso: [.06, 0, 0], head: [.12 + Math.sin(t * .3) * .05, look * .5, 0] },
+      ik: { L: [.04, 1.0, -.25], R: [-.04, .97, -.26] } };
     case 'gaze': return { hipsY: .95, grip: .35, joints: { torso: [-.04, 0, 0], head: [-.35 + Math.sin(t * .3) * .05, look * .6, 0],
       shL: [.15, 0, .08], shR: [.15, 0, -.08], elL: [-.6, 0, 0], elR: [-.6, 0, 0] } };
     case 'sleep': return { hipsY: .95, lie: true, grip: .25, joints: { torso: [-.02 * Math.sin(t * 1.2), 0, 0], head: [-.1, .5, 0],
@@ -729,7 +739,8 @@ const JOINTS = ['torso', 'head', 'shL', 'shR', 'elL', 'elR', 'thL', 'thR', 'knL'
 const DEMO_STEPS = [['fire', 'vigil', 'dots', 'keeping watch over the fire'], ['bookshelf', 'read', 'question', 'reading about lighthouses'],
   ['desk', 'write', 'music', 'writing a poem about candles'], ['easel', 'draw', 'heart', 'painting the view from the window'],
   ['workbench', 'work', 'spark', 'making a lantern'], ['repair:doorway', 'work', 'sigh', 'hauling rubble'], ['courtyard', 'gaze', 'cloud', 'watching the clouds'],
-  ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['fire', 'sit', 'sigh', 'warming its hands'], ['bedroll', 'sleep', 'zzz', 'napping']];
+  ['tower', 'gaze', 'exclaim', 'looking out from the tower'], ['fire', 'sit', 'sigh', 'warming its hands'],
+  ['window', 'pace', 'dots', 'pacing, thinking it over'], ['bedroll', 'sleep', 'zzz', 'napping']];
 const DEMO_MOODS = ['proud', 'curious', 'content', 'delighted', 'frustrated', 'restless', 'wistful', 'absorbed', 'melancholy', 'sleepy', 'amused', 'lonely'];
 function current(now) {
   if (window.__force) return window.__force;   // for testing poses and paths
@@ -1131,6 +1142,7 @@ let wasClose = false;
 // How each mood shows in its body: small offsets on top of whatever it's doing.
 // (Its mood comes from its own reflection; this only makes it visible.)
 const addJ = (a = [0, 0, 0], b = [0, 0, 0]) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const REFLECTIVE = ['wistful', 'melancholy', 'absorbed', 'content', 'lonely'];   // moods it strolls in
 const MOOD_POSE = {
   melancholy: t => ({ torso: [.13, 0, 0], head: [.3, Math.sin(t * .25) * .08, 0], droop: true }),      // slumped, eyes down
   lonely:     t => ({ torso: [.1, 0, 0], head: [.2, Math.sin(t * .3) * .3, 0], droop: true }),         // looking about for someone
@@ -1199,8 +1211,10 @@ function tick(nowMs) {
     else path = route(pos, target);
     goalKey = key;
   }
-  // walk the path, or settle into the pose
+  // walk the path, or settle into the pose. In a reflective mood it strolls, hands behind its back
+  // (unless it's off to work, which it does with purpose).
   let pose, moving = false;
+  const strolling = REFLECTIVE.includes(state?.plan?.mood) && !['work', 'vigil'].includes(goal.action);
   if (goal.action === 'pace' && !path.length && lie < .05) {     // pacing back and forth on the spot
     const before = pos.clone(); pos.copy(target);
     const v = pos.distanceTo(before);
@@ -1209,19 +1223,19 @@ function tick(nowMs) {
       const want = Math.atan2(pos.x - before.x, pos.z - before.z);
       yaw += Math.atan2(Math.sin(want - yaw), Math.cos(want - yaw)) * Math.min(1, dt * 5);
     }
-    pose = poseFor(moving ? 'walk' : 'stand', spot, t, phase);
+    pose = poseFor(moving ? 'stroll' : 'muse', spot, t, phase);   // pacing in thought: hands behind its back
   } else if (path.length) {
     if (lie > .05) pose = poseFor('stand', spot, t, phase);    // get up first
     else {
       const next = path[0], d = next.clone().sub(pos); d.y = 0;
-      const dist = d.length(), step = Math.min(dist, 1.0 * dt);
+      const dist = d.length(), step = Math.min(dist, (strolling ? .65 : 1.0) * dt);
       if (dist < .03) path.shift();
       else {
         pos.addScaledVector(d.normalize(), step); phase += step * 6.2; moving = true;
         const want = Math.atan2(d.x, d.z);
         yaw += Math.atan2(Math.sin(want - yaw), Math.cos(want - yaw)) * Math.min(1, dt * 6);
       }
-      pose = poseFor('walk', spot, t, phase);
+      pose = poseFor(strolling ? 'stroll' : 'walk', spot, t, phase);
     }
   } else {
     pose = poseFor(goal.action, spot, t, phase);
@@ -1293,7 +1307,8 @@ function tick(nowMs) {
   const cp = K.cape.geometry.attributes.position, rest = K.cape.userData.rest;
   for (let i = 0; i < cp.count; i++) {
     const x = rest[i * 3], v = -rest[i * 3 + 1] / 1.02;
-    cp.setZ(i, -v * v * (.1 + (moving ? .12 : 0)) * (1 + Math.sin(t * 1.7 + x * 6 + v * 3) * .35) - v * .05);
+    cp.setZ(i, -v * v * (.1 + (moving ? .12 : 0)) * (1 + Math.sin(t * 1.7 + x * 6 + v * 3) * .35) - v * .05
+               - (pose.behind ? .11 * Math.min(1, v * 2.5) : 0));   // hands behind its back: the cape sits out over them
   }
   cp.needsUpdate = true; K.cape.geometry.computeVertexNormals();
 
