@@ -1,11 +1,11 @@
 {
   "date": "2026-11-19",
-  "tokens": 20933,
+  "tokens": 24335,
   "by_model": {
     "qwen/qwen3.8-27b": 9580,
     "openai/gpt-oss-safeguard-20b": 881,
-    "openai/gpt-oss-120b": 10019,
-    "openai/gpt-oss-20b": 453
+    "openai/gpt-oss-120b": 12885,
+    "openai/gpt-oss-20b": 989
   },
   "runs": [
     {
@@ -15,6 +15,10 @@
     {
       "note": "mixed-language letters test",
       "tokens": 10472
+    },
+    {
+      "note": "building design test",
+      "tokens": 3402
     }
   ]
 }
