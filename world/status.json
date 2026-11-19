@@ -1,8 +1,8 @@
 {
-  "awake": true,
-  "since": "2026-11-19T13:00:31+00:00",
-  "place": "repair:stair",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-19T13:01:34+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "wedging the next slab and tapping it flush"
+  "note": ""
 }

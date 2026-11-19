@@ -30,11 +30,11 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 10,
-    "last_wake": "2026-11-19T11:01:39+00:00"
+    "wakeups": 11,
+    "last_wake": "2026-11-19T13:01:34+00:00"
   },
   "plan": {
-    "start": "2026-11-19T11:01:39+00:00",
+    "start": "2026-11-19T13:01:34+00:00",
     "mood": "frustrated",
     "steps": [
       {
@@ -42,30 +42,30 @@
         "action": "work",
         "minutes": 20,
         "emote": "sigh",
-        "note": "Fit the next slab and check alignment"
+        "note": "finish aligning the last slab"
       },
       {
-        "place": "workbench",
-        "action": "work",
+        "place": "fire",
+        "action": "sit",
         "minutes": 20,
         "emote": "sigh",
-        "note": "Finish oil seal tweak for lantern"
+        "note": "warm hands and plan next repair"
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T13:00:31+00:00",
-    "place": "repair:stair",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-19T13:01:34+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "wedging the next slab and tapping it flush"
+    "note": ""
   },
   "needs": {
-    "rest": 7.9,
-    "warmth": 87.3,
+    "rest": 0.0,
+    "warmth": 89.5,
     "inspiration": 22.6,
-    "spirit": 86.1
+    "spirit": 88.2
   },
   "needs_prev": {
     "rest": 7.5,
@@ -73,7 +73,7 @@
     "inspiration": 22.6,
     "spirit": 90.1
   },
-  "needs_at": "2026-11-19T13:00:31+00:00",
+  "needs_at": "2026-11-19T13:01:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -127,7 +127,7 @@
         "needed": 2
       },
       "stair": {
-        "done": 1,
+        "done": 2,
         "needed": 3
       },
       "wall": {
@@ -612,5 +612,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T13:00:31+00:00"
+  "exported": "2026-11-19T13:01:34+00:00"
 }
