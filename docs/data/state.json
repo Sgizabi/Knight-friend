@@ -55,17 +55,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-19T02:36:31+00:00",
-    "place": "repair:window",
+    "since": "2026-11-19T02:39:33+00:00",
+    "place": "workbench",
     "action": "work",
     "emote": "dots",
-    "note": "clear the rotten frame and fit a piece of glass so I can look out and lift my inspiration"
+    "note": "add a handle and a dimmer to the lantern so it lasts longer"
   },
   "needs": {
-    "rest": 43.3,
-    "warmth": 85.1,
+    "rest": 31.3,
+    "warmth": 87.7,
     "inspiration": 46.6,
-    "spirit": 98.9
+    "spirit": 100.0
   },
   "needs_prev": {
     "rest": 63.4,
@@ -73,7 +73,7 @@
     "inspiration": 58.6,
     "spirit": 89.5
   },
-  "needs_at": "2026-11-19T02:36:31+00:00",
+  "needs_at": "2026-11-19T02:39:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -123,7 +123,7 @@
         "needed": 2
       },
       "window": {
-        "done": 0,
+        "done": 1,
         "needed": 2
       },
       "stair": {
@@ -315,5 +315,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T02:36:31+00:00"
+  "exported": "2026-11-19T02:39:33+00:00"
 }
