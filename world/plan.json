@@ -1,20 +1,27 @@
 {
-  "start": "2026-11-19T00:56:03+00:00",
-  "mood": "content",
+  "start": "2026-11-19T02:40:39+00:00",
+  "mood": "restless",
   "steps": [
     {
-      "place": "repair:hearth",
+      "place": "workbench",
       "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "finish the remaining mortar and fit the last brick"
+      "minutes": 30,
+      "emote": "question",
+      "note": "Fix the lantern oil leak."
     },
     {
-      "place": "workbench",
+      "place": "window",
       "action": "sit",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "shape a small metal hook from the scrap"
+      "minutes": 25,
+      "emote": "question",
+      "note": "Replace warped wood with a straight piece."
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 15,
+      "emote": "question",
+      "note": "Warm up and think about the next repair."
     }
   ]
 }

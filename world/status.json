@@ -1,8 +1,8 @@
 {
-  "awake": true,
-  "since": "2026-11-19T02:39:33+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-19T02:40:39+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "add a handle and a dimmer to the lantern so it lasts longer"
+  "note": ""
 }

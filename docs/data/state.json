@@ -30,41 +30,48 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 5,
-    "last_wake": "2026-11-19T00:56:03+00:00"
+    "wakeups": 6,
+    "last_wake": "2026-11-19T02:40:39+00:00"
   },
   "plan": {
-    "start": "2026-11-19T00:56:03+00:00",
-    "mood": "content",
+    "start": "2026-11-19T02:40:39+00:00",
+    "mood": "restless",
     "steps": [
       {
-        "place": "repair:hearth",
+        "place": "workbench",
         "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "finish the remaining mortar and fit the last brick"
+        "minutes": 30,
+        "emote": "question",
+        "note": "Fix the lantern oil leak."
       },
       {
-        "place": "workbench",
+        "place": "window",
         "action": "sit",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "shape a small metal hook from the scrap"
+        "minutes": 25,
+        "emote": "question",
+        "note": "Replace warped wood with a straight piece."
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 15,
+        "emote": "question",
+        "note": "Warm up and think about the next repair."
       }
     ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-19T02:39:33+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-19T02:40:39+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "add a handle and a dimmer to the lantern so it lasts longer"
+    "note": ""
   },
   "needs": {
-    "rest": 31.3,
-    "warmth": 87.7,
-    "inspiration": 46.6,
+    "rest": 23.3,
+    "warmth": 89.0,
+    "inspiration": 34.6,
     "spirit": 100.0
   },
   "needs_prev": {
@@ -73,7 +80,7 @@
     "inspiration": 58.6,
     "spirit": 89.5
   },
-  "needs_at": "2026-11-19T02:39:33+00:00",
+  "needs_at": "2026-11-19T02:40:39+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -290,6 +297,182 @@
           }
         ],
         "made": "2026-11-19T02:33:31+00:00"
+      },
+      {
+        "name": "Portable Lantern Upgrade",
+        "about": "A handheld lantern with a refillable oil tank and a detachable stand",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.07,
+              0.07,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.06,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.05,
+              0.05,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.13,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#222222"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.12,
+              0.02,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.01,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#444444"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "pos": [
+              0.06,
+              0.06,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "pos": [
+              -0.06,
+              0.06,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "sphere",
+            "size": [
+              0.03
+            ],
+            "pos": [
+              0.0,
+              0.14,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#ffffaa"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.04
+            ],
+            "pos": [
+              0.0,
+              0.16,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#aaaaaa"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.03
+            ],
+            "pos": [
+              0.0,
+              0.18,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#333333"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.03,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.21,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          }
+        ],
+        "made": "2026-11-19T02:39:36+00:00"
       }
     ]
   },
@@ -315,5 +498,5 @@
     "repair",
     "craft"
   ],
-  "exported": "2026-11-19T02:39:33+00:00"
+  "exported": "2026-11-19T02:40:39+00:00"
 }
