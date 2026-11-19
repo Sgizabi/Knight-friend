@@ -77,5 +77,13 @@
     "emote": "spark",
     "text": "I fitted the new oil seal onto the bottle and gave it a test tilt. The oil still finds a way out, like a leaky gossip. I’ll have to sand the edge a bit more before it stops spilling.",
     "creations": []
+  },
+  {
+    "time": "2026-11-19T11:01:39+00:00",
+    "activity": "repair",
+    "mood": "frustrated",
+    "emote": "sigh",
+    "text": "I kept at the stair, wedging a new slab where the old one cracked. The stone slipped a bit, so I tapped it back with the hammer. The gap still shows a thin line of dust. I think the next piece will need a tighter fit, otherwise the whole thing will wobble when I climb.",
+    "creations": []
   }
 ]

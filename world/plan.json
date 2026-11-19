@@ -1,20 +1,20 @@
 {
-  "start": "2026-11-19T09:01:30+00:00",
+  "start": "2026-11-19T11:01:39+00:00",
   "mood": "frustrated",
   "steps": [
     {
-      "place": "workbench",
+      "place": "repair:stair",
       "action": "work",
-      "minutes": 30,
-      "emote": "spark",
-      "note": "Adjust seal edge and test again"
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "Fit the next slab and check alignment"
     },
     {
-      "place": "fire",
+      "place": "workbench",
       "action": "work",
-      "minutes": 30,
-      "emote": "spark",
-      "note": "Re‑mortar loose stones"
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "Finish oil seal tweak for lantern"
     }
   ]
 }
