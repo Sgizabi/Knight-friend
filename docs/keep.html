@@ -42,6 +42,8 @@
   #card { position:fixed; left:50%; top:14px; transform:translateX(-50%); padding:8px 16px; max-width:min(80vw, 420px);
           text-align:center; display:none; font-size:20px; }
   #card small { display:block; color:var(--dim); font-size:16px; }
+  #crosshair { position:fixed; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%;
+               background:rgba(255,230,190,.85); box-shadow:0 0 0 1px rgba(0,0,0,.6); display:none; pointer-events:none; }
   #toast { position:fixed; top:52px; right:10px; color:var(--ember); font-size:17px; opacity:0; transition:opacity .4s; pointer-events:none; }
   @media (max-width: 560px) {
     #who { transform:scale(.85); transform-origin:top left; }
@@ -70,6 +72,7 @@
 </div>
 <div id="help" class="panel"></div>
 <div id="toast"></div>
+<div id="crosshair"></div>
 <div id="card" class="panel"></div>
 <div class="bubble" id="bubble"></div>
 <div id="caption" class="panel"></div>
@@ -904,15 +907,34 @@ let lastSightCheck = 0, pullIn = null;
 let lastUserMove = -1e9, settledKey = '';
 controls.addEventListener('start', () => { lastUserMove = performance.now(); flyTo = null; });
 function toast(text) { const t = $('toast'); t.textContent = text; t.style.opacity = 1; clearTimeout(t._h); t._h = setTimeout(() => t.style.opacity = 0, 2000); }
+// The free camera flies like a game's spectator mode: you look around from where you are,
+// and W takes you exactly where you're looking (down at the floor, up at the rafters).
+let lookYaw = 0, lookPitch = 0, scrollGlide = 0;
+const flyVel = new THREE.Vector3();
 function setCam(mode, note) {
+  const wasFree = camMode === 'free';
   camMode = mode;
   $('cam').textContent = mode === 'follow' ? '🎥 Following' : '🎥 Free';
   $('cam').classList.toggle('on', mode === 'follow');
   controls.minDistance = mode === 'follow' ? 1.3 : .2;
-  if (mode === 'follow') flyTo = goodView();
+  if (mode === 'free') {
+    controls.enabled = false;            // we steer the camera ourselves now
+    const look = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+    lookYaw = look.y; lookPitch = look.x; flyVel.set(0, 0, 0); scrollGlide = 0;
+  } else {
+    if (document.pointerLockElement) document.exitPointerLock();
+    if (wasFree) {   // aim the orbit at whatever you were looking at, so nothing jumps
+      const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+      controls.target.copy(camera.position).addScaledVector(dir, 2.5);
+    }
+    controls.enabled = true;
+    flyTo = goodView();
+  }
   $('help').innerHTML = (mode === 'follow'
     ? '<b>Following the knight.</b> Drag to swing around him, scroll or pinch to zoom.'
-    : '<b>Free camera.</b> WASD or arrows to move, Q / E down and up, drag to look.')
+    : '<b>Free camera.</b> WASD flies where you look; hold Shift to go faster; Q / E (or C / Space) '
+      + 'straight down / up. Drag to look around, or click empty space to lock the mouse (Esc to '
+      + 'release). Scroll to glide forward or back.')
     + '<br>Press <b>F</b> to switch. Click things to learn what they are.'
     + '<br>Click Rooken to say hello. 🪵 tosses a log on the fire. (Both just for you: they don\'t reach Rooken.)';
   if (note) toast(note);
@@ -956,35 +978,67 @@ function updateCamera(dt) {
     camera.position.z = THREE.MathUtils.clamp(camera.position.z, b.z0, b.z1);
     camera.position.y = Math.max(camera.position.y, groundAt(camera.position.x, camera.position.z) + .4);
   } else {
-    const speed = 3 * dt;
-    camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize(); right.crossVectors(fwd, UP);
-    const move = new THREE.Vector3();
-    if (keys.has('w') || keys.has('arrowup')) move.add(fwd);
-    if (keys.has('s') || keys.has('arrowdown')) move.sub(fwd);
-    if (keys.has('d') || keys.has('arrowright')) move.add(right);
-    if (keys.has('a') || keys.has('arrowleft')) move.sub(right);
-    if (move.lengthSq()) move.normalize().multiplyScalar(speed);
-    if (keys.has('e')) move.y += speed;
-    if (keys.has('q')) move.y -= speed;
-    camera.position.add(move); controls.target.add(move);
-    const cx = THREE.MathUtils.clamp(camera.position.x, -12, 8), cz = THREE.MathUtils.clamp(camera.position.z, -7, 9);
-    controls.target.x += cx - camera.position.x; controls.target.z += cz - camera.position.z;
-    camera.position.x = cx; camera.position.z = cz;
-    if (camera.position.y < .3) { controls.target.y += .3 - camera.position.y; camera.position.y = .3; }
-    if (camera.position.y > 7) { controls.target.y -= camera.position.y - 7; camera.position.y = 7; }
+    camera.rotation.set(lookPitch, lookYaw, 0, 'YXZ');
+    camera.getWorldDirection(fwd);                        // all three directions: fly where you look
+    right.crossVectors(fwd, UP).normalize();
+    const want = new THREE.Vector3();
+    if (keys.has('w') || keys.has('arrowup')) want.add(fwd);
+    if (keys.has('s') || keys.has('arrowdown')) want.sub(fwd);
+    if (keys.has('d') || keys.has('arrowright')) want.add(right);
+    if (keys.has('a') || keys.has('arrowleft')) want.sub(right);
+    if (keys.has('e') || keys.has(' ')) want.y += 1;
+    if (keys.has('q') || keys.has('c')) want.y -= 1;
+    if (want.lengthSq()) want.normalize().multiplyScalar(keys.has('shift') ? 7 : 2.8);
+    flyVel.lerp(want, 1 - Math.exp(-dt * 10));              // quick, smooth starts and stops
+    camera.position.addScaledVector(flyVel, dt);
+    if (Math.abs(scrollGlide) > 1e-3) {                     // scroll glides forward / back
+      const step = scrollGlide * Math.min(1, dt * 8);
+      camera.position.addScaledVector(fwd, step); scrollGlide -= step;
+    }
+    // stay above the floor and around the keep
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -12, 8);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -7, 9);
+    camera.position.y = THREE.MathUtils.clamp(camera.position.y, groundAt(camera.position.x, camera.position.z) + .25, 7);
   }
 }
-const MOVE_KEYS = ['w', 'a', 's', 'd', 'q', 'e', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+const MOVE_KEYS = ['w', 'a', 's', 'd', 'q', 'e', 'c', ' ', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+const STARTS_FREE = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
 addEventListener('keydown', ev => {
   if (ev.target.tagName === 'SELECT') return;
   const k = ev.key.toLowerCase();
   if (k === 'f') return setCam(camMode === 'follow' ? 'free' : 'follow');
   if (MOVE_KEYS.includes(k)) {
+    if (camMode === 'follow' && !STARTS_FREE.includes(k)) return;   // Shift, Space etc. do nothing while following
     ev.preventDefault();
-    if (camMode === 'follow' && k !== 'q' && k !== 'e') setCam('free', 'Free camera (F to follow again)');
+    if (camMode === 'follow') setCam('free', 'Free camera (F to follow again)');
     keys.add(k);
   }
 });
+
+// looking around in free mode: drag, or lock the mouse like a game (click empty space; Esc releases)
+const locked = () => document.pointerLockElement === renderer.domElement;
+function turnHead(dx, dy) {
+  lookYaw -= dx * .0045;
+  lookPitch = THREE.MathUtils.clamp(lookPitch - dy * .0045, -1.5, 1.5);
+}
+let dragFrom = null;
+renderer.domElement.addEventListener('pointerdown', e => { if (camMode === 'free' && !locked()) dragFrom = [e.clientX, e.clientY]; });
+addEventListener('pointerup', () => { dragFrom = null; });
+addEventListener('pointermove', e => {
+  if (camMode !== 'free') return;
+  if (locked()) return turnHead(e.movementX, e.movementY);
+  if (dragFrom) { turnHead(e.clientX - dragFrom[0], e.clientY - dragFrom[1]); dragFrom = [e.clientX, e.clientY]; }
+});
+document.addEventListener('pointerlockchange', () => {
+  $('crosshair').style.display = locked() ? 'block' : 'none';
+  if (locked()) toast('Mouse locked: move to look, click to select, Esc to release');
+});
+document.addEventListener('pointerlockerror', () => toast('Mouse lock isn\'t available here: drag to look instead (or open the keep full screen)'));
+renderer.domElement.addEventListener('wheel', e => {
+  if (camMode !== 'free') return;      // following: the usual zoom
+  e.preventDefault();
+  scrollGlide += THREE.MathUtils.clamp(-e.deltaY, -300, 300) * .004;
+}, { passive: false });
 addEventListener('keyup', ev => keys.delete(ev.key.toLowerCase()));
 addEventListener('blur', () => keys.clear());
 $('cam').onclick = e => { setCam(camMode === 'follow' ? 'free' : 'follow'); e.currentTarget.blur(); };
@@ -996,11 +1050,16 @@ let downAt = null, cardTimer = 0;
 renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
 renderer.domElement.addEventListener('pointerup', e => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
-  pointer.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  if (locked()) pointer.set(0, 0);   // mouse locked: you're pointing at the dot in the middle
+  else pointer.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(pointer, camera);
   const hit = ray.intersectObjects([K.hit, ...clickables], false)[0];
   const card = $('card');
-  if (!hit) { card.style.display = 'none'; return; }
+  if (!hit) {
+    card.style.display = 'none';
+    if (camMode === 'free' && !locked()) renderer.domElement.requestPointerLock?.();   // click empty space: lock the mouse
+    return;
+  }
   if (hit.object.userData.knight) {
     greet();
     const id = state?.identity || {}, mood = state?.plan?.mood;
@@ -1254,7 +1313,7 @@ function tick(nowMs) {
   $('badge').textContent = goal.awake ? 'awake, thinking' : (state?.plan?.mood ? `feeling ${state.plan.mood}` : 'resting');
 
   updateCamera(dt);
-  controls.update();
+  if (camMode === 'follow') controls.update();   // in free mode we steer the camera ourselves
   // shadows: redrawn a few times a second (the light itself flickers every frame)
   const hz = QUALITY[qLevel].hz;
   if (fireLight.castShadow && (shadowsDirty || (hz && nowMs - lastShadow > 1000 / hz))) {
