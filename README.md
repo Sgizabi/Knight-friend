@@ -124,6 +124,7 @@ copy .env.example .env      # then paste your Groq key into .env
 py brain/knight.py          # one real wake-up (uses a little of the free allowance)
 py brain/knight.py --fake   # a practice wake-up that calls no AI at all
 py brain/selftest.py        # checks the safety cleaning
+py brain/apptest.py         # runs the home page and sends a test letter and answer (nothing real is sent)
 py -m streamlit run streamlit_app.py
 py -m http.server 8601 --directory docs   # then open http://localhost:8601/keep.html?demo
 ```

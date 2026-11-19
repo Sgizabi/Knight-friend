@@ -34,6 +34,10 @@ Look at these, roughly in this order:
 - **The per-minute limit.** It reads each model's limit from Groq's replies and paces itself.
 - **A broken code change.** Before every real wake-up a practice run happens on a throwaway
   copy. If the practice fails, the real wake-up is skipped, so its memories stay safe.
+- **The home page after an update.** It reloads the knight's code when that changes, and a
+  letter or answer is never blocked by its own quick check failing (the workflow that posts it
+  checks again). *Home page check* in GitHub Actions sends a test letter and answer through
+  the page whenever its code changes; a red run there means the page needs a look.
 
 ## What to change if something breaks
 

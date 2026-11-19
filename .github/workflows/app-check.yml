@@ -1,0 +1,25 @@
+name: Home page check
+
+# Runs the home page on a throwaway copy and sends a letter and a written answer through it
+# (Groq and GitHub faked), whenever the page or the knight's code changes. The knight's own
+# commits only touch world/ and docs/, so they don't start this.
+on:
+  push:
+    branches: [main]
+    paths: ["streamlit_app.py", "brain/**", "requirements.txt"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python brain/apptest.py

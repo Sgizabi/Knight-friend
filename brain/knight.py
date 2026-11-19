@@ -949,6 +949,19 @@ class Knight:
         if self.diary:   # a quiet hour tempts it to retell the last entry; it shouldn't
             worn_part += (f"\nYour previous entry, already written (do not retell or rephrase it): "
                           f"\"{self.diary[-1]['text'][:320]}\"")
+            # the same job again (the east wall twice, with a nap between) tempts it to retell
+            # that day too: show it what it wrote then, and let a same-again day be short
+            doing = (decision or {}).get("activity")
+            same = next((e for e in reversed(self.diary[:-1]) if e.get("activity") == doing), None) \
+                if doing and self.diary[-1].get("activity") != doing else None
+            if same:
+                worn_part += (f"\nThe last time you did this ({doing}, {ago(same['time'])}) you wrote: "
+                              f"\"{same['text'][:320]}\"")
+            if same or (doing and self.diary[-1].get("activity") == doing):
+                worn_part += ("\nYou've done this before, so don't retell that entry: say what was different "
+                              "this time (how far it got, what went wrong or right, what you thought). If "
+                              "nothing much was new, keep it short and say so plainly; never make something "
+                              "up just to seem new.")
         if self.events and all(e.get("activity") in ("sleep", "rest") for e in self.events):
             worn_part += ("\nYou mostly slept or rested this time. One or two lines about that (how "
                           "you slept, what you woke up thinking, how it feels to stop) is plenty.")

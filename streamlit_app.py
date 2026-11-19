@@ -141,9 +141,57 @@ if META.get("repo"):
     owner, repo = META["repo"].split("/", 1)
     pages_url = f"https://{owner.lower()}.github.io/{repo}/"
 
-# ------------------------------------------------------------------ visits (knock, gift, candle, question)
+# ------------------------------------------------------------------ the knight's own code
+# Streamlit re-runs this page after an update but keeps modules it imported before, so the
+# page could end up calling old brain code (a letter once failed that way). Any brain module
+# whose file has changed since it was loaded is loaded again, along with those after it in
+# this list (they hold names taken from the ones before).
 sys.path.insert(0, str(APP / "brain"))
+BRAIN_MODULES = ("llm", "letterbox", "visitors")
+
+
+def fresh_brain():
+    import importlib
+    reload_rest = False
+    for name in BRAIN_MODULES:
+        module, just_loaded = sys.modules.get(name), False
+        if module is None:
+            module, just_loaded = importlib.import_module(name), True
+        try:
+            mtime = Path(module.__file__).stat().st_mtime
+        except (OSError, TypeError):
+            continue
+        if not just_loaded and (reload_rest or getattr(module, "_page_loaded_mtime", None) != mtime):
+            module = importlib.reload(module)
+            reload_rest = True
+        module._page_loaded_mtime = mtime
+
+
+fresh_brain()
+import letterbox  # noqa: E402
 import visitors  # noqa: E402
+
+
+def checked(text, sender="a visitor"):
+    """The quick AI check of a letter or answer: True / False, or None if it couldn't run.
+    If it can't run, the workflow that posts it checks it again, so nothing goes up unchecked
+    and a visitor never sees an error because of the check."""
+    key = secret("groq_api_key")
+    if not key:
+        return None
+    try:
+        from llm import Brain
+        try:
+            brain = Brain(key, world=ROOT / "world", remember=False)
+        except TypeError:            # an older brain still loaded: the plain one still checks
+            brain = Brain(key)
+        return letterbox.screen(brain, sender, text)[0]
+    except Exception as err:         # never the letter's text in the logs
+        print(f"[check] could not run: {type(err).__name__}", file=sys.stderr)
+        return None
+
+
+# ------------------------------------------------------------------ visits (knock, gift, candle, question)
 
 VISITS_PER_DAY = 100          # all visits together; past this the gate is shut until tomorrow
 PER_VISIT = {"knock": 1, "gift": 2, "candle": 1, "question": 1, "answer": 3}   # per visitor, per visit (and one answer per question)
@@ -317,12 +365,8 @@ def ask_section(name, state, today, of_kind, visit):
                         if not text:
                             st.warning("That answer can't be posted. Keep it to a short line, without links.")
                         else:
-                            verdict = None
-                            if secret("groq_api_key"):
-                                import letterbox
-                                from llm import Brain
-                                with st.spinner("Checking it…"):
-                                    verdict, _ = letterbox.screen(Brain(secret("groq_api_key"), world=ROOT / "world", remember=False), "a visitor", text)
+                            with st.spinner("Checking it…"):
+                                verdict = checked(text)
                             if verdict is False:
                                 st.warning("That answer couldn't be posted. Please reword it.")
                             else:
@@ -598,10 +642,6 @@ def send_to_mailbox(settings, sender, letter):
 
 
 def letter_form(settings):
-    sys.path.insert(0, str(APP / "brain"))
-    import letterbox
-    from llm import Brain
-
     state = st.session_state
     state.setdefault("mail_wrong", 0)
     state.setdefault("mail_locked_until", 0.0)
@@ -634,7 +674,7 @@ def letter_form(settings):
         return
     if settings["groq_api_key"]:
         with st.spinner("Checking the letter…"):
-            verdict, _ = letterbox.screen(Brain(settings["groq_api_key"], world=ROOT / "world", remember=False), sender, letter)
+            verdict = checked(letter, sender)
         if verdict is False:
             st.warning("Rooken's mailbox couldn't accept this letter. It may read as unkind, as "
                        "private information, or as instructions for the AI. Please reword it and try again.")
