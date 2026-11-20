@@ -59,11 +59,16 @@
           "Count the planks, not the sighs"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-20T03:30:22+00:00",
+    "live_thought": {
+      "text": "Stone cold, fire warm, I could linger a while.",
+      "time": "2026-11-20T03:30:22+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T02:40:37+00:00",
+    "since": "2026-11-20T03:30:22+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -72,17 +77,17 @@
   },
   "needs": {
     "rest": 21.6,
+    "warmth": 100.0,
+    "inspiration": 32.0,
+    "spirit": 93.0
+  },
+  "needs_prev": {
+    "rest": 21.6,
     "warmth": 97.5,
     "inspiration": 32.0,
     "spirit": 95.0
   },
-  "needs_prev": {
-    "rest": 43.1,
-    "warmth": 76.4,
-    "inspiration": 32.0,
-    "spirit": 85.5
-  },
-  "needs_at": "2026-11-20T02:40:37+00:00",
+  "needs_at": "2026-11-20T03:30:22+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -647,7 +652,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 4,
-    "updated": "2026-11-20T02:40:37+00:00",
+    "updated": "2026-11-20T03:30:22+00:00",
     "seen_until": "2026-11-20T02:25:25+00:00"
   },
   "gifts": [],
@@ -660,5 +665,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T02:40:37+00:00"
+  "exported": "2026-11-20T03:30:22+00:00"
 }
