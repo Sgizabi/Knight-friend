@@ -16,6 +16,14 @@ function glow(color, intensity = 2, extra = {}) {
                                       flatShading: true, toneMapped: false, ...extra });
 }
 const ds = (color, metal = 0, rough = .9) => A.mat(color, metal, rough, { side: T.DoubleSide });
+// an eye: white, a glowing iris and a pupil, looking along +z
+function eyeball(parent, r, iris, pos) {
+  const e = G(parent, pos);
+  P(e, new T.SphereGeometry(r, 12, 9), A.mat('#e2dccb', 0, .35), [0, 0, 0], { jitter: 0 });
+  P(e, new T.CircleGeometry(r * .55, 12), glow(iris, 1.4), [0, 0, r * 1.002], { jitter: 0, cast: false });
+  P(e, new T.CircleGeometry(r * .22, 10), A.mat('#050405'), [0, 0, r * 1.006], { jitter: 0, cast: false });
+  return e;
+}
 // a tapered bone between two points
 function bone(parent, a, b, r0, r1, material, sides = 6, jitter = .015) {
   const from = V(...a), to = V(...b), d = to.clone().sub(from), len = d.length();
@@ -799,6 +807,425 @@ const BEASTS = {
       };
     },
     exit() { A.updateSky(); },
+  },
+
+  // ================================================================ THE NINEFOLD EYE
+  ninefold: {
+    name: 'The Ninefold Eye', hour: 22,
+    blurb: 'Seen only by those who have seen enough. A ring of old bone drifts over the courtyard, set with nine eyes, each watching something different. Once in a long while, all nine turn to the knight.',
+    view: [[-6.3, 1.6, 4.9], [-11, 6.0, -.5]],
+    knight: { place: 'courtyard', action: 'gaze', emote: 'question', note: 'counting the eyes, and getting a different number each time' },
+    build(root) {
+      const g = G(root, [-11, 6.5, -.5]), ring = G(g);
+      const boneM = A.mat('#d9cfb6', 0, .7), boneD = A.mat('#a89b7e', 0, .8);
+      const tor = new T.Mesh(A.facet(new T.TorusGeometry(2.1, .22, 6, 27), .05, 3), boneM); tor.castShadow = true; ring.add(tor);
+      for (let i = 0; i < 18; i++) { const a = i / 18 * 6.28; P(ring, new T.ConeGeometry(.07, .5 + (i % 3) * .15, 4), boneD, [Math.cos(a) * 2.4, Math.sin(a) * 2.4, 0], { rot: [0, 0, a - Math.PI / 2] }); }
+      const eyes = [], r = A.rand(9);
+      for (let i = 0; i < 9; i++) {
+        const a = i / 9 * 6.28 + .2, at = [Math.cos(a) * 2.1, Math.sin(a) * 2.1, .1];
+        P(ring, A.ico(.38, 1), boneD, at, { scale: [1, 1, .45] });
+        const e = eyeball(ring, .3, ['#c9a6ff', '#ffd27a', '#9fe8d8'][i % 3], [at[0], at[1], .3]);
+        eyes.push({ e, look: V(-11 + (r() - .5) * 12, r() * 3, (r() - .5) * 8), want: V(), next: 0, k: i });
+      }
+      const lamp = new T.PointLight('#b49cff', 3, 12, 1.5); g.add(lamp);
+      const head = V(), cam = V();
+      return (t, dt) => {
+        g.position.y = 6.5 + Math.sin(t * .4) * .3; ring.rotation.z = t * .05;
+        A.camera.getWorldPosition(cam); g.lookAt(cam.x, cam.y - 2, cam.z);   // its face turned down toward whoever is below
+        A.K.J.hips.getWorldPosition(head); head.y += .75;
+        const all = pulse(t + 12, 24, 5) > .05;
+        for (const s of eyes) {
+          if (t > s.next) { const q = A.rand(Math.floor(t * 10) + s.k * 77); s.want.set(-8 + (q() - .5) * 14, q() * 3, 2 + (q() - .5) * 10); s.next = t + 2 + q() * 4; }
+          s.look.lerp(all ? head : s.want, 1 - Math.exp(-dt * (all ? 6 : 2)));
+          s.e.lookAt(s.look);
+          s.e.scale.y = 1 - pulse(t + s.k * 1.7, 6 + s.k * .4, .2) * .9;
+        }
+        lamp.intensity = all ? 6 : 3 + Math.sin(t) * .5;
+      };
+    },
+  },
+
+  // ================================================================ THE SECOND MOON
+  moon2: {
+    name: 'The Second Moon', hour: 22,
+    blurb: 'Some nights there is another moon: pale green, a little too close, with thin rings slowly turning. Small things fall from it.',
+    view: [[-7, 1.6, 4.6], [-18, 13, -26]],
+    knight: { place: 'courtyard', action: 'gaze', emote: 'exclaim', note: 'looking up at two moons' },
+    build(root) {
+      const g = G(root, [-26, 30, -48]);
+      const body = new T.Mesh(A.facet(new T.IcosahedronGeometry(7, 3), .45, 8),
+        new T.MeshStandardMaterial({ color: '#b9d8b0', emissive: '#6f9a6a', emissiveIntensity: .6, roughness: 1, flatShading: true, fog: false }));
+      g.add(body);
+      for (let i = 0; i < 7; i++) {   // darker seas
+        const a = i * 1.7, b = i * .9 - 2;
+        const m = new T.Mesh(new T.CircleGeometry(.9 + (i % 3) * .5, 9), new T.MeshBasicMaterial({ color: '#7f9f7a', fog: false }));
+        const d = V(Math.cos(a) * Math.cos(b), Math.sin(b), Math.sin(a) * Math.cos(b)).normalize();
+        if (d.z < 0) d.z = -d.z;   // on the side we see
+        m.position.copy(d).multiplyScalar(7.05); m.lookAt(d.clone().multiplyScalar(20)); body.add(m);
+      }
+      const ringMat = new T.MeshBasicMaterial({ color: '#d8efcf', transparent: true, opacity: .55, fog: false, side: T.DoubleSide });
+      const rings = [[11, .14], [13.2, .08], [14.4, .05]].map(([R, w], i) => {
+        const m = new T.Mesh(new T.TorusGeometry(R, w, 3, 72), ringMat); m.rotation.set(1.25 + i * .04, .2, .35); g.add(m); return m;
+      });
+      const halo = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8fe08a', transparent: true, opacity: .35, depthWrite: false, fog: false }));
+      halo.scale.setScalar(30); g.add(halo);
+      const tint = new T.DirectionalLight('#9fd49a', .35); tint.position.set(-26, 30, -48); root.add(tint);
+      const fallMat = new T.MeshBasicMaterial({ color: '#e2ffd8', fog: false, transparent: true });
+      const falling = Array.from({ length: 12 }, (_, i) => { const m = new T.Mesh(A.ico(.22, 0), fallMat.clone()); root.add(m); return { m, ph: i / 12, x: (i % 4 - 1.5) * 6, z: (Math.floor(i / 4) - 1) * 5 }; });
+      return (t) => {
+        body.rotation.y = t * .01; halo.material.opacity = .3 + Math.sin(t * .5) * .06;
+        rings.forEach((m, i) => { m.rotation.z = .35 + t * (.02 + i * .01); });
+        for (const f of falling) {
+          const k = (t * .04 + f.ph) % 1;
+          f.m.position.set(-26 + f.x + k * 6, 30 - 6 - k * 34, -48 + f.z + k * 10);
+          f.m.material.opacity = Math.sin(k * Math.PI); f.m.scale.setScalar(1 + Math.sin(t * 9 + f.ph * 30) * .3);
+        }
+      };
+    },
+  },
+
+  // ================================================================ THE STARFALLEN LARVA
+  larva: {
+    name: 'The Starfallen Larva', hour: 22,
+    blurb: 'One of the things that fell. A pale grub the size of a cart, lit from inside with starlight, curled in a crater in the courtyard. It seems harmless. It is a little bigger every time it comes back.',
+    view: [[-8.6, 2.4, 4.8], [-13.3, .5, 1.1]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'wondering whether it is warm, or cold, or anything at all' },
+    build(root) {
+      const cx = -13.6, cz = 1.4;
+      const pit = new T.Mesh(new T.CircleGeometry(1.9, 14), A.mat('#14100d', 0, 1)); pit.rotation.x = -Math.PI / 2; pit.position.set(cx, .03, cz); root.add(pit);
+      const r = A.rand(17), shardM = glow('#cfe2ff', 1.6);
+      for (let i = 0; i < 14; i++) {
+        const a = i / 14 * 6.28, d = 1.8 + r() * .4;
+        P(root, A.box(.4 + r() * .3, .18 + r() * .2, .35), i % 3 ? A.M.dirt : A.M.stone, [cx + Math.cos(a) * d, .08, cz + Math.sin(a) * d], { rot: [r() - .5, a, (r() - .5) * .8] });
+        if (i % 2) P(root, new T.TetrahedronGeometry(.05 + r() * .05), shardM, [cx + Math.cos(a + .2) * (d - .5), .06, cz + Math.sin(a + .2) * (d - .5)], { cast: false });
+      }
+      const skin = new T.MeshStandardMaterial({ color: '#e6e1f2', transparent: true, opacity: .7, roughness: .35, emissive: '#7f8ad8', emissiveIntensity: .75, flatShading: true, depthWrite: false });
+      const band = A.mat('#cfc8e0', 0, .5), dark = A.mat('#1b1626');
+      const g = G(root, [cx, 0, cz], [0, .6, 0]);
+      const N = 11, segs = [];
+      for (let i = 0; i < N; i++) {
+        const rad = .5 * Math.pow(Math.sin(Math.PI * (i + .6) / (N + .4)), .6) + .14;
+        const s = G(g);
+        P(s, A.ico(rad, 1), skin, [0, 0, 0], { scale: [1, .9, .8], jitter: .02 });
+        P(s, A.cyl(rad * 1.0, rad * 1.0, rad * .08, 9), band, [0, 0, 0], { rot: [Math.PI / 2, 0, 0], jitter: .01 });
+        const sp = [], n = 14;
+        for (let k = 0; k < n; k++) { const v = V(r() - .5, r() - .5, r() - .5).normalize().multiplyScalar(r() * rad * .7); sp.push(v.x, v.y, v.z); }
+        const pg = new T.BufferGeometry(); pg.setAttribute('position', new T.Float32BufferAttribute(sp, 3));
+        s.add(new T.Points(pg, new T.PointsMaterial({ color: '#ffffff', size: .07, transparent: true, depthWrite: false })));
+        if (i > 1 && i < N - 1) for (const sx of [-1, 1]) P(s, new T.ConeGeometry(.03, .18, 4), band, [sx * rad * .5, -rad * .8, 0], { rot: [0, 0, Math.PI + sx * .4] });
+        segs.push({ s, rad, i });
+      }
+      const head = segs[N - 1].s;
+      P(head, new T.CircleGeometry(.1, 10), dark, [0, 0, .17], { cast: false, jitter: 0 });
+      for (const sx of [-1, 1]) bone(head, [sx * .06, .08, .1], [sx * .16, .26, .25], .015, .006, band, 4);
+      const lamp = new T.PointLight('#9fb4ff', 2.5, 7, 1.6); lamp.position.set(cx, .8, cz); root.add(lamp);
+      const p = V(), q = V();
+      return (t) => {
+        const R = 1.5 + Math.sin(t * .35) * .08;
+        for (const { s, rad, i } of segs) {
+          const a = -2.0 + i / (N - 1) * 3.6 + Math.sin(t * .5 - i * .4) * .05;
+          const lift = i === N - 1 ? .25 + Math.sin(t * .6) * .15 : 0;
+          s.position.set(Math.cos(a) * R, rad * .85 + lift, Math.sin(a) * R);
+          const b = 1 + Math.sin(t * 1.3 - i * .6) * .05; s.scale.set(b, b, b);
+          const a2 = a + .1; q.set(Math.cos(a2) * R, s.position.y, Math.sin(a2) * R);
+          s.lookAt(p.copy(q).applyMatrix4(g.matrixWorld));
+        }
+        head.rotation.y += Math.sin(t * .4) * .3;
+        lamp.intensity = 2.2 + Math.sin(t * 1.3) * .5;
+      };
+    },
+  },
+
+  // ================================================================ THE ANTLERED LISTENER
+  listener: {
+    name: 'The Antlered Listener', hour: 18,
+    blurb: 'Seen only by those who have seen enough. A gaunt figure on the rise south of the keep at dusk, its head a crown of branching antlers that end in ears. It is listening to the keep. Maybe to him.',
+    view: [[.2, 2.0, 1.6], [2.5, 3.6, 12.5]],
+    knight: { place: 'fire', action: 'stand', emote: 'dots', note: 'trying very hard to think quietly' },
+    build(root) {
+      const base = [2.6, 0, 12.6];
+      P(root, A.ico(1, 1), A.mat('#3e4a2e', 0, 1), [base[0], -.9, base[2]], { scale: [3.2, 1.4, 2.6], jitter: .1 });
+      const g = G(root, [base[0], .45, base[2]], [0, Math.PI, 0]); g.scale.setScalar(1.3);
+      const skin = A.mat('#2f2b27', 0, .9), cloth = ds('#1b1918'), antler = A.mat('#d2c6aa', 0, .7), ear = A.mat('#b8a39b', 0, .6);
+      for (const sx of [-1, 1]) { bone(g, [sx * .14, 1.75, 0], [sx * .17, .85, .05], .07, .05, skin); bone(g, [sx * .17, .85, .05], [sx * .15, 0, 0], .05, .035, skin); }
+      P(g, A.cyl(.2, .14, .9, 6), skin, [0, 2.15, 0], { scale: [1, 1, .7] });
+      for (let i = 0; i < 7; i++) {
+        const c = G(g, [(i - 3) * .09, 2.55, -.12 - Math.abs(i - 3) * .02]), len = 2.0 + ((i * 41) % 5) * .14;
+        sheet(c, [[-.06, 0, 0], [.06, 0, 0], [.05, -len, -.04], [0, -len - .2, -.04], [-.05, -len + .08, -.04]], [[0, 1, 2], [0, 2, 3], [0, 3, 4]], cloth);
+      }
+      const arms = [];
+      for (const sx of [-1, 1]) {
+        const sh = G(g, [sx * .24, 2.5, 0]);
+        bone(sh, [0, 0, 0], [sx * .08, -.9, .05], .05, .04, skin); bone(sh, [sx * .08, -.9, .05], [sx * .05, -1.85, .12], .04, .03, skin);
+        for (let f = 0; f < 3; f++) bone(sh, [sx * .05, -1.85, .12], [sx * (.03 + f * .03), -2.2, .14 + f * .02], .012, .006, skin, 4);
+        arms.push(sh);
+      }
+      const neck = G(g, [0, 2.62, 0]), head = G(neck, [0, .18, .03]);
+      bone(neck, [0, 0, 0], [0, .2, .03], .05, .045, skin);
+      P(head, A.ico(.15, 1), A.mat('#cfc6b5', 0, .7), [0, 0, 0], { scale: [.9, 1.1, 1] });
+      const ears = [], r = A.rand(5);
+      const branch = (parent, from, dir, len, depth) => {
+        const to = [from[0] + dir[0] * len, from[1] + dir[1] * len, from[2] + dir[2] * len];
+        bone(parent, from, to, .03 * (depth + 1) * .7, .02 * (depth + .6) * .6, antler, 5);
+        if (depth === 0) {
+          const o = G(parent, to); o.quaternion.setFromUnitVectors(V(0, 1, 0), V(...dir).normalize());
+          const e = G(o); P(e, new T.ConeGeometry(.1, .28, 5), ear, [0, .12, 0], { scale: [1, 1, .4] });
+          ears.push({ e, ph: r() * 9 }); return;
+        }
+        for (const s of [-1, 1]) {
+          const d = V(dir[0] + s * .45 * (r() + .4), dir[1] + .1, dir[2] + (r() - .5) * .5).normalize();
+          branch(parent, to, [d.x, d.y, d.z], len * .62, depth - 1);
+        }
+      };
+      for (const sx of [-1, 1]) branch(head, [sx * .07, .12, 0], [sx * .55, .83, -.1], .55, 3);
+      return (t) => {
+        head.rotation.z = Math.sin(t * .23) * .25 + pulse(t, 11, 2) * .35;
+        head.rotation.x = .1 + Math.sin(t * .17) * .06;
+        for (const { e, ph } of ears) e.rotation.z = pulse(t + ph, 3.5 + ph * .3, .3) * .6;
+        arms.forEach((a, i) => { a.rotation.x = Math.sin(t * .3 + i) * .03; });
+      };
+    },
+  },
+
+  // ================================================================ THE DREAM-LEECH
+  leech: {
+    name: 'The Dream-Leech', hour: 22,
+    blurb: 'A vast, clear thing that swims through the air as if it were water, with small stars drifting inside it. When it passes over the keep while the knight sleeps, his dreams that night are strange, and not his own.',
+    view: [[-10.5, 3.4, 7.5], [-2, 5.2, -.5]],
+    knight: { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'dreaming something that is not his' },
+    build(root) {
+      const skin = new T.MeshStandardMaterial({ color: '#9db2e6', transparent: true, opacity: .3, roughness: .2, emissive: '#3a4f8a', emissiveIntensity: .6,
+                                                flatShading: true, depthWrite: false, side: T.DoubleSide });
+      const rimM = new T.MeshStandardMaterial({ color: '#c7d4ff', emissive: '#7f95e0', emissiveIntensity: .9, flatShading: true, transparent: true, opacity: .7 });
+      const N = 14, segs = [], r = A.rand(23);
+      for (let i = 0; i < N; i++) {
+        const rad = (i < 2 ? .7 + i * .25 : 1.25 * (1 - (i - 2) / (N - 1)) + .25);
+        const s = new T.Group(); root.add(s);
+        const m = new T.Mesh(A.facet(new T.IcosahedronGeometry(rad, 1), .04, i), skin); m.scale.set(1, .75, 1.3); s.add(m);
+        const sp = [];
+        for (let k = 0; k < 22; k++) { const v = V(r() - .5, r() - .5, r() - .5).normalize().multiplyScalar(r() * rad * .7); sp.push(v.x, v.y * .75, v.z * 1.3); }
+        const pg = new T.BufferGeometry(); pg.setAttribute('position', new T.Float32BufferAttribute(sp, 3));
+        s.add(new T.Points(pg, new T.PointsMaterial({ color: '#fff6dc', size: .08, transparent: true, depthWrite: false })));
+        segs.push({ s, rad });
+      }
+      const mouth = new T.Mesh(new T.TorusGeometry(.55, .09, 5, 14), rimM); mouth.position.z = .85; segs[0].s.add(mouth);
+      for (let k = 0; k < 10; k++) { const a = k / 10 * 6.28; P(segs[0].s, new T.ConeGeometry(.03, .15, 3), rimM, [Math.cos(a) * .5, Math.sin(a) * .5, .9], { rot: [Math.PI / 2, 0, 0], cast: false }); }
+      const lamp = new T.PointLight('#8fa6ff', 3, 10, 1.5); segs[0].s.add(lamp);
+      const path = s => V(-2 + Math.cos(s) * 7.5, 6.4 + Math.sin(s * 2) * .8, Math.sin(s) * 5.5);
+      return (t) => {
+        const s0 = t * .1;
+        segs.forEach(({ s }, i) => {
+          const at = path(s0 - i * .085); at.y += Math.sin(t * 1.4 - i * .55) * .35;
+          s.position.copy(at); s.lookAt(path(s0 - i * .085 + .02));
+          s.scale.setScalar(1 + Math.sin(t * 1.4 - i * .55) * .06);
+        });
+        lamp.intensity = 2.5 + Math.sin(t * 1.4) * .8;
+      };
+    },
+  },
+
+  // ================================================================ THE SEAM
+  seam: {
+    name: 'The Seam', hour: 22,
+    blurb: 'Seen only by those who have seen enough. A crack in the air above the courtyard. Through it, something enormous moves in a space that should not be there. Sometimes a hand comes through, feeling around.',
+    view: [[-7.0, 2.2, 4.9], [-11.4, 3.7, -.3]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'very still, in case the hand is looking for him' },
+    build(root) {
+      const g = G(root, [-11.5, 4.1, -.3], [0, .45, 0]);
+      const pts = [[0, 2.2], [.18, 1.6], [.42, 1.3], [.3, .8], [.62, .3], [.5, -.3], [.7, -.8], [.35, -1.3], [.2, -1.8], [0, -2.3],
+                   [-.22, -1.7], [-.45, -1.2], [-.3, -.6], [-.66, -.1], [-.48, .5], [-.62, 1.0], [-.3, 1.4], [-.16, 1.8]];
+      const shape = new T.Shape(pts.map(([x, y]) => new T.Vector2(x, y)));
+      const tex = canvasTex(256, 512, (c, w, h) => {
+        const gr = c.createRadialGradient(w * .5, h * .5, 10, w * .5, h * .5, h * .6);
+        gr.addColorStop(0, '#2a1a4a'); gr.addColorStop(1, '#05030c'); c.fillStyle = gr; c.fillRect(0, 0, w, h);
+        const r = A.rand(3);
+        for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(230,220,255,${.3 + r() * .7})`; c.fillRect(r() * w, r() * h, r() < .1 ? 2 : 1, r() < .1 ? 2 : 1); }
+        c.fillStyle = 'rgba(190,170,255,.18)'; c.beginPath(); c.ellipse(w * .5, h * .55, 110, 46, .2, 0, 6.3); c.fill();   // something vast, an eye
+        c.fillStyle = 'rgba(255,214,140,.55)'; c.beginPath(); c.ellipse(w * .5, h * .55, 34, 34, 0, 0, 6.3); c.fill();
+        c.fillStyle = '#05030c'; c.beginPath(); c.ellipse(w * .5, h * .55, 7, 26, 0, 0, 6.3); c.fill();
+      });
+      tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(.9, .45);
+      const sg = new T.ShapeGeometry(shape); const uv = sg.attributes.uv, pos = sg.attributes.position;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + .7) / 1.4, (pos.getY(i) + 2.3) / 4.5);
+      const inner = new T.Mesh(sg, new T.MeshBasicMaterial({ map: tex, fog: false, side: T.DoubleSide })); g.add(inner);
+      const edge = glow('#e2d2ff', 2.4, { fog: false });
+      for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; const m = bone(g, [a[0], a[1], 0], [b[0], b[1], 0], .035, .035, edge, 4, 0); m.castShadow = false; }
+      const lamp = new T.PointLight('#b9a2ff', 5, 10, 1.4); lamp.position.z = .8; g.add(lamp);
+      // the hand: a long pale arm feeling its way out
+      const pale = A.mat('#d8d0c4', 0, .6, { emissive: '#3a3448', emissiveIntensity: .6 }), arm = G(g, [.05, -.3, 0], [Math.PI / 2 + .5, 0, 0]);
+      const fore = chain(arm, 4, .42, .11, .07, pale, { sides: 6 });
+      const hand = G(fore[3], [0, .42, 0]); P(hand, A.box(.2, .18, .07), pale, [0, .06, 0]);
+      const fingers = [];
+      for (let f = 0; f < 5; f++) {
+        const fb = G(hand, [(f - 2) * .045, .14, 0], [f === 0 ? .3 : 0, 0, (f - 2) * .12]);
+        fingers.push(chain(fb, 3, f === 0 ? .1 : .16, .022, .012, pale, { sides: 5, jitter: .003 }));
+      }
+      const motes = Array.from({ length: 10 }, (_, i) => { const m = new T.Mesh(A.ico(.03, 0), edge); g.add(m); return { m, ph: i / 10 }; });
+      return (t) => {
+        tex.offset.set(.05 + Math.sin(t * .07) * .05, .25 + Math.sin(t * .05 + 1) * .25);
+        const reach = .5 + .5 * Math.sin(t * .3);
+        arm.rotation.x = Math.PI / 2 + .75 + reach * .35; arm.rotation.z = -.5 + Math.sin(t * .37) * .3; arm.scale.setScalar(.9 + reach * .55);
+        fore.forEach((j, i) => { j.rotation.x = Math.sin(t * .8 - i) * .15; j.rotation.z = Math.sin(t * .5 + i) * .1; });
+        const curl = .5 + .5 * Math.sin(t * 1.1);
+        fingers.forEach(c => c.forEach(j => { j.rotation.x = .15 + curl * .5; }));
+        for (const { m, ph } of motes) { const k = (t * .15 + ph) % 1; m.position.set(Math.sin(ph * 40) * .5 * k, Math.cos(ph * 30) * 1.6, k * 2.5); m.visible = k > .05; }
+        edge.emissiveIntensity = 2 + Math.sin(t * 2.3) * .6; lamp.intensity = 4.5 + Math.sin(t * 2.3) * 1.2;
+      };
+    },
+  },
+
+  // ================================================================ THE BLOOM-HEADED WANDERER
+  bloom: {
+    name: 'The Bloom-Headed Wanderer', hour: 18,
+    blurb: 'A traveller in a tattered cloak who seems ordinary, until something interests it. Then its head unfolds like a flower into pale tendrils. It is very polite. It has a mind of its own, and it would like to talk.',
+    view: [[-8.0, 1.85, 2.0], [-10.3, 1.8, .25]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'being very polite back' },
+    build(root) {
+      const g = G(root, [-10.3, 0, .25], [0, 1.25, 0]);
+      const cloth = ds('#3b3430'), clothD = ds('#2a2522'), hide = A.mat('#5b4a3e', 0, .9), petalM = ds('#d7b7ae', 0, .7), petalOut = ds('#6e5a52', 0, .8);
+      const tendrilM = A.mat('#e5cfc6', 0, .55), tipM = glow('#ffd9c9', 1.4);
+      const cloak = new T.Mesh(A.facet(new T.CylinderGeometry(.2, .45, 1.55, 9, 2, true), .06, 2), cloth); cloak.position.y = .85; cloak.castShadow = true; g.add(cloak);
+      for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; P(g, new T.ConeGeometry(.08, .25, 3), clothD, [Math.cos(a) * .43, .05, Math.sin(a) * .43], { rot: [Math.PI, 0, 0] }); }
+      P(g, A.ico(.25, 1), cloth, [0, 1.6, 0], { scale: [1.3, .7, 1] });
+      const hood = G(g, [0, 1.72, 0]);
+      const hm = new T.Mesh(A.facet(new T.SphereGeometry(.21, 8, 6, 0, 6.28, 0, 2.1), .02, 1), clothD); hm.position.set(0, .12, -.03); hm.castShadow = true; hood.add(hm);
+      bone(g, [.3, 1.45, .15], [.38, .95, .3], .05, .04, cloth); bone(g, [.38, .95, .3], [.42, .95, .45], .04, .03, hide);
+      bone(g, [.45, 0, .5], [.45, 1.9, .5], .03, .025, A.M.woodD);   // a walking staff
+      bone(g, [-.3, 1.45, .1], [-.34, .9, .15], .05, .04, cloth);
+      const head = G(hood, [0, .12, .04]); head.scale.setScalar(1.45);
+      const bloomLight = new T.PointLight('#ffcbb8', 0, 3, 1.5); bloomLight.position.set(0, .2, .25); head.add(bloomLight);
+      const bulb = P(head, A.ico(.13, 1), A.mat('#cdb8ae', 0, .6), [0, 0, 0], { scale: [1, 1.15, 1] });
+      const petals = [];
+      for (let i = 0; i < 6; i++) {
+        const p = G(head, [0, -.02, 0], [0, i / 6 * 6.28, 0]);
+        const hinge = G(p, [0, 0, .09]);
+        sheet(hinge, [[-.07, 0, 0], [.07, 0, 0], [.09, .28, .02], [0, .38, .04], [-.09, .28, .02]], [[0, 1, 2], [0, 2, 3], [0, 3, 4]], i % 2 ? petalM : petalOut);
+        petals.push(hinge);
+      }
+      const tendrils = [];
+      for (let i = 0; i < 8; i++) {
+        const b = G(head, [Math.cos(i * .8) * .04, .05, Math.sin(i * .8) * .04], [Math.cos(i * .8) * .5, 0, Math.sin(i * .8) * .5]);
+        const c = chain(b, 5, .09, .018, .006, tendrilM, { sides: 4, jitter: .002 });
+        P(c[4], A.ico(.014, 0), tipM, [0, .09, 0], { cast: false });
+        tendrils.push({ b, c, ph: i });
+      }
+      return (t) => {
+        const open = smooth(0, 1, pulse(t + 2, 12, 6) * 1.6);
+        petals.forEach((h, i) => { h.rotation.x = open * (1.0 + Math.sin(t * 2 + i) * .08); });
+        bulb.scale.setScalar(1 - open * .5);
+        for (const { b, c, ph } of tendrils) {
+          b.scale.setScalar(.05 + open * .95);
+          c.forEach((j, i) => { j.rotation.x = Math.sin(t * 2.2 - i * .6 + ph) * .35 * open; j.rotation.z = Math.cos(t * 1.7 - i * .5 + ph) * .25 * open; });
+        }
+        bloomLight.intensity = open * 2.2;
+        head.rotation.x = -open * .25; hood.rotation.y = Math.sin(t * .4) * .2 * (1 - open);
+      };
+    },
+  },
+
+  // ================================================================ THE LANTERN WARDEN
+  warden: {
+    name: 'The Lantern Warden', hour: 22,
+    blurb: 'A tall, thin figure in a long hunter\'s coat who walks the walls at night, holding out a cage lantern with something alive inside. It trades secrets for trinkets, and its secrets are always true.',
+    view: [[-9.4, 1.7, -1.6], [-11.4, 2.4, 4.3]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'wondering what a secret costs' },
+    build(root) {
+      const g = G(root, [-11, 1.15, 4.3]);
+      const coat = ds('#2b2a2e', 0, .85), coatL = ds('#3e3b40', 0, .85), leather = A.M.leather, iron = A.M.iron;
+      const body = G(g);
+      const legs = [];
+      for (const sx of [-1, 1]) { const l = G(body, [sx * .1, 1.0, 0]); bone(l, [0, 0, 0], [0, -1.0, 0], .055, .045, leather); P(l, A.box(.1, .07, .24), leather, [0, -1.0, .06]); legs.push(l); }
+      const coatM = new T.Mesh(A.facet(new T.CylinderGeometry(.22, .4, 1.3, 9, 2, true), .05, 1), coat); coatM.position.y = 1.35; coatM.castShadow = true; body.add(coatM);
+      for (const sx of [-1, 1]) sheet(body, [[sx * .05, .9, -.3], [sx * .3, .9, -.2], [sx * .28, .05, -.42], [sx * .1, .25, -.45]], [[0, 1, 2], [0, 2, 3]], coatL);
+      P(body, A.cyl(.26, .22, .7, 8), coat, [0, 2.2, 0], { scale: [1, 1, .75] });
+      P(body, A.cyl(.17, .26, .2, 8), coatL, [0, 2.55, 0]);   // high collar
+      const head = G(body, [0, 2.72, 0]);
+      P(head, A.ico(.15, 1), A.mat('#1a1918'), [0, 0, 0]);
+      const hood = new T.Mesh(A.facet(new T.SphereGeometry(.2, 8, 6, 0, 6.28, 0, 2.2), .02, 3), coat); hood.position.set(0, .05, -.04); hood.castShadow = true; head.add(hood);
+      P(head, A.box(.24, .12, .06), coatL, [0, -.06, .14]);   // a scarf across its face
+      for (const sx of [-1, 1]) P(head, A.ico(.016, 0), glow('#e6f3ff', 2.5), [sx * .05, .03, .15], { cast: false });
+      bone(body, [-.24, 2.45, 0], [-.27, 1.6, .05], .045, .035, coat);
+      const arm = G(body, [.24, 2.45, 0]);
+      bone(arm, [0, 0, 0], [.32, -.35, .25], .045, .04, coat); bone(arm, [.32, -.35, .25], [.6, -.45, .5], .04, .035, coat);
+      const cage = G(arm, [.62, -.55, .52]); cage.scale.setScalar(1.6);
+      bone(cage, [0, .1, 0], [0, .32, 0], .008, .008, iron, 4);
+      for (const y of [.1, -.28]) { const ring = new T.Mesh(new T.TorusGeometry(.11, .012, 4, 10), iron); ring.rotation.x = Math.PI / 2; ring.position.y = y; cage.add(ring); }
+      for (let i = 0; i < 6; i++) { const a = i / 6 * 6.28; bone(cage, [Math.cos(a) * .11, .1, Math.sin(a) * .11], [Math.cos(a) * .11, -.28, Math.sin(a) * .11], .008, .008, iron, 4); }
+      const thing = G(cage, [0, -.09, 0]), light = glow('#bfe8ff', 2.5);
+      P(thing, A.ico(.035, 0), light, [0, 0, 0], { cast: false });
+      const wings = [-1, 1].map(sx => { const w = G(thing); sheet(w, [[0, 0, 0], [sx * .09, .03, .02], [sx * .07, -.02, -.03]], [[0, 1, 2]], glow('#dff4ff', 1.2, { side: T.DoubleSide, transparent: true, opacity: .8 })); return { w, sx }; });
+      const lamp = new T.PointLight('#9fd8ff', 6, 10, 1.4); cage.add(lamp);
+      let x = -11, dir = 1;
+      return (t, dt) => {
+        const target = -11.3 + Math.sin(t * .09) * 3.8, v = target - x; x = target;
+        if (Math.abs(v) > 1e-4) dir = Math.sign(v);
+        g.position.x = x; g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 3);
+        const stride = Math.abs(Math.cos(t * .09)) > .15 ? 1 : .2, ph = t * 3.2;
+        legs.forEach((l, i) => { l.rotation.x = Math.sin(ph + i * Math.PI) * .35 * stride; });
+        body.position.y = Math.abs(Math.sin(ph)) * .03 * stride;
+        cage.rotation.z = Math.sin(ph) * .08 * stride; head.rotation.y = Math.sin(t * .3) * .5;
+        thing.position.set(Math.sin(t * 2.3) * .04, -.09 + Math.sin(t * 3.1) * .04, Math.cos(t * 2.7) * .04);
+        for (const { w, sx } of wings) w.rotation.y = sx * Math.sin(t * 30) * .7;
+        lamp.intensity = 5.5 + Math.sin(t * 7) * .8;
+      };
+    },
+  },
+
+  // ================================================================ THE PALE BROOD
+  brood: {
+    name: 'The Pale Brood', hour: 22,
+    blurb: 'Small grey things with fingers far too long. They creep into the keep at night and steal tools and glass. More nuisance than danger, and always just out of sight.',
+    view: [[-6.2, 1.5, 4.3], [-9, .3, .2]],
+    knight: { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'asleep, and missing his hammer by morning' },
+    build(root) {
+      const skin = A.mat('#a7a39b', 0, .8, { emissive: '#2c2c30', emissiveIntensity: .6 }), eyeM = A.mat('#07060a', .3, .15);
+      const spots = [[-8.6, -1.5], [-8.9, 3.0], [-6.0, .4], [-7.4, -.9], [-10.6, -.7], [-9.6, 1.6], [-7.0, 2.2], [-11.8, .6]];
+      const loot = [
+        g => { P(g, A.cyl(.012, .012, .22, 5), A.M.wood, [0, 0, 0], { rot: [0, 0, 1.4] }); P(g, A.box(.05, .05, .1), A.M.iron, [-.1, 0, 0]); },
+        g => P(g, new T.TetrahedronGeometry(.06), new T.MeshStandardMaterial({ color: '#c8eef5', transparent: true, opacity: .7, roughness: .05, metalness: .3 }), [0, 0, 0], { cast: false }),
+        g => P(g, A.cyl(.03, .03, .12, 6), A.mat('#e8dcc0'), [0, .04, 0]),
+        () => {}, () => {},
+      ];
+      const brood = [];
+      for (let n = 0; n < 5; n++) {
+        const b = G(root), body = G(b, [0, .28, 0]);
+        P(body, A.ico(.13, 1), skin, [0, 0, -.03], { scale: [1, .85, 1.3] });
+        const head = G(body, [0, .12, .14]);
+        P(head, A.ico(.11, 1), skin, [0, 0, 0], { scale: [1, .9, 1] });
+        for (const sx of [-1, 1]) { P(head, A.ico(.045, 1), eyeM, [sx * .05, .02, .08], { scale: [1, 1.2, .7] }); P(head, A.ico(.008, 0), glow('#ffffff', 2), [sx * .045, .04, .115], { cast: false }); }
+        const limbs = [];
+        for (const sx of [-1, 1]) for (const fz of [.08, -.1]) {
+          const l = G(body, [sx * .08, -.02, fz]);
+          bone(l, [0, 0, 0], [sx * .12, -.12, fz * .5], .018, .014, skin, 4); bone(l, [sx * .12, -.12, fz * .5], [sx * .14, -.26, fz * .9], .014, .01, skin, 4);
+          if (fz > 0) for (let f = 0; f < 4; f++) bone(l, [sx * .14, -.26, fz * .9], [sx * (.14 + f * .03), -.28, fz * .9 + .2 + (f % 2) * .04], .006, .003, skin, 3);
+          limbs.push({ l, sx, fz });
+        }
+        const carry = G(body, [0, -.05, .26]); loot[n](carry);
+        const s = A.rand(n * 31 + 7);
+        const at = V(spots[n][0], 0, spots[n][1]);
+        b.position.copy(at);
+        brood.push({ b, body, head, limbs, at, from: at.clone(), to: at.clone(), go: 1, wait: s() * 3, len: 1, s });
+      }
+      return (t, dt) => {
+        for (const c of brood) {
+          if (c.go >= 1) {
+            c.wait -= dt;
+            if (c.wait <= 0) { c.from.copy(c.b.position); const sp = spots[Math.floor(c.s() * spots.length)]; c.to.set(sp[0] + (c.s() - .5) * .6, 0, sp[1] + (c.s() - .5) * .6); c.go = 0; c.len = c.from.distanceTo(c.to) || 1; }
+          } else {
+            c.go = Math.min(1, c.go + dt * 2.4 / c.len);
+            c.b.position.lerpVectors(c.from, c.to, smooth(0, 1, c.go));
+            const want = Math.atan2(c.to.x - c.from.x, c.to.z - c.from.z);
+            c.b.rotation.y += Math.atan2(Math.sin(want - c.b.rotation.y), Math.cos(want - c.b.rotation.y)) * Math.min(1, dt * 10);
+            if (c.go >= 1) c.wait = .8 + c.s() * 3.5;
+          }
+          const moving = c.go < 1, ph = t * 16 + c.s() * 0;
+          c.body.position.y = .28 + (moving ? Math.abs(Math.sin(ph)) * .04 : 0);
+          c.body.rotation.x = moving ? .35 : .1;
+          for (const { l, sx, fz } of c.limbs) l.rotation.x = moving ? Math.sin(ph + (sx * fz > 0 ? 0 : Math.PI)) * .6 : Math.sin(t * 6 + sx) * .05;
+          c.head.rotation.y = moving ? 0 : Math.sin(t * 1.7 + c.at.x) * .7;
+        }
+      };
+    },
   },
 };
 const ORDER = Object.keys(BEASTS);
