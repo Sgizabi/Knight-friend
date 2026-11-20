@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-20T16:00:28+00:00",
+    "applied_until": "2026-11-20T16:30:30+00:00",
     "live_thought": {
-      "text": "The stone feels solid, the wood smells fresh, I can finish this joint.",
-      "time": "2026-11-20T16:00:28+00:00"
+      "text": "The fire flickers, stones keep their cold secrets.",
+      "time": "2026-11-20T16:30:30+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T16:00:28+00:00",
+    "since": "2026-11-20T16:30:30+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 75.8,
+    "warmth": 74.1,
+    "inspiration": 66.0,
+    "spirit": 78.2
+  },
+  "needs_prev": {
     "rest": 75.5,
     "warmth": 68.6,
     "inspiration": 66.0,
     "spirit": 78.9
   },
-  "needs_prev": {
-    "rest": 77.2,
-    "warmth": 69.7,
-    "inspiration": 66.0,
-    "spirit": 79.7
-  },
-  "needs_at": "2026-11-20T16:00:28+00:00",
+  "needs_at": "2026-11-20T16:30:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -671,7 +671,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T16:00:28+00:00",
+    "updated": "2026-11-20T16:30:30+00:00",
     "seen_until": "2026-11-20T14:55:41+00:00"
   },
   "gifts": [],
@@ -684,5 +684,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T16:00:28+00:00"
+  "exported": "2026-11-20T16:30:30+00:00"
 }
