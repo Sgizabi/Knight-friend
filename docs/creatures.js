@@ -16,6 +16,37 @@ function glow(color, intensity = 2, extra = {}) {
                                       flatShading: true, toneMapped: false, ...extra });
 }
 const ds = (color, metal = 0, rough = .9) => A.mat(color, metal, rough, { side: T.DoubleSide });
+// a procession along a path across the courtyard (the lantern folk): make(group, i) builds one
+// walker and returns { legs, arms, flicker(t), lightY }
+function procession(root, make, n = 7) {
+  const pts = [[-17.8, -2.8], [-15, -1.2], [-12.5, .5], [-10.2, 2.0], [-8.3, 3.4], [-7.4, 5.6]].map(([x, z]) => V(x, 0, z));
+  const curve = new T.CatmullRomCurve3(pts), len = curve.getLength();
+  const folk = [];
+  for (let i = 0; i < n; i++) {
+    const w = G(root); w.scale.setScalar(.9 + (i % 3) * .07);
+    const parts = make(w, i);
+    if (i === 0 || i === 4) { const l = new T.PointLight('#ffcf8a', 3, 5, 1.5); l.position.y = parts.lightY; w.add(l); }
+    folk.push({ w, i, ...parts });
+  }
+  const steps = [], stepM = new T.MeshBasicMaterial({ color: '#ffe2a0', transparent: true, depthWrite: false });
+  for (let k = 0; k < 40; k++) { const m = new T.Mesh(new T.CircleGeometry(.06, 6), stepM.clone()); m.rotation.x = -Math.PI / 2; m.visible = false; root.add(m); steps.push({ m, born: -9 }); }
+  let nextStep = 0, si = 0;
+  const at = V(), ahead = V();
+  return (t) => {
+    for (const f of folk) {
+      const u = (((t * .4 - f.i * 1.4 + len * .75) % (len + 9)) + len + 9) % (len + 9) / len;   // starts mid-courtyard; a pause between processions
+      f.w.visible = u <= 1;
+      if (!f.w.visible) continue;
+      curve.getPointAt(Math.min(1, u), at); curve.getPointAt(Math.min(1, u + .01), ahead);
+      f.w.position.set(at.x, Math.abs(Math.sin(t * 5 + f.i)) * .02, at.z); f.w.lookAt(ahead.x, f.w.position.y, ahead.z);
+      f.legs.forEach((l, k) => { l.rotation.x = Math.sin(t * 5 + f.i + k * Math.PI) * .35; });
+      f.arms.forEach((a, k) => { a.rotation.x = -Math.sin(t * 5 + f.i + k * Math.PI) * .25; });
+      f.flicker(t);
+      if (f.i === 3 && t > nextStep) { const s = steps[si++ % steps.length]; s.m.position.set(at.x, .025, at.z); s.m.visible = true; s.born = t; nextStep = t + .45; }
+    }
+    for (const s of steps) if (s.m.visible) { const k = (t - s.born) / 6; s.m.material.opacity = Math.max(0, .7 * (1 - k)); if (k > 1) s.m.visible = false; }
+  };
+}
 // an eye: white, a glowing iris and a pupil, looking along +z
 function eyeball(parent, r, iris, pos) {
   const e = G(parent, pos);
@@ -1368,44 +1399,78 @@ const BEASTS = {
     },
   },
 
-  // ================================================================ THE LANTERN WALKERS
-  walkers: {
-    name: 'The Lantern Walkers', hour: 22,
-    blurb: 'Small figures made of light that cross the courtyard single file on certain nights, going somewhere. Nobody knows where. Following them might lead there.',
-    view: [[-5.9, 2.2, 3.8], [-11.5, .4, .4]],
+  // ================================================================ THE LANTERN FOLK (three styles to compare)
+  lanternheads: {
+    name: 'Lantern folk: lantern-headed', hour: 22,
+    blurb: 'Style A. Slender figures of dark wood and iron whose heads are glass lanterns, a small living flame where a face would be. They cross the courtyard on certain nights, going somewhere.',
+    view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching them go by, very quietly' },
     build(root) {
-      const pts = [[-17.8, -2.8], [-15, -1.2], [-12.5, .5], [-10.2, 2.0], [-8.3, 3.4], [-7.4, 5.6]].map(([x, z]) => V(x, 0, z));
-      const curve = new T.CatmullRomCurve3(pts), len = curve.getLength();
-      const lightM = new T.MeshStandardMaterial({ color: '#fff1cf', emissive: '#ffd98a', emissiveIntensity: 2.2, toneMapped: false, flatShading: true });
-      const orbM = new T.MeshBasicMaterial({ color: '#fff7e0' });
-      const N = 9, walkers = [];
-      for (let i = 0; i < N; i++) {
-        const w = G(root), sc = .85 + (i % 3) * .12; w.scale.setScalar(sc);
-        P(w, A.cyl(.07, .1, .34, 7), lightM, [0, .38, 0], { cast: false });
-        P(w, A.ico(.07, 1), lightM, [0, .62, 0], { cast: false });
-        const legs = [-1, 1].map(sx => { const l = G(w, [sx * .04, .22, 0]); bone(l, [0, 0, 0], [0, -.22, 0], .02, .018, lightM, 4); return l; });
-        const arm = G(w, [.09, .48, 0]); bone(arm, [0, 0, 0], [.06, .1, .08], .01, .01, lightM, 4);
-        P(arm, A.ico(.035, 0), orbM, [.07, .14, .09], { cast: false });
-        if (i === 0 || i === 5) { const l = new T.PointLight('#ffd98a', 2.5, 4, 1.6); l.position.y = .6; w.add(l); }
-        walkers.push({ w, legs, i });
-      }
-      const steps = [], stepM = new T.MeshBasicMaterial({ color: '#ffe2a0', transparent: true, depthWrite: false });
-      for (let k = 0; k < 40; k++) { const m = new T.Mesh(new T.CircleGeometry(.05, 6), stepM.clone()); m.rotation.x = -Math.PI / 2; m.visible = false; root.add(m); steps.push({ m, born: -9 }); }
-      let nextStep = 0, si = 0;
-      const at = V(), ahead = V();
-      return (t) => {
-        for (const { w, legs, i } of walkers) {
-          const u = (t * .42 - i * .9 + len * 5) % (len + 6) / len;   // a pause between processions
-          w.visible = u <= 1;
-          if (!w.visible) continue;
-          curve.getPointAt(Math.min(1, u), at); curve.getPointAt(Math.min(1, u + .01), ahead);
-          w.position.copy(at); w.position.y = Math.abs(Math.sin(t * 7 + i)) * .025; w.lookAt(ahead.x, 0, ahead.z);
-          legs.forEach((l, k) => { l.rotation.x = Math.sin(t * 7 + i + k * Math.PI) * .45; });
-          if (i === 4 && t > nextStep) { const s = steps[si++ % steps.length]; s.m.position.set(at.x, .025, at.z); s.m.visible = true; s.born = t; nextStep = t + .35; }
-        }
-        for (const s of steps) if (s.m.visible) { const k = (t - s.born) / 6; s.m.material.opacity = Math.max(0, .8 * (1 - k)); if (k > 1) s.m.visible = false; }
+      const wood = A.mat('#3a2a1e', 0, .85), woodL = A.mat('#5a4330', 0, .8), iron = A.M.iron, wrap = ds('#4a3a34', 0, .95);
+      const pane = new T.MeshStandardMaterial({ color: '#ffe7b8', transparent: true, opacity: .28, roughness: .05, metalness: .1, depthWrite: false });
+      return procession(root, (w, i) => {
+        const legs = [-1, 1].map(sx => { const l = G(w, [sx * .08, .82, 0]); bone(l, [0, 0, 0], [0, -.82, .02], .04, .03, wood, 5); return l; });
+        P(w, A.cyl(.15, .11, .62, 7), wood, [0, 1.12, 0], { scale: [1, 1, .7] });
+        for (const y of [.95, 1.3]) P(w, A.cyl(.155, .155, .03, 7), iron, [0, y, 0], { scale: [1, 1, .72] });
+        sheet(w, [[-.17, 1.42, -.08], [.17, 1.42, -.08], [.22, .78, -.18], [0, .7, -.2], [-.22, .78, -.18]], [[0, 1, 2], [0, 2, 3], [0, 3, 4]], wrap);
+        const arms = [-1, 1].map(sx => { const a = G(w, [sx * .17, 1.38, 0]); bone(a, [0, 0, 0], [sx * .04, -.55, .05], .03, .025, woodL, 5); return a; });
+        bone(w, [0, 1.43, 0], [0, 1.55, 0], .035, .035, iron, 5);
+        const head = G(w, [0, 1.72, 0]);
+        for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) bone(head, [x * .1, -.15, z * .1], [x * .1, .15, z * .1], .012, .012, iron, 4);
+        P(head, A.box(.22, .03, .22), iron, [0, -.16, 0]); P(head, new T.ConeGeometry(.17, .12, 4), iron, [0, .2, 0], { rot: [0, Math.PI / 4, 0] });
+        const ring = new T.Mesh(new T.TorusGeometry(.04, .01, 4, 8), iron); ring.position.y = .3; head.add(ring);
+        P(head, A.box(.2, .28, .2), pane, [0, 0, 0], { cast: false, jitter: 0 });
+        const flame = new T.Mesh(new T.ConeGeometry(.045, .13, 6), glow('#ffb347', 3)); flame.position.y = -.05; head.add(flame);
+        return { legs, arms, flicker: t => { flame.scale.set(1, .85 + Math.sin(t * 11 + i) * .2, 1); }, lightY: 1.72 };
+      });
+    },
+  },
+  glassfolk: {
+    name: 'Lantern folk: glass', hour: 22,
+    blurb: 'Style B. Clear, glassy figures with a lantern flame burning in the chest, so they light up from inside. They cross the courtyard on certain nights, going somewhere.',
+    view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
+    knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching the light move through them' },
+    build(root) {
+      const glass = new T.MeshStandardMaterial({ color: '#d8ecf5', transparent: true, opacity: .32, roughness: .05, metalness: .2, emissive: '#5a7a8a', emissiveIntensity: .35, flatShading: true, depthWrite: false });
+      const edge = new T.MeshStandardMaterial({ color: '#eaf6ff', transparent: true, opacity: .55, roughness: .05, metalness: .3, flatShading: true, depthWrite: false });
+      return procession(root, (w, i) => {
+        const legs = [-1, 1].map(sx => { const l = G(w, [sx * .09, .82, 0]); bone(l, [0, 0, 0], [0, -.82, .02], .05, .035, glass, 6); return l; });
+        P(w, A.ico(.2, 1), glass, [0, 1.15, 0], { scale: [1, 1.5, .8], cast: false });
+        P(w, A.ico(.21, 1), edge, [0, 1.15, 0], { scale: [1.02, 1.52, .82], cast: false, jitter: .03 });
+        const arms = [-1, 1].map(sx => { const a = G(w, [sx * .2, 1.4, 0]); bone(a, [0, 0, 0], [sx * .05, -.55, .05], .035, .025, glass, 5); return a; });
+        P(w, A.ico(.13, 1), glass, [0, 1.7, 0], { scale: [.9, 1.1, .9], cast: false });
+        const heart = G(w, [0, 1.18, 0]);
+        P(heart, A.ico(.07, 1), glow('#ffcf7a', 2.5), [0, 0, 0], { cast: false });
+        const flame = new T.Mesh(new T.ConeGeometry(.04, .14, 6), glow('#ffb347', 3)); flame.position.y = .09; heart.add(flame);
+        return { legs, arms, flicker: t => { flame.scale.set(1, .8 + Math.sin(t * 12 + i) * .25, 1); heart.scale.setScalar(1 + Math.sin(t * 3 + i) * .08); }, lightY: 1.18 };
+      });
+    },
+  },
+  paperfolk: {
+    name: 'Lantern folk: paper', hour: 22,
+    blurb: 'Style C. Figures of pale paper stretched over thin frames, glowing softly from inside like paper lanterns. Fragile, rustling, and very gentle. They cross the courtyard on certain nights, going somewhere.',
+    view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
+    knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching them go by, very quietly' },
+    build(root) {
+      const paper = new T.MeshStandardMaterial({ color: '#f6e6c4', emissive: '#ffb45a', emissiveIntensity: 1.1, roughness: 1, flatShading: true, side: T.DoubleSide });
+      const rib = A.mat('#4a3424', 0, .8), cap = A.mat('#2e2219', 0, .8);
+      const lantern = (parent, y, r, h) => {
+        const prof = [[.02, -h / 2], [r * .7, -h * .45], [r, -h * .2], [r, h * .2], [r * .7, h * .45], [.02, h / 2]].map(([a, b]) => new T.Vector2(a, b));
+        const m = new T.Mesh(new T.LatheGeometry(prof, 10), paper); m.position.y = y; parent.add(m);
+        for (const k of [-.3, 0, .3]) { const rr = new T.Mesh(new T.TorusGeometry(r * (k ? .93 : 1.0), .006, 3, 12), rib); rr.rotation.x = Math.PI / 2; rr.position.y = y + k * h * .8; parent.add(rr); }
+        P(parent, A.cyl(r * .5, r * .5, .03, 10), cap, [0, y + h / 2, 0]); P(parent, A.cyl(r * .5, r * .5, .03, 10), cap, [0, y - h / 2, 0]);
+        return m;
       };
+      return procession(root, (w, i) => {
+        const legs = [-1, 1].map(sx => { const l = G(w, [sx * .08, .8, 0]); P(l, A.cyl(.04, .035, .8, 6), paper, [0, -.4, 0], { cast: false }); return l; });
+        const body = lantern(w, 1.12, .2, .6);
+        const arms = [-1, 1].map(sx => { const a = G(w, [sx * .2, 1.36, 0]); P(a, A.cyl(.03, .025, .55, 6), paper, [sx * .02, -.28, .02], { cast: false }); return a; });
+        bone(w, [0, 1.42, 0], [0, 1.52, 0], .012, .012, rib, 4);
+        const head = lantern(w, 1.66, .13, .26);
+        for (const sx of [-1, 1]) P(w, A.ico(.018, 0), cap, [sx * .045, 1.68, .125], { cast: false });   // two dark dots for eyes
+        const tassel = G(w, [0, .82, 0]); bone(tassel, [0, 0, 0], [0, -.2, 0], .008, .004, A.mat('#9a2b1f'), 3);
+        return { legs, arms, flicker: t => { paper.emissiveIntensity = 1 + Math.sin(t * 2.3) * .12; tassel.rotation.x = Math.sin(t * 5 + i) * .3; body.rotation.y = Math.sin(t * 1.3 + i) * .08; }, lightY: 1.2 };
+      });
     },
   },
 
