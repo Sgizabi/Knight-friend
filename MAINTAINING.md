@@ -23,6 +23,10 @@ Look at these, roughly in this order:
      why it moved) and `daily_limits` (limits Groq has told it about).
    - `test_usage.json`: tokens your own tests spent today (see below).
 
+If something checks on Rooken for you (such as Claude Duet), point it at
+[WATCHLIST.md](WATCHLIST.md): what to check, what's normal, when to tell you, and what it must
+never touch.
+
 ## What looks after itself
 
 - **A retired model.** If Groq retires the model Rooken thinks with, it moves to the next on
