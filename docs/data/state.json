@@ -78,11 +78,16 @@
           "A short break will keep my fingers from cramping."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-20T17:30:23+00:00",
+    "live_thought": {
+      "text": "The roof gap still lets a draft in, need another board soon.",
+      "time": "2026-11-20T17:30:23+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T17:01:39+00:00",
+    "since": "2026-11-20T17:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 65.5,
+    "warmth": 79.5,
+    "inspiration": 66.0,
+    "spirit": 79.1
+  },
+  "needs_prev": {
     "rest": 67.5,
     "warmth": 79.5,
     "inspiration": 66.0,
     "spirit": 79.8
   },
-  "needs_prev": {
-    "rest": 75.8,
-    "warmth": 74.1,
-    "inspiration": 66.0,
-    "spirit": 78.2
-  },
-  "needs_at": "2026-11-20T17:01:39+00:00",
+  "needs_at": "2026-11-20T17:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -678,7 +683,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T17:01:39+00:00",
+    "updated": "2026-11-20T17:30:23+00:00",
     "seen_until": "2026-11-20T16:55:34+00:00"
   },
   "gifts": [],
@@ -691,5 +696,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T17:01:39+00:00"
+  "exported": "2026-11-20T17:30:24+00:00"
 }
