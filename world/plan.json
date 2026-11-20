@@ -1,7 +1,7 @@
 {
   "start": "2026-11-20T11:00:26+00:00",
   "mood": "sleepy",
-  "applied_until": "2026-11-20T12:00:29+00:00",
+  "applied_until": "2026-11-20T12:30:23+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -12,7 +12,7 @@
     }
   ],
   "live_thought": {
-    "text": "Stone's cold, fire warm, I could linger a bit",
-    "time": "2026-11-20T12:00:29+00:00"
+    "text": "The stone's cold, but the fire's still faint",
+    "time": "2026-11-20T12:30:23+00:00"
   }
 }
