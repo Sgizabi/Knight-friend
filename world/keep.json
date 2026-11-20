@@ -468,6 +468,17 @@
       "done": 5,
       "started": "2026-11-19T23:00:34+00:00",
       "finished": "2026-11-20T02:39:35+00:00"
+    },
+    {
+      "key": "woodshed",
+      "name": "the woodshed",
+      "about": "an open-fronted timber lean-to for drying logs, with a chopping block",
+      "place": "woodshed",
+      "needed": 3,
+      "plot": 1,
+      "done": 1,
+      "started": "2026-11-20T17:00:37+00:00",
+      "finished": null
     }
   ]
 }

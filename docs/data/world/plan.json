@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-20T15:01:51+00:00",
-  "mood": "curious",
+  "start": "2026-11-20T17:01:39+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "repair:roof",
+      "place": "forge",
       "action": "work",
-      "minutes": 30,
+      "minutes": 20,
       "emote": "question",
       "note": "",
       "thoughts": [
-        "These boards never stay straight for long"
+        "Need to check the bellows alignment again."
       ]
     },
     {
-      "place": "forge",
-      "action": "stand",
-      "minutes": 15,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "The bellows still need a tighter seal"
-      ]
-    },
-    {
-      "place": "workbench",
+      "place": "repair:roof",
       "action": "work",
       "minutes": 20,
-      "emote": "music",
+      "emote": "dots",
       "note": "",
       "thoughts": [
-        "Sharpening the chisel feels oddly satisfying"
+        "That draft still finds a way through the seams."
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "work",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "Wood stacks need ordering before the shed is done."
       ]
     },
     {
       "place": "fire",
       "action": "sit",
-      "minutes": 25,
+      "minutes": 20,
       "emote": "heart",
       "note": "",
       "thoughts": [
-        "Warmth is a good excuse for a short break"
+        "A short break will keep my fingers from cramping."
       ]
     }
   ]

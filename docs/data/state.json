@@ -30,75 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 20,
-    "last_wake": "2026-11-20T15:01:51+00:00",
+    "wakeups": 21,
+    "last_wake": "2026-11-20T17:01:39+00:00",
     "nights_slept_through": 4
   },
   "plan": {
-    "start": "2026-11-20T15:01:51+00:00",
-    "mood": "curious",
+    "start": "2026-11-20T17:01:39+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "repair:roof",
+        "place": "forge",
         "action": "work",
-        "minutes": 30,
+        "minutes": 20,
         "emote": "question",
         "note": "",
         "thoughts": [
-          "These boards never stay straight for long"
+          "Need to check the bellows alignment again."
         ]
       },
       {
-        "place": "forge",
-        "action": "stand",
-        "minutes": 15,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "The bellows still need a tighter seal"
-        ]
-      },
-      {
-        "place": "workbench",
+        "place": "repair:roof",
         "action": "work",
         "minutes": 20,
-        "emote": "music",
+        "emote": "dots",
         "note": "",
         "thoughts": [
-          "Sharpening the chisel feels oddly satisfying"
+          "That draft still finds a way through the seams."
+        ]
+      },
+      {
+        "place": "courtyard",
+        "action": "work",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "",
+        "thoughts": [
+          "Wood stacks need ordering before the shed is done."
         ]
       },
       {
         "place": "fire",
         "action": "sit",
-        "minutes": 25,
+        "minutes": 20,
         "emote": "heart",
         "note": "",
         "thoughts": [
-          "Warmth is a good excuse for a short break"
+          "A short break will keep my fingers from cramping."
         ]
       }
-    ],
-    "applied_until": "2026-11-20T16:30:30+00:00",
-    "live_thought": {
-      "text": "The fire flickers, stones keep their cold secrets.",
-      "time": "2026-11-20T16:30:30+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-20T17:00:35+00:00",
-    "place": "raise:1",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-20T17:01:39+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "start building the woodshed to get dry logs for the hearth",
-    "thought": "The roof still drafts, but the forge is solid. I could use more dry wood for the fire."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 76.5,
-    "warmth": 75.2,
+    "rest": 67.5,
+    "warmth": 79.5,
     "inspiration": 66.0,
-    "spirit": 77.5
+    "spirit": 79.8
   },
   "needs_prev": {
     "rest": 75.8,
@@ -106,7 +101,7 @@
     "inspiration": 66.0,
     "spirit": 78.2
   },
-  "needs_at": "2026-11-20T17:00:35+00:00",
+  "needs_at": "2026-11-20T17:01:39+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -640,6 +635,18 @@
         "kind": null,
         "look": null,
         "finished": "2026-11-20T02:39:35+00:00"
+      },
+      {
+        "key": "woodshed",
+        "name": "the woodshed",
+        "about": "an open-fronted timber lean-to for drying logs, with a chopping block",
+        "place": "woodshed",
+        "plot": 1,
+        "done": 1,
+        "needed": 3,
+        "kind": null,
+        "look": null,
+        "finished": null
       }
     ],
     "plots": 4
@@ -671,8 +678,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T16:30:30+00:00",
-    "seen_until": "2026-11-20T14:55:41+00:00"
+    "updated": "2026-11-20T17:01:39+00:00",
+    "seen_until": "2026-11-20T16:55:34+00:00"
   },
   "gifts": [],
   "gate": [
@@ -684,5 +691,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T17:00:35+00:00"
+  "exported": "2026-11-20T17:01:39+00:00"
 }
