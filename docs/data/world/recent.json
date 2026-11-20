@@ -157,5 +157,13 @@
     "emote": "spark",
     "text": "I mixed a fresh batch of mortar and laid the last course on the east wall. The mix held better this time, no excess to scrape. A loose stone slipped off the trowel and hit my boot; I muttered about the stone's timing. The wall looks steady enough for now.",
     "creations": []
+  },
+  {
+    "time": "2026-11-20T15:01:51+00:00",
+    "activity": "repair",
+    "mood": "curious",
+    "emote": "question",
+    "text": "I tightened a few more boards over the roof gap. One board warped when I lifted it, so I swapped it for a fresher piece from the stash. The new board fits better, but the gap still lets a cold draft in. I noted the spot where the wind whistles the most.",
+    "creations": []
   }
 ]

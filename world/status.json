@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-20T15:00:48+00:00",
-  "place": "repair:roof",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-20T15:01:51+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue",
-  "thought": "The roof still leaks, and the wind whistles through the gap. I could finally patch it before the rain comes."
+  "note": "",
+  "thought": ""
 }
