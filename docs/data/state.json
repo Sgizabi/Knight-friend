@@ -86,18 +86,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-20T02:36:31+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-20T02:39:33+00:00",
+    "place": "raise:0",
+    "action": "work",
     "emote": "dots",
-    "note": "Recover energy before finishing the forge.",
-    "thought": "The fire is humming, the forge is almost done, but my limbs feel like stone."
+    "note": "add the final layer of bricks and finish the chimney",
+    "thought": "My limbs feel like stone but the forge is almost done, so I’ll push through the last bit."
   },
   "needs": {
-    "rest": 18.6,
-    "warmth": 81.3,
+    "rest": 30.6,
+    "warmth": 95.7,
     "inspiration": 32.0,
-    "spirit": 87.5
+    "spirit": 88.1
   },
   "needs_prev": {
     "rest": 43.1,
@@ -105,7 +105,7 @@
     "inspiration": 32.0,
     "spirit": 85.5
   },
-  "needs_at": "2026-11-20T02:36:31+00:00",
+  "needs_at": "2026-11-20T02:39:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -677,5 +677,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T02:36:31+00:00"
+  "exported": "2026-11-20T02:39:33+00:00"
 }
