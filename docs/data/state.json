@@ -86,18 +86,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-20T01:00:25+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-20T01:00:28+00:00",
+    "place": "raise:0",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "Continue laying the foundation stones and mixing mortar for the forge in the courtyard, aiming to reach at least half completion today.",
+    "thought": "The roof still gapes, the forge is only a foot started, and the stone seems to sigh for more work."
   },
   "needs": {
-    "rest": 55.6,
-    "warmth": 76.1,
+    "rest": 56.8,
+    "warmth": 76.9,
     "inspiration": 32.0,
-    "spirit": 84.4
+    "spirit": 86.0
   },
   "needs_prev": {
     "rest": 55.6,
@@ -105,7 +105,7 @@
     "inspiration": 32.0,
     "spirit": 84.4
   },
-  "needs_at": "2026-11-20T01:00:25+00:00",
+  "needs_at": "2026-11-20T01:00:28+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -677,5 +677,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T01:00:25+00:00"
+  "exported": "2026-11-20T01:00:28+00:00"
 }
