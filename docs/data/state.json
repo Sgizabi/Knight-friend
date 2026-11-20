@@ -30,12 +30,12 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 21,
-    "last_wake": "2026-11-20T17:01:39+00:00",
+    "wakeups": 22,
+    "last_wake": "2026-11-20T19:01:33+00:00",
     "nights_slept_through": 4
   },
   "plan": {
-    "start": "2026-11-20T17:01:39+00:00",
+    "start": "2026-11-20T19:01:33+00:00",
     "mood": "content",
     "steps": [
       {
@@ -45,7 +45,7 @@
         "emote": "question",
         "note": "",
         "thoughts": [
-          "Need to check the bellows alignment again."
+          "Mortar smells like chalk."
         ]
       },
       {
@@ -55,50 +55,35 @@
         "emote": "dots",
         "note": "",
         "thoughts": [
-          "That draft still finds a way through the seams."
+          "That draft still whistles."
         ]
       },
       {
-        "place": "courtyard",
-        "action": "work",
+        "place": "desk",
+        "action": "write",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "music",
         "note": "",
         "thoughts": [
-          "Wood stacks need ordering before the shed is done."
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "heart",
-        "note": "",
-        "thoughts": [
-          "A short break will keep my fingers from cramping."
+          "List the broken shards again."
         ]
       }
-    ],
-    "applied_until": "2026-11-20T18:30:24+00:00",
-    "live_thought": {
-      "text": "Stone's cold, fire's warm, I could tap another board.",
-      "time": "2026-11-20T18:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-20T19:00:29+00:00",
-    "place": "raise:1",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-20T19:01:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "add another roof board and secure the frame",
-    "thought": "The roof boards are holding, the woodshed needs a roof."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 65.6,
-    "warmth": 78.8,
+    "rest": 56.6,
+    "warmth": 82.5,
     "inspiration": 66.0,
-    "spirit": 77.0
+    "spirit": 79.3
   },
   "needs_prev": {
     "rest": 64.5,
@@ -106,7 +91,7 @@
     "inspiration": 66.0,
     "spirit": 77.7
   },
-  "needs_at": "2026-11-20T19:00:29+00:00",
+  "needs_at": "2026-11-20T19:01:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -647,7 +632,7 @@
         "about": "an open-fronted timber lean-to for drying logs, with a chopping block",
         "place": "woodshed",
         "plot": 1,
-        "done": 1,
+        "done": 2,
         "needed": 3,
         "kind": null,
         "look": null,
@@ -683,8 +668,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T18:30:24+00:00",
-    "seen_until": "2026-11-20T16:55:34+00:00"
+    "updated": "2026-11-20T19:01:33+00:00",
+    "seen_until": "2026-11-20T18:55:26+00:00"
   },
   "gifts": [],
   "gate": [
@@ -696,5 +681,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T19:00:29+00:00"
+  "exported": "2026-11-20T19:01:33+00:00"
 }

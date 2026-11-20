@@ -1,5 +1,5 @@
 {
-  "start": "2026-11-20T17:01:39+00:00",
+  "start": "2026-11-20T19:01:33+00:00",
   "mood": "content",
   "steps": [
     {
@@ -9,7 +9,7 @@
       "emote": "question",
       "note": "",
       "thoughts": [
-        "Need to check the bellows alignment again."
+        "Mortar smells like chalk."
       ]
     },
     {
@@ -19,27 +19,17 @@
       "emote": "dots",
       "note": "",
       "thoughts": [
-        "That draft still finds a way through the seams."
+        "That draft still whistles."
       ]
     },
     {
-      "place": "courtyard",
-      "action": "work",
+      "place": "desk",
+      "action": "write",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "music",
       "note": "",
       "thoughts": [
-        "Wood stacks need ordering before the shed is done."
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "heart",
-      "note": "",
-      "thoughts": [
-        "A short break will keep my fingers from cramping."
+        "List the broken shards again."
       ]
     }
   ]

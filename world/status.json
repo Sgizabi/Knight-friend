@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-20T19:00:29+00:00",
-  "place": "raise:1",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-20T19:01:33+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "add another roof board and secure the frame",
-  "thought": "The roof boards are holding, the woodshed needs a roof."
+  "note": "",
+  "thought": ""
 }
