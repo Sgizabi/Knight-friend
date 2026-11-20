@@ -69,15 +69,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-20T20:00:27+00:00",
+    "applied_until": "2026-11-20T20:30:23+00:00",
     "live_thought": {
-      "text": "The desk feels solid, ink ready, just enough time to finish this line.",
-      "time": "2026-11-20T20:00:27+00:00"
+      "text": "Stone underfoot, fire crackles, I could tighten the roof board.",
+      "time": "2026-11-20T20:30:23+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T20:00:28+00:00",
+    "since": "2026-11-20T20:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -85,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 54.2,
+    "warmth": 76.7,
+    "inspiration": 66.0,
+    "spirit": 77.2
+  },
+  "needs_prev": {
     "rest": 53.0,
     "warmth": 76.2,
     "inspiration": 66.0,
     "spirit": 77.9
   },
-  "needs_prev": {
-    "rest": 54.6,
-    "warmth": 82.2,
-    "inspiration": 66.0,
-    "spirit": 78.6
-  },
-  "needs_at": "2026-11-20T20:00:28+00:00",
+  "needs_at": "2026-11-20T20:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -673,7 +673,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T20:00:27+00:00",
+    "updated": "2026-11-20T20:30:23+00:00",
     "seen_until": "2026-11-20T18:55:26+00:00"
   },
   "gifts": [],
@@ -686,5 +686,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T20:00:28+00:00"
+  "exported": "2026-11-20T20:30:24+00:00"
 }
