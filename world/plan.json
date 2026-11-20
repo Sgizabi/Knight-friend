@@ -42,5 +42,10 @@
         "Sleep will reset the tired meter"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-20T23:30:22+00:00",
+  "live_thought": {
+    "text": "The board fits, but that crack nags me.",
+    "time": "2026-11-20T23:30:22+00:00"
+  }
 }
