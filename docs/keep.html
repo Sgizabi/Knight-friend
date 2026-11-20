@@ -2028,7 +2028,8 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog, get quality() {
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
   get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
-if (CREATURE) import(`${ASSETS || './'}creatures.js`).then(m => m.start(CREATURE, {
+if (CREATURE) import(`${ASSETS || './'}creatures.js?v=${Date.now()}`)   // always the newest preview, never a cached copy
+  .then(m => m.start(CREATURE, {
   THREE, scene, camera, M, BM, mat, part, facet, hash, rand, cyl, box, ico, onTick, K, fireLight, updateSky, toast,
   view: window.__keep.view, setHour(h) { skyHour = h; updateSky(); }, get hour() { return skyHour; },
   setFireDim(v) { fireDim = v; }, force(goal) { window.__force = goal; },
