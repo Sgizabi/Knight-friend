@@ -1,41 +1,36 @@
 {
-  "start": "2026-11-20T19:01:33+00:00",
+  "start": "2026-11-20T21:01:32+00:00",
   "mood": "content",
   "steps": [
+    {
+      "place": "fire",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "check remaining gap",
+      "thoughts": [
+        "Why does the wind find the same crack?"
+      ]
+    },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Mortar smells like chalk."
-      ]
-    },
-    {
-      "place": "repair:roof",
-      "action": "work",
-      "minutes": 20,
       "emote": "dots",
-      "note": "",
+      "note": "heat some new metal",
       "thoughts": [
-        "That draft still whistles."
+        "Hope this piece doesn’t melt the tools."
       ]
     },
     {
-      "place": "desk",
-      "action": "write",
+      "place": "fire",
+      "action": "sit",
       "minutes": 20,
-      "emote": "music",
-      "note": "",
+      "emote": "heart",
+      "note": "warm up before dinner",
       "thoughts": [
-        "List the broken shards again."
+        "The fire finally stopped complaining."
       ]
     }
-  ],
-  "applied_until": "2026-11-20T20:30:23+00:00",
-  "live_thought": {
-    "text": "Stone underfoot, fire crackles, I could tighten the roof board.",
-    "time": "2026-11-20T20:30:23+00:00"
-  }
+  ]
 }

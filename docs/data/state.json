@@ -30,65 +30,60 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 22,
-    "last_wake": "2026-11-20T19:01:33+00:00",
+    "wakeups": 23,
+    "last_wake": "2026-11-20T21:01:32+00:00",
     "nights_slept_through": 4
   },
   "plan": {
-    "start": "2026-11-20T19:01:33+00:00",
+    "start": "2026-11-20T21:01:32+00:00",
     "mood": "content",
     "steps": [
+      {
+        "place": "fire",
+        "action": "work",
+        "minutes": 20,
+        "emote": "question",
+        "note": "check remaining gap",
+        "thoughts": [
+          "Why does the wind find the same crack?"
+        ]
+      },
       {
         "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "question",
-        "note": "",
-        "thoughts": [
-          "Mortar smells like chalk."
-        ]
-      },
-      {
-        "place": "repair:roof",
-        "action": "work",
-        "minutes": 20,
         "emote": "dots",
-        "note": "",
+        "note": "heat some new metal",
         "thoughts": [
-          "That draft still whistles."
+          "Hope this piece doesn’t melt the tools."
         ]
       },
       {
-        "place": "desk",
-        "action": "write",
+        "place": "fire",
+        "action": "sit",
         "minutes": 20,
-        "emote": "music",
-        "note": "",
+        "emote": "heart",
+        "note": "warm up before dinner",
         "thoughts": [
-          "List the broken shards again."
+          "The fire finally stopped complaining."
         ]
       }
-    ],
-    "applied_until": "2026-11-20T20:30:23+00:00",
-    "live_thought": {
-      "text": "Stone underfoot, fire crackles, I could tighten the roof board.",
-      "time": "2026-11-20T20:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-20T21:00:29+00:00",
-    "place": "raise:1",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-20T21:01:32+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "complete the woodshed roof and secure all joints",
-    "thought": "The woodshed is almost done. I want to finish the roof and make it sturdy enough for the next rain."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 55.4,
-    "warmth": 77.4,
+    "rest": 46.4,
+    "warmth": 81.4,
     "inspiration": 66.0,
-    "spirit": 76.5
+    "spirit": 89.4
   },
   "needs_prev": {
     "rest": 54.2,
@@ -96,7 +91,7 @@
     "inspiration": 66.0,
     "spirit": 77.2
   },
-  "needs_at": "2026-11-20T21:00:29+00:00",
+  "needs_at": "2026-11-20T21:01:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -105,7 +100,7 @@
         "inspiration": 0.06
       },
       "fire": {
-        "warmth": 0.25,
+        "warmth": 0.2875,
         "rest": 0.05
       },
       "away": {
@@ -131,6 +126,10 @@
       "forge": {
         "warmth": 0.12,
         "rest": -0.04
+      },
+      "woodshed": {
+        "rest": -0.04,
+        "warmth": -0.12
       }
     },
     "spirit_home": 55.0,
@@ -637,11 +636,11 @@
         "about": "an open-fronted timber lean-to for drying logs, with a chopping block",
         "place": "woodshed",
         "plot": 1,
-        "done": 2,
+        "done": 3,
         "needed": 3,
         "kind": null,
         "look": null,
-        "finished": null
+        "finished": "2026-11-20T21:00:30+00:00"
       }
     ],
     "plots": 4
@@ -656,7 +655,8 @@
     "bedroll",
     "courtyard",
     "tower",
-    "forge"
+    "forge",
+    "woodshed"
   ],
   "gallery": [],
   "projects": [],
@@ -673,8 +673,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T20:30:23+00:00",
-    "seen_until": "2026-11-20T18:55:26+00:00"
+    "updated": "2026-11-20T21:01:32+00:00",
+    "seen_until": "2026-11-20T20:55:27+00:00"
   },
   "gifts": [],
   "gate": [
@@ -686,5 +686,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T21:00:29+00:00"
+  "exported": "2026-11-20T21:01:33+00:00"
 }
