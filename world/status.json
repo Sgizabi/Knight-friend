@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-20T13:00:33+00:00",
-  "place": "repair:wall",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-20T13:01:37+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue the wall repair to make the hall feel safer",
-  "thought": "The east wall is only half done. I could add another course of mortar and smooth it out."
+  "note": "",
+  "thought": ""
 }

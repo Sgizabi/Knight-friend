@@ -1,27 +1,35 @@
 {
-  "start": "2026-11-20T02:40:37+00:00",
-  "mood": "sleepy",
+  "start": "2026-11-20T13:01:36+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "forge",
+      "place": "repair:wall",
       "action": "work",
       "minutes": 20,
-      "emote": "zzz",
-      "note": "Add a simple wooden latch to the forge door",
+      "emote": "question",
+      "note": "",
       "thoughts": [
-        "Wood should be easy enough",
-        "Hope the latch doesn't squeak"
+        "Need to smooth the joints before it sets"
       ]
     },
     {
-      "place": "fire",
+      "place": "repair:roof",
       "action": "stand",
       "minutes": 20,
-      "emote": "zzz",
-      "note": "Inspect the open gap and measure boards needed",
+      "emote": "dots",
+      "note": "",
       "thoughts": [
-        "That wind is annoying",
-        "Count the planks, not the sighs"
+        "Wonder if I can fit a patch later"
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "Sharpening tools feels oddly satisfying"
       ]
     }
   ]

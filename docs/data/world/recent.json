@@ -149,5 +149,13 @@
     "emote": "zzz",
     "text": "The forge finally stands solid. I tightened the last bolts on the bellows and checked the chimney for cracks. The anvil settled into place without a wobble, which surprised me. While cleaning the workbench I found a shard of glass I hadn't noticed before; it fit nicely in the pocket I keep for broken pieces. I tested the lantern with fresh oil; the light held steady. The roof gap still lets a cold draft in, but the heat from the forge keeps the floor warm enough to sit a while. I noted the mortar on the east wall looks darker where I mixed extra sand today.",
     "creations": []
+  },
+  {
+    "time": "2026-11-20T13:01:36+00:00",
+    "activity": "repair",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I mixed a fresh batch of mortar and laid the last course on the east wall. The mix held better this time, no excess to scrape. A loose stone slipped off the trowel and hit my boot; I muttered about the stone's timing. The wall looks steady enough for now.",
+    "creations": []
   }
 ]

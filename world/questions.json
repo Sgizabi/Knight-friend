@@ -28,6 +28,35 @@
           "text": "What’s the weirdest thing you’ve found in the rubble?"
         }
       ]
+    },
+    {
+      "date": "20261120",
+      "items": [
+        {
+          "id": "t20261120-0",
+          "text": "Your thumb still throbs—what's the story?"
+        },
+        {
+          "id": "t20261120-1",
+          "text": "Did the fire ever finish nudging you?"
+        },
+        {
+          "id": "t20261120-2",
+          "text": "How's the east wall holding up now?"
+        },
+        {
+          "id": "t20261120-3",
+          "text": "What did you think of that glass shard?"
+        },
+        {
+          "id": "t20261120-4",
+          "text": "Is the forge finally feeling like home?"
+        },
+        {
+          "id": "t20261120-5",
+          "text": "Do you ever miss the roof’s warmth?"
+        }
+      ]
     }
   ]
 }
