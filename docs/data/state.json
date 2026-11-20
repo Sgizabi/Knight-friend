@@ -77,11 +77,16 @@
           "Glint of glass in pocket."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-20T01:30:23+00:00",
+    "live_thought": {
+      "text": "Stone cold, fire flickers, I’ll keep shaping the wall.",
+      "time": "2026-11-20T01:30:23+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T01:01:34+00:00",
+    "since": "2026-11-20T01:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -89,18 +94,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 45.2,
+    "warmth": 82.4,
+    "inspiration": 32.0,
+    "spirit": 86.5
+  },
+  "needs_prev": {
     "rest": 44.8,
     "warmth": 80.9,
     "inspiration": 32.0,
     "spirit": 87.4
   },
-  "needs_prev": {
-    "rest": 55.6,
-    "warmth": 76.1,
-    "inspiration": 32.0,
-    "spirit": 84.4
-  },
-  "needs_at": "2026-11-20T01:01:34+00:00",
+  "needs_at": "2026-11-20T01:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -659,7 +664,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 4,
-    "updated": "2026-11-20T01:01:34+00:00",
+    "updated": "2026-11-20T01:30:23+00:00",
     "seen_until": "2026-11-20T00:55:27+00:00"
   },
   "gifts": [],
@@ -672,5 +677,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T01:01:34+00:00"
+  "exported": "2026-11-20T01:30:23+00:00"
 }
