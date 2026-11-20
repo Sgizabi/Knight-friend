@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-20T17:00:32+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-20T17:00:35+00:00",
+    "place": "raise:1",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "start building the woodshed to get dry logs for the hearth",
+    "thought": "The roof still drafts, but the forge is solid. I could use more dry wood for the fire."
   },
   "needs": {
-    "rest": 75.8,
-    "warmth": 74.1,
+    "rest": 76.5,
+    "warmth": 75.2,
     "inspiration": 66.0,
-    "spirit": 78.2
+    "spirit": 77.5
   },
   "needs_prev": {
     "rest": 75.8,
@@ -106,7 +106,7 @@
     "inspiration": 66.0,
     "spirit": 78.2
   },
-  "needs_at": "2026-11-20T17:00:32+00:00",
+  "needs_at": "2026-11-20T17:00:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -684,5 +684,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T17:00:32+00:00"
+  "exported": "2026-11-20T17:00:35+00:00"
 }
