@@ -1,41 +1,46 @@
 {
-  "start": "2026-11-20T21:01:32+00:00",
+  "start": "2026-11-20T23:01:39+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "zzz",
+      "note": "warm up before night work",
+      "thoughts": [
+        "The heat feels like a steady coworker"
+      ]
+    },
+    {
+      "place": "repair:roof",
       "action": "work",
       "minutes": 20,
       "emote": "question",
-      "note": "check remaining gap",
+      "note": "secure the next board",
       "thoughts": [
-        "Why does the wind find the same crack?"
+        "Hope this board doesn’t warp like the last one"
       ]
     },
     {
-      "place": "forge",
-      "action": "work",
+      "place": "workbench",
+      "action": "write",
       "minutes": 20,
       "emote": "dots",
-      "note": "heat some new metal",
+      "note": "update inventory list",
       "thoughts": [
-        "Hope this piece doesn’t melt the tools."
+        "Need to note the cracked stone"
       ]
     },
     {
-      "place": "fire",
-      "action": "sit",
+      "place": "bedroll",
+      "action": "sleep",
       "minutes": 20,
-      "emote": "heart",
-      "note": "warm up before dinner",
+      "emote": "zzz",
+      "note": "catch some rest",
       "thoughts": [
-        "The fire finally stopped complaining."
+        "Sleep will reset the tired meter"
       ]
     }
-  ],
-  "applied_until": "2026-11-20T22:30:24+00:00",
-  "live_thought": {
-    "text": "The fire flickers, its heat eases my weariness.",
-    "time": "2026-11-20T22:30:24+00:00"
-  }
+  ]
 }
