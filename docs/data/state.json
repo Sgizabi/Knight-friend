@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-20T19:00:25+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-20T19:00:29+00:00",
+    "place": "raise:1",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "add another roof board and secure the frame",
+    "thought": "The roof boards are holding, the woodshed needs a roof."
   },
   "needs": {
-    "rest": 64.5,
-    "warmth": 78.1,
+    "rest": 65.6,
+    "warmth": 78.8,
     "inspiration": 66.0,
-    "spirit": 77.7
+    "spirit": 77.0
   },
   "needs_prev": {
     "rest": 64.5,
@@ -106,7 +106,7 @@
     "inspiration": 66.0,
     "spirit": 77.7
   },
-  "needs_at": "2026-11-20T19:00:25+00:00",
+  "needs_at": "2026-11-20T19:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -696,5 +696,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T19:00:25+00:00"
+  "exported": "2026-11-20T19:00:29+00:00"
 }
