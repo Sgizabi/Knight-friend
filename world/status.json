@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-20T01:00:28+00:00",
-  "place": "raise:0",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-20T01:01:34+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "Continue laying the foundation stones and mixing mortar for the forge in the courtyard, aiming to reach at least half completion today.",
-  "thought": "The roof still gapes, the forge is only a foot started, and the stone seems to sigh for more work."
+  "note": "",
+  "thought": ""
 }

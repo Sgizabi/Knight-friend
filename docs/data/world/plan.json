@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-19T23:01:36+00:00",
+  "start": "2026-11-20T01:01:34+00:00",
   "mood": "restless",
   "steps": [
-    {
-      "place": "courtyard",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Stone chips everywhere, like tiny complaints"
-      ]
-    },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "question",
-      "note": "",
+      "emote": "sigh",
+      "note": "warm up",
       "thoughts": [
-        "Fire still acts like a demanding coworker"
+        "Stone still cold on the bench."
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "continue forge wall",
+      "thoughts": [
+        "Mortar smells like wet stone again."
+      ]
+    },
+    {
+      "place": "repair:wall",
+      "action": "work",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "add mortar to east wall",
+      "thoughts": [
+        "Color clash still there."
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "question",
-      "note": "",
+      "emote": "heart",
+      "note": "catalog new shards",
       "thoughts": [
-        "Need to log the new forge stones"
-      ]
-    },
-    {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Hope the rest eases the thumb"
+        "Glint of glass in pocket."
       ]
     }
   ]
