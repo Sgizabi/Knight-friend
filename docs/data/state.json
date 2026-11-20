@@ -30,74 +30,51 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 17,
-    "last_wake": "2026-11-20T01:01:34+00:00"
+    "wakeups": 18,
+    "last_wake": "2026-11-20T02:40:37+00:00"
   },
   "plan": {
-    "start": "2026-11-20T01:01:34+00:00",
-    "mood": "restless",
+    "start": "2026-11-20T02:40:37+00:00",
+    "mood": "sleepy",
     "steps": [
       {
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "zzz",
+        "note": "Add a simple wooden latch to the forge door",
+        "thoughts": [
+          "Wood should be easy enough",
+          "Hope the latch doesn't squeak"
+        ]
+      },
+      {
         "place": "fire",
-        "action": "sit",
+        "action": "stand",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "warm up",
+        "emote": "zzz",
+        "note": "Inspect the open gap and measure boards needed",
         "thoughts": [
-          "Stone still cold on the bench."
-        ]
-      },
-      {
-        "place": "workbench",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "continue forge wall",
-        "thoughts": [
-          "Mortar smells like wet stone again."
-        ]
-      },
-      {
-        "place": "repair:wall",
-        "action": "work",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "add mortar to east wall",
-        "thoughts": [
-          "Color clash still there."
-        ]
-      },
-      {
-        "place": "desk",
-        "action": "write",
-        "minutes": 20,
-        "emote": "heart",
-        "note": "catalog new shards",
-        "thoughts": [
-          "Glint of glass in pocket."
+          "That wind is annoying",
+          "Count the planks, not the sighs"
         ]
       }
-    ],
-    "applied_until": "2026-11-20T02:00:27+00:00",
-    "live_thought": {
-      "text": "Cold stone under my boots, mortar's still wet.",
-      "time": "2026-11-20T02:00:27+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-20T02:39:33+00:00",
-    "place": "raise:0",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-20T02:40:37+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "add the final layer of bricks and finish the chimney",
-    "thought": "My limbs feel like stone but the forge is almost done, so I’ll push through the last bit."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 30.6,
-    "warmth": 95.7,
+    "rest": 21.6,
+    "warmth": 97.5,
     "inspiration": 32.0,
-    "spirit": 88.1
+    "spirit": 95.0
   },
   "needs_prev": {
     "rest": 43.1,
@@ -105,7 +82,7 @@
     "inspiration": 32.0,
     "spirit": 85.5
   },
-  "needs_at": "2026-11-20T02:39:33+00:00",
+  "needs_at": "2026-11-20T02:40:37+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -136,7 +113,12 @@
         "warmth": 0.03
       }
     },
-    "place_rates": {},
+    "place_rates": {
+      "forge": {
+        "warmth": 0.12,
+        "rest": -0.04
+      }
+    },
     "spirit_home": 55.0,
     "spirit_settle_per_hour": 0.06,
     "drift_max_hours": 48,
@@ -629,11 +611,11 @@
         "about": "a small stone hut with a chimney, bellows and an anvil",
         "place": "forge",
         "plot": 0,
-        "done": 4,
+        "done": 5,
         "needed": 5,
         "kind": null,
         "look": null,
-        "finished": null
+        "finished": "2026-11-20T02:39:35+00:00"
       }
     ],
     "plots": 4
@@ -647,7 +629,8 @@
     "workbench",
     "bedroll",
     "courtyard",
-    "tower"
+    "tower",
+    "forge"
   ],
   "gallery": [],
   "projects": [],
@@ -664,8 +647,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 4,
-    "updated": "2026-11-20T02:00:27+00:00",
-    "seen_until": "2026-11-20T00:55:27+00:00"
+    "updated": "2026-11-20T02:40:37+00:00",
+    "seen_until": "2026-11-20T02:25:25+00:00"
   },
   "gifts": [],
   "gate": [
@@ -677,5 +660,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T02:39:33+00:00"
+  "exported": "2026-11-20T02:40:37+00:00"
 }

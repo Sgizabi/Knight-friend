@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-20T02:39:33+00:00",
-  "place": "raise:0",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-20T02:40:37+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "add the final layer of bricks and finish the chimney",
-  "thought": "My limbs feel like stone but the forge is almost done, so I’ll push through the last bit."
+  "note": "",
+  "thought": ""
 }
