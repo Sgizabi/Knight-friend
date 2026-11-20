@@ -34,60 +34,41 @@
     "last_wake": "2026-11-20T02:40:37+00:00"
   },
   "plan": {
-    "start": "2026-11-20T02:40:37+00:00",
+    "start": "2026-11-20T05:00:27+00:00",
     "mood": "sleepy",
+    "applied_until": "2026-11-20T05:00:27+00:00",
     "steps": [
       {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
+        "place": "bedroll",
+        "action": "sleep",
+        "minutes": 120,
         "emote": "zzz",
-        "note": "Add a simple wooden latch to the forge door",
-        "thoughts": [
-          "Wood should be easy enough",
-          "Hope the latch doesn't squeak"
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "stand",
-        "minutes": 20,
-        "emote": "zzz",
-        "note": "Inspect the open gap and measure boards needed",
-        "thoughts": [
-          "That wind is annoying",
-          "Count the planks, not the sighs"
-        ]
+        "note": "asleep for the night"
       }
-    ],
-    "applied_until": "2026-11-20T04:30:22+00:00",
-    "live_thought": {
-      "text": "The fire's glow keeps the cold at bay, I could linger a while.",
-      "time": "2026-11-20T04:30:22+00:00"
-    }
+    ]
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T04:30:23+00:00",
-    "place": "fire",
-    "action": "sit",
-    "emote": "dots",
-    "note": "",
+    "since": "2026-11-20T05:00:27+00:00",
+    "place": "bedroll",
+    "action": "sleep",
+    "emote": "zzz",
+    "note": "asleep for the night",
     "thought": ""
   },
   "needs": {
+    "rest": 25.2,
+    "warmth": 100.0,
+    "inspiration": 32.0,
+    "spirit": 89.6
+  },
+  "needs_prev": {
     "rest": 24.0,
     "warmth": 100.0,
     "inspiration": 32.0,
     "spirit": 90.7
   },
-  "needs_prev": {
-    "rest": 22.8,
-    "warmth": 100.0,
-    "inspiration": 32.0,
-    "spirit": 91.8
-  },
-  "needs_at": "2026-11-20T04:30:23+00:00",
+  "needs_at": "2026-11-20T05:00:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -651,8 +632,8 @@
   ],
   "visits": {
     "candles_tonight": 0,
-    "knocks_today": 4,
-    "updated": "2026-11-20T04:30:22+00:00",
+    "knocks_today": 0,
+    "updated": "2026-11-20T05:00:27+00:00",
     "seen_until": "2026-11-20T02:25:25+00:00"
   },
   "gifts": [],
@@ -665,5 +646,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T04:30:23+00:00"
+  "exported": "2026-11-20T05:00:27+00:00"
 }
