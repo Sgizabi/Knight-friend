@@ -60,15 +60,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-20T04:00:31+00:00",
+    "applied_until": "2026-11-20T04:30:22+00:00",
     "live_thought": {
-      "text": "The fire's glow keeps the cold at bay, I could stay a while.",
-      "time": "2026-11-20T04:00:31+00:00"
+      "text": "The fire's glow keeps the cold at bay, I could linger a while.",
+      "time": "2026-11-20T04:30:22+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T04:00:31+00:00",
+    "since": "2026-11-20T04:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -76,18 +76,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 24.0,
+    "warmth": 100.0,
+    "inspiration": 32.0,
+    "spirit": 90.7
+  },
+  "needs_prev": {
     "rest": 22.8,
     "warmth": 100.0,
     "inspiration": 32.0,
     "spirit": 91.8
   },
-  "needs_prev": {
-    "rest": 21.6,
-    "warmth": 100.0,
-    "inspiration": 32.0,
-    "spirit": 93.0
-  },
-  "needs_at": "2026-11-20T04:00:31+00:00",
+  "needs_at": "2026-11-20T04:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -652,7 +652,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 4,
-    "updated": "2026-11-20T04:00:31+00:00",
+    "updated": "2026-11-20T04:30:22+00:00",
     "seen_until": "2026-11-20T02:25:25+00:00"
   },
   "gifts": [],
@@ -665,5 +665,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T04:00:31+00:00"
+  "exported": "2026-11-20T04:30:23+00:00"
 }
