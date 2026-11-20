@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-20T02:30:24+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-20T02:30:27+00:00",
+  "place": "raise:0",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "add another course of bricks to the forge wall",
+  "thought": "The fire hums like a coworker. My thumb still aches, but the forge walls need another layer."
 }
