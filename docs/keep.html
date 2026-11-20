@@ -99,6 +99,10 @@ const store = { get(k) { try { return localStorage.getItem(k); } catch { return 
 // =====================================================================================
 const params = new URLSearchParams(location.search);
 const DEMO = params.has('demo');
+const CREATURE = DEMO ? params.get('creature') : null;   // a preview of a creature that might one day visit (creatures.js)
+let skyHour = DEMO && params.has('hour') ? +params.get('hour') : null;   // previews: a fixed time of day
+let fireDim = 1;   // previews: something eating the light
+const onTick = [];   // previews: creatures animate here
 const HOME = 'https://knight-friend.streamlit.app';   // its home page, where visitors knock, leave gifts and so on
 let injected = null;
 try { injected = JSON.parse($('knight-data').textContent); } catch { /* not injected: we're on the website */ }
@@ -1006,7 +1010,7 @@ const moon = new THREE.Mesh(new THREE.SphereGeometry(1.4, 12, 8), new THREE.Mesh
 moon.position.set(-14, 26, -30); scene.add(moon);
 
 function updateSky() {   // follows the viewer's own clock
-  const h = new Date().getHours() + new Date().getMinutes() / 60;
+  const h = skyHour ?? (new Date().getHours() + new Date().getMinutes() / 60);
   const night = h < 5 || h >= 20, dusk = !night && (h < 7 || h >= 17);
   const look = night ? { bg: '#0a0d16', fog: '#0a0b10', d: .045, hs: '#2a3550', hg: '#2a1e16', hi: .75, sc: '#7088c0', si: .5, fi: .35 }
              : dusk  ? { bg: '#4a3f5c', fog: '#3a3040', d: .04, hs: '#8a6a80', hg: '#3a2a1e', hi: 1.05, sc: '#ff9a5a', si: 1.0, fi: .45 }
@@ -1308,7 +1312,7 @@ function demoState() {
               { name: 'A woven banner', about: 'green, like its tabard', placement: 'wall', parts: [
                 { shape: 'box', size: [.5, .8, .02], pos: [0, 0, 0], rot: [0, 0, 0], color: '#3f5f48' },
                 { shape: 'cylinder', size: [.015, .015, .62], pos: [0, .41, 0], rot: [0, 0, 1.57], color: '#5b3e28' }] }],
-            buildings: params.has('bare') ? [] : [
+            buildings: params.has('bare') ? [] : CREATURE ? [{ key: 'forge', name: 'the forge', about: '', place: 'forge', plot: 0, done: 5, needed: 5, finished: 'x' }] : [
               { key: 'forge', name: 'the forge', about: 'a small stone hut with a chimney, bellows and an anvil', place: 'forge', plot: 0, done: 5, needed: 5, finished: 'x' },
               { key: 'own', name: 'The Map Room', about: 'where the maps of the hills get drawn', place: 'map-room', plot: 1, done: 4, needed: 4, kind: 'thoughtful', finished: 'x',
                 look: { walls: params.get('walls') || 'timber', roof: params.get('roof') || 'gable', size: params.get('size') || 'medium',
@@ -1559,9 +1563,10 @@ function updateCamera(dt) {
       camera.position.addScaledVector(fwd, step); scrollGlide -= step;
     }
     // stay above the floor and around the keep
-    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -18, 8);
-    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -7, 9);
-    camera.position.y = THREE.MathUtils.clamp(camera.position.y, groundAt(camera.position.x, camera.position.z) + .25, 7);
+    const r = CREATURE ? 28 : 0;   // previews may roam further, to see the big ones
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -18 - r, 8 + r);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -7 - r, 9 + r);
+    camera.position.y = THREE.MathUtils.clamp(camera.position.y, groundAt(camera.position.x, camera.position.z) + .25, CREATURE ? 20 : 7);
   }
 }
 const MOVE_KEYS = ['w', 'a', 's', 'd', 'q', 'e', 'c', ' ', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
@@ -1892,12 +1897,12 @@ function tick(nowMs) {
   // fire (it flares when the knight is truly awake and thinking, or when a log lands)
   const logFlare = t < logFlareUntil ? 1 + .65 * ((logFlareUntil - t) / 3.5) : 1;
   const flare = Math.max(goal.awake ? 1.35 : 1, logFlare), warm = hearthDone ? 1.15 : 1;
-  fireLight.intensity = (32 + Math.sin(t * 9) * 3 + Math.sin(t * 23) * 2 + Math.sin(t * 4.1) * 2) * flare * warm;
+  fireLight.intensity = (32 + Math.sin(t * 9) * 3 + Math.sin(t * 23) * 2 + Math.sin(t * 4.1) * 2) * flare * warm * fireDim;
   for (const f of flames) {
     const s = (.8 + Math.sin(t * f.userData.speed + f.userData.phase) * .2 + Math.random() * .06) * flare;
     f.scale.set(1, s, 1); f.position.y = .15 + f.userData.h * s / 2; f.rotation.y += dt * 1.5;
   }
-  candle.intensity = 1.1 + Math.sin(t * 13) * .15; candleFlame.scale.y = 1 + Math.sin(t * 17) * .2;
+  candle.intensity = (1.1 + Math.sin(t * 13) * .15) * fireDim; candleFlame.scale.y = 1 + Math.sin(t * 17) * .2;
   if (candleFlames.length) {   // visitors' candles in the window
     windowGlow.intensity = (.5 + Math.sqrt(candleFlames.length) * .35) * (1 + Math.sin(t * 11) * .08 + Math.sin(t * 5.3) * .05);
     for (const f of candleFlames) f.scale.y = 1 + Math.sin(t * 15 + f.userData.phase) * .22;
@@ -1987,6 +1992,7 @@ function tick(nowMs) {
   if (fireLight.castShadow && (shadowsDirty || (hz && nowMs - lastShadow > 1000 / hz))) {
     renderer.shadowMap.needsUpdate = true; lastShadow = nowMs; shadowsDirty = false;
   }
+  for (const f of onTick) f(t, dt);
   renderer.render(scene, camera);
   watchSpeed(nowMs);
   requestAnimationFrame(tick);
@@ -2022,6 +2028,11 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog, get quality() {
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
   get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
+if (CREATURE) import(`${ASSETS || './'}creatures.js`).then(m => m.start(CREATURE, {
+  THREE, scene, camera, M, BM, mat, part, facet, hash, rand, cyl, box, ico, onTick, K, fireLight, updateSky, toast,
+  view: window.__keep.view, setHour(h) { skyHour = h; updateSky(); }, get hour() { return skyHour; },
+  setFireDim(v) { fireDim = v; }, force(goal) { window.__force = goal; },
+})).catch(e => console.error('creature preview', e));
 </script>
 </body>
 </html>
