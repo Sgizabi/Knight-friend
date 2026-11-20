@@ -69,15 +69,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-20T22:00:26+00:00",
+    "applied_until": "2026-11-20T22:30:24+00:00",
     "live_thought": {
-      "text": "The fire's crackle feels like a stone sigh.",
-      "time": "2026-11-20T22:00:26+00:00"
+      "text": "The fire flickers, its heat eases my weariness.",
+      "time": "2026-11-20T22:30:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T22:00:26+00:00",
+    "since": "2026-11-20T22:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -85,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 47.6,
+    "warmth": 89.4,
+    "inspiration": 66.0,
+    "spirit": 86.4
+  },
+  "needs_prev": {
     "rest": 46.3,
     "warmth": 89.0,
     "inspiration": 66.0,
     "spirit": 87.4
   },
-  "needs_prev": {
-    "rest": 46.2,
-    "warmth": 85.7,
-    "inspiration": 66.0,
-    "spirit": 88.4
-  },
-  "needs_at": "2026-11-20T22:00:26+00:00",
+  "needs_at": "2026-11-20T22:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -678,7 +678,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T22:00:26+00:00",
+    "updated": "2026-11-20T22:30:24+00:00",
     "seen_until": "2026-11-20T20:55:27+00:00"
   },
   "gifts": [],
@@ -691,5 +691,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T22:00:26+00:00"
+  "exported": "2026-11-20T22:30:25+00:00"
 }
