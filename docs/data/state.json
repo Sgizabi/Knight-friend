@@ -78,11 +78,16 @@
           "Warmth is a good excuse for a short break"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-20T15:30:25+00:00",
+    "live_thought": {
+      "text": "Cold stone, warm fire, still a draft in the roof gap.",
+      "time": "2026-11-20T15:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T15:01:51+00:00",
+    "since": "2026-11-20T15:30:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 77.2,
+    "warmth": 69.7,
+    "inspiration": 66.0,
+    "spirit": 79.7
+  },
+  "needs_prev": {
     "rest": 79.2,
     "warmth": 75.4,
     "inspiration": 66.0,
     "spirit": 80.4
   },
-  "needs_prev": {
-    "rest": 87.8,
-    "warmth": 69.2,
-    "inspiration": 66.0,
-    "spirit": 77.6
-  },
-  "needs_at": "2026-11-20T15:01:52+00:00",
+  "needs_at": "2026-11-20T15:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -666,7 +671,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-20T15:01:51+00:00",
+    "updated": "2026-11-20T15:30:25+00:00",
     "seen_until": "2026-11-20T14:55:41+00:00"
   },
   "gifts": [],
@@ -679,5 +684,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T15:01:52+00:00"
+  "exported": "2026-11-20T15:30:26+00:00"
 }
