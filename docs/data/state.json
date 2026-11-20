@@ -76,12 +76,12 @@
     }
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-20T14:30:25+00:00",
+    "awake": true,
+    "since": "2026-11-20T15:00:39+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": "",
+    "note": "stirring by the fire",
     "thought": ""
   },
   "needs": {
@@ -91,12 +91,12 @@
     "spirit": 77.6
   },
   "needs_prev": {
-    "rest": 87.5,
-    "warmth": 68.4,
+    "rest": 87.8,
+    "warmth": 69.2,
     "inspiration": 66.0,
-    "spirit": 78.3
+    "spirit": 77.6
   },
-  "needs_at": "2026-11-20T14:30:25+00:00",
+  "needs_at": "2026-11-20T15:00:39+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -674,5 +674,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T14:30:25+00:00"
+  "exported": "2026-11-20T15:00:39+00:00"
 }
