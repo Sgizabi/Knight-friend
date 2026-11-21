@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 26,
-    "last_wake": "2026-11-21T02:40:38+00:00",
-    "nights_slept_through": 4
+    "last_wake": "2026-11-21T05:00:23+00:00",
+    "nights_slept_through": 5
   },
   "plan": {
-    "start": "2026-11-21T05:00:23+00:00",
+    "start": "2026-11-21T07:00:24+00:00",
     "mood": "sleepy",
-    "applied_until": "2026-11-21T05:00:23+00:00",
+    "applied_until": "2026-11-21T07:00:24+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -50,7 +50,7 @@
   },
   "status": {
     "awake": false,
-    "since": "2026-11-21T05:00:23+00:00",
+    "since": "2026-11-21T07:00:25+00:00",
     "place": "bedroll",
     "action": "sleep",
     "emote": "zzz",
@@ -58,18 +58,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 73.2,
+    "warmth": 80.2,
+    "inspiration": 79.0,
+    "spirit": 88.4
+  },
+  "needs_prev": {
     "rest": 31.2,
     "warmth": 86.2,
     "inspiration": 73.2,
     "spirit": 92.8
   },
-  "needs_prev": {
-    "rest": 32.4,
-    "warmth": 88.6,
-    "inspiration": 72.2,
-    "spirit": 94.0
-  },
-  "needs_at": "2026-11-21T05:00:23+00:00",
+  "needs_at": "2026-11-21T07:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -145,6 +145,7 @@
         "needed": 4
       }
     },
+    "damage": {},
     "objects": [
       {
         "name": "Portable Lantern",
@@ -663,7 +664,7 @@
   "visits": {
     "candles_tonight": 2,
     "knocks_today": 0,
-    "updated": "2026-11-21T05:00:23+00:00",
+    "updated": "2026-11-21T07:00:24+00:00",
     "seen_until": "2026-11-21T02:25:25+00:00"
   },
   "gifts": [],
@@ -774,5 +775,5 @@
       }
     }
   },
-  "exported": "2026-11-21T05:00:23+00:00"
+  "exported": "2026-11-21T07:00:25+00:00"
 }
