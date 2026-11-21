@@ -88,7 +88,13 @@ TRACE_DAYS = {"meteor": 4, "ship": 3}
 # dangerous event). How they treat each other (their stance) comes from who they are and what
 # has passed between their kinds before; fair rules say who prevails.
 MEET_CHANCE = .125
-AGELESS = {"seam", "stitched", "moon2", "hill", "clockhead", "ninefold"}   # no young or old of these
+# Beings with no young or old: things that are never born or never age (the Seam, the fog, the Long
+# Man...), things not alive in the usual way (the barrow lord, the wall that woke, the Lantern
+# Folk, a swarm), and some whose age is left a mystery for now (the well, the glassy people).
+AGED = {"axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "whale", "thorn", "basilisk", "wyrm", "larva",
+        # (later waves, once their three ages are designed)
+        "listener", "cartographer", "bentone", "watcher", "nightgrown"}
+AGELESS = set(KINDS) - AGED
 STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off", "follow", "compete",
            "steal from", "uneasy truce", "size up"]
 
