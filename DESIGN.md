@@ -354,6 +354,76 @@ silent first.
 
 **Tests** with real models are recorded against the allowance, as now (`world/test_usage.json`).
 
+### Traits and drives: characters, not scripts
+
+Every being has **traits** (who it is, every visit: territorial, pack-minded, greedy, proud,
+skittish, curious, light-hungry, solitary, patient, playful...) and, each visit, **drives**
+(what it wants this time: food, shiny things, warmth, to be left alone, to explore, to rest,
+to find one of its own). Its behaviour mind reasons from these, its mood, its history with
+Rooken and with other beings, and what is happening around it.
+
+So a returning being is **the same character, never the same visit**: a new reason for
+coming (its mind is shown its last few visits, so it doesn't repeat them), a different mood,
+a different individual (size, markings, age, old scars), a different hour, weather and place,
+different company, a different history, and an ending the rules and Rooken's choices settle.
+What stays is the core of who it is: that is what makes it recognisable rather than random.
+
+### Beings and each other
+
+There are hundreds of possible pairs, so meetings are never scripted pair by pair. Variety
+comes from four building blocks:
+
+1. **Ecology** (in the spawner): what is around shifts the odds of who comes. Something
+   territorial nearby keeps skittish beings away; light-hungry ones follow the Lantern Folk;
+   scavengers come after a meteor's embers. The old hand-written examples (the dragon keeping
+   the Glassbeak away) become *results* of traits, not rules of their own.
+2. **Meetings**: now and then two beings are present at once (about one notable day in
+   eight), usually one big and one small; two big ones only rarely, sharing the light budget.
+3. **Stances**: when beings meet, each one's mind chooses how to treat the other: team up,
+   rival, squabble, ignore, avoid, flee, chase off, follow, compete for the same prize, steal,
+   an uneasy truce, size each other up. Two hostile beings might hunt together, or argue over
+   who gets the keep, or one might decide the other is the bigger problem.
+4. **A shared set of actions** plays it out on screen (approach, circle, posture, push,
+   chase, flee, follow, guard, share, snatch, call out, retreat), combined with who, where and
+   what for. A small vocabulary times many beings and reasons gives far more variety than
+   any script.
+
+**Fair rules settle it**: who drives off whom, who gets the prize, whether a team-up works.
+**They remember**: grudges and alliances between kinds are recorded, so the world grows its
+own politics over months. **Rooken's part is his choice**: watch, keep out of it, use a
+squabble to slip past, or take a side. **His safeguards hold**: two hostile beings together
+count as one dangerous event (injury caps, never killed, then the quiet spell). Visitors see
+it live, with a short caption of what is happening between them, screened like everything
+public. Each extra mind turn runs on the other model's allowance, never his.
+
+### Story arcs
+
+Some beings come as chapters of a longer story: linked appearances where each stage unlocks
+the next, shaped by how Rooken met the stage before. The same system carries the Thin Crowd
+(one more each evening), the Long Crawl (its slow crossings), the peoples below, and more.
+
+**The glassy people** (an arc over many months):
+1. **The Gardener** (from seeing step 2): one small, careful being alone, taking samples of
+   soil, grass, stone and water; it comes back a few times over the weeks.
+2. **The Scouts** (around step 3): three or four slim, quick ones with light for eyes,
+   sweeping the land with beams, mapping; they keep their distance but notice him.
+3. **The Expedition** (around step 3): a bigger group with several craft and sturdier
+   builders, a small camp of light on the plain for a night or two; the first time they might
+   come close to the keep.
+4. **The Sovereign** (step 4, legendary): their ruler, tall and luminous with a crest of
+   light and attendants (a ruler, never anything worshipped).
+
+If he was welcoming, later stages come closer, perhaps with gifts; if he chased them off, they
+come warier and further away, or the arc rests a long while. They are curious and neutral:
+the worst of mistreating them is that they withdraw. Each stage looks different (the small
+careful Gardener, the slim fast Scouts, the sturdy builders, the tall Sovereign).
+
+**Other visiting peoples: a surprise.** The builder is designing further peoples with arcs
+of their own, kept secret from the keeper so they can be met, not read about. They follow
+every rule here: original, peril only, no religious imagery, his choices shape what happens,
+nothing tells him what to do, the same performance rules, and anything that could hurt him or
+change his world a lot still goes to the keeper first.
+
 ---
 
 ## 7. The companion
@@ -420,8 +490,8 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 2 | The bigger world: landscape, wider camera, room for plots beyond the walls (**done**) | yes (scenery) |
 | 3 | Weather: rules, visuals, effects on his needs (**done**) | yes |
 | 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep (**done**, switched off until wave 1) | behind the scenes |
-| 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary | behind the scenes |
-| 6 | Minds: behaviour minds and voices, real-model tests, budget caps, the watch list updated | behind the scenes |
+| 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary; traits and drives; ecology; story arcs | behind the scenes |
+| 6 | Minds: behaviour minds and voices, meetings and stances between beings, real-model tests, budget caps, the watch list updated | behind the scenes |
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping | **yes, creatures arrive** |
 | 8 | The companion | yes |
 | 9 | Visitor help and names | yes |
