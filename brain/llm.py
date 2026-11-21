@@ -429,6 +429,8 @@ class FakeBrain(Brain):
                 "ask_visitors": {"question": "Which is worse: a leaky roof or a wobbly stair?",
                                  "options": ["Leaky roof", "Wobbly stair", "Leaky roof", "Both, obviously", "x" * 80]}
                 if "ask_visitors" in prompt else {}})
+        if task == "letter":
+            return json.dumps({"language": "English", "reply": "Thanks for writing. The fire says hello."})
         if task == "questions":
             return json.dumps({"questions": ["How is the lighthouse page coming along?",
                                              "What did the wall teach you this week?", "too short?",
