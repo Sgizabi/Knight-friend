@@ -660,35 +660,47 @@ const BEASTS = {
   // ================================================================ SKY WHALE
   whale: {
     name: 'The sky whale', hour: 22,
-    blurb: 'Uncommon, and harmless. A vast, gentle thing that drifts over the keep on clear nights, lit with its own small stars.',
+    blurb: 'Uncommon, and harmless. A vast, gentle thing that drifts over the keep on clear nights, lit with its own small stars in clusters like constellations, trailing star-dust and long glowing tendrils. Now and then it sings, a note you feel more than hear.',
     view: [[-3.5, 1.6, 17], [-3.5, 11, -2]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching the sky whale pass over' },
     build(root) {
-      const g = G(root, [0, 13, 0], [0, -Math.PI / 2, 0]);
+      const v = root.userData.appearance?.variant || {};
+      const big = (v.size || 1) * (v.age === 'young' ? .55 : v.age === 'old' ? 1.15 : 1);
+      const g = G(root, [0, 13, 0], [0, -Math.PI / 2, 0]); g.scale.setScalar(big);
       const hide = A.mat('#2c3d5a', .05, .75, { emissive: '#1a2c48', emissiveIntensity: 1 });
       const bellyM = A.mat('#6f7f96', 0, .8, { emissive: '#1a2333', emissiveIntensity: .5 });
       const finM = ds('#2b3c58', .05, .8);
       const prof = [[0, -8], [1.2, -7], [2.2, -5], [2.6, -2.5], [2.5, 0], [2.1, 2.5], [1.5, 4.5], [.9, 6.4], [.5, 7.8], [.12, 8.6], [0, 8.7]]
         .map(([r, y]) => new T.Vector2(r, y));
-      const body = new T.Mesh(A.facet(new T.LatheGeometry(prof, 10), .25, 3), hide);
+      const body = new T.Mesh(A.facet(new T.LatheGeometry(prof, 18), .12, 3), hide);
       body.rotation.x = Math.PI / 2; body.scale.set(1.1, 1, .85); g.add(body);
-      P(g, A.ico(1, 1), bellyM, [0, -1.1, -1], { scale: [1.9, .9, 6.5], jitter: .1 });
+      P(g, A.ico(1, 2), bellyM, [0, -1.1, -1], { scale: [1.9, .9, 6.5], jitter: .05 });
+      const pleatM = A.mat('#3b4a63', 0, .85, { emissive: '#141c2a', emissiveIntensity: .5 });
+      for (let i = 0; i < 9; i++) P(g, A.box(.06, .05, 5.2), pleatM, [(i - 4) * .3, -1.72 + Math.abs(i - 4) * .1, 3.2], { cast: false, jitter: 0 });   // throat grooves
       const spots = new T.MeshBasicMaterial({ color: '#7ff0e6', fog: false });
       const r = A.rand(77);
       const spotMeshes = [];
-      for (let i = 0; i < 44; i++) {
-        const z = -6.5 + r() * 13, side = i % 2 ? 1 : -1, rr = 2.5 * Math.sin(Math.PI * (z + 8) / 16.7) * 1.05;
-        const a = .25 + r() * .9;
-        const m = new T.Mesh(A.ico(.08 + r() * .08, 0), spots); m.position.set(side * Math.cos(a) * rr * 1.1, Math.sin(a) * rr * .85 - .2, z); g.add(m);
-        spotMeshes.push(m);
+      for (let c = 0; c < 9; c++) {                                    // little constellations along its back and flanks
+        const z0 = -6.5 + r() * 13, side = c % 2 ? 1 : -1, a0 = .3 + r() * .9;
+        for (let i = 0; i < 4 + Math.floor(r() * 4); i++) {
+          const z = z0 + (r() - .5) * 1.6, a = a0 + (r() - .5) * .35, rr = 2.5 * Math.sin(Math.PI * (z + 8) / 16.7) * 1.05;
+          const m = new T.Mesh(A.ico(.06 + r() * .09, 0), spots); m.position.set(side * Math.cos(a) * rr * 1.1, Math.sin(a) * rr * .85 - .2, z); g.add(m);
+          m.userData.ph = r() * 9; spotMeshes.push(m);
+        }
       }
-      const eye = new T.Mesh(A.ico(.16, 0), new T.MeshBasicMaterial({ color: '#cfffff', fog: false }));
-      for (const sx of [-1, 1]) { const e = eye.clone(); e.position.set(sx * 1.55, .1, 5.2); g.add(e); }
+      const eyes = [];                                                  // a gentle eye: dark, with a soft teal ring
+      for (const sx of [-1, 1]) {
+        const e = G(g, [sx * 1.58, .05, 5.2], [0, sx * 1.35, 0]);
+        P(e, A.ico(.17, 1), A.mat('#05080d', .3, .1), [0, 0, 0], { cast: false, jitter: 0 });
+        const ring = new T.Mesh(new T.TorusGeometry(.19, .025, 4, 14), new T.MeshBasicMaterial({ color: '#6fd8cf', fog: false })); e.add(ring);
+        eyes.push(e);
+      }
       const fins = [];
       for (const sx of [-1, 1]) {
         const f = G(g, [sx * 2.1, -.5, 2.2]);
         sheet(f, [[0, 0, .8], [0, 0, -1.6], [sx * 5.5, -.3, -2.2], [sx * 6.8, -.4, -3.6], [sx * 3.0, -.2, -2.9]], [[0, 1, 2], [2, 3, 4], [1, 2, 4], [0, 2, 1]], finM);
         for (let i = 0; i < 4; i++) { const m = new T.Mesh(A.ico(.1, 0), spots); m.position.set(sx * (2 + i * 1.2), -.25, -1.4 - i * .5); f.add(m); }
+        for (let i = 0; i < 6; i++) P(f, A.ico(.16, 0), hide, [sx * (.6 + i * 1.0), -.12, .45 - i * .52], { cast: false });   // the knobbled leading edge
         fins.push({ f, sx });
       }
       const fluke = G(g, [0, 0, -8]);
@@ -699,14 +711,31 @@ const BEASTS = {
         const base = G(g, [(i % 2 ? 1 : -1) * (.4 + (i % 3) * .35), -1.7, -4 + i * 1.2], [Math.PI, 0, 0]);
         tendrils.push(chain(base, 9, .55, .07, .015, tMat, { sides: 5, jitter: .005 }));
       }
-      return (t) => {
+      // star-dust trailing behind it, and rings when it sings
+      const DN = 70, dp = new Float32Array(DN * 3), dl = Float32Array.from({ length: DN }, (_, i) => i / DN);
+      const dg = new T.BufferGeometry(); dg.setAttribute('position', new T.BufferAttribute(dp, 3));
+      root.add(new T.Points(dg, new T.PointsMaterial({ color: '#9ff3ea', size: .09, transparent: true, opacity: .7, depthWrite: false, fog: false })));
+      const songs = [0, 1, 2].map(() => { const m = new T.Mesh(new T.TorusGeometry(1, .018, 3, 48), new T.MeshBasicMaterial({ color: '#8fe6dd', transparent: true, opacity: 0, depthWrite: false, fog: false })); root.add(m); return { m, born: -99 }; });
+      const tail = V(), head = V(); let lastSong = -99, si = 0;
+      return (t, dt = 1 / 60) => {
         const k = (t * .55 + 14) % 50;
         g.position.set(22 - k, 12.5 + Math.sin(t * .2) * .5, -1 + Math.sin(t * .07) * 2);
         g.rotation.z = Math.sin(t * .3) * .05; g.rotation.x = Math.sin(t * .23) * .03;
         for (const { f, sx } of fins) f.rotation.z = sx * Math.sin(t * .7) * .28;
         fluke.rotation.x = Math.sin(t * .7 - 1) * .3;
         tendrils.forEach((c, n) => c.forEach((j, i) => { j.rotation.x = Math.sin(t * .8 - i * .5 + n) * .08; j.rotation.z = Math.sin(t * .5 - i * .4 + n * 2) * .06; }));
-        spotMeshes.forEach((m, i) => m.scale.setScalar(.7 + .5 * Math.max(0, Math.sin(t * 1.2 - m.position.z * .5))));
+        spotMeshes.forEach(m => m.scale.setScalar(.6 + .55 * Math.max(0, Math.sin(t * 1.2 - m.position.z * .5)) + .25 * Math.max(0, Math.sin(t * 3.1 + m.userData.ph))));
+        eyes.forEach(e => { e.scale.y = 1 - pulse(t, 9, .35) * .85; });
+        fluke.getWorldPosition(tail);
+        for (let i = 0; i < DN; i++) {
+          dl[i] += dt * .25; if (dl[i] > 1) { dl[i] = 0; dp[i * 3] = tail.x + Math.sin(i * 3.7) * .8; dp[i * 3 + 1] = tail.y + Math.cos(i * 2.3) * .6; dp[i * 3 + 2] = tail.z + Math.sin(i * 1.3) * .8; }
+          dp[i * 3 + 1] -= dt * .25;                                    // drifting slowly down
+        }
+        dg.attributes.position.needsUpdate = true;
+        if (t - lastSong > 12 + (Math.floor(t / 12) % 3) * 4) {        // it sings
+          lastSong = t; const sg = songs[si++ % 3]; sg.born = t; g.localToWorld(head.set(0, 0, 6.5)); sg.m.position.copy(head);
+        }
+        for (const sg of songs) { const q = (t - sg.born) / 5; sg.m.visible = q < 1; if (q < 1) { sg.m.scale.setScalar(1 + q * 12); sg.m.material.opacity = .28 * (1 - q) * (1 - q); sg.m.lookAt(A.camera.position); } }
       };
     },
   },
@@ -786,9 +815,9 @@ const BEASTS = {
           c.fillStyle = '#c4b490'; c.beginPath(); c.ellipse(40, 26, 38, 26, .4, 0, 6.3); c.fill();
           c.strokeStyle = 'rgba(90,70,50,.6)'; c.lineWidth = 2;
           for (const a of [-.9, -.5, -.1, .3]) { c.beginPath(); c.moveTo(6, 0); c.lineTo(Math.cos(a) * 100, Math.sin(a) * 50); c.stroke(); }
-          c.fillStyle = '#e8a64a'; c.beginPath(); c.arc(62, -16, 15, 0, 6.3); c.fill();
-          c.fillStyle = '#231a14'; c.beginPath(); c.arc(62, -16, 10, 0, 6.3); c.fill();
-          c.fillStyle = '#f4ead2'; c.beginPath(); c.arc(59, -19, 3, 0, 6.3); c.fill();
+          for (const [rr, col] of [[17, '#3b2a1e'], [14, '#c98a3e'], [10, '#7a4a26'], [6, '#2a1d15']]) {   // an eyespot: rings, not an eye
+            c.fillStyle = col; c.beginPath(); c.ellipse(62, -16, rr, rr * .82, -.3, 0, 6.3); c.fill();
+          }
           c.restore();
         }
         c.fillStyle = '#3a2c22'; c.beginPath(); c.ellipse(w / 2, h / 2 + 4, 7, 40, 0, 0, 6.3); c.fill();
@@ -796,7 +825,7 @@ const BEASTS = {
       const mothMat = new T.MeshStandardMaterial({ map: wingTex, emissiveMap: wingTex, emissive: '#ffd08a', emissiveIntensity: .6,
                                                    transparent: true, alphaTest: .4, side: T.DoubleSide, roughness: .9 });
       const geo = new T.PlaneGeometry(.2, .1); geo.rotateX(-Math.PI / 2);
-      const N = 90, swarm = new T.InstancedMesh(geo, mothMat, N); swarm.frustumCulled = false; root.add(swarm);
+      const N = Math.round(90 * ((root.userData.appearance?.variant || {}).size || 1)), swarm = new T.InstancedMesh(geo, mothMat, N); swarm.frustumCulled = false; root.add(swarm);
       const seeds = Array.from({ length: N }, (_, i) => { const r = A.rand(i * 7 + 3); return { a: r() * 6.28, rad: .5 + r() * 1.7, sp: .7 + r() * .9, h: r(), fl: r() * 6.28 }; });
       const m4 = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), s = new T.Vector3(), p = new T.Vector3();
       // the great moth, on the wall by the window
@@ -804,7 +833,7 @@ const BEASTS = {
       const fur = A.mat('#5a4636', 0, 1), furL = A.mat('#8a7458', 0, 1);
       for (let i = 0; i < 5; i++) P(big, A.ico(.09 - i * .008, 1), i % 2 ? furL : fur, [0, .12 - i * .1, 0], { scale: [1, 1.2, .9] });
       for (const sx of [-1, 1]) {
-        P(big, A.ico(.035, 0), glow('#ffe0a0', 2), [sx * .05, .2, .05], { cast: false });
+        P(big, A.ico(.03, 0), A.mat('#1a120c', .3, .3, { emissive: '#4a3418', emissiveIntensity: .6 }), [sx * .05, .2, .05], { cast: false });
         const ant = G(big, [sx * .03, .24, .02], [0, 0, sx * -.5]);
         bone(ant, [0, 0, 0], [0, .3, .05], .012, .006, fur, 4);
         for (let k = 0; k < 6; k++) bone(ant, [0, .05 + k * .045, .01], [sx * .06, .08 + k * .045, .03], .004, .002, furL, 3);
