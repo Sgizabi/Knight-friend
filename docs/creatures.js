@@ -1723,60 +1723,104 @@ const BEASTS = {
   // ================================================================ THE ASHWOLF PACK
   ashwolves: {
     name: 'The Ashwolf pack', hour: 22,
-    blurb: 'Wolves made of smoke and embers, drawn to the forge\'s heat. Clever, patient and dangerous. They hunt together, and one of them always keeps watch.',
-    view: [[-6.3, 2.2, -1.2], [-11.6, .4, 1.4]],
+    blurb: 'Wolves of charred ash with fire still in the cracks of them, smoke streaming off their backs. Drawn to the forge\'s heat. They circle just beyond the walls, and one of them always sits apart, keeping watch: when it howls, the pack moves.',
+    view: [[-6.6, 2.3, 4.6], [-13, .7, .2]],
     knight: { place: 'repair:doorway', action: 'stand', emote: 'exclaim', note: 'keeping the doorway between him and them' },
     build(root) {
-      const ash = A.mat('#3a322e', 0, .95, { emissive: '#2a1208', emissiveIntensity: .8 }), ashL = A.mat('#54473f', 0, .95, { emissive: '#2a1208', emissiveIntensity: .6 }), ember = glow('#ff7a2a', 3), eyeM = glow('#ffb347', 3);
-      const smokeMat = () => new T.SpriteMaterial({ map: puff(), color: '#4a423e', transparent: true, opacity: .35, depthWrite: false });
-      const wolves = [];
-      for (let n = 0; n < 4; n++) {
-        const w = G(root), body = G(w, [0, .62, 0]), r = A.rand(n * 9 + 2);
-        P(body, A.ico(.34, 1), ash, [0, 0, 0], { scale: [.72, .8, 1.55] });
-        P(body, A.ico(.3, 1), ashL, [0, .05, .38], { scale: [.85, 1, .9] });
-        for (let k = 0; k < 14; k++) P(body, A.box(.03, .015 + r() * .04, .12 + r() * .1), ember, [(r() - .5) * .45, (r() - .2) * .4, (r() - .5) * .9], { rot: [0, r() * 3, r()], cast: false });
-        const head = G(body, [0, .22, .62]);
-        P(head, A.ico(.16, 1), ash, [0, 0, 0], { scale: [.9, .85, 1.1] });
-        P(head, new T.ConeGeometry(.08, .3, 5), ashL, [0, -.04, .24], { rot: [Math.PI / 2, 0, 0] });
-        for (const sx of [-1, 1]) { P(head, new T.ConeGeometry(.05, .16, 4), ash, [sx * .08, .16, -.03], { rot: [-.2, 0, sx * -.2] }); P(head, A.ico(.025, 0), eyeM, [sx * .07, .05, .12], { cast: false }); }
+      const v = root.userData.appearance?.variant || {};
+      const age = v.age || '', count = Math.max(3, Math.min(5, Math.round(4 * (v.size || 1))));
+      const ashC = age === 'old' ? '#4a4440' : '#2e2724';
+      const ash = A.mat(ashC, 0, .95, { emissive: '#4a1a08', emissiveIntensity: .85 }), ashL = A.mat('#4d423c', 0, .95, { emissive: '#3a1608', emissiveIntensity: .7 });   // the fire shows through
+      const ember = glow('#ff6a1f', 2.6), emberD = glow('#c2410f', 1.6), eyeM = glow('#ffb347', 3), maw = glow('#ff9a3a', 1.2);
+      const smokeMat = () => new T.SpriteMaterial({ map: puff(), color: '#3d3633', transparent: true, opacity: .3, depthWrite: false });
+      // cracks of fire along a bone: thin glowing slivers on its surface
+      const cracks = (parent, n, rx, ry, rz, r) => { for (let k = 0; k < n; k++) {
+        const a = r() * 6.28, z = (r() - .5) * 2 * rz;
+        const rib = r() < .4;                                       // along the body, or around a rib
+        P(parent, A.box(.016, .018, .12 + r() * .18), r() < .7 ? ember : emberD, [Math.cos(a) * rx, Math.abs(Math.sin(a)) * ry * .98, z],
+          { rot: rib ? [0, Math.PI / 2, a + (r() - .5) * .3] : [(r() - .5) * .3, (r() - .5) * .35, 0], cast: false });
+      } };
+      const wolf = (n, scale) => {
+        const r = A.rand(n * 9 + 2), w = G(root), body = G(w, [0, .66 * scale, 0]); body.scale.setScalar(scale);
+        // chest deep, waist tucked, hips lower
+        const chest = G(body, [0, .04, .3]); P(chest, A.ico(1, 1), ash, [0, 0, 0], { scale: [.24, .3, .34], jitter: .02 });
+        const waist = G(body, [0, .06, -.12]); P(waist, A.ico(1, 1), ash, [0, 0, 0], { scale: [.17, .2, .3], jitter: .02 });
+        const hips = G(body, [0, .02, -.45]); P(hips, A.ico(1, 1), ashL, [0, 0, 0], { scale: [.2, .23, .22], jitter: .02 });
+        cracks(chest, 16, .22, .28, .3, r); cracks(waist, 9, .16, .18, .28, r); cracks(hips, 9, .18, .2, .2, r);
+        for (let k = 0; k < 9; k++) P(body, new T.ConeGeometry(.04, .14 + r() * .1, 4), ash, [(r() - .5) * .08, .3 - k * .02, .38 - k * .1], { rot: [-.9, 0, (r() - .5) * .5], cast: false });   // the ruff, the ridge
+        const neck = G(body, [0, .18, .52], [-.55, 0, 0]);
+        P(neck, A.cyl(.1, .14, .32, 6), ash, [0, .14, 0]);
+        const head = G(neck, [0, .3, .02], [.55, 0, 0]);
+        P(head, A.ico(.15, 1), ash, [0, 0, 0], { scale: [.9, .85, 1.05] });
+        P(head, A.box(.12, .1, .26), ashL, [0, -.03, .2], { jitter: .015 });           // the muzzle
+        P(head, A.ico(.03, 0), A.mat('#0c0807'), [0, .0, .34], { cast: false });         // nose
+        const jaw = G(head, [0, -.07, .08]); P(jaw, A.box(.1, .04, .24), ash, [0, -.02, .12], { jitter: .01 });
+        P(jaw, A.box(.08, .01, .2), maw, [0, .01, .12], { cast: false });              // fire in its mouth
+        for (const sx of [-1, 1]) {
+          P(head, new T.ConeGeometry(.045, .15, 4), ash, [sx * .08, .15, -.04], { rot: [-.15, 0, sx * -.25] });
+          P(head, A.box(.05, .02, .035), eyeM, [sx * .068, .045, .112], { rot: [0, sx * .4, sx * .15], cast: false });   // narrow, burning
+        }
+        // legs: three joints each, so the trot reads
         const legs = [];
-        for (const [x, z] of [[-.13, .38], [.13, .38], [-.13, -.4], [.13, -.4]]) { const l = G(body, [x, -.1, z]); bone(l, [0, 0, 0], [0, -.52, .03], .05, .03, ash, 5); legs.push({ l, ph: (x > 0 ? 0 : Math.PI) + (z > 0 ? 0 : Math.PI / 2) }); }
-        const tail = G(body, [0, .08, -.62], [-2.2, 0, 0]); const tc = chain(tail, 4, .14, .06, .03, ashL, { sides: 5 });
-        const smoke = Array.from({ length: 3 }, (_, k) => { const s = new T.Sprite(smokeMat()); root.add(s); return { s, k }; });
-        wolves.push({ w, body, head, legs, tc, smoke, n, sits: n === 3 });
-      }
-      const lead = new T.PointLight('#ff7a2a', 5, 8, 1.4); root.add(lead);
-      const EN = 50, ep = new Float32Array(EN * 3), eLife = Float32Array.from({ length: EN }, (_, i) => i / EN);
+        for (const [x, z, front] of [[-.13, .34, 1], [.13, .34, 1], [-.12, -.46, 0], [.12, -.46, 0]]) {
+          const top = G(body, [x, -.05, z]);
+          bone(top, [0, 0, 0], [0, -.26, front ? .04 : -.06], .06, .045, ash, 5);
+          const mid = G(top, [0, -.26, front ? .04 : -.06]);
+          bone(mid, [0, 0, 0], [0, -.22, front ? -.03 : .06], .042, .035, ash, 5);
+          const low = G(mid, [0, -.22, front ? -.03 : .06]);
+          bone(low, [0, 0, 0], [0, -.16, .03], .033, .028, ashL, 5); P(low, A.box(.06, .03, .1), ash, [0, -.17, .06]);
+          legs.push({ top, mid, front, ph: (x > 0 ? 0 : Math.PI) + (front ? 0 : Math.PI) });
+        }
+        const tailBase = G(hips, [0, .1, -.2], [-2.3, 0, 0]);
+        const tc = chain(tailBase, 4, .13, .055, .03, ashL, { sides: 5 });
+        const smoke = Array.from({ length: 4 }, (_, k) => { const s = new T.Sprite(smokeMat()); root.add(s); return { s, k }; });
+        return { w, body, head, neck, jaw, legs, tc, smoke, n, tailBase };
+      };
+      const sizes = { young: .6, old: 1.12 };
+      const wolves = Array.from({ length: count }, (_, n) => wolf(n, n === 0 ? 1.08 * (sizes[age] || 1) : (sizes[age] || 1) * (.85 + A.rand(n + 40)() * .2)));
+      const watcher = wolves[0];                                    // the one that sits apart, on the rubble, and watches
+      const WATCH = [-9.6, .45, -3.2];
+      const EN = 60, ep = new Float32Array(EN * 3), eLife = Float32Array.from({ length: EN }, (_, i) => i / EN);
       const eg = new T.BufferGeometry(); eg.setAttribute('position', new T.BufferAttribute(ep, 3));
       root.add(new T.Points(eg, new T.PointsMaterial({ color: '#ffb35a', size: .05, transparent: true, depthWrite: false })));
-      const tmp = V();
+      const tmp = V(), cam = V();
       return (t, dt) => {
+        const cycle = t % 22, howl = cycle > 15 && cycle < 18.5;            // the watcher howls; then the pack moves
+        const moving = cycle > 17 || cycle < 7;
         for (const wf of wolves) {
-          const { w, body, head, legs, tc, smoke, n, sits } = wf;
-          if (sits) {
-            w.position.set(-9.4, 0, -.6); w.rotation.y = 1.9;
-            body.rotation.x = -.55; body.position.y = .5;
-            legs.forEach(({ l }, i) => { l.rotation.x = i < 2 ? .5 : -1.3; });
-            const howl = pulse(t, 10, 3); head.rotation.x = -.4 - howl * .9;
+          const { w, body, head, neck, jaw, legs, tc, smoke, n } = wf;
+          if (wf === watcher) {
+            w.position.set(WATCH[0], gy(WATCH[0], WATCH[2]) + WATCH[1], WATCH[2]);
+            A.camera.getWorldPosition(cam); w.rotation.y = Math.atan2(cam.x - WATCH[0], cam.z - WATCH[2]) * .6 + .6;
+            body.rotation.x = -.5; body.position.y = .5;                    // sitting up
+            legs.forEach(({ top, mid }, i) => { top.rotation.x = i < 2 ? .35 : -1.2; mid.rotation.x = i < 2 ? -.2 : 1.6; });
+            const h = howl ? Math.sin((cycle - 15) / 3.5 * Math.PI) : 0;
+            neck.rotation.x = -.55 - h * .7; head.rotation.x = .55 - h * .5; jaw.rotation.x = h * .5;
           } else {
-            const a = t * .42 + n * 2.1, x = -11.5 + Math.cos(a) * 2.8, z = 1.2 + Math.sin(a) * 1.3;
-            w.position.set(x, 0, z); w.rotation.y = Math.atan2(-Math.sin(a) * 2.8, Math.cos(a) * 1.3);
-            const ph = t * 8 + n; body.position.y = .62 + Math.abs(Math.sin(ph)) * .03;
-            legs.forEach(({ l, ph: p }) => { l.rotation.x = Math.sin(ph + p) * .5; });
-            head.rotation.y = Math.sin(t * .7 + n) * .3; head.rotation.x = .1;
-            if (n === 0) { lead.position.set(x, .9, z); }
+            // circling just beyond the wall, slowly while waiting, at a lope once the watcher has howled
+            const speed = moving ? .34 : .1, k = n * 2.2;
+            wf.a = (wf.a ?? k) + dt * speed;
+            const a = wf.a, x = -14.2 + Math.cos(a) * 3.4, z = .4 + Math.sin(a) * 2.6;
+            w.position.set(x, gy(x, z), z); w.rotation.y = Math.atan2(-Math.sin(a) * 3.4, Math.cos(a) * 2.6);
+            const ph = t * (moving ? 9 : 4) + n;
+            body.position.y = .66 * (body.scale.x) + Math.abs(Math.sin(ph)) * (moving ? .04 : .015);
+            legs.forEach(({ top, mid, front, ph: p }) => { const s = Math.sin(ph + p); top.rotation.x = s * (moving ? .55 : .3); mid.rotation.x = Math.max(0, front ? -s : s) * .6 * (front ? -1 : 1); });
+            neck.rotation.x = -.55 + (moving ? .25 : 0); head.rotation.x = .55 - (moving ? .2 : 0);
+            head.rotation.y = Math.sin(t * .6 + n) * .25; jaw.rotation.x = pulse(t + n * 3, 6, .6) * .25;
           }
           tc.forEach((j, i) => { j.rotation.z = Math.sin(t * 3 + n + i) * .15; });
           body.getWorldPosition(tmp);
-          for (const { s, k } of smoke) { const u = (t * .6 + k / 3 + n * .1) % 1; s.position.set(tmp.x, tmp.y + .2 + u * 1.1, tmp.z); s.scale.setScalar(.4 + u * 1.2); s.material.opacity = .32 * (1 - u); }
+          for (const { s, k } of smoke) { const u = (t * .55 + k / 4 + n * .13) % 1; s.position.set(tmp.x - Math.sin(w.rotation.y) * u * .6, tmp.y + .15 + u * 1.2, tmp.z - Math.cos(w.rotation.y) * u * .6); s.scale.setScalar((.35 + u * 1.2) * body.scale.x); s.material.opacity = .3 * (1 - u); }
         }
         for (let i = 0; i < EN; i++) {
           eLife[i] += dt * .35; if (eLife[i] > 1) eLife[i] = 0;
-          const wf = wolves[i % 4]; wf.body.getWorldPosition(tmp);
+          const wf = wolves[i % wolves.length]; wf.body.getWorldPosition(tmp);
           const k = eLife[i]; ep[i * 3] = tmp.x + Math.sin(i * 7.1) * .3; ep[i * 3 + 1] = tmp.y + k * 1.6; ep[i * 3 + 2] = tmp.z + Math.cos(i * 3.3) * .3;
         }
         eg.attributes.position.needsUpdate = true;
-        ember.emissiveIntensity = 2.6 + Math.sin(t * 5) * .7; lead.intensity = 4.5 + Math.sin(t * 9) * .8;
+        ember.emissiveIntensity = 2.4 + Math.sin(t * 5) * .6 + (howl ? .8 : 0); maw.emissiveIntensity = 1 + (howl ? 2 : 0);
+        const h = A.hour, dark = Math.max(smooth(16.5, 19.5, h), 1 - smooth(5, 7.5, h));   // grey ash by day; the fire shows at night
+        ash.emissiveIntensity = .12 + .75 * dark; ashL.emissiveIntensity = .1 + .6 * dark;
       };
     },
   },
