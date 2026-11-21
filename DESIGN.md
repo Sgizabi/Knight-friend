@@ -5,7 +5,7 @@ weather, creatures with minds of their own, a companion, and visitors who can st
 something dangerous comes. It gathers everything the keeper has decided so far, in one place,
 so it can be approved before anything real is built.
 
-**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2) and **weather** (section 3). Built but switched off until wave 1: **the creature foundations** (section 4).
+**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2) and **weather** (section 3). Built but switched off until wave 1: **the creature foundations** (section 4) and **encounters** (section 5), with traits and drives, ecology and story arcs (section 6).
 The creature mockups can be seen at
 `https://sgizabi.github.io/Knight-friend/keep.html?demo&creature=dragon` (use ◀ ▶ to step through).
 Anything marked **open question** is still the keeper's call.
@@ -92,12 +92,16 @@ sheen; lightning flashes; sky and fog colour per weather.
 The aim is **a real part of his life, not all of it, and not a rarity either**: something to
 notice most days, a proper encounter every few days, quiet days in between.
 
-| Rarity | Roughly | Examples |
+| Rarity | Roughly, each kind | Examples |
 |---|---|---|
-| Common | several times a week | the fog with eyes, the Pale Brood, animals, the Lantern Folk crossing |
-| Uncommon | about once a week each | the Bell-Crab, the axolotl, the Ashwolves, the lamp-eaters |
-| Rare | once or twice a month each | the basilisk, the Glassbeak, the barrow lord, the Bent One |
-| Legendary | a few times a year | the dragon, the hill opening its eye |
+| Common | about once a month | the fog with eyes, the Pale Brood |
+| Uncommon | every month or two | the Bell-Crab, the axolotl, the Ashwolves, the lamp-eaters, the Lantern Folk |
+| Rare | a few times a year | the basilisk, the Glassbeak, the barrow lord, the Bent One, the Long Man |
+| Legendary | about once a year | the dragon, the hill opening its eye (all of them together: 3 to 5 a year) |
+
+All together, about **three notable beings a week** (simulated over whole years), with small
+ambient life (animals, wanderers) on top once it is built. With forty kinds, each one on its
+own comes less often than the overall rhythm suggests; that is what keeps them varied.
 
 At most **one big being a day**, plus small ambient life. The odds shift with time of day,
 weather, season, the moon, what he has built (the forge draws fire-lovers), what visitors do,
@@ -235,6 +239,32 @@ hands on the jambs, nothing through stone).
 
 At night: loud or hostile beings wake him; quiet ones he finds out about in the morning, from
 what they left behind.
+
+### As built (session 5)
+
+- **When:** a check-in that finds a being here (or its signs begun, up to 20 minutes before)
+  becomes an *encounter* instead of a glance or a wake-up. At night only a loud or hostile
+  being wakes him, at most two nights a week; the rest he finds in the morning, from what they
+  left. If his day's allowance is low or the encounter cap is spent, he only glimpses it.
+- **His decisions:** 2 or 3, about a minute and a quarter apart. Each time he is shown where
+  he is and how he feels, what he notices (signs, then the being as he can see it), what his
+  own bestiary says about it, what has happened so far, and the options, all described
+  plainly, with "no option is the right one". He can always do something of his own.
+- **The rules** weigh the being's nature and its mood this visit, how rested and warm he is,
+  whether he prepared, their history, whether what he did uses its weakness (about 9 times
+  in 10 it works) or offers what it likes, and chance. Each being answers in its own way.
+- **Afterwards:** he names it in his own words and writes a line for his bestiary; at his next
+  full wake-up his diary has the whole thing in front of it.
+- **Cost:** about 4,000 to 6,000 tokens a meeting in real tests, from its own cap of 25,000 a
+  day; his ordinary day keeps at least 30,000 in reserve before any meeting happens.
+- **Story arcs and slow presences** are planned by the spawner: the glassy people's stages
+  unlock in turn (the Gardener three times, the Scouts twice, the Expedition once, then the
+  Sovereign), and come warier and later if he drives them off; the Thin Crowd returns each
+  evening (up to five) and the Long Crawl every other day (up to four) until they reach the
+  wall or he turns them back.
+- **Ecology:** the timid stay away for a couple of days after something big; light-eaters
+  follow lanterns; fire-lovers like the forge; scavengers come after a meteor or a landing;
+  the wyrm stirs after the hill.
 
 ### His options
 
@@ -490,7 +520,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 2 | The bigger world: landscape, wider camera, room for plots beyond the walls (**done**) | yes (scenery) |
 | 3 | Weather: rules, visuals, effects on his needs (**done**) | yes |
 | 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep (**done**, switched off until wave 1) | behind the scenes |
-| 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary; traits and drives; ecology; story arcs | behind the scenes |
+| 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary; traits and drives; ecology; story arcs (**done**, switched off until wave 1) | behind the scenes |
 | 6 | Minds: behaviour minds and voices, meetings and stances between beings, real-model tests, budget caps, the watch list updated | behind the scenes |
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping | **yes, creatures arrive** |
 | 8 | The companion | yes |
@@ -510,7 +540,10 @@ works, verified live, his allowance tracked, MAINTAINING.md and WATCHLIST.md kep
 ## 10. Open questions for the keeper
 
 1. **Encounters:** wake him straight away (recommended), or wait for his next check-in?
+   *(Built for now: he meets a being at the next check-in after its signs begin, within about
+   half an hour; one line to change.)*
 2. **Fighting:** can he fight, with real risk (recommended), or only defend and drive off?
+   *(Built for now: he can, with real but capped risk; one line to change.)*
 3. **Wave 1:** the starter set above, or a different pick?
 4. **The candidates** in section 4: mock any of them up later?
 5. **The companion:** which strays might turn up (hound, crow, cat, the Patchwork Hound)?

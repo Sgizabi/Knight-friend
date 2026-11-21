@@ -93,6 +93,7 @@ def load_keep(world: Path):
         keep["repairs"].setdefault(k, 0)
     keep.setdefault("objects", [])
     keep.setdefault("buildings", [])
+    keep.setdefault("damage", {})     # harm from the beings: {key: {"left": sessions to mend, "how": ...}}
     return keep
 
 
@@ -104,7 +105,54 @@ def repaired(keep, key):
     return keep["repairs"].get(key, 0) >= REPAIRS[key]["needed"]
 
 
-def places(keep):
+# --------------------------------------------------------------------------
+# Damage: what a being harmed. Always repairable, never gone: a damaged part of the keep or a
+# damaged building stays where it is, only it doesn't do its good until it is mended again.
+# key: a repair (roof, wall, ...) or a finished building's place.
+# --------------------------------------------------------------------------
+
+def damaged(keep, key):
+    return (keep.get("damage") or {}).get(key, {}).get("left", 0) > 0
+
+
+def intact(keep, key):
+    """A repair that is done and not damaged since."""
+    return repaired(keep, key) and not damaged(keep, key)
+
+
+def building_works(keep, key):
+    """A finished catalogue building that isn't damaged (the forge's tools, the woodshed's logs)."""
+    return any(b.get("key") == key and not damaged(keep, b["place"]) for b in finished_buildings(keep))
+
+
+def damage_name(keep, key):
+    if key in REPAIRS:
+        return REPAIRS[key]["name"]
+    b = next((b for b in keep.get("buildings", []) if b.get("place") == key), None)
+    return b["name"] if b else key
+
+
+def harm(keep, key, how, sessions=1):
+    """A being damages part of the keep. A mended part or a finished building gets damage to mend;
+    work under way is set back a step instead. Returns what happened, or None."""
+    if key in REPAIRS and not repaired(keep, key):
+        if keep["repairs"][key] <= 0:
+            return None
+        keep["repairs"][key] -= 1
+        return f"set back the work on {REPAIRS[key]['name']} ({how})"
+    if key not in REPAIRS and not any(b.get("place") == key for b in finished_buildings(keep)):
+        return None
+    keep.setdefault("damage", {})[key] = {"left": min(2, max(1, sessions)), "how": how}
+    return f"{damage_name(keep, key)} {how}"
+
+
+def repair_jobs(keep):
+    """What there is to mend: damage first, then the unmended parts of the keep."""
+    hurt = [k for k in (keep.get("damage") or {}) if damaged(keep, k)]
+    return hurt + [k for k in REPAIRS if not repaired(keep, k) and k not in hurt]
+
+
+def places(keep):  # (a damaged part stays a place: harmed, not gone)
     found = list(BASE_PLACES)
     for key, info in REPAIRS.items():
         if info.get("unlocks") and repaired(keep, key):
@@ -117,7 +165,9 @@ def describe_keep(keep):
     for key, info in REPAIRS.items():
         done, needed = keep["repairs"][key], info["needed"]
         state = "mended" if done >= needed else f"{done}/{needed} of the work done"
-        lines.append(f"- [{key}] {info['name']}: {state}" + ("" if done >= needed else f" (once mended, {info['effect']})"))
+        if damaged(keep, key):
+            state = f"mended once, but {keep['damage'][key]['how']}: needs mending again"
+        lines.append(f"- [{key}] {info['name']}: {state}" + ("" if intact(keep, key) else f" (once mended, {info['effect']})"))
     objects = keep["objects"][-6:]
     text = "The state of your keep:\n" + "\n".join(lines)
     if objects:
@@ -125,7 +175,12 @@ def describe_keep(keep):
     built = finished_buildings(keep)
     if built:
         text += "\nWhat you have built in the courtyard: " + "; ".join(
-            f"{b['name']} [{b['place']}] ({building_effect(b)})" for b in built)
+            f"{b['name']} [{b['place']}] ({building_effect(b)})"
+            + (f", but {keep['damage'][b['place']]['how']}: needs mending ('repair' with its [key])" if damaged(keep, b["place"]) else "")
+            for b in built)
+    finds = keep.get("finds") or []
+    if finds:
+        text += "\nThings the beings left you: " + ", ".join(f["what"] for f in finds[-6:])
     going = under_way(keep)
     if going:
         text += f"\nUnder way in the courtyard: {going['name']} ({going['done']}/{going['needed']} of the work done)"
@@ -290,7 +345,7 @@ def validate_building(data):
 def activity_effects(activity, keep):
     """How an activity moves its needs, given what it has built (a forge eases heavy work)."""
     effects = dict(ACTIVITY_EFFECTS.get(activity, {}))
-    if activity in ("repair", "craft", "raise") and has_building(keep, "forge") and effects.get("rest", 0) < 0:
+    if activity in ("repair", "craft", "raise") and building_works(keep, "forge") and effects.get("rest", 0) < 0:
         effects["rest"] = round(effects["rest"] * FORGE_EASE, 1)
     return effects
 
@@ -300,6 +355,8 @@ def place_rates(keep):
     out = {}
     for b in finished_buildings(keep or {}):
         rates = STRUCTURES[b["key"]]["rates"] if b.get("key") in STRUCTURES else OWN_KINDS.get(b.get("kind"), {})
+        if damaged(keep, b["place"]):       # harmed: only half the good of it until it is mended
+            rates = {k: round(v * .5, 4) if v > 0 else v for k, v in rates.items()}
         out[b["place"]] = dict(rates)
     return out
 
@@ -307,19 +364,34 @@ def place_rates(keep):
 def rates_for(keep):
     """NEED_RATES as they are for it now (dry logs make the fire warmer)."""
     rates = {k: dict(v) for k, v in NEED_RATES.items()}
-    if keep and has_building(keep, "woodshed"):
+    if keep and building_works(keep, "woodshed"):
         rates["fire"]["warmth"] = round(rates["fire"]["warmth"] * WOODSHED_FIRE, 4)
     return rates
 
 
-def repair(keep, wanted):
-    """Do one session's work on a repair. Returns (key, finished_now) or (None, False)."""
+def pick_repair(keep, wanted):
+    """Which job a repair session goes to: the one it named, else damage, else work under way."""
     wanted = (wanted or "").lower()
-    open_jobs = [k for k in REPAIRS if not repaired(keep, k)]
-    if not open_jobs:
+    jobs = repair_jobs(keep)
+    if not jobs:
+        return None
+    key = next((k for k in jobs if k in wanted), None)
+    key = key or next((k for k in jobs if damaged(keep, k)), None)
+    return key or next((k for k in jobs if keep["repairs"].get(k, 0) > 0), jobs[0])
+
+
+def repair(keep, wanted):
+    """Do one session's work on a repair, or on damage a being did. Returns (key, finished_now)
+    or (None, False)."""
+    key = pick_repair(keep, wanted)
+    if not key:
         return None, False
-    key = next((k for k in open_jobs if k in wanted), None)
-    key = key or next((k for k in open_jobs if keep["repairs"][k] > 0), open_jobs[0])
+    if damaged(keep, key):
+        keep["damage"][key]["left"] -= 1
+        if keep["damage"][key]["left"] <= 0:
+            del keep["damage"][key]
+            return key, True
+        return key, False
     keep["repairs"][key] += 1
     return key, repaired(keep, key)
 
@@ -383,9 +455,9 @@ def save_needs(world: Path, needs):
 
 def change(needs, deltas, keep=None):
     for name, delta in deltas.items():
-        if name == "warmth" and delta > 0 and keep and repaired(keep, "hearth"):
+        if name == "warmth" and delta > 0 and keep and intact(keep, "hearth"):
             delta *= HEARTH_WARMTH
-        if name == "inspiration" and delta > 0 and keep and repaired(keep, "window"):
+        if name == "inspiration" and delta > 0 and keep and intact(keep, "window"):
             delta *= WINDOW_INSPIRATION
         if delta > 0 and needs[name] > SATURATE_ABOVE:
             delta *= max(SATURATE_MIN, (100 - needs[name]) / (100 - SATURATE_ABOVE))
@@ -432,7 +504,7 @@ def exposure(step, keep):
     if place == "fire" or place in place_rates(keep):
         return 0.0
     if place in BASE_PLACES:
-        return 0.0 if repaired(keep, "roof") else .5
+        return 0.0 if intact(keep, "roof") else .5
     return 1.0
 
 
@@ -447,7 +519,7 @@ def step_rates(step, keep, period=None):
     elif place in inside:
         rates = dict(inside[place])
     else:
-        rates = dict(base["away_roofed" if repaired(keep, "roof") else "away"])
+        rates = dict(base["away_roofed" if intact(keep, "roof") else "away"])
     extras = []
     if action == "work":
         extras.append(base["work"])
@@ -538,7 +610,9 @@ def export_state(world: Path, docs: Path):
                         "drift_max_hours": DRIFT_MAX_HOURS, "hearth_warmth": HEARTH_WARMTH,
                         "saturate_above": SATURATE_ABOVE, "saturate_min": SATURATE_MIN,
                         "window_inspiration": WINDOW_INSPIRATION},
-        "keep": {"repairs": {k: {"done": keep["repairs"][k], "needed": v["needed"]} for k, v in REPAIRS.items()},
+        "keep": {"repairs": {k: {"done": keep["repairs"][k], "needed": v["needed"],
+                                 **({"damaged": True} if damaged(keep, k) else {})} for k, v in REPAIRS.items()},
+                 "damage": {k: v.get("how", "") for k, v in keep.get("damage", {}).items()},
                  "objects": keep["objects"][-16:],
                  # its courtyard buildings, finished or under way, and where each one stands
                  "buildings": [{k: b.get(k) for k in ("key", "name", "about", "place", "plot", "done", "needed",

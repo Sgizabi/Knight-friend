@@ -17,11 +17,13 @@ import os
 import random
 from pathlib import Path
 
+import beings
 import weather
 
 # what each being is. when: day (8-17 ET), dusk (17-20), night (20-5), dark (dusk or night), any.
 # likes: weather that draws it (three times as likely then). needs: what must be true for it to come.
-# render: the keep page's name for how it looks. ongoing: comes on its own slow clock (not yet planned).
+# render: the keep page's name for how it looks. arrives: it comes by meteor or ship (and leaves a trace).
+# arc: a chapter of a longer story (ARCS). Some, once started, come back on their own slow clock (CHAINS).
 KINDS = {
     "dragon":       dict(name="the dragon", nature="proud", rarity="legendary", step=0, when="any", minutes=(40, 90), render="dragon2"),
     "glassbeak":    dict(name="the Glassbeak", nature="nuisance", rarity="rare", step=0, when="day", minutes=(30, 60)),
@@ -36,7 +38,7 @@ KINDS = {
     "fog":          dict(name="the fog with eyes", nature="hostile", rarity="common", step=0, when="night", likes=["fog"], minutes=(60, 180)),
     "ninefold":     dict(name="the Ninefold Eye", nature="neutral", rarity="rare", step=3, when="night", needs="clear", minutes=(30, 60)),
     "moon2":        dict(name="the Second Moon", nature="neutral", rarity="rare", step=2, when="night", needs="clear", minutes=(120, 300)),
-    "larva":        dict(name="the Starfallen Larva", nature="gentle", rarity="uncommon", step=1, when="night", likes=["starfall"], minutes=(60, 180)),
+    "larva":        dict(name="the Starfallen Larva", nature="gentle", rarity="uncommon", step=1, when="night", likes=["starfall"], minutes=(60, 180), arrives="meteor", arrive_chance=.4),
     "listener":     dict(name="the Antlered Listener", nature="neutral", rarity="rare", step=2, when="dusk", minutes=(30, 60)),
     "leech":        dict(name="the Dream-Leech", nature="neutral", rarity="rare", step=3, when="night", minutes=(30, 60)),
     "seam":         dict(name="the Seam", nature="neutral", rarity="legendary", step=4, when="night", minutes=(20, 40)),
@@ -51,13 +53,35 @@ KINDS = {
     "thorn":        dict(name="the Thornmother", nature="neutral", rarity="rare", step=0, when="day", minutes=(30, 60)),
     "ashwolves":    dict(name="the Ashwolf pack", nature="hostile", rarity="uncommon", step=0, when="night", likes=["ash"], minutes=(30, 60)),
     "bellcrab":     dict(name="the Bell-Crab", nature="neutral", rarity="uncommon", step=0, when="day", minutes=(30, 60)),
-    "crawl":        dict(name="the Long Crawl", nature="hostile", rarity="rare", step=0, when="any", minutes=(0, 0), ongoing=True),
+    "crawl":        dict(name="the Long Crawl", nature="hostile", rarity="rare", step=0, when="day", minutes=(60, 180)),
     "axolotl":      dict(name="the giant axolotl", nature="gentle", rarity="uncommon", step=0, when="day", needs="after_rain", minutes=(60, 180)),
     "thincrowd":    dict(name="the Thin Crowd", nature="hostile", rarity="rare", step=1, when="dusk", minutes=(30, 60)),
     "bentone":      dict(name="the Bent One", nature="hostile", rarity="rare", step=2, when="night", minutes=(30, 60)),
     "watcher":      dict(name="the Window Watcher", nature="hostile", rarity="rare", step=2, when="night", minutes=(30, 60)),
     "doorway":      dict(name="the Doorway Figure", nature="hostile", rarity="rare", step=1, when="night", minutes=(30, 60)),
+    # otherworldly
+    "nightgrown":   dict(name="the Night-Grown", nature="neutral", rarity="rare", step=2, when="night", needs="clear", likes=["starfall"], minutes=(40, 120), arrives="meteor"),
+    "clockhead":    dict(name="the clock-headed figure", nature="neutral", rarity="rare", step=3, when="dark", minutes=(20, 45)),
+    # the glassy people: one story told over many months (ARCS)
+    "glassy1":      dict(name="the glassy Gardener", nature="neutral", rarity="rare", step=2, when="dusk", minutes=(30, 60), arrives="ship", arc="glassy", stage=1, render="lander"),
+    "glassy2":      dict(name="the glassy Scouts", nature="neutral", rarity="rare", step=3, when="dark", minutes=(30, 60), arrives="ship", arc="glassy", stage=2),
+    "glassy3":      dict(name="the glassy Expedition", nature="neutral", rarity="rare", step=3, when="dusk", minutes=(240, 480), arrives="ship", arc="glassy", stage=3),
+    "glassy4":      dict(name="the glassy Sovereign", nature="neutral", rarity="legendary", step=4, when="dusk", minutes=(40, 90), arrives="ship", arc="glassy", stage=4),
 }
+
+# Story arcs: each stage unlocks the next once it has been met enough times. If he drives them
+# off (regard falls to -2), the arc rests a long while and comes back warier, further away.
+ARCS = {"glassy": {"stages": ["glassy1", "glassy2", "glassy3", "glassy4"], "advance_after": [3, 2, 1], "rest_days": 60}}
+
+# Slow presences: once one starts, it comes back every so many days, a step closer each time,
+# until it reaches the wall or he turns it back. Follow-ups take that day's place (one being a
+# day) and count as the same dangerous event (no second hostile visit is added for them).
+CHAINS = {"thincrowd": {"every": 1, "most": 5}, "crawl": {"every": 2, "most": 4}}
+
+# Ecology: what has been about lately shifts who comes next. Built from traits, not pair by pair.
+DRAWN_BY = {"wyrm": ["hill"], "moths": ["lanternheads", "warden"], "larva": ["moon2", "nightgrown"],
+            "glassbeak": ["nightgrown", "glassy1", "moon2"], "brood": ["nightgrown", "glassy3"], "ashwolves": ["dragon"]}
+TRACE_DAYS = {"meteor": 4, "ship": 3}
 
 RARITY_WEIGHT = {"common": 10, "uncommon": 5, "rare": 2, "legendary": .9}   # legendary: about 3-5 a year
 COOLDOWN_DAYS = {"common": 4, "uncommon": 7, "rare": 20, "legendary": 60}
@@ -111,6 +135,8 @@ def load(world: Path):
     state.setdefault("appearances", [])
     state.setdefault("planned", [])
     state.setdefault("cooldowns", {})
+    state.setdefault("chains", {})
+    state.setdefault("arcs", {"glassy": {"stage": 1, "met": {}, "regard": 0}})
     return state
 
 
@@ -144,7 +170,42 @@ def _possible(kind, t, sched):
     return 3 if wkind in k.get("likes", []) else 1
 
 
-def plan_day(state, day, sched, step, rng=None):
+def traits(kind):
+    return beings.CHARACTERS.get(kind, {}).get("traits", [])
+
+
+def ecology(kind, state, start, keep=None):
+    """How much more (or less) likely a being is, given what has been about lately."""
+    def kinds_within(days):
+        return [a["kind"] for a in state["appearances"]
+                if _parse(a["start"]) and start - dt.timedelta(days=days) <= _parse(a["start"]) < start]
+    near, lately = kinds_within(2), kinds_within(4)
+    t, m = traits(kind), 1.0
+    if "skittish" in t and any({"territorial", "vast"} & set(traits(k)) for k in near):
+        m *= .3                                    # something big has been about: the timid stay away
+    if any(k in lately for k in DRAWN_BY.get(kind, [])):
+        m *= 2.5                                   # drawn after another (light-eaters after lanterns...)
+    if "fire-drawn" in t and keep and any(b.get("key") == "forge" and b.get("finished") for b in keep.get("buildings", [])):
+        m *= 1.6                                   # the forge's heat draws fire-lovers
+    if {"thieving", "greedy"} & set(t) and any(
+            a.get("arrival") and _parse(a["start"]) and
+            start - dt.timedelta(days=TRACE_DAYS[a["arrival"]]) <= _parse(a["start"]) < start
+            for a in state["appearances"]):
+        m *= 2                                     # scavengers, after something fell or landed
+    return m
+
+
+def arc_open(state, kind, start):
+    """An arc's chapter can come only when it is the arc's current one, and the arc isn't resting."""
+    k = KINDS[kind]
+    if not k.get("arc"):
+        return True
+    arc = state.get("arcs", {}).get(k["arc"], {})
+    rest = _parse(arc.get("rest_until"))
+    return k["stage"] == arc.get("stage", 1) and not (rest and rest > start)
+
+
+def plan_day(state, day, sched, step, rng=None, keep=None):
     """Decide whether a notable being comes on this keeper's day, which, and when."""
     rng = rng or random.Random(day.toordinal())
     if rng.random() >= DAY_CHANCE[week_mode(day)]:
@@ -153,12 +214,15 @@ def plan_day(state, day, sched, step, rng=None):
     recent = [a for a in state["appearances"] if _parse(a["start"]) and _parse(a["start"]) > start - dt.timedelta(days=7)]
     last_hostile = max((_parse(a["start"]) for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"), default=None)
     week_start = start - dt.timedelta(days=weather.keeper_time(start).weekday())
-    hostile_this_week = sum(1 for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile" and _parse(a["start"]) >= week_start)
+    hostile_this_week = sum(1 for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"
+                            and _parse(a["start"]) >= week_start and a.get("chain", 1) == 1)
     hostile_ok = (last_hostile is None or start - last_hostile >= dt.timedelta(days=HOSTILE_QUIET_DAYS)) and hostile_this_week < HOSTILE_PER_WEEK
     choices = []
     for kind, k in KINDS.items():
-        if k.get("ongoing") or k["step"] > step:
+        if k["step"] > step or not arc_open(state, kind, start):
             continue
+        if kind in state.get("chains", {}):
+            continue                               # already on its way
         until = _parse(state["cooldowns"].get(kind))
         if until and until > start:
             continue
@@ -170,24 +234,88 @@ def plan_day(state, day, sched, step, rng=None):
             fits.append((_possible(kind, t, sched), t))
         best = max(f for f, _ in fits)
         if best:   # any of the best-fitting hours, fairly
-            choices.append((kind, RARITY_WEIGHT[k["rarity"]] * best, rng.choice([t for f, t in fits if f == best])))
+            weight = RARITY_WEIGHT[k["rarity"]] * best * ecology(kind, state, start, keep)
+            choices.append((kind, weight, rng.choice([t for f, t in fits if f == best])))
     if not choices:
         return None
     kind, _, t = rng.choices(choices, [w for _, w, _ in choices])[0]
+    return _appearance(kind, day, t, rng, state)
+
+
+def _hour_time(kind, day, rng, sched):
+    """A fitting hour on this day for a follow-up visit (chains)."""
+    k, start = KINDS[kind], _day_start(day)
+    hours = [start + dt.timedelta(hours=h + (24 if h < 5 else 0)) for h in HOURS[k["when"]]]
+    good = [t for t in hours if _possible(kind, t, sched)] or hours
+    return rng.choice(good)
+
+
+def _appearance(kind, day, t, rng, state, chain=None):
     k = KINDS[kind]
     begin = t + dt.timedelta(minutes=rng.randint(0, 50))
     end = begin + dt.timedelta(minutes=rng.randint(*k["minutes"]))
     variant = {"size": round(rng.uniform(.88, 1.15), 2), "hue": round(rng.uniform(-.06, .06), 3),
                "mark": rng.choice(["", "", "", "scarred", "old", "young"])}
-    return {"id": f"{kind}-{begin.strftime('%Y%m%d%H%M')}", "kind": kind, "day": day.isoformat(),   # its evening, even past midnight
-            "start": _iso(begin), "end": _iso(end), "variant": variant}
+    drives = beings.CHARACTERS.get(kind, {}).get("drives") or [""]
+    a = {"id": f"{kind}-{begin.strftime('%Y%m%d%H%M')}", "kind": kind, "day": day.isoformat(),   # its evening, even past midnight
+         "start": _iso(begin), "end": _iso(end), "variant": variant,
+         "drive": rng.choice(drives),                              # why it came this time
+         "temper": rng.choice(["calm", "calm", "wary", "bold"])}   # its mood this visit
+    if k.get("arrives") and rng.random() < k.get("arrive_chance", 1):
+        a["arrival"] = k["arrives"]
+    if chain:
+        a["chain"] = chain
+    if k.get("arc"):
+        a["regard"] = state.get("arcs", {}).get(k["arc"], {}).get("regard", 0)   # how close they dare come
+    return a
 
 
-def update(world: Path, sched=None, now=None):
+def follow_up(state, day, sched):
+    """A slow presence that is on its way comes back on this day, a step closer."""
+    for kind, c in list(state.get("chains", {}).items()):
+        if c.get("next") != day.isoformat():
+            continue
+        rng = random.Random(day.toordinal() * 7 + len(kind))
+        c["n"] += 1
+        last = c["n"] >= CHAINS[kind]["most"]
+        a = _appearance(kind, day, _hour_time(kind, day, rng, sched), rng, state, chain=c["n"])
+        if last:
+            a["last"] = True                       # it reaches the wall this time; then it is over
+            del state["chains"][kind]
+        else:
+            c["next"] = (day + dt.timedelta(days=CHAINS[kind]["every"])).isoformat()
+        return a
+    return None
+
+
+def turn_back(state, kind, now=None):
+    """He turned a slow presence back: it stops coming (until another time it starts again)."""
+    now = now or _now()
+    state.get("chains", {}).pop(kind, None)
+    for a in state["appearances"]:
+        if a["kind"] == kind and _parse(a["start"]) and _parse(a["start"]) > now:
+            a["cancelled"] = True
+
+
+def note_arc(state, kind, regard_change, now=None):
+    """How he met a chapter shapes the next: closer if he welcomed them, warier if not."""
+    k = KINDS.get(kind, {})
+    if not k.get("arc") or not regard_change:
+        return
+    arc = state.setdefault("arcs", {}).setdefault(k["arc"], {"stage": 1, "met": {}, "regard": 0})
+    arc["regard"] = max(-3, min(3, arc.get("regard", 0) + regard_change))
+    if arc["regard"] <= -2:
+        arc["rest_until"] = _iso((now or _now()) + dt.timedelta(days=ARCS[k["arc"]]["rest_days"]))
+        arc["regard"] = -1                         # when they return, warier, but they do return
+
+
+def update(world: Path, sched=None, now=None, keep=None):
     """Plan today and tomorrow (once each), credit what it has witnessed, and save."""
     now = now or _now()
     sched = sched if sched is not None else weather.load(world)
     state, best = load(world), load_bestiary(world)
+    if keep is None:
+        keep = _load(world / "keep.json", {})
     witness(state, best, now)
     today = _keeper_day(now)
     for day in (today, today + dt.timedelta(days=1)):
@@ -195,11 +323,14 @@ def update(world: Path, sched=None, now=None):
         if key in state["planned"]:
             continue
         state["planned"] = (state["planned"] + [key])[-10:]
-        a = plan_day(state, day, sched, best["step"])
+        a = follow_up(state, day, sched) or plan_day(state, day, sched, best["step"], keep=keep)
         if a:
             state["appearances"].append(a)
             k = KINDS[a["kind"]]
             state["cooldowns"][a["kind"]] = _iso(_parse(a["start"]) + dt.timedelta(days=COOLDOWN_DAYS[k["rarity"]]))
+            if a["kind"] in CHAINS and "chain" not in a:          # the first of a slow approach
+                a["chain"] = 1
+                state["chains"][a["kind"]] = {"n": 1, "next": (day + dt.timedelta(days=CHAINS[a["kind"]]["every"])).isoformat()}
     state["appearances"] = state["appearances"][-60:]
     (world / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
     (world / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -211,17 +342,24 @@ def witness(state, best, now):
     exist, every appearance counts as seen; encounters will mark the ones he slept through.)"""
     for a in state["appearances"]:
         end = _parse(a.get("end"))
-        if a.get("witnessed") is not None or not end or end > now or a["kind"] not in KINDS:
+        if a.get("witnessed") is not None or not end or end > now or a["kind"] not in KINDS or a.get("cancelled"):
             continue
         seen = a.get("seen", True)
         a["witnessed"] = bool(seen)
         if not seen:
             continue
         k = KINDS[a["kind"]]
-        entry = best["kinds"].get(a["kind"])
-        points = WITNESS_POINTS[k["rarity"]] * (2 if not entry else 1)
-        entry = entry or {"first": a["start"], "count": 0}
-        entry["count"] += 1
+        if k.get("arc"):                           # a chapter met: enough of them and the story moves on
+            arc = state.setdefault("arcs", {}).setdefault(k["arc"], {"stage": 1, "met": {}, "regard": 0})
+            arc.setdefault("met", {})[a["kind"]] = arc["met"].get(a["kind"], 0) + 1
+            stages, after = ARCS[k["arc"]]["stages"], ARCS[k["arc"]]["advance_after"]
+            i = stages.index(a["kind"])
+            if i < len(after) and arc.get("stage", 1) == i + 1 and arc["met"][a["kind"]] >= after[i]:
+                arc["stage"] = i + 2
+        entry = best["kinds"].get(a["kind"]) or {}   # (an encounter may have started it: notes, regard)
+        points = WITNESS_POINTS[k["rarity"]] * (2 if not entry.get("count") else 1)
+        entry.setdefault("first", a["start"])
+        entry["count"] = entry.get("count", 0) + 1
         entry["last"] = a["start"]
         best["kinds"][a["kind"]] = entry
         best["points"] += points
@@ -234,7 +372,7 @@ def current(state, now=None, ahead_minutes=0):
     out = []
     for a in state.get("appearances", []):
         s, e = _parse(a.get("start")), _parse(a.get("end"))
-        if s and e and s - dt.timedelta(minutes=ahead_minutes) <= now < e:
+        if s and e and s - dt.timedelta(minutes=ahead_minutes) <= now < e and not a.get("cancelled"):
             out.append(a)
     return out
 
@@ -246,6 +384,10 @@ def export(world: Path, now=None):
         return None
     now = now or _now()
     state, best = load(world), load_bestiary(world)
-    shown = [{**a, "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": KINDS[a["kind"]]["nature"]}
+    shown = [{**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last") if k in a},
+              "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": KINDS[a["kind"]]["nature"]}
              for a in current(state, now, ahead_minutes=120) if a["kind"] in KINDS]
-    return {"current": shown, "seeing": best["step"]}
+    traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
+              if a.get("arrival") and _parse(a["start"]) and
+              _parse(a["start"]) <= now < _parse(a["start"]) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]
+    return {"current": shown, "seeing": best["step"], "traces": traces}

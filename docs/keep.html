@@ -1669,7 +1669,7 @@ function liveNeeds(now) {
   if (st.awake && now - Date.parse(st.since) < 50 * 60000) return base;   // awake: as it is
   const n = { ...base };
   const repairs = state?.keep?.repairs || {};
-  const mended = k => repairs[k] && repairs[k].done >= repairs[k].needed;
+  const mended = k => repairs[k] && repairs[k].done >= repairs[k].needed && !repairs[k].damaged;   // damaged by a being: not doing its good until mended
   const change = deltas => {
     for (const [k, d0] of Object.entries(deltas)) {
       if (!(k in n)) continue;

@@ -27,6 +27,22 @@ Look at these, roughly in this order:
      keeps courtyard work from being possible until it passes.
    - `creatures.json` and `bestiary.json` (once creatures are switched on): who is coming to
      the keep and when (planned a day ahead by fair rules, no AI), and what he has seen so far.
+     His bestiary also keeps his own name and note for each being, what he has noticed about
+     it, and what has and hasn't worked.
+   - `encounters.jsonl` (once creatures are on): each meeting, step by step: what he chose,
+     in his words, and what came of it. `body.json`: injuries, each with when it heals.
+     `usage.json` gains `encounter_tokens` (meetings have their own cap, 25,000 a day).
+     In `keep.json`, `damage` is harm a being did (mended with ordinary repair work), `lost`
+     is what was taken (it can come back), `finds` is what beings left him.
+
+**Encounters** (switched off until wave 1, with the creatures): when a being comes, a check-in
+becomes an *encounter*: a short awake stretch of 2 or 3 decisions about a minute apart, his own
+choices, with fair rules (`brain/encounters.py`) settling what happens. Who each being is (its
+traits, signs, tells, weaknesses, what it likes) lives in `brain/beings.py`. The safeguards
+(he is never killed, needs never pushed below 25 by a being, at most two injuries, one
+damaging visit and one loss a week, woken at most two nights a week) are the constants at the
+top of `encounters.py`. To try one on a copy: put an appearance that has started into a copied
+`creatures.json` and run `KNIGHT_CREATURES=on KNIGHT_ENCOUNTER_PAUSE=0 python brain/knight.py --fake --mode encounter`.
 
 If something checks on Rooken for you (such as Claude Duet), point it at
 [WATCHLIST.md](WATCHLIST.md): what to check, what's normal, when to tell you, and what it must

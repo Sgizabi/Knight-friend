@@ -31,6 +31,7 @@ import site_builder  # noqa: E402
 import visitors as visits  # noqa: E402
 import weather  # noqa: E402
 import creatures  # noqa: E402
+import encounters  # noqa: E402
 from llm import (Brain, DailyLimit, FakeBrain, LLMError, chosen_models, parse_json, read_meta,  # noqa: E402
                  TPM_LIMIT, tests_today, write_meta)
 
@@ -203,6 +204,15 @@ HEAVY_WORK = {"repair", "build", "craft", "raise"}
 GLANCE_SHARE = 0.8        # light check-ins stop once the day's usage passes this share of its cap
 UNWELL_AFTER = 4          # failed check-ins in a row before the pages say it seems unwell
 GLANCE_GAP_MINUTES = 25
+# Beings (only once creatures are switched on): a short awake stretch of 2-3 decisions when one comes
+ENCOUNTER_BUDGET = 25000     # his tokens a day for meeting beings (about 10,000 each)
+ENCOUNTER_RESERVE = 30000    # his own day comes first: no encounters when less than this is left today
+ENCOUNTER_PAUSE = int(os.environ.get("KNIGHT_ENCOUNTER_PAUSE", "75"))   # seconds between decisions, so visitors can watch
+POSE = {   # where he goes and how he stands for each choice, while it plays out on the page
+    "watch": ("window", "gaze", "exclaim"), "hide": ("fire", "sit", "sigh"), "prepare": ("workbench", "work", "dots"),
+    "offer": ("courtyard", "stand", "heart"), "speak": ("courtyard", "stand", "question"),
+    "drive_off": ("courtyard", "pace", "anger"), "approach": ("courtyard", "stand", "question"),
+}
 
 
 def utc_hour():
@@ -259,14 +269,29 @@ def projected_rest():
     return needs["rest"]
 
 
+def asleep_at(t):
+    """Was it asleep at this time (its nights)?"""
+    hour = t.hour + t.minute / 60
+    return NIGHT_UTC[0] <= hour < NIGHT_UTC[1]
+
+
+def encounter_room(usage):
+    """Whether today's allowance leaves room to meet a being (its own day comes first)."""
+    return (usage.get("encounter_tokens", 0) < ENCOUNTER_BUDGET
+            and daily_budget() - spent_today(usage) > ENCOUNTER_RESERVE)
+
+
 def check_in_mode(session):
-    """What a scheduled check-in should do: 'wake' (a full wake-up), 'sleep' (night: a tired
-    knight sleeps on, no AI), 'glance' (a light check-in), or 'none'. Started by hand: always 'wake'."""
+    """What a scheduled check-in should do: 'encounter' (a being has come: a short awake stretch),
+    'wake' (a full wake-up), 'sleep' (night: a tired knight sleeps on, no AI), 'glance' (a light
+    check-in), or 'none'. Started by hand: always 'wake'."""
     if not os.environ.get("KNIGHT_SCHEDULED"):
         return "wake"
     identity = load("identity.json", {})
     if not identity.get("name"):
         return "wake"
+    if creatures.enabled() and encounter_room(today_usage()) and encounters.due(WORLD, asleep=is_night()):
+        return "encounter"
     def since(stamp):              # minutes since a time; "never" counts as long ago
         m = minutes_since(stamp)
         return 10 ** 6 if m is None else m
@@ -398,8 +423,13 @@ class Knight:
         self.keep = life.load_keep(WORLD)
         self.needs = life.load_needs(WORLD)
         self.sky = weather.update(WORLD)   # the weather a day either side (chosen by the world, no AI)
+        self.body = encounters.load_body(WORLD)   # injuries from the beings, healing on their own
+        encounters.heal(self.body)
+        self.memory.setdefault("beings_since", [])  # beings since its last diary entry
         if creatures.enabled():            # who comes to the keep, planned a day ahead (no AI; off until wave 1)
-            creatures.update(WORLD, self.sky)
+            creatures.update(WORLD, self.sky, keep=self.keep)
+            # beings that came and went with no meeting: slept through, or only glimpsed
+            self.memory["beings_since"] += encounters.settle(WORLD, asleep_at)
         # how long since its needs were last saved (for the slow drift of time), and where they
         # stood, so the page can show what changed this wake-up
         self.needs_idle_minutes = minutes_since(self.needs.get("updated")) or 0
@@ -467,6 +497,11 @@ class Knight:
     def context(self, encounter, letter):
         parts = [f"It is {part_of_day()}. {weather.describe(self.sky)}", life.describe_needs(self.needs),
                  life.describe_keep(self.keep)]
+        if self.body["injuries"]:
+            parts.append(encounters.describe_body(self.body))
+        if self.memory.get("beings_since"):
+            parts.append("Since your last diary entry, beings came to the keep:\n" + "\n".join(
+                f"- {ago(b['time'])}: {b['text']}" for b in self.memory["beings_since"][-4:]))
         if self.needs["rest"] < EXHAUSTED:
             parts.append(f"You are exhausted (rest {round(self.needs['rest'])}/100). Your body won't keep "
                          "going much longer without proper sleep.")
@@ -552,6 +587,8 @@ class Knight:
     def save_body(self):
         life.save_keep(WORLD, self.keep)
         life.save_needs(WORLD, self.needs)
+        if creatures.enabled() or self.body["injuries"] or (WORLD / "body.json").exists():
+            encounters.save_body(WORLD, self.body)
         life.export_state(WORLD, DOCS)
 
     def birth(self):
@@ -604,7 +641,7 @@ class Knight:
                   f"line; place, one of {life.places(self.keep)}; action, one of {ACTIONS}; kind, one "
                   f"of {list(life.PASTIME_KINDS)}).")
         activities = list(ACTIVITIES)
-        if not any(not life.repaired(self.keep, k) for k in life.REPAIRS):
+        if not life.repair_jobs(self.keep):
             activities.remove("repair")          # the keep is whole: nothing left to mend
         if life.can_raise(self.keep):
             extra += "\n" + life.describe_building_options(self.keep)
@@ -645,11 +682,9 @@ class Knight:
         else:
             handler = getattr(self, f"do_{activity}", None)
             place, action = WHERE[activity]
-        if activity == "repair":  # walk to the part of the keep it means to mend
-            open_jobs = [k for k in life.REPAIRS if not life.repaired(self.keep, k)]
-            wanted = decision["subject"].lower()
-            site = next((k for k in open_jobs if k in wanted), open_jobs[0] if open_jobs else None)
-            place = f"repair:{site}" if site else "fire"
+        if activity == "repair":  # walk to the part of the keep (or the building) it means to mend
+            site = life.pick_repair(self.keep, decision["subject"])
+            place = (f"repair:{site}" if site in life.REPAIRS else site) if site else "fire"
         if activity == "raise":   # walk out to the plot it's building on
             going = life.under_way(self.keep)
             plot = going["plot"] if going else (life.free_plots(self.keep) or [None])[0]
@@ -666,6 +701,8 @@ class Knight:
             result = {"summary": f"{activity}: {decision.get('waking_thought', '')}"}
         effects = life.PASTIME_KINDS[pastime["kind"]] if pastime else life.activity_effects(activity, self.keep)
         life.change(self.needs, effects, self.keep)
+        if activity in HEAVY_WORK and self.body["injuries"]:   # an injury makes heavy work harder
+            life.change(self.needs, {"rest": encounters.work_strain(self.body)})
         if activity in ("draw", "write", "build", "craft"):
             life.change(self.needs, {"spirit": 8 if result.get("creation") or result.get("ok") else -6})
         result["activity"] = activity
@@ -729,9 +766,16 @@ class Knight:
                 "ok": True}
 
     def do_repair(self, decision):
+        mending_damage = life.damaged(self.keep, life.pick_repair(self.keep, decision["subject"]) or "")
         key, finished = life.repair(self.keep, decision["subject"])
         if not key:
             return {"summary": "looked for something to mend, but the keep is whole", "ok": True}
+        if mending_damage:
+            name = life.damage_name(self.keep, key)
+            if finished:
+                life.change(self.needs, {"spirit": 10})
+                return {"summary": f"mended the damage to {name}; it is whole again", "ok": True}
+            return {"summary": f"worked on mending the damage to {name} (more to do)", "ok": True}
         info, done = life.REPAIRS[key], self.keep["repairs"][key]
         if finished:
             life.change(self.needs, {"spirit": 20})
@@ -1205,7 +1249,7 @@ class Knight:
 
     def plan_places(self):
         """Where it can be in its plan: its places, plus the unmended parts of the keep."""
-        return life.places(self.keep) + [f"repair:{k}" for k in life.REPAIRS if not life.repaired(self.keep, k)]
+        return life.places(self.keep) + [f"repair:{k}" for k in life.repair_jobs(self.keep) if k in life.REPAIRS]
 
     def answer_letters(self, letter):
         """Each letter gets a moment of its own: read properly, with what that friend wrote before
@@ -1324,10 +1368,8 @@ class Knight:
         if not early:
             self.identity["nights_slept_through"] = self.identity.get("nights_slept_through", 0) + 1
 
-    def glance(self):
-        """A light check-in between wake-ups: one passing thought, and a chance to change the
-        rest of its plan if how it feels calls for it. A small prompt: no diary, no making."""
-        plan = self.catch_up()
+    def doing_now(self, plan):
+        """What it is doing in its plan right now, and what's still to come."""
         steps = plan.get("steps") or []
         elapsed, t, current, later = minutes_since(plan.get("start")) or 0, 0, None, []
         for s in steps:
@@ -1336,6 +1378,116 @@ class Knight:
             elif current is not None:
                 later.append(s)
             t += s["minutes"]
+        return current, later
+
+    def encounter(self, a):
+        """A being has come. A short awake stretch: what it notices, then 2-3 quick decisions, each
+        its own; fair rules (encounters.py) settle what comes of them. It writes about it in its
+        diary at its next full wake-up, with everything in front of it."""
+        plan = self.catch_up()
+        plan["applied_until"] = iso()
+        save("plan.json", plan)
+        kind, start = a["kind"], now()
+        state, best = creatures.load(WORLD), creatures.load_bestiary(WORLD)
+        entry = best["kinds"].setdefault(kind, {})
+        known = encounters.knowledge(entry)
+        woke = is_night()
+        if woke:
+            life.change(self.needs, {"rest": -6})
+        current, _ = self.doing_now(plan)
+        doing = ("asleep on your bedroll, until it woke you" if woke else
+                 f"{DOING.get(current['action'], current['action'])} at the {current['place']}" if current else
+                 "dozing by the fire")
+        history, prepared = [], False
+        for step in range(1, encounters.STEPS_MOST + 1):
+            ph = encounters.phase(a)
+            opts = encounters.options(ph)
+            sc = encounters.scene(a, entry, best["step"], ph, history)
+            so_far = "\n".join(f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}"
+                                for h in history)
+            prompt = (
+                f"It is {part_of_day()}. {weather.describe(self.sky)} You were {doing}.\n"
+                f"{life.describe_needs(self.needs)}\n{encounters.describe_body(self.body)}\n\n"
+                f"{sc}\n{known}\n" + (f"\nSo far:\n{so_far}\n" if so_far else "") +
+                "\nWhat do you do? It is yours to decide; no option is the right one, and each has its "
+                "own risks and rewards:\n" + "\n".join(f"- [{k}] {v}" for k, v in opts.items()) +
+                "\nOr something of your own: describe it in how, and put in choice the option above it is closest to.\n"
+                'Reply as JSON: {"thought": "what goes through your head, under 15 words, in your voice", '
+                f'"choice": "one of {list(opts)}", "how": "what you do, one or two plain sentences, first person"}}')
+            data = self.ask("encounter", prompt, max_tokens=1400, effort="medium" if step == 1 else "low",
+                            temperature=0.9)
+            choice = str(data.get("choice") or "").strip().lower().replace(" ", "_").strip("[]")
+            choice = choice if choice in opts else "watch"
+            how = re.sub(r"\s+", " ", str(data.get("how") or "")).strip()[:240]
+            thought = re.sub(r"\s+", " ", str(data.get("thought") or "")).strip()[:140]
+            place, action, emote = POSE.get(choice) or (
+                (current["place"], current["action"], "dots") if current else ("fire", "sit", "dots"))
+            if place == "courtyard" and "courtyard" not in life.places(self.keep):
+                place = "window"
+            self.set_status(True, place, action, emote, how[:100], thought=thought)
+            checkpoint(f"{self.identity['name']} faces something")
+            out = encounters.resolve(a, choice, how, {
+                "needs": self.needs, "body": self.body, "keep": self.keep, "entry": entry, "prepared": prepared,
+                "step": step, "week": encounters.recent(WORLD), "now": now(), "said": [h["happened"] for h in history]})
+            encounters.apply(out, a, self.needs, self.body, self.keep, entry, how)
+            if out["turned_back"]:
+                creatures.turn_back(state, kind)
+            creatures.note_arc(state, kind, out["regard"])
+            prepared = prepared or choice == "prepare"
+            history.append({"choice": choice, "how": how, "thought": thought, "happened": out["text"],
+                            "result": out["result"], **{k: out[k] for k in ("injury", "loss", "gift") if out[k]},
+                            **({"damage": out.get("damage_text")} if out.get("damage") else {})})
+            print(f"  encounter {step}: {choice}: {how[:80]} -> {out['result']}: {out['text'][:100]}")
+            if out["ends"]:
+                break
+            if ENCOUNTER_PAUSE:
+                time.sleep(ENCOUNTER_PAUSE)
+        story = encounters.scene(a, entry, best["step"], "here", []) + "\n" + "\n".join(
+            f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}" for h in history)
+        try:
+            after = self.ask("encounter_after", (
+                f"{story}\n\nIt is over, for now.\n"
+                'Reply as JSON: {"thought": "under 15 words, in your voice", '
+                f'"name": "what you call it, a few words{" (you have called it " + entry["name"] + "; keep it unless you have a reason)" if entry.get("name") else ""}", '
+                '"note": "one or two plain sentences for your own record of the beings you meet: what it is like, '
+                'and anything you learned about it. Only what happened above; add nothing that did not."}'), max_tokens=700, temperature=0.8)
+        except LLMError as err:
+            print(f"  [no note this time: {err}]")
+            after = {}
+        name = re.sub(r"\s+", " ", str(after.get("name") or "")).strip(" .\"")[:50]
+        note = re.sub(r"\s+", " ", str(after.get("note") or "")).strip()[:300]
+        if name:
+            entry["name"] = name
+        if note:
+            entry["note"] = note
+        final = history[-1]["result"] if history else "neutral"
+        for x in state["appearances"]:
+            if x.get("id") == a["id"]:
+                x["met"] = {"outcome": final, "steps": len(history), "time": iso()}
+                x["seen"] = True
+        (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+        (WORLD / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
+        encounters.record(WORLD, {"time": iso(start), "id": a["id"], "kind": kind, "woke": woke, "steps": history,
+                                  "injury": any(h.get("injury") for h in history),
+                                  "damage": any(h.get("damage") for h in history),
+                                  "loss": any(h.get("loss") for h in history), "note": note})
+        told = " ".join(f"You chose to {h['choice'].replace('_', ' ')} ({h['how']}). {h['happened']}" for h in history)
+        self.memory["beings_since"].append({"time": iso(start), "kind": kind, "text": (
+            ("It woke you in the night. " if woke else "") + encounters.scene(a, entry, best["step"], "here", [])
+            + " " + told)[:900]})
+        if after.get("thought"):
+            thought = str(after["thought"]).strip()[:140]
+            self.memory["recent_thoughts"] = (self.memory.get("recent_thoughts", []) + [thought])[-12:]
+            plan["live_thought"] = {"text": thought, "time": iso()}
+            save("plan.json", plan)
+        self.memory["last_encounter"] = iso()
+        return history
+
+    def glance(self):
+        """A light check-in between wake-ups: one passing thought, and a chance to change the
+        rest of its plan if how it feels calls for it. A small prompt: no diary, no making."""
+        plan = self.catch_up()
+        current, later = self.doing_now(plan)
         doing = (f"{DOING.get(current['action'], current['action'])} at the {current['place']}"
                  + (f" ({current['note']})" if current.get("note") else "")) if current else \
             "dozing by the fire, your plan for now done"
@@ -1347,7 +1499,7 @@ class Knight:
                   "narrator, no fantasy flourishes, no objects acting like people.")
         prompt = (
             f"TASK: glance\n\nIt is {part_of_day()}. {weather.describe(self.sky)} Right now you're {doing}. Still to come: {coming}.\n"
-            f"{life.describe_needs(self.needs)}\nYour mood: {plan.get('mood', '')}.\n"
+            f"{life.describe_needs(self.needs)}\n{encounters.describe_body(self.body)}\nYour mood: {plan.get('mood', '')}.\n"
             f"The last thing you wrote in your diary: {(self.diary[-1]['text'] if self.diary else '')[:300]}\n"
             + (f"Thoughts you've had lately (don't repeat them): {'; '.join(lately)}\n" if lately else "")
             + "\nOne passing thought, right now: under 15 words, in your voice and in English, about what's in front "
@@ -1598,6 +1750,7 @@ class Knight:
                 time.sleep(ROUND_PAUSE)
         self.answer_letters(letter)
         self.reflect(decision, letter)
+        self.memory["beings_since"] = []             # written about now (or passed over, as it chose)
         if self.memory.get("entries_since_condense", 0) >= 8:
             self.condense()
         if self.memory.get("questions_date") != visits.keeper_date() and len(self.diary) >= 3:
@@ -1613,7 +1766,7 @@ def main():
     parser.add_argument("--fake", action="store_true", help="test without calling any model")
     parser.add_argument("--is-due", action="store_true",
                         help="only say what a scheduled check-in should do (for the workflow)")
-    parser.add_argument("--mode", choices=["wake", "sleep", "glance", "none"],
+    parser.add_argument("--mode", choices=["wake", "sleep", "glance", "encounter", "none"],
                         help="what to do (from --is-due); without it, worked out here")
     args = parser.parse_args()
     args.session = pick_session(args.session)
@@ -1656,6 +1809,9 @@ def main():
 
     if mode == "glance":
         glance_once(brain, usage)
+        return
+    if mode == "encounter":
+        encounter_once(brain, usage)
         return
 
     knight = Knight(brain, session)
@@ -1739,6 +1895,40 @@ def glance_once(brain, usage):
         save("usage.json", usage)
         print(f"Tokens this glance: {brain.tokens_used} (today: {usage['tokens']})")
         checkpoint(f"{knight.identity.get('name', 'The knight')} muses")
+
+
+def encounter_once(brain, usage):
+    """A being has come: a short awake stretch to meet it (or, if it can't, it carries on)."""
+    a = encounters.due(WORLD, asleep=is_night())
+    if not a or not encounter_room(usage):
+        print("Nothing to meet just now; the knight carries on.")
+        return
+    knight = Knight(brain, "short")
+    outcome = "ok"
+    try:
+        knight.encounter(a)
+    except DailyLimit as err:
+        learn_limit(err, usage)
+        outcome = "early night"
+    except LLMError as err:
+        print(f"[encounter cut short: {err}]")
+        outcome = "failed"
+    finally:
+        note_health(outcome)
+        note_visits()
+        if is_night():
+            knight.set_status(False, "bedroll", "sleep", "zzz", "back to sleep")
+        else:
+            knight.set_status(False)          # back to its plan; saves needs, body and what the keep reads
+        save("memory.json", knight.memory)
+        usage["tokens"] += brain.tokens_used
+        usage["encounter_tokens"] = usage.get("encounter_tokens", 0) + brain.tokens_used
+        usage["encounters"] = usage.get("encounters", 0) + 1
+        usage["by_model"] = {**usage.get("by_model", {}), **{
+            m: usage.get("by_model", {}).get(m, 0) + n for m, n in brain.tokens_by_model.items()}}
+        save("usage.json", usage)
+        print(f"Tokens this encounter: {brain.tokens_used} (today: {usage['tokens']})")
+        checkpoint(f"{knight.identity.get('name', 'The knight')} settles again")
 
 
 def _key_from_dotenv():

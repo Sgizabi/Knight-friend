@@ -86,6 +86,10 @@ the letter arrived (`20261119-230053-…` is 2026-11-19 23:00:53).
 - Normal: `tokens` well under 175,000. `"limit_reached": true` now and then just means he
   went to bed early.
 - Tell the keeper: `limit_reached` true before about 9 PM Eastern, or on two days in a row.
+- Once creatures are switched on (wave 1): `encounter_tokens` (meetings with beings) stays
+  under 25,000 a day, and `world/body.json` never lists more than two injuries. Injuries,
+  damage to the keep and things taken are part of his life now, not problems; tell the keeper
+  only if either limit is passed.
 
 **6. Backup models.** Read `world/meta.json`.
 - Normal: no `model_log`, or the same entries as last time.

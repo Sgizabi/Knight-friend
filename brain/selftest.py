@@ -154,11 +154,12 @@ _apps = _st["appearances"]
 _days = [a["day"] for a in _apps]
 assert len(_days) == len(set(_days))                                     # at most one notable being a day
 assert 25 <= len(_apps) <= 60, len(_apps)                                # an encounter every few days (60 kept)
-_host = sorted(creatures._parse(a["start"]) for a in _apps if creatures.KINDS[a["kind"]]["nature"] == "hostile")
+_host = sorted(creatures._parse(a["start"]) for a in _apps          # (a slow presence's return visits are one event)
+               if creatures.KINDS[a["kind"]]["nature"] == "hostile" and a.get("chain", 1) == 1)
 assert all(b - a >= _dt.timedelta(days=creatures.HOSTILE_QUIET_DAYS) for a, b in zip(_host, _host[1:]))   # quiet after danger
 for _a in _apps:
     _k = creatures.KINDS[_a["kind"]]
-    assert not _k.get("ongoing")
+    assert not _k.get("arc") or _k["stage"] == 1 or _k["step"] <= _be["step"]
     if _k.get("needs") == "clear":
         assert (weather.at(weather.load(_cw), creatures._parse(_a["start"])) or {}).get("kind", "clear") in creatures.CLEARISH or True
 _by = {}
@@ -177,6 +178,77 @@ _old = __import__("os").environ.pop("KNIGHT_CREATURES", None)
 assert creatures.export(_cw) is None                                     # switched off: the keep shows nothing
 __import__("os").environ["KNIGHT_CREATURES"] = "on"
 assert isinstance(creatures.export(_cw, _t0 + _dt.timedelta(days=120))["seeing"], int)
+__import__("os").environ.pop("KNIGHT_CREATURES")
+if _old is not None:
+    __import__("os").environ["KNIGHT_CREATURES"] = _old
+
+# encounters: fair rules, the floor, damage that never destroys, arcs and slow presences
+import beings  # noqa: E402
+import encounters  # noqa: E402
+assert set(beings.CHARACTERS) == set(creatures.KINDS)                    # every being has a character
+assert all(c.get("signs") and c.get("looks") and c.get("drives") for c in beings.CHARACTERS.values())
+assert encounters.uses_weakness("longman", "watch", "") and encounters.uses_weakness("longman", "hide", "I keep my eyes on it")
+assert not encounters.uses_weakness("wyrm", "hide", "I still think it's odd") and encounters.uses_weakness("wyrm", "hide", "I stand still")
+assert not encounters.uses_weakness("axolotl", "drive_off", "fire")     # gentle beings have no weakness to find
+_ek = life.load_keep(Path(tempfile.mkdtemp()))
+_ek["repairs"] = {k: v["needed"] for k, v in life.REPAIRS.items()}
+_ek["buildings"] = [{"key": "forge", "name": "the forge", "place": "forge", "plot": 0, "done": 5, "needed": 5, "finished": "x"}]
+_ek["objects"] = [{"name": f"thing {i}"} for i in range(4)]
+_rng = __import__("random").Random(3)
+for _ in range(300):                                                      # whatever happens, the floor holds
+    _needs = {n: 30.0 for n in life.NEEDS}
+    _body = {"injuries": [{"what": "x", "severity": 2, "heals": "2099-01-01T00:00:00+00:00"},
+                          {"what": "y", "severity": 1, "heals": "2099-01-01T00:00:00+00:00"}]}
+    _kk = __import__("json").loads(__import__("json").dumps(_ek))
+    _o = encounters.resolve({"kind": "dragon", "temper": "bold"}, "drive_off", "I charge it", {
+        "needs": _needs, "body": _body, "keep": _kk, "entry": {}, "step": 1, "week": [], "now": _t0}, _rng)
+    encounters.apply(_o, {"kind": "dragon"}, _needs, _body, _kk, {}, "I charge it", _t0)
+    assert all(_needs[n] >= encounters.FLOOR for n in ("rest", "spirit")) and len(_body["injuries"]) <= encounters.INJURIES_MOST
+    assert len(_kk["buildings"]) == 1 and life.finished_buildings(_kk)   # harmed, never gone
+_week = [{"damage": True, "loss": True}]
+for _ in range(200):                                                      # one damaging visit and one loss a week, at most
+    _o = encounters.resolve({"kind": "ashwolves", "temper": "bold"}, "leave", "", {
+        "needs": {"rest": 10, "warmth": 10}, "body": {"injuries": []}, "keep": _ek, "entry": {}, "step": 1,
+        "week": _week, "now": _t0}, _rng)
+    assert not _o["damage"] and not _o["loss"]
+_hk = __import__("json").loads(__import__("json").dumps(_ek))
+assert life.harm(_hk, "forge", "battered") and life.damaged(_hk, "forge") and "forge" in life.places(_hk)
+assert life.place_rates(_hk)["forge"]["warmth"] < life.place_rates(_ek)["forge"]["warmth"]   # half its good until mended
+assert life.harm(_hk, "roof", "holed") and life.exposure({"place": "desk"}, _hk) == .5     # rain comes in again
+assert life.repair_jobs(_hk)[:2] == ["forge", "roof"]
+assert life.repair(_hk, "roof") == ("roof", True) and life.repair(_hk, "") == ("forge", True) and not life.repair_jobs(_hk)
+_h2 = {"injuries": [{"what": "x", "severity": 1, "heals": "2000-01-01T00:00:00+00:00"}]}
+assert encounters.heal(_h2) and not _h2["injuries"]                     # injuries heal
+# a story arc: the Gardener three times, then the Scouts; driven off, the arc rests
+_arc = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {}, "arcs": {"glassy": {"stage": 1, "met": {}, "regard": 0}}}
+_bb = {"points": 0, "step": 4, "kinds": {}}
+for _i in range(3):
+    _arc["appearances"].append({"id": f"g{_i}", "kind": "glassy1", "start": "2026-01-01T00:00:00+00:00",
+                                "end": "2026-01-01T01:00:00+00:00"})
+creatures.witness(_arc, _bb, _t0)
+assert _arc["arcs"]["glassy"]["stage"] == 2 and creatures.arc_open(_arc, "glassy2", _t0) and not creatures.arc_open(_arc, "glassy1", _t0)
+creatures.note_arc(_arc, "glassy2", -1, _t0)
+creatures.note_arc(_arc, "glassy2", -1, _t0)
+assert not creatures.arc_open(_arc, "glassy2", _t0) and creatures.arc_open(_arc, "glassy2", _t0 + _dt.timedelta(days=61))
+# a slow presence: back every evening, one closer, until the wall (or turned back)
+_ch = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {"thincrowd": {"n": 1, "next": "2026-11-22"}}, "arcs": {}}
+_seen = []
+for _d in range(6):
+    _day = _dt.date(2026, 11, 22) + _dt.timedelta(days=_d)
+    _a = creatures.follow_up(_ch, _day, {"periods": []})
+    if _a:
+        _seen.append(_a["chain"])
+assert _seen == [2, 3, 4, 5] and not _ch["chains"]
+# beings that came while it slept are found in the morning; by day, glimpsed
+__import__("os").environ["KNIGHT_CREATURES"] = "on"
+_sw = Path(tempfile.mkdtemp())
+(_sw / "creatures.json").write_text(__import__("json").dumps({"appearances": [
+    {"id": "n", "kind": "thorn", "start": "2026-11-21T07:00:00+00:00", "end": "2026-11-21T08:00:00+00:00"},
+    {"id": "d", "kind": "axolotl", "start": "2026-11-21T18:00:00+00:00", "end": "2026-11-21T19:00:00+00:00"}]}))
+_news = encounters.settle(_sw, lambda t: t.hour < 12, _t0 + _dt.timedelta(days=1))
+assert len(_news) == 2 and "morning" in _news[0]["text"] and "glimpsed" in _news[1]["text"]
+_ss = creatures.load(_sw)["appearances"]
+assert _ss[0]["seen"] is False and _ss[1]["met"]["outcome"] == "glimpsed"
 __import__("os").environ.pop("KNIGHT_CREATURES")
 if _old is not None:
     __import__("os").environ["KNIGHT_CREATURES"] = _old

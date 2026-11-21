@@ -352,6 +352,14 @@ class FakeBrain(Brain):
         emotes = ["music", "question", "dots", "heart", "spark", "sigh"]
         if task == "check":
             return "ALLOW - harmless test content"
+        if task == "encounter":
+            options = re.findall(r"^- \[([a-z_]+)\] ", prompt, re.M) or ["watch"]
+            return json.dumps({"thought": "What on earth is that?", "choice": random.choice(options),
+                               "how": random.choice(["I keep very still and watch it.", "I wave a torch and shout at it.",
+                                                     "I offer it a bright glass bead.", "I bar the door and sit by the fire."])})
+        if task == "encounter_after":
+            return json.dumps({"thought": "Well. That happened.", "name": "the odd visitor",
+                               "note": "It came, it looked about, it went. I kept still."})
         if task == "birth":
             return json.dumps({"name": "Test Knight", "epithet": "of the Practice Run",
                                "self_description": "A placeholder knight made for testing.",
