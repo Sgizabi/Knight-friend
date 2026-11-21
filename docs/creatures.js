@@ -2431,7 +2431,7 @@ const BEASTS = {
   // ================================================================ THE DOORWAY FIGURE
   doorway: {
     name: 'The Doorway Figure', hour: 22,
-    blurb: 'Someone standing in the courtyard door at night, backlit by pale mist: far too tall for the frame, folded down so its head comes just under the lintel, long pale fingers curled round the door posts. No face. It never steps over the threshold uninvited. Shut the door and it is gone by morning. Leave it open...',
+    blurb: 'Someone standing in the courtyard door at night, backlit by pale mist: far too tall for the frame, folded down so its head comes just under the lintel, long pale fingers curled round the door posts. No face, only two small cold points of light that blink, slowly, now and then. It never steps over the threshold uninvited. Shut the door and it is gone by morning. Leave it open...',
     view: [[-.6, 1.55, 1.3], [-5.6, 1.7, 1.0]],
     knight: { place: 'fire', action: 'sit', emote: 'exclaim', note: 'not inviting anyone in' },
     build(root) {
@@ -2455,7 +2455,9 @@ const BEASTS = {
       const neck = G(spine, [0, 1.08, .02], [.5, 0, 0]);
       bone(neck, [0, 0, 0], [0, .32, 0], .045, .04, dark);
       const head = G(neck, [0, .44, .02]);
-      P(head, A.ico(.15, 2), darkL, [0, 0, 0], { scale: [.8, 1.25, .88], jitter: .004 });   // nothing on it
+      P(head, A.ico(.15, 2), darkL, [0, 0, 0], { scale: [.8, 1.25, .88], jitter: .004 });   // nothing on it but two points of light
+      const pin = new T.MeshBasicMaterial({ color: '#eef4ff', fog: false });
+      const eyes = [-1, 1].map(sx => { const e = new T.Mesh(A.ico(.014, 1), pin); e.position.set(sx * .045, .03, .125); head.add(e); return e; });
       // arms: up and out to the door posts, fingers curled round the stone
       const hands = [];
       for (const sx of [-1, 1]) {
@@ -2490,6 +2492,8 @@ const BEASTS = {
         spine.rotation.x = 1.25 + Math.sin(t * .5) * .01;               // breathing, barely
         neck.rotation.z = Math.sin(t * .13) * .18;                       // the head tilts, slowly, one way then the other
         head.rotation.y = Math.sin(t * .09) * .12;
+        const shut = pulse(t + 4, 11, 1.1);                              // a slow blink, now and then
+        eyes.forEach(e => { e.scale.set(1, Math.max(.05, 1 - shut * 1.2), 1); });
         hands.forEach(({ sh }, i) => {
           sh.getWorldPosition(a); const h = hands[i].handAt;
           const elbow = a.clone().lerp(h, .5).add(V(.05, .25, 0));
