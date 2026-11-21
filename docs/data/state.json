@@ -91,18 +91,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T02:36:30+00:00",
+    "since": "2026-11-21T02:39:32+00:00",
     "place": "raise:2",
     "action": "work",
     "emote": "dots",
-    "note": "add more panes and a simple frame to the potting bench area",
-    "thought": "The roof is sealed, the fire is steady. Time to get the glasshouse up a bit more."
+    "note": "continue assembling the glass panels and securing the potting bench",
+    "thought": "The roof is sealed now, the fire feels steadier. The glasshouse is half done, the panes clink in the evening light. I think I’ll keep working on it before I col"
   },
   "needs": {
-    "rest": 26.3,
-    "warmth": 87.4,
+    "rest": 17.3,
+    "warmth": 89.6,
     "inspiration": 68.4,
-    "spirit": 96.7
+    "spirit": 97.7
   },
   "needs_prev": {
     "rest": 36.9,
@@ -110,7 +110,7 @@
     "inspiration": 67.2,
     "spirit": 87.5
   },
-  "needs_at": "2026-11-21T02:36:30+00:00",
+  "needs_at": "2026-11-21T02:39:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -667,7 +667,7 @@
         "about": "salvaged panes over a potting bench, warm even in winter",
         "place": "glasshouse",
         "plot": 2,
-        "done": 1,
+        "done": 2,
         "needed": 4,
         "kind": null,
         "look": null,
@@ -815,5 +815,5 @@
       }
     }
   },
-  "exported": "2026-11-21T02:36:30+00:00"
+  "exported": "2026-11-21T02:39:32+00:00"
 }
