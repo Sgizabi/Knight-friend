@@ -20,7 +20,7 @@ const ds = (color, metal = 0, rough = .9) => A.mat(color, metal, rough, { side: 
 // walker and returns { legs, arms, flicker(t), lightY }
 function procession(root, make, n = 7) {
   // the old road, where it skirts the keep outside the west and south walls (never through stone)
-  const pts = [[-30, .5], [-22, .15], [-19.3, 2.6], [-15.2, 6.3], [-10, 7.9], [-3, 8.4], [6, 8.6], [15, 8.2]].map(([x, z]) => V(x, 0, z));
+  const pts = [[-31, 3.6], [-25, 3.9], [-21, 4.4], [-18.6, 5.3], [-15.2, 6.7], [-10, 7.9], [-3, 8.4], [6, 8.6], [15, 8.2]].map(([x, z]) => V(x, 0, z));   // south of the barrow mound and its stones
   const curve = new T.CatmullRomCurve3(pts), len = curve.getLength();
   const halo = new T.SpriteMaterial({ map: puff(), color: '#ffc77a', transparent: true, opacity: .55, depthWrite: false,
                                       blending: T.AdditiveBlending, fog: false });
@@ -191,6 +191,11 @@ function softLight(color, intensity = 2, size = 3) {
   sp.intensity = intensity;
   return sp;
 }
+// What is solid in and around the courtyard: [x0, x1, y0, y1, z0, z1] (docs/dev/clearance.js checks against the same)
+const SOLID = [[-13.35, -10.45, -1, 3.1, -3.7, -1.3], [-13.35, -10.45, -1, 3.1, 1.5, 3.9], [-16.65, -13.75, -1, 3.1, -3.7, -1.3],
+  [-16.65, -13.75, -1, 3.1, 1.5, 3.9], [-8.9, -7.5, -1, .8, 1.7, 3.1], [-9.05, -8.55, -1, 2.4, -2.45, -1.95],
+  [-17.45, -16.95, -1, 1.1, -4.3, 4.3], [-17.2, -5.3, -1, 1.2, -4.55, -4.05], [-17.2, -5.3, -1, 1.0, 4.05, 4.55], [-7.75, -7.05, -1, 1.9, .65, 1.35]];
+const inSolid = (x, y, z, pad = .3) => SOLID.some(([x0, x1, y0, y1, z0, z1]) => x > x0 - pad && x < x1 + pad && y > y0 - pad && y < y1 + pad && z > z0 - pad && z < z1 + pad);
 function canvasTex(w, h, draw) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
   const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
@@ -383,7 +388,7 @@ const BEASTS = {
       }
       const held = P(beakUp, new T.TetrahedronGeometry(.05), sparkle[0], [0, -.03, blen * .8], { cast: false });
       // how it moves: slow, deliberate steps; a pause; a bob of the head (its tell); a dart
-      const pathAt = t => { const a = t * .03; return [-10.6 + Math.sin(a) * 1.2, .15 + Math.sin(a * 1.7) * .75]; };   // the lane: clear of the buildings, the tree and him
+      const pathAt = t => { const a = t * .03; return [-10.6 + Math.sin(a) * 1.2, .1 + Math.sin(a * 1.7) * .4]; };   // the lane: clear of the buildings, the tree and him
       let yaw = 0, last = pathAt(0), stride = 0;
       return (t, dt) => {
         const cycle = t % 14, stalking = cycle < 9;                          // walk a while, then stop to hunt
@@ -391,6 +396,7 @@ const BEASTS = {
         const [x, z] = pathAt(t - Math.max(0, cycle - 9) - Math.floor(t / 14) * 5);
         const dx = x - last[0], dz = z - last[1]; last = [x, z];
         if (Math.hypot(dx, dz) > 1e-5) { let d = Math.atan2(dx, dz) - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * Math.min(1, dt * 2); }
+        if (!stalking) { const along = Math.sin(yaw) >= 0 ? Math.PI / 2 : -Math.PI / 2; let d = along - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * Math.min(1, dt * 3); }   // it darts along the lane, never at a wall
         g.position.set(x, gy(x, z), z); g.rotation.y = yaw;
         if (stalking) stride += dt * (young ? 1.7 : old ? .8 : 1.2);
         legs.forEach(({ hip, knee, ankle }, i) => {
@@ -636,10 +642,10 @@ const BEASTS = {
                                                       blending: T.AdditiveBlending, fog: false }));
       lamp.position.set(0, .8, 0); lamp.scale.setScalar(2.4); g.add(lamp);      // the water's glow, without a light of its own
       const specs = [   // where it rises, how it curls
-        { at: [-.15, .2], yaw: 2.3, n: 14, len: .3, r: .2, base: .05, curl: .14, amp: .1 },     // tall, question-mark
-        { at: [.2, .1], yaw: -.95, n: 13, len: .28, r: .18, base: .9, curl: -.05, amp: .06, bend: [.35, .35, .3, .1] },   // over the rim, onto the grass
+        { at: [-.15, .2], yaw: -1.7, n: 10, len: .28, r: .2, base: .05, curl: .16, amp: .08 },   // tall, question-mark
+        { at: [.2, .1], yaw: -2.4, n: 7, len: .26, r: .18, base: .9, curl: -.05, amp: .05, bend: [.35, .35, .3, .1] },   // over the rim, onto the grass (toward the west, away from him)
         { at: [.05, -.25], yaw: 3.8, n: 7, len: .22, r: .14, base: .8, curl: .38, amp: .05 },   // gripping the rim
-        { at: [-.25, -.05], yaw: -2.6, n: 11, len: .26, r: .15, base: .35, curl: .08, amp: .16 },   // waving
+        { at: [-.25, -.05], yaw: -2.6, n: 8, len: .24, r: .15, base: .25, curl: .12, amp: .12 },   // waving
       ];
       const arms = specs.map((sp, k) => {
         const base = G(g, [sp.at[0], .45, sp.at[1]], [0, sp.yaw, 0]);
@@ -787,7 +793,7 @@ const BEASTS = {
       const tMat = A.mat('#3a5a78', 0, .7, { emissive: '#1d4f6a', emissiveIntensity: .8 });
       for (let i = 0; i < 7; i++) {
         const base = G(g, [(i % 2 ? 1 : -1) * (.4 + (i % 3) * .35), -1.7, -4 + i * 1.2], [Math.PI, 0, 0]);
-        tendrils.push(chain(base, young ? 4 : old ? 13 : 9, .55, .07, .015, tMat, { sides: 5, jitter: .005 }));
+        tendrils.push(chain(base, young ? 4 : old ? 11 : 9, .55, .07, .015, tMat, { sides: 5, jitter: .005 }));
       }
       // star-dust trailing behind it, and rings when it sings
       const DN = 70, dp = new Float32Array(DN * 3), dl = Float32Array.from({ length: DN }, (_, i) => i / DN);
@@ -797,7 +803,7 @@ const BEASTS = {
       const tail = V(), head = V(); let lastSong = -99, si = 0;
       return (t, dt = 1 / 60) => {
         const k = (t * .55 + 14) % 50;
-        g.position.set(22 - k, 12.5 + Math.sin(t * .2) * .5, -1 + Math.sin(t * .07) * 2);
+        g.position.set(22 - k, 15 + Math.sin(t * .2) * .5, -1 + Math.sin(t * .07) * 2);   // high enough that nothing it trails touches a roof
         g.rotation.z = Math.sin(t * .3) * .05; g.rotation.x = Math.sin(t * .23) * .03;
         for (const { f, sx } of fins) f.rotation.z = sx * Math.sin(t * .7) * .28;
         fluke.rotation.x = Math.sin(t * .7 - 1) * .3;
@@ -825,20 +831,20 @@ const BEASTS = {
     view: [[-4.2, 3.0, 6.0], [-9.7, 2.6, -.1]],
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'backing toward the doorway' },
     build(root) {
-      const hx = -9.7, hz = -.1;                                       // open ground: clear of the buildings, the tree, the well and him
+      const hx = -9.7, hz = .15;                                       // open ground: clear of the buildings, the tree, the well and him
       const v = root.userData.appearance?.variant || {}, young = v.age === 'young', old = v.age === 'old';
       // the young: pale and soft-looking, one ring of small teeth. The old: dark and scarred, stones
       // lodged in its hide from long years underground, more rings of teeth, some broken.
       const big = (v.size || 1) * (young ? .6 : old ? 1.15 : 1);
       const hide = A.mat(young ? '#b8a68e' : old ? '#5a4c3c' : '#7c6c55', 0, .8), band = A.mat(young ? '#8a7a64' : old ? '#352c22' : '#4d4235', 0, .85);
       const bone_ = A.mat(old ? '#c9b994' : '#e0d6bd', 0, .6), dark = A.mat('#0b0806', 0, 1);
-      const hole = new T.Mesh(new T.CircleGeometry(1.25, 14), dark); hole.rotation.x = -Math.PI / 2; hole.position.set(hx, .035, hz); root.add(hole);
+      const hole = new T.Mesh(new T.CircleGeometry(1.0, 14), dark); hole.rotation.x = -Math.PI / 2; hole.position.set(hx, .035, hz); root.add(hole);
       const r = A.rand(5);
       for (let i = 0; i < 16; i++) {
-        const a = i / 16 * 6.28, d = 1.2 + r() * .25;
+        const a = i / 16 * 6.28, d = .98 + r() * .18;
         P(root, A.box(.45 + r() * .3, .2 + r() * .25, .35 + r() * .3), i % 3 ? A.M.dirt : A.M.stone, [hx + Math.cos(a) * d, .08, hz + Math.sin(a) * d], { rot: [r() - .5, a, (r() - .5) * .9], jitter: .06 });
       }
-      const base = G(root, [hx, -.6, hz], [0, -.63 + Math.PI, 0]); base.scale.setScalar(big);   // rearing up, leaning out over the lane, away from him
+      const base = G(root, [hx, -.6, hz], [0, Math.PI, 0]); base.scale.setScalar(big);   // rearing up, leaning straight down the lane, away from him and the tree
       const segs = chain(base, 9, .58, .95, .78, hide, { sides: 9, jitter: .04, each: (i, j, ra) => {
         P(j, A.cyl(ra * 1.07, ra * 1.07, .14, 9), band, [0, .05, 0], { jitter: .02 });
         for (let k = 0; k < 6; k++) { const a = k / 6 * 6.28; P(j, A.box(.18, .3, .1), band, [Math.cos(a) * ra * 1.02, .3, Math.sin(a) * ra * 1.02], { rot: [0, -a, 0] }); }
@@ -1088,7 +1094,9 @@ const BEASTS = {
       for (let i = 0; i < n; i++) {
         const kind = rnd();                                             // a pair, a single, or a cluster
         const r = (i === 0 ? .2 : .035 + rnd() * .05) * (age === 'old' ? 1.2 : 1);
-        const holder = G(root, [-9 - rnd() * 13, .35 + rnd() * 2.1, -4.5 + rnd() * 9]);
+        let ex, ey, ez, tries = 0;
+        do { ex = -9 - rnd() * 13; ey = .35 + rnd() * 2.1; ez = -4.5 + rnd() * 9; } while (inSolid(ex, ey, ez, .8) && ++tries < 40);   // never inside a wall or a building
+        const holder = G(root, [ex, ey, ez]);
         const im = iris[i % 3], slit = rnd() < .75;
         const parts = kind < .55 ? [[-1.25, 0], [1.25, 0]] : kind < .85 ? [[0, 0]] : [[-1.1, 0], [1.1, .1], [0, 1.1]];
         const set = parts.map(([dx, dy]) => { const m = makeEye(holder, r, im, slit); m.e.position.set(dx * r * 1.9, dy * r * 1.9, 0); return m; });
@@ -1491,7 +1499,7 @@ const BEASTS = {
       P(head, A.box(.24, .12, .06), coatL, [0, -.06, .14]);   // a scarf across its face
       for (const sx of [-1, 1]) P(head, A.ico(.016, 0), glow('#e6f3ff', 2.5), [sx * .05, .03, .15], { cast: false });
       bone(body, [-.24, 2.45, 0], [-.27, 1.6, .05], .045, .035, coat);
-      const arm = G(body, [.24, 2.45, 0]);
+      const arm = G(body, [.24, 2.45, 0]); const armSide = arm;
       bone(arm, [0, 0, 0], [.32, -.35, .25], .045, .04, coat); bone(arm, [.32, -.35, .25], [.6, -.45, .5], .04, .035, coat);
       const cage = G(arm, [.62, -.55, .52]); cage.scale.setScalar(1.6);
       bone(cage, [0, .1, 0], [0, .32, 0], .008, .008, iron, 4);
@@ -1503,11 +1511,12 @@ const BEASTS = {
       const lamp = softLight('#9fd8ff', 6, 1.6); cage.add(lamp);
       const apW = root.userData.appearance || {};
       thing.visible = !apW.id || (apW.seeing ?? 0) >= 2;            // the lantern looks empty until he can see what lives in it
-      let x = -11, dir = 1;
+      let x = -8.4, dir = 1;
       return (t, dt) => {
-        const target = -11.3 + Math.sin(t * .09) * 3.8, v = target - x; x = target;
+        const target = -8.4 + Math.sin(t * .09) * 1.5, v = target - x; x = target;   // the stretch of wall with no buildings behind it
         if (Math.abs(v) > 1e-4) dir = Math.sign(v);
         g.position.x = x; g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 3);
+        armSide.scale.x = dir > 0 ? -1 : 1;                              // the lantern always held out beyond the wall, never over the roofs
         const stride = Math.abs(Math.cos(t * .09)) > .15 ? 1 : .2, ph = t * 3.2;
         legs.forEach((l, i) => { l.rotation.x = Math.sin(ph + i * Math.PI) * .35 * stride; });
         body.position.y = Math.abs(Math.sin(ph)) * .03 * stride;
@@ -1531,8 +1540,9 @@ const BEASTS = {
       const skin = A.mat('#a9a59d', 0, .8, { emissive: '#2c2c30', emissiveIntensity: .6 }), skinD = A.mat('#7c7872', 0, .85, { emissive: '#1e1e22', emissiveIntensity: .5 });
       const eyeM = A.mat('#030205', .5, .05);                          // wet black, no glint, nothing cute
       // where they go: about the courtyard, and in through the door (always through the doorway, never the wall)
-      const OUT = [[-8.6, -1.4], [-9.4, 3.1], [-7.4, -.9], [-10.4, -.5], [-9.6, 1.5], [-7.0, 2.3], [-11.8, .5]];
-      const STEP = [-6.0, 1.0], IN = [[-4.5, 1.0], [-3.7, 1.8], [-3.9, .2], [-2.6, -2.4]];   // the doorstep, and inside the hall
+      const OUT = [[-10.2, -.5], [-11.8, .5], [-13.0, -.4], [-9.8, .7], [-12.4, .6], [-9.6, -.7]];   // the lane: clear of everything
+      const WAY = [-7.9, -.35], STEP = [-5.95, 1.0], DOOR = [-4.4, 1.0];       // past his spot, the doorstep, just inside the door
+      const IN = [DOOR, [-3.7, 1.8], [-3.9, .4], [-2.6, -2.4]];              // inside the hall
       const loot = [
         g => { P(g, A.cyl(.012, .012, .22, 5), A.M.wood, [0, 0, 0], { rot: [0, 0, 1.4] }); P(g, A.box(.05, .05, .1), A.M.iron, [-.1, 0, 0]); },   // his hammer
         g => P(g, new T.TetrahedronGeometry(.06), new T.MeshStandardMaterial({ color: '#c8eef5', transparent: true, opacity: .7, roughness: .05, metalness: .3 }), [0, 0, 0], { cast: false }),
@@ -1567,9 +1577,11 @@ const BEASTS = {
       const isIn = p => IN.includes(p), isStep = p => p === STEP;
       const next = (c) => {
         const r = c.s();
-        if (isIn(c.node)) return STEP;
-        if (isStep(c.node)) return r < .55 ? IN[Math.floor(c.s() * IN.length)] : OUT[Math.floor(c.s() * OUT.length)];
-        return r < .25 ? STEP : OUT[Math.floor(c.s() * OUT.length)];
+        if (c.node === DOOR) return r < .5 ? STEP : IN[1 + Math.floor(c.s() * (IN.length - 1))];   // in, or out again through the doorway
+        if (isIn(c.node)) return DOOR;
+        if (isStep(c.node)) return r < .55 ? DOOR : WAY;
+        if (c.node === WAY) return r < .5 ? STEP : OUT[Math.floor(c.s() * OUT.length)];
+        return r < .25 ? WAY : OUT[Math.floor(c.s() * OUT.length)];
       };
       const hp = V(), cam = V();
       return (t, dt) => {
@@ -1584,7 +1596,7 @@ const BEASTS = {
             c.wait -= dt;
             if (c.wait <= 0) {
               c.from.copy(c.b.position); c.node = next(c);
-              const j = isIn(c.node) || isStep(c.node) ? .15 : .5;
+              const j = isIn(c.node) || isStep(c.node) || c.node === WAY ? 0 : .4;
               c.to.set(c.node[0] + (c.s() - .5) * j, 0, c.node[1] + (c.s() - .5) * j); c.go = 0; c.len = c.from.distanceTo(c.to) || 1;
             }
           } else {
@@ -1609,10 +1621,10 @@ const BEASTS = {
   longman: {
     name: 'The Long Man', hour: 18,
     blurb: 'An impossibly tall, thin shape standing still at the edge of the mist. Each time you look away, it is a little closer. It never comes past the courtyard wall... probably. (Try looking away.)',
-    view: [[-7.6, 1.7, 1.4], [-24, 3.4, -1.6]],
+    view: [[-10.5, 1.9, 3.6], [-24, 3.0, 6.2]],
     knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'not looking at it. Not looking at it.' },
     build(root) {
-      const g = G(root, [-27.5, 0, -1.6], [0, Math.PI / 2, 0]);
+      const g = G(root, [-27.5, 0, 6.2], [0, Math.PI / 2, 0]);   // the field south-west of the keep, clear of the barrow
       const dark = A.mat('#141315', 0, .9), face = A.mat('#d4cec4', 0, .6);
       for (const sx of [-1, 1]) {
         bone(g, [sx * .16, 3.2, 0], [sx * .2, 1.6, .05], .07, .055, dark);
@@ -2230,8 +2242,8 @@ const BEASTS = {
   // ================================================================ THE GIANT AXOLOTL
   axolotl: {
     name: 'The giant axolotl', hour: 13,
-    blurb: 'Gentle. After heavy rain, when the courtyard floods into shallow pools, something pale and pink wades in: longer than the knight is tall, with a broad flat head, feathery glowing gills and a wide, permanent smile. It likes the warmth of the fire, and noses toward the doorway now and then. It leaves when the water drains.',
-    view: [[-7.2, 2.1, 5.0], [-11.6, .6, 1.0]],
+    blurb: 'Gentle. After heavy rain, when the meadow beyond the south wall floods into shallow pools, something pale and pink wades about in them: longer than the knight is tall, with a broad flat head, feathery glowing gills and a wide, permanent smile. It likes the warmth of the fire, and lifts its head toward the keep now and then. It leaves when the water drains.',
+    view: [[-6.4, 2.6, 2.6], [-10.8, .4, 7.5]],
     knight: { place: 'courtyard', action: 'stand', emote: 'heart', note: 'being looked at, very kindly, by something enormous' },
     build(root) {
       const v = root.userData.appearance?.variant || {};
@@ -2245,10 +2257,10 @@ const BEASTS = {
       const water = new T.MeshStandardMaterial({ color: '#6d8d99', roughness: .06, metalness: .35, transparent: true, opacity: .72 });
       const rippleM = new T.MeshBasicMaterial({ color: '#cfe3ea', transparent: true, opacity: .0, depthWrite: false });
       const r = A.rand(8);
-      const pools = [[-11.2, .5, .9], [-10.0, -.3, .7], [-12.4, -.4, .6], [-9.6, .6, .5], [-13.0, .3, .5]];   // in the lane, clear of the buildings
+      const pools = [[-11.0, 7.9, 1.0], [-9.4, 6.8, .8], [-12.8, 6.7, .7], [-8.6, 8.3, .6], [-13.6, 8.1, .6]];   // the flooded meadow beyond the south wall
       for (const [x, z, s] of pools) {
         const pool = new T.Mesh(new T.CircleGeometry(s, 16), water); pool.rotation.x = -Math.PI / 2;
-        pool.position.set(x, gy(x, z) + .035, z); pool.scale.set(1, .6 + r() * .4, 1); root.add(pool);
+        pool.position.set(x, gy(x, z) + .04, z); pool.scale.set(1, .6 + r() * .4, 1); root.add(pool);
       }
       const ripples = Array.from({ length: 4 }, () => {
         const m = new T.Mesh(new T.RingGeometry(.3, .36, 24), rippleM.clone()); m.rotation.x = -Math.PI / 2; root.add(m); return { m, t: 0 };
@@ -2329,7 +2341,7 @@ const BEASTS = {
       // where it goes: a slow loop along the lane between the building plots, turning in the open
       // at either end, resting now and then nearest the warm doorway. Its body follows its own path
       // (each part where the head has been), so it never swings through a wall, the well or him.
-      const E = [-9.9, .05], W = [-12.3, .05], R = .5, ST = E[0] - W[0], LOOP = 2 * ST + 2 * Math.PI * R;
+      const E = [-8.6, 7.5], W = [-12.9, 7.5], R = .95, ST = E[0] - W[0], LOOP = 2 * ST + 2 * Math.PI * R;   // room to turn, out in the meadow
       const along = d => {
         d = ((d % LOOP) + LOOP) % LOOP;
         if (d < ST) return [E[0] - d, W[1] + R];                                  // west along the north side
@@ -2610,13 +2622,13 @@ const BEASTS = {
   dragon2: {
     name: 'The dragon (final look)', hour: 18,
     blurb: 'Art pass: how the dragon would look in the finished version. Legendary. It lands on the courtyard wall, peers down at whoever is there, and breathes fire when it is angry or showing off.',
-    view: [[-10.9, 1.8, 4.9], [-7.3, 2.8, -3.4]],
+    view: [[-6.0, 2.4, 3.2], [-15.6, 2.6, .1]],
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'face to face with a dragon' },
     build(root) {
       const v = root.userData.appearance?.variant || {}, young = v.age === 'young', old = v.age === 'old';
       // the young: brighter scales, stubby horns, big eyes, few spines, only smoke yet, a wobble on the
       // wall. The old: a scarred hide, torn wings, a greyed muzzle, one horn broken short, dimmer eyes, slow.
-      const g = G(root, [-7.3, 1.25, -4.3]); g.scale.setScalar((v.size || 1) * (young ? .6 : old ? 1.12 : 1));
+      const g = G(root, [-17.6, 1.15, .1], [0, Math.PI / 2, 0]); g.scale.setScalar((v.size || 1) * (young ? .6 : old ? 1.12 : 1));   // on the west wall, facing the keep
       if (young) g.position.y += .5 * 0;                                   // (still on the wall's top)
       const sA = A.mat(young ? '#a8432a' : old ? '#5a2a24' : '#6e2a20', .2, .55), sB = A.mat(young ? '#7a2e1e' : old ? '#3e1f1a' : '#4a1b16', .2, .6);
       const sC = A.mat(young ? '#c85a34' : old ? '#6e3a2e' : '#8e3a28', .2, .5);
@@ -2713,10 +2725,10 @@ const BEASTS = {
       for (const sx of [-1, 1]) P(head, A.ico(.025, 0), nostrils, [sx * .05, .06, 1.02], { cast: false });
       const breath = softLight('#ff7a2a', 0, 2.6); breath.position.set(0, -.05, 1.2); head.add(breath);   // a glow, not a light
       const nose = G(head, [0, .02, 1.05]);
-      // tail over the far side of the wall, ending in a spade
+      // the tail down the far side of the wall, curling south along its foot, ending in a spade
       const tailBase = G(torso, [0, -.1, -1.75]);
       const tail = chain(tailBase, 14, .36, .34, .04, sA, { each: (i, j, r) => { if (i % 2 === 0) P(j, new T.ConeGeometry(.05, .17, 4), hornD, [0, .15, r * .9], { rot: [.4, 0, 0] }); } });
-      tail[0].rotation.x = -2.0; for (let i = 1; i < 14; i++) tail[i].rotation.x = .09;
+      tail[0].rotation.x = -2.6; for (let i = 1; i < 14; i++) { tail[i].rotation.x = .06; tail[i].rotation.y = -.1; }   // clear of the barrow stones
       sheet(tail[13], [[0, .2, 0], [0, .45, .22], [0, .8, 0], [0, .45, -.22]], [[0, 1, 2], [0, 2, 3]], web);
       // wings, half raised, membranes veined and glowing faintly at the edges
       const wings = [];
@@ -2744,7 +2756,8 @@ const BEASTS = {
         const b = Math.sin(t * 1.05);
         torso.scale.set(1 + .02 * b, 1 + .03 * b, 1);
         A.K.J.hips.getWorldPosition(kn); toK.copy(kn).sub(g.position);
-        const want = Math.max(-.7, Math.min(.7, Math.atan2(toK.x, toK.z)));
+        const rel = Math.atan2(toK.x, toK.z) - g.rotation.y;
+        const want = Math.max(-.7, Math.min(.7, Math.atan2(Math.sin(rel), Math.cos(rel))));
         look += (want - look) * Math.min(1, dt * 1.5);
         neck.forEach((j, i) => { j.rotation.y = look / 9 + .05 * Math.sin(t * .45 + i * .35); });
         neck[0].rotation.x = .5 + .05 * Math.sin(t * .3);
@@ -2755,9 +2768,9 @@ const BEASTS = {
         nostrils.emissiveIntensity = 1.2 + fireOn * 4 + Math.sin(t * 3) * .3;
         const glowK = 2 + Math.sin(t * 1.05) * .6 + fireOn * 2; fire.emissiveIntensity = glowK; seams.forEach(s => { s.visible = true; });
         head.children.forEach(c => { if (c.material === eyeM) c.scale.y = 1 - pulse(t, 6.5, .2) * .85; });
-        for (let i = 0; i < 14; i++) tail[i].rotation.z = .12 * Math.sin(t * .7 - i * .45);
+        for (let i = 1; i < 14; i++) tail[i].rotation.z = .2 + .05 * Math.sin(t * .7 - i * .45);
         const stretch = pulse(t + 8, 17, 4);
-        for (const { w, sx } of wings) { w.rotation.z = sx * (-.1 + .06 * Math.sin(t * .6) - stretch * .55 - fireOn * .25); w.rotation.y = sx * -stretch * .3; }
+        for (const { w, sx } of wings) { w.rotation.z = sx * (-.1 + .06 * Math.sin(t * .6) + stretch * .4 - fireOn * .2); w.rotation.y = sx * stretch * .2; }   // up and back: clear of the roofs and the walls
         nose.getWorldPosition(at); head.getWorldDirection(fwd);
         const puffMore = young ? 1 + pulse(t + 3, 9, 2) * 1.5 : 1;          // the young huff smoke where the old would breathe fire
         for (const p of puffs) { const k = (t * .25 * puffMore + p.ph) % 1; p.s.position.set(at.x + Math.sin(k * 9 + p.ph * 20) * .25 * k, at.y + k * 1.8, at.z + k * .4); p.s.scale.setScalar((.25 + k * 1.4) * (young ? .7 : 1)); p.s.material.opacity = Math.min(.6, .3 * puffMore) * (1 - k) * (1 - fireOn); }
@@ -2774,12 +2787,12 @@ const BEASTS = {
   longman2: {
     name: 'The Long Man (final look)', hour: 18, specks: true,
     blurb: 'Art pass: how the Long Man would look in the finished version. It only moves when no one is watching, and each time it is a little closer, standing a little differently. (Try looking away.)',
-    view: [[-7.6, 1.7, 1.4], [-24, 3.4, -1.6]],
+    view: [[-10.5, 1.9, 3.6], [-24, 3.0, 6.2]],
     knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'not looking at it. Not looking at it.' },
     build(root) {
       const skin = A.mat('#2c2a28', 0, .65), skinD = A.mat('#1b1a19', 0, .8), coat = ds('#121113', 0, .95), coatL = ds('#1d1b1e', 0, .95);
       const face = A.mat('#e2ded6', 0, .5, { emissive: '#4a4844', emissiveIntensity: .5 }), faceD = A.mat('#bcb6ac', 0, .6, { emissive: '#2e2c2a', emissiveIntensity: .5 });
-      const g = G(root, [-27.5, 0, -1.6], [0, Math.PI / 2, 0]);
+      const g = G(root, [-27.5, 0, 6.2], [0, Math.PI / 2, 0]);   // the field south-west of the keep, clear of the barrow
       for (const sx of [-1, 1]) {
         bone(g, [sx * .15, 3.25, 0], [sx * .19, 1.65, .06], .075, .05, skin); P(g, A.ico(.075, 1), skinD, [sx * .19, 1.65, .06]);
         bone(g, [sx * .19, 1.65, .06], [sx * .16, .12, -.02], .05, .038, skin); P(g, A.ico(.05, 1), skinD, [sx * .16, .12, -.02]);

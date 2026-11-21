@@ -2362,6 +2362,10 @@ refreshVisits(); setInterval(refreshVisits, 150000);   // ~24 times an hour at m
 resize();
 requestAnimationFrame(tick);
 window.__keep = { K, camera, controls, goodView, greet, tossLog,
+  advance(seconds, step = 1 / 30) {   // for testing: run the beings' own animation forward in time, without drawing
+    for (let s = 0; s < seconds; s += step) { benchT += step; const t = clock.elapsedTime + benchT; for (const f of onTick) f(t, step); }
+    scene.updateMatrixWorld(true); return benchT;
+  },
   bench(frames = 120) {   // for testing: milliseconds per frame, rendered back to back (works even in a hidden tab);
     const gl = renderer.getContext(), t0 = performance.now();   // the beings' own animation runs too, and time moves on
     for (let i = 0; i < frames; i++) {
