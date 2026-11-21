@@ -397,7 +397,7 @@ AGE_LOOKS = {
                "old": "an old dragon draped along the wall, its torn wings folded round it like a cloak, smoke always curling from its nostrils, one horn broken short"},
     "whale": {"young": "a calf, swimming close beside its mother: two whales in the sky, one small",
               "old": "an old one, crusted and slow, trailing a long cloud of small lights behind it like a wake of stars"},
-    "thorn": {"young": "a fawn of bramble spotted with blossom, all legs, leaping about the meadow",
+    "thorn": {"young": "a fawn of bramble spotted with blossom, all legs, springing along and now and then breaking into a run of leaps",
               "old": "an old one: its antlers grown into the crown of a tree, birds nesting in them, moss hanging from its chin like a beard"},
     "basilisk": {"young": "a speckled hatchling, all eyes, its gaze too weak to do more than make the skin prickle",
                  "old": "an old one, half turned to stone itself, moss on its back and its eyes shut; it seldom needs to open them"},
@@ -408,7 +408,7 @@ AGE_LOOKS = {
     "bellcrab": {"young": "a small crab in a hand bell, scuttling sideways",
                  "old": "an old one, its bell so overgrown with moss and grass that it looks like a little hill that walks"},
     "ashwolves": {"young": "the pack is mostly pups, tumbling and play-fighting in the ash, one grown wolf keeping watch",
-                  "old": "led by an old grey wolf, heavy and hunched, a mane of pale ash at its neck"},
+                  "old": "an old pack, grey ash all through and their fire burned low, padding in a file behind a big old grey wolf with a limp and a mane of pale ash at its neck"},
 }
 
 # How quickly each being gets used to a trick he keeps using (0: never; a third is quick). It

@@ -2147,15 +2147,25 @@ const BEASTS = {
       });
       let lastX = -11, bi = 0, dir = 1;
       return (t, dt) => {
-        const pace = young ? .075 : old ? .032 : .045;
-        const x = -11.2 + Math.sin(t * pace) * 4.2, vx = x - g.position.x;
+        const pace = young ? .06 : old ? .032 : .045;
+        // the fawn stops now and then to look about (its own clock stands still while it does)
+        const SP = 17, SL = 3.2, sk = (t + 2) % SP, looking = young && sk < SL, tw = young ? t - SL * Math.floor((t + 2) / SP) - Math.min(sk, SL) : t;
+        const x = -11.2 + Math.sin(tw * pace) * 4.2, vx = x - g.position.x;
         if (Math.abs(vx) > 1e-5) dir = Math.sign(vx);
         g.position.set(x, gy(x, 7.8), 7.8); g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 1.5);
-        const moving = Math.abs(Math.cos(t * pace)) > .12, ph = t * (young ? 2.8 : old ? 1.0 : 2.0);
-        if (young) {                                                      // the fawn goes in leaps: gather, spring, tuck, land
-          const h = (t * 1.1) % 1, air = moving && h < .5 ? Math.sin(h / .5 * Math.PI) : 0, gather = moving && h > .8 ? Math.sin((h - .8) / .2 * Math.PI) : 0;
+        const moving = Math.abs(Math.cos(tw * pace)) > .12 && !looking, ph = t * (young ? 2.8 : old ? 1.0 : 2.0);
+        // the fawn: mostly a light, springy walk; now and then a short run of three or four leaps
+        const bursting = young && moving && (tw % 11) < 3.4;
+        if (bursting) {                                                   // a leap: gather, spring, tuck, land
+          const h = (tw * 1.1) % 1, air = h < .5 ? Math.sin(h / .5 * Math.PI) : 0, gather = h > .8 ? Math.sin((h - .8) / .2 * Math.PI) : 0;
           for (const { top, mid, front } of legs) { top.rotation.x = (front ? -.7 : .7) * air + (front ? .2 : -.2) * gather; mid.rotation.x = (front ? .9 : -.9) * air; }
           body.position.y = -.35 + air * .55 - gather * .08; body.rotation.x = (h < .25 ? -1 : 1) * air * .12;
+        } else if (young) {
+          for (const { top, mid, front, ph: p } of legs) {
+            const s = moving ? Math.sin(ph + p) : 0;
+            top.rotation.x = s * .35; mid.rotation.x = Math.max(0, front ? -s : s) * .6 * (front ? 1 : -1);
+          }
+          body.position.y = -.35 + (moving ? Math.abs(Math.sin(ph)) * .07 : 0); body.rotation.x = 0;   // springy
         } else {
           for (const { top, mid, front, ph: p } of legs) {
             const s = moving ? Math.sin(ph + p) : 0;
@@ -2163,14 +2173,15 @@ const BEASTS = {
           }
           body.position.y = moving ? Math.abs(Math.sin(ph)) * .04 : 0;
         }
-        neck.rotation.x = (old ? -.72 : -.95) + Math.sin(t * .3) * .06 + (moving ? 0 : pulse(t, 17, 6) * .5);   // stops now and then to graze (the old: head low under its crown)
+        neck.rotation.x = young ? -1.15 + Math.sin(t * .3) * .06 - (looking ? .2 : 0)   // the fawn: head up, and higher still when it stops to look
+                                : (old ? -.72 : -.95) + Math.sin(t * .3) * .06 + (moving ? 0 : pulse(t, 17, 6) * .5);   // stops now and then to graze (the old: head low under its crown)
         if (old) { head.localToWorld(crown.set(0, .9, -.4));
           for (const { bd, wings, ph: bp, rad } of birds) {
             const k = t * .9 + bp, perch = pulse(t + bp * 3, 11, 4) > .2;   // they flit about, and settle now and then
             bd.position.set(crown.x + Math.cos(k) * rad * (perch ? .5 : 1), crown.y + Math.sin(k * 1.7) * .25 - (perch ? .2 : 0), crown.z + Math.sin(k) * rad * (perch ? .5 : 1));
             bd.rotation.y = -k; for (const { w, sx } of wings) w.rotation.z = sx * Math.sin(t * (perch ? 2 : 22) + bp) * .7;
           } }
-        head.rotation.y = Math.sin(t * .25) * .3;
+        head.rotation.y = looking ? Math.sin(t * 1.3) * .7 * smooth(0, .6, sk) : Math.sin(t * .25) * .3;   // looking about
         if (Math.abs(x - lastX) > 1.1) { const b = brambles[bi++ % brambles.length]; b.position.set(x, gy(x, 7.8), 7.8 + (bi % 2 ? .5 : -.5)); b.rotation.y = bi; b.visible = true; b.userData.born = t; lastX = x; }
         for (const b of brambles) if (b.visible) { const k = (t - b.userData.born) / 40; b.scale.setScalar(Math.min(1, (t - b.userData.born) * 1.5) * (1 - smooth(.7, 1, k))); if (k > 1) b.visible = false; }
       };
@@ -2186,14 +2197,15 @@ const BEASTS = {
     build(root) {
       const v = root.userData.appearance?.variant || {};
       const age = v.age || '', count = Math.max(3, Math.min(5, Math.round(4 * (v.size || 1))));
-      // a "young" pack brings pups among the grown; an "old" pack is led by an old wolf. Pups: fluffy
-      // smoke, few cracks, big heads and ears, short muzzles, clumsy bounding. The old: grey ash,
-      // their fire burned low, a torn ear, a stiff leg they favour.
+      // a "young" pack brings pups among the grown. Pups: fluffy smoke, few cracks, big heads and ears,
+      // short muzzles, clumsy bounding. An "old" pack is a different pack altogether: grey ash all
+      // through, its fire burned low, circling slow and steady in a file behind its leader: a big old
+      // grey wolf with a mane of pale ash lit by its own embers, a torn ear, a stiff leg it favours.
       const ashOf = c => A.mat(c, 0, .95, { emissive: '#4a1a08', emissiveIntensity: .85 });
-      const ash = ashOf('#2e2724'), ashOld = ashOf('#5a5450'), ashPup = ashOf('#3a3230');
+      const ash = ashOf('#2e2724'), ashOld = A.mat('#77716c', 0, .95, { emissive: '#3a1a0c', emissiveIntensity: .3 }), ashPup = ashOf('#3a3230');   // the old: grey ash, the fire in it burned low
       const ashL = A.mat('#4d423c', 0, .95, { emissive: '#3a1608', emissiveIntensity: .7 });   // the fire shows through
       const mats = [ash, ashOld, ashPup, ashL];
-      const ember = glow('#ff6a1f', 2.6), emberD = glow('#c2410f', 1.6), eyeM = glow('#ffb347', 3), maw = glow('#ff9a3a', 1.2);
+      const ember = glow('#ff6a1f', age === 'old' ? 1.7 : 2.6), emberD = glow('#c2410f', age === 'old' ? 1.0 : 1.6), eyeM = glow('#ffb347', 3), maw = glow('#ff9a3a', 1.2);
       const smokeMat = () => new T.SpriteMaterial({ map: puff(), color: '#3d3633', transparent: true, opacity: .3, depthWrite: false });
       // cracks of fire along a bone: thin glowing slivers on its surface
       const cracks = (parent, n, rx, ry, rz, r) => { for (let k = 0; k < n; k++) {
@@ -2203,19 +2215,19 @@ const BEASTS = {
           { rot: rib ? [0, Math.PI / 2, a + (r() - .5) * .3] : [(r() - .5) * .3, (r() - .5) * .35, 0], cast: false });
       } };
       const wolf = (n, scale, kind = '') => {
-        const pup = kind === 'young', old = kind === 'old', ash = pup ? ashPup : old ? ashOld : mats[0];
+        const pup = kind === 'young', old = kind === 'old', grey = kind === 'grey', ash = pup ? ashPup : old || grey ? ashOld : mats[0];
         const r = A.rand(n * 9 + 2), w = G(root), body = G(w, [0, .66 * scale, 0]); body.scale.setScalar(scale);
         // chest deep, waist tucked, hips lower
         const chest = G(body, [0, .04, .3]); P(chest, A.ico(1, 1), ash, [0, 0, 0], { scale: [.24, .3, .34], jitter: .02 });
         const waist = G(body, [0, .06, -.12]); P(waist, A.ico(1, 1), ash, [0, 0, 0], { scale: [.17, .2, .3], jitter: .02 });
         const hips = G(body, [0, .02, -.45]); P(hips, A.ico(1, 1), ashL, [0, 0, 0], { scale: [.2, .23, .22], jitter: .02 });
-        const cr = pup ? .3 : old ? .5 : 1;                             // a pup's fire hasn't caught yet; an old one's is burning low
+        const cr = pup ? .3 : old ? .5 : grey ? .6 : 1;                             // a pup's fire hasn't caught yet; an old one's is burning low
         cracks(chest, Math.round(16 * cr), .22, .28, .3, r); cracks(waist, Math.round(9 * cr), .16, .18, .28, r); cracks(hips, Math.round(9 * cr), .18, .2, .2, r);
         if (pup) for (let k = 0; k < 10; k++) P(body, A.ico(.07 + r() * .05, 0), ashL, [(r() - .5) * .4, (r() - .2) * .4, (r() - .5) * .9], { cast: false });   // fluff
         if (old) for (let k = 0; k < 3; k++) P(chest, A.box(.01, .012, .25), A.mat('#1a1614'), [.2 - k * .03, .18, (k - 1) * .08], { rot: [0, .2, .5], cast: false });   // old scars
         if (old) {                                                       // heavy in the shoulder, and a mane of pale ash at its neck
           chest.scale.set(1.22, 1.12, 1.08);
-          const mane = A.mat('#b4aca2', 0, 1, { emissive: '#2a1a12', emissiveIntensity: .25 }), maneD = A.mat('#8a837a', 0, 1);
+          const mane = A.mat('#c4bcb2', 0, 1, { emissive: '#7a3412', emissiveIntensity: .8 }), maneD = A.mat('#9a938a', 0, 1, { emissive: '#4a1e0a', emissiveIntensity: .6 });   // lit from within, so it shows at night
           for (let k = 0; k < 34; k++) { const a = (k / 34) * 6.28, ring = k % 2;
             P(body, new T.ConeGeometry(.05, .2 + r() * .12, 4), ring ? mane : maneD, [Math.sin(a) * (.2 + ring * .04), .2 + Math.cos(a) * .2, .5 - ring * .1 + (r() - .5) * .06], { rot: [-1.2 + Math.cos(a) * .4, 0, Math.sin(a) * -.9], cast: false }); }
         }
@@ -2250,10 +2262,10 @@ const BEASTS = {
         if (old) for (const l of legs.slice(2, 3)) l.stiff = true;      // a back leg it favours
         return { w, body, head, neck, jaw, legs, tc, smoke, n, tailBase, pup, old };
       };
-      const kindOf = n => age === 'old' && n === 0 ? 'old' : age === 'young' && n >= count - 2 ? 'young' : '';
-      const sizeOf = (n, k) => (k === 'young' ? .55 : k === 'old' ? 1.15 : 1) * (n === 0 ? 1.08 : .85 + A.rand(n + 40)() * .2);
+      const kindOf = n => age === 'old' ? (n === 0 ? 'old' : 'grey') : age === 'young' && n >= count - 2 ? 'young' : '';
+      const sizeOf = (n, k) => (k === 'young' ? .55 : k === 'old' ? 1.3 : 1) * (n === 0 ? 1.08 : .85 + A.rand(n + 40)() * .2);
       const wolves = Array.from({ length: count + (age === 'young' ? 1 : 0) }, (_, n) => { const k = kindOf(n); return wolf(n, sizeOf(n, k), k); });
-      const watcher = wolves[0];                                    // the one that sits apart, on the rubble, and watches
+      const watcher = wolves[age === 'old' ? 1 : 0];                // the one that sits apart, on the rubble, and watches (the old leader leads instead)
       const WATCH = [-18.6, 0, -3.6];                              // just outside the west wall's corner
       const EN = 60, ep = new Float32Array(EN * 3), eLife = Float32Array.from({ length: EN }, (_, i) => i / EN);
       const eg = new T.BufferGeometry(); eg.setAttribute('position', new T.BufferAttribute(ep, 3));
@@ -2273,7 +2285,7 @@ const BEASTS = {
             neck.rotation.x = (wf.old ? -.2 : -.55) - h * .7; head.rotation.x = (wf.old ? .35 : .55) - h * .5; jaw.rotation.x = h * .5;   // the old: head low between its shoulders
           } else {
             // circling just beyond the wall, slowly while waiting, at a lope once the watcher has howled
-            const speed = moving ? .34 : .1, k = n * 2.2;
+            const speed = (moving ? .34 : .1) * (age === 'old' ? .7 : 1), k = age === 'old' ? -n * .5 : n * 2.2;   // the old pack: in a file behind its leader
             wf.a = (wf.a ?? k) + dt * speed;
             const a = wf.a, x = -20.6 + Math.cos(a) * 2.2, z = 4.7 + Math.sin(a) * 1.8;   // beyond the walls, clear of the barrow's stones
             w.position.set(x, gy(x, z), z); w.rotation.y = Math.atan2(-Math.sin(a) * 2.2, Math.cos(a) * 1.8);
