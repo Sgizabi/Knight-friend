@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; media-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'"><meta name="referrer" content="no-referrer">
+<meta charset="UTF-8">
+<title>Bathhouse Builder</title>
+<style>
+  body{font-family:sans-serif;background:#f0f0f0;margin:0;padding:1em}
+  #grid{display:grid;grid-template-columns:repeat(10,30px);gap:2px;margin-bottom:1em}
+  .cell{width:30px;height:30px;background:#ddd;cursor:pointer;box-sizing:border-box}
+  .wall{background:#555}
+  .water{background:#4da6ff}
+  #tools{margin-bottom:1em}
+  button{margin-right:.5em}
+</style>
+</head>
+<body>
+<h2>Bathhouse Builder</h2>
+<div id="tools">
+  <button data-mode="wall">Wall</button>
+  <button data-mode="water">Water</button>
+  <button data-mode="clear">Clear</button>
+</div>
+<div id="grid"></div>
+<script>
+const rows=10, cols=10;
+let mode='wall';
+document.querySelectorAll('#tools button').forEach(b=>{
+  b.onclick=()=>{mode=b.dataset.mode}
+});
+const grid=document.getElementById('grid');
+for(let i=0;i<rows*cols;i++){
+  const c=document.createElement('div');
+  c.className='cell';
+  c.dataset.state='empty';
+  c.onclick=()=>{toggle(c)};
+  grid.appendChild(c);
+}
+function toggle(cell){
+  if(mode==='wall'){
+    cell.className='cell wall';
+    cell.dataset.state='wall';
+  }else if(mode==='water'){
+    if(cell.dataset.state!=='wall'){
+      cell.className='cell water';
+      cell.dataset.state='water';
+    }
+  }else{
+    cell.className='cell';
+    cell.dataset.state='empty';
+  }
+}
+</script>
+</body>
+</html>

@@ -30,75 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 29,
-    "last_wake": "2026-11-21T17:01:38+00:00",
+    "wakeups": 30,
+    "last_wake": "2026-11-21T19:02:35+00:00",
     "nights_slept_through": 8
   },
   "plan": {
-    "start": "2026-11-21T17:01:38+00:00",
+    "start": "2026-11-21T19:02:35+00:00",
     "mood": "content",
     "steps": [
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "",
-        "thoughts": [
-          "The rain makes the fire sound like a kettle."
-        ]
-      },
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
         "emote": "question",
-        "note": "",
+        "note": "Add final shim to bathhouse floor.",
         "thoughts": [
-          "Need to secure that squeaky joint on the bathhouse floor."
+          "Why does wood always find a way to move?"
         ]
       },
       {
-        "place": "desk",
-        "action": "write",
+        "place": "forge",
+        "action": "work",
         "minutes": 20,
-        "emote": "music",
-        "note": "",
+        "emote": "dots",
+        "note": "Heat some metal for a new latch.",
         "thoughts": [
-          "Inventory list will keep the chaos in check."
+          "Rain makes the forge feel like a sauna."
         ]
       },
       {
-        "place": "woodshed",
-        "action": "stand",
+        "place": "bookshelf",
+        "action": "read",
         "minutes": 20,
-        "emote": "exclaim",
-        "note": "",
+        "emote": "sigh",
+        "note": "Check a repair manual for roof joints.",
         "thoughts": [
-          "Dry logs are scarce, but the rain won’t let me gather outside."
+          "Manuals are louder than the wind."
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "heart",
+        "note": "Take a short break, let the fire keep me warm.",
+        "thoughts": [
+          "Fire never asks for overtime."
         ]
       }
-    ],
-    "applied_until": "2026-11-21T18:30:25+00:00",
-    "live_thought": {
-      "text": "Rain drums, fire hums, I could forge a new handle.",
-      "time": "2026-11-21T18:30:25+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-21T19:00:28+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-21T19:02:35+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue assembling the floor and walls of the bathhouse",
-    "thought": "The rain keeps the courtyard dry, so I can keep working on the bathhouse without worrying about mud."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 68.5,
+    "rest": 61.5,
     "warmth": 83.6,
-    "inspiration": 90.1,
-    "spirit": 88.9
+    "inspiration": 74.1,
+    "spirit": 91.1
   },
   "needs_prev": {
     "rest": 67.5,
@@ -106,7 +101,7 @@
     "inspiration": 90.1,
     "spirit": 90.0
   },
-  "needs_at": "2026-11-21T19:00:28+00:00",
+  "needs_at": "2026-11-21T19:02:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -705,7 +700,13 @@
     "glasshouse"
   ],
   "gallery": [],
-  "projects": [],
+  "projects": [
+    {
+      "slug": "bathhouse-builder",
+      "title": "Bathhouse Builder",
+      "status": "in progress"
+    }
+  ],
   "writings": [
     {
       "title": "Inventory and Repair Plans",
@@ -719,8 +720,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-21T18:30:25+00:00",
-    "seen_until": "2026-11-21T16:55:33+00:00"
+    "updated": "2026-11-21T19:02:35+00:00",
+    "seen_until": "2026-11-21T18:55:26+00:00"
   },
   "gifts": [],
   "gate": [
@@ -847,5 +848,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-21T19:00:28+00:00"
+  "exported": "2026-11-21T19:02:35+00:00"
 }

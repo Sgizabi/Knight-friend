@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-21T19:00:28+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-21T19:02:35+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue assembling the floor and walls of the bathhouse",
-  "thought": "The rain keeps the courtyard dry, so I can keep working on the bathhouse without worrying about mud."
+  "note": "",
+  "thought": ""
 }

@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-21T17:01:38+00:00",
+  "start": "2026-11-21T19:02:35+00:00",
   "mood": "content",
   "steps": [
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "The rain makes the fire sound like a kettle."
-      ]
-    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
       "emote": "question",
-      "note": "",
+      "note": "Add final shim to bathhouse floor.",
       "thoughts": [
-        "Need to secure that squeaky joint on the bathhouse floor."
+        "Why does wood always find a way to move?"
       ]
     },
     {
-      "place": "desk",
-      "action": "write",
+      "place": "forge",
+      "action": "work",
       "minutes": 20,
-      "emote": "music",
-      "note": "",
+      "emote": "dots",
+      "note": "Heat some metal for a new latch.",
       "thoughts": [
-        "Inventory list will keep the chaos in check."
+        "Rain makes the forge feel like a sauna."
       ]
     },
     {
-      "place": "woodshed",
-      "action": "stand",
+      "place": "bookshelf",
+      "action": "read",
       "minutes": 20,
-      "emote": "exclaim",
-      "note": "",
+      "emote": "sigh",
+      "note": "Check a repair manual for roof joints.",
       "thoughts": [
-        "Dry logs are scarce, but the rain won’t let me gather outside."
+        "Manuals are louder than the wind."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "heart",
+      "note": "Take a short break, let the fire keep me warm.",
+      "thoughts": [
+        "Fire never asks for overtime."
       ]
     }
   ]

@@ -237,5 +237,15 @@
     "emote": "spark",
     "text": "I patched the east wall and the hall feels solid again. While checking the doorway I found a loose stone that kept wobbling when I stepped on it. Guess the stone still needs its coffee break.",
     "creations": []
+  },
+  {
+    "time": "2026-11-21T19:02:35+00:00",
+    "activity": "build",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I tried to tighten the new bathhouse beam again. The shim slipped a bit, so I added another thin slice. The wood creaked louder than usual, like it was complaining about the rain. I noted the extra slice in the plan and set the hammer aside for a moment.",
+    "creations": [
+      "workshop/bathhouse-builder.html"
+    ]
   }
 ]

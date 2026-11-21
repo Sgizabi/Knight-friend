@@ -1,18 +1,26 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch the window frame, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 17.346,
-    "craft": 17.346
+    "repair": 17.652,
+    "craft": 17.652
   },
-  "projects": [],
+  "projects": [
+    {
+      "slug": "bathhouse-builder",
+      "title": "Bathhouse Builder",
+      "started": "2026-11-21T19:01:31+00:00",
+      "status": "in progress",
+      "versions": 1,
+      "about": "A tiny interactive floor plan where you can place tiles and water for a simple bathhouse layout.",
+      "updated": "2026-11-21T19:01:31+00:00",
+      "next": "Add a second shim to the bathhouse floor joint and test stability. Then sketch a simple water flow diagram for the layout."
+    }
+  ],
   "letters_seen": "",
-  "entries_since_condense": 5,
+  "entries_since_condense": 6,
   "pastimes": [],
   "last_long": "2026-11-21T02:30:24+00:00",
   "recent_thoughts": [
-    "The fire's crackle steadies my hand.",
-    "The stone feels cool against my back.",
-    "The fire crackles, stone stays cold, I’ll work the bench soon.",
     "Lantern oil's low, but the stone's still warm.",
     "The rain taps the stone, I could stay still.",
     "Rain drums on stone, I could linger a bit longer.",
@@ -21,10 +29,13 @@
     "The fire's glow keeps the cold at bay.",
     "Rain drums on stone, fire keeps me warm.",
     "Rain drums on stone, I could shape a new handle.",
-    "Rain drums, fire cracks, I could shape a new handle."
+    "Rain drums, fire cracks, I could shape a new handle.",
+    "Rain drums, I’ll shape a new handle.",
+    "Rain taps, the stone listens while I shape the next handle.",
+    "Rain drums, fire hums, I could forge a new handle."
   ],
-  "last_glance": "2026-11-21T16:30:24+00:00",
-  "visits_seen_until": "2026-11-21T16:55:33+00:00",
+  "last_glance": "2026-11-21T18:30:25+00:00",
+  "visits_seen_until": "2026-11-21T18:55:26+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},
