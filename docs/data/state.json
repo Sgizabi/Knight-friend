@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-21T01:30:31+00:00",
+    "applied_until": "2026-11-21T02:00:30+00:00",
     "live_thought": {
-      "text": "Stone underfoot, board snug, fire warm, I can finish the roof.",
-      "time": "2026-11-21T01:30:31+00:00"
+      "text": "The fire's crackle steadies my hand.",
+      "time": "2026-11-21T02:00:30+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-21T01:30:32+00:00",
+    "since": "2026-11-21T02:00:30+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 36.9,
+    "warmth": 82.4,
+    "inspiration": 67.2,
+    "spirit": 87.5
+  },
+  "needs_prev": {
     "rest": 38.5,
     "warmth": 88.4,
     "inspiration": 67.2,
     "spirit": 88.5
   },
-  "needs_prev": {
-    "rest": 38.1,
-    "warmth": 87.7,
-    "inspiration": 67.2,
-    "spirit": 89.5
-  },
-  "needs_at": "2026-11-21T01:30:32+00:00",
+  "needs_at": "2026-11-21T02:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -692,7 +692,7 @@
   "visits": {
     "candles_tonight": 2,
     "knocks_today": 1,
-    "updated": "2026-11-21T01:30:31+00:00",
+    "updated": "2026-11-21T02:00:30+00:00",
     "seen_until": "2026-11-21T00:55:24+00:00"
   },
   "gifts": [],
@@ -705,5 +705,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-21T01:30:32+00:00"
+  "exported": "2026-11-21T02:00:30+00:00"
 }
