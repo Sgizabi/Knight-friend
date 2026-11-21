@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-21T19:30:23+00:00",
+    "applied_until": "2026-11-21T20:00:26+00:00",
     "live_thought": {
-      "text": "Rain drums, fire hums, I’ll shape the new handle.",
-      "time": "2026-11-21T19:30:23+00:00"
+      "text": "Rain drums, stone listens, I read the manual.",
+      "time": "2026-11-21T20:00:26+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-21T19:30:23+00:00",
+    "since": "2026-11-21T20:00:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 58.0,
+    "warmth": 82.1,
+    "inspiration": 74.9,
+    "spirit": 89.0
+  },
+  "needs_prev": {
     "rest": 59.6,
     "warmth": 82.6,
     "inspiration": 74.1,
     "spirit": 90.1
   },
-  "needs_prev": {
-    "rest": 61.5,
-    "warmth": 83.6,
-    "inspiration": 74.1,
-    "spirit": 91.1
-  },
-  "needs_at": "2026-11-21T19:30:23+00:00",
+  "needs_at": "2026-11-21T20:00:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -725,7 +725,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-21T19:30:23+00:00",
+    "updated": "2026-11-21T20:00:26+00:00",
     "seen_until": "2026-11-21T18:55:26+00:00"
   },
   "gifts": [],
@@ -853,5 +853,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-21T19:30:23+00:00"
+  "exported": "2026-11-21T20:00:26+00:00"
 }
