@@ -89,11 +89,14 @@ sheen; lightning flashes; sky and fog colour per weather.
 
 ### How often things come
 
+The aim is **a real part of his life, not all of it, and not a rarity either**: something to
+notice most days, a proper encounter every few days, quiet days in between.
+
 | Rarity | Roughly | Examples |
 |---|---|---|
-| Common | most weeks | the fog with eyes, the Pale Brood, animals |
-| Uncommon | a few times a month | the Bell-Crab, the axolotl, the Ashwolves, the lamp-eaters |
-| Rare | once every month or two | the basilisk, the Glassbeak, the barrow lord, the Bent One |
+| Common | several times a week | the fog with eyes, the Pale Brood, animals, the Lantern Folk crossing |
+| Uncommon | about once a week each | the Bell-Crab, the axolotl, the Ashwolves, the lamp-eaters |
+| Rare | once or twice a month each | the basilisk, the Glassbeak, the barrow lord, the Bent One |
 | Legendary | a few times a year | the dragon, the hill opening its eye |
 
 At most **one big being a day**, plus small ambient life. The odds shift with time of day,
@@ -245,6 +248,35 @@ befriended, but he still chooses how to face them, and each has **a tell** and *
 he can learn: stillness keeps the Long Man back, a steady fire freezes the Bent One, a shut
 door turns the Doorway Figure away. They are rare, they warn first, and his bestiary records
 what works, so the first meeting is terrifying and the fifth is a battle of wits.
+
+### His life comes first
+
+The creatures add drama, wonder and stakes on top of his life; they never replace it. His
+pastimes, building, letters and quiet days stay the core.
+
+**The rhythm we aim for** (tuned after watching wave 1 live):
+
+| How often | What |
+|---|---|
+| Most days | something small to notice: an animal, the Lantern Folk crossing, the axolotl after rain |
+| Every two or three days | a notable being, the kind he writes about |
+| About once a week | a tense or hostile encounter |
+| About once a month | something rare; a few times a year, something legendary |
+| Every week | at least one or two quiet days with nothing but his own life |
+
+**Safeguards, so it never overwhelms him:**
+- **Nothing piles up.** Creatures can only push each need so low, and injuries never stack
+  past a set level, so he can't be drained into a slump where he can't do anything.
+- **A quiet spell after danger.** After any hostile encounter, no hostile beings for a few
+  days; across each week, gentle and neutral beings outnumber hostile ones.
+- **His work is safe in the end.** Damage is limited each week, never touches more than one
+  building at a time, and never destroys a finished building outright: harmed and repairable,
+  never gone.
+- **Enough sleep.** A cap on how many nights a week he can be woken.
+- **Ongoing threats are presences, not chores.** The Long Crawl and the Thin Crowd move on
+  their own slow clock and can always be turned back.
+- **Watched and tuned.** His needs history and diary are reviewed after wave 1 goes live, and
+  the rhythm adjusted if creatures crowd out the rest of his life, or leave it too quiet.
 
 ---
 
