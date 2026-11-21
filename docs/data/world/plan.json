@@ -1,49 +1,60 @@
 {
-  "start": "2026-11-21T01:01:31+00:00",
-  "mood": "content",
+  "start": "2026-11-21T02:40:38+00:00",
+  "mood": "sleepy",
   "steps": [
+    {
+      "place": "bedroll",
+      "action": "sleep",
+      "minutes": 70,
+      "emote": "zzz",
+      "note": "rest",
+      "thoughts": [
+        "Cold stone still bites.",
+        "Need to let the fire keep the night."
+      ]
+    },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
       "emote": "sigh",
-      "note": "warmth",
+      "note": "warm up",
       "thoughts": [
-        "The wood crackles just enough.",
-        "I wonder if the roof will hold through night."
+        "The flames are finally quiet.",
+        "Maybe I should thank the fire for overtime."
       ]
     },
     {
-      "place": "repair:roof",
+      "place": "workbench",
       "action": "work",
       "minutes": 20,
       "emote": "question",
-      "note": "add board",
+      "note": "check lantern oil",
       "thoughts": [
-        "Need a tighter fit.",
-        "Mortar smells of lime."
+        "Oil level is worrying.",
+        "Should I craft a refill bottle later?"
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "gaze",
+      "minutes": 20,
+      "emote": "cloud",
+      "note": "inspect glasshouse",
+      "thoughts": [
+        "One pane missing, still holds heat.",
+        "Stone looks less stubborn today."
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "dots",
-      "note": "catalog board",
+      "emote": "spark",
+      "note": "log day's work",
       "thoughts": [
-        "List the pieces used.",
-        "Maybe note the crack."
-      ]
-    },
-    {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 20,
-      "emote": "zzz",
-      "note": "short rest",
-      "thoughts": [
-        "Cold draft still sneaks.",
-        "Dream of finished wall."
+        "Ink is half‑full, good enough.",
+        "Will add the glasshouse note tomorrow."
       ]
     }
   ]

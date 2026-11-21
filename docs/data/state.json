@@ -30,79 +30,85 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 25,
-    "last_wake": "2026-11-21T01:01:31+00:00",
+    "wakeups": 26,
+    "last_wake": "2026-11-21T02:40:38+00:00",
     "nights_slept_through": 4
   },
   "plan": {
-    "start": "2026-11-21T01:01:31+00:00",
-    "mood": "content",
+    "start": "2026-11-21T02:40:38+00:00",
+    "mood": "sleepy",
     "steps": [
+      {
+        "place": "bedroll",
+        "action": "sleep",
+        "minutes": 70,
+        "emote": "zzz",
+        "note": "rest",
+        "thoughts": [
+          "Cold stone still bites.",
+          "Need to let the fire keep the night."
+        ]
+      },
       {
         "place": "fire",
         "action": "sit",
         "minutes": 20,
         "emote": "sigh",
-        "note": "warmth",
+        "note": "warm up",
         "thoughts": [
-          "The wood crackles just enough.",
-          "I wonder if the roof will hold through night."
+          "The flames are finally quiet.",
+          "Maybe I should thank the fire for overtime."
         ]
       },
       {
-        "place": "repair:roof",
+        "place": "workbench",
         "action": "work",
         "minutes": 20,
         "emote": "question",
-        "note": "add board",
+        "note": "check lantern oil",
         "thoughts": [
-          "Need a tighter fit.",
-          "Mortar smells of lime."
+          "Oil level is worrying.",
+          "Should I craft a refill bottle later?"
+        ]
+      },
+      {
+        "place": "courtyard",
+        "action": "gaze",
+        "minutes": 20,
+        "emote": "cloud",
+        "note": "inspect glasshouse",
+        "thoughts": [
+          "One pane missing, still holds heat.",
+          "Stone looks less stubborn today."
         ]
       },
       {
         "place": "desk",
         "action": "write",
         "minutes": 20,
-        "emote": "dots",
-        "note": "catalog board",
+        "emote": "spark",
+        "note": "log day's work",
         "thoughts": [
-          "List the pieces used.",
-          "Maybe note the crack."
-        ]
-      },
-      {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 20,
-        "emote": "zzz",
-        "note": "short rest",
-        "thoughts": [
-          "Cold draft still sneaks.",
-          "Dream of finished wall."
+          "Ink is half‑full, good enough.",
+          "Will add the glasshouse note tomorrow."
         ]
       }
-    ],
-    "applied_until": "2026-11-21T02:00:30+00:00",
-    "live_thought": {
-      "text": "The fire's crackle steadies my hand.",
-      "time": "2026-11-21T02:00:30+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-21T02:39:32+00:00",
-    "place": "raise:2",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-21T02:40:38+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue assembling the glass panels and securing the potting bench",
-    "thought": "The roof is sealed now, the fire feels steadier. The glasshouse is half done, the panes clink in the evening light. I think I’ll keep working on it before I col"
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 17.3,
-    "warmth": 89.6,
+    "rest": 8.3,
+    "warmth": 91.4,
     "inspiration": 68.4,
-    "spirit": 97.7
+    "spirit": 98.7
   },
   "needs_prev": {
     "rest": 36.9,
@@ -110,7 +116,7 @@
     "inspiration": 67.2,
     "spirit": 87.5
   },
-  "needs_at": "2026-11-21T02:39:32+00:00",
+  "needs_at": "2026-11-21T02:40:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -667,7 +673,7 @@
         "about": "salvaged panes over a potting bench, warm even in winter",
         "place": "glasshouse",
         "plot": 2,
-        "done": 2,
+        "done": 3,
         "needed": 4,
         "kind": null,
         "look": null,
@@ -704,8 +710,8 @@
   "visits": {
     "candles_tonight": 2,
     "knocks_today": 1,
-    "updated": "2026-11-21T02:00:30+00:00",
-    "seen_until": "2026-11-21T00:55:24+00:00"
+    "updated": "2026-11-21T02:40:38+00:00",
+    "seen_until": "2026-11-21T02:25:25+00:00"
   },
   "gifts": [],
   "gate": [
@@ -815,5 +821,5 @@
       }
     }
   },
-  "exported": "2026-11-21T02:39:32+00:00"
+  "exported": "2026-11-21T02:40:38+00:00"
 }

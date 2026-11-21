@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-21T02:39:32+00:00",
-  "place": "raise:2",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-21T02:40:38+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue assembling the glass panels and securing the potting bench",
-  "thought": "The roof is sealed now, the fire feels steadier. The glasshouse is half done, the panes clink in the evening light. I think I’ll keep working on it before I col"
+  "note": "",
+  "thought": ""
 }
