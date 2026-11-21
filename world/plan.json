@@ -1,7 +1,7 @@
 {
   "start": "2026-11-21T11:00:33+00:00",
   "mood": "sleepy",
-  "applied_until": "2026-11-21T11:00:33+00:00",
+  "applied_until": "2026-11-21T12:00:25+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -10,5 +10,9 @@
       "emote": "zzz",
       "note": "asleep for the night"
     }
-  ]
+  ],
+  "live_thought": {
+    "text": "The rain taps the stone, I could stay still.",
+    "time": "2026-11-21T12:00:25+00:00"
+  }
 }
