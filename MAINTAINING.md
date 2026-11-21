@@ -41,7 +41,11 @@ choices, with fair rules (`brain/encounters.py`) settling what happens. Who each
 traits, signs, tells, weaknesses, what it likes) lives in `brain/beings.py`. The safeguards
 (he is never killed, needs never pushed below 25 by a being, at most two injuries, one
 damaging visit and one loss a week, woken at most two nights a week) are the constants at the
-top of `encounters.py`. To try one on a copy: put an appearance that has started into a copied
+top of `encounters.py`. How beings vary and adapt (more weaknesses, weather, how fast each learns) is in `beings.py`
+(`MORE_WEAKNESSES`, `FAILS_IN`, `LEARNS`) and the dials at the top of `encounters.py`. After
+changing any of them, `python brain/simulate.py --years 10` plays ten years with stand-in
+Rookens in about a minute (no AI) and prints, year by year, how often his known answers still
+work, what went stale, what he found, and the injuries, damage and losses. To try one on a copy: put an appearance that has started into a copied
 `creatures.json` and run `KNIGHT_CREATURES=on KNIGHT_ENCOUNTER_PAUSE=0 python brain/knight.py --fake --mode encounter`.
 
 If something checks on Rooken for you (such as Claude Duet), point it at

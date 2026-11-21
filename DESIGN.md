@@ -262,6 +262,19 @@ what they left behind.
   Sovereign), and come warier and later if he drives them off; the Thin Crowd returns each
   evening (up to five) and the Long Crawl every other day (up to four) until they reach the
   wall or he turns them back.
+- **No answer works forever:** each hostile being has a main weakness, another that works on
+  some individuals, and a deep one that shows itself only after he has met it five times.
+  Individuals differ (simple beings rarely, clever ones more), weather blunts some answers
+  (fire in rain, a gaze in fog, a steady flame in a gale), and beings get used to a trick he
+  keeps using, the clever ones fast and the simple ones barely, forgetting it again over a few
+  months if he leaves it alone. The young don't know his tricks; the old and scarred do. Each
+  individual cares for only some of what its kind likes. Things he has made can be used in an
+  encounter, so his own life feeds how he faces the world. He gets fair hints when an answer
+  isn't working ("it seems to be getting used to that").
+- **Tested over ten simulated years** (`brain/simulate.py`, four ways of playing, no AI): his
+  known answers keep working about half to four fifths of the time, year after year; every
+  year some go stale and new ones are found; no being becomes hopeless, and the simple ones
+  stay the more dependable; injuries stay at a few a year and the weekly limits hold.
 - **Ecology:** the timid stay away for a couple of days after something big; light-eaters
   follow lanterns; fire-lovers like the forge; scavengers come after a meteor or a landing;
   the wyrm stirs after the hill.

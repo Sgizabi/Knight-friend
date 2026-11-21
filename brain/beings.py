@@ -345,6 +345,55 @@ CHARACTERS = {
         danger=0, gifts=["a gift from their people"], trace="a great scorched circle on the plain"),
 }
 
+# More than one way to keep a being back, so no answer is the answer forever. Each individual
+# answers to its main weakness most of the time (92% for simple beings, about 77% for clever ones)
+# and to each other one now and then (50%);
+# a "deep" one works on every individual, but only shows itself once he has met the kind
+# several times (DEEP_AFTER in encounters.py). Same shape as weakness: words, verbs, note.
+MORE_WEAKNESSES = {
+    "glassbeak": {"alt": [B(words=["mirror", "reflection", "its reflection"], note="its own reflection confuses it")],
+                  "deep": [B(words=["whistle", "mimic", "its call", "call like it"], note="its own call makes it think a rival is near")]},
+    "basilisk": {"alt": [B(words=["water", "splash", "douse", "wet", "cold water"], note="cold water makes it sluggish")],
+                 "deep": [B(words=["sing", "song", "hum", "lullaby"], note="a steady song makes it drowsy")]},
+    "wyrm": {"alt": [B(words=["salt"], note="salt drives it back under")],
+             "deep": [B(words=["hot stone", "heated stone", "warm stone", "hearth stone"], note="a heated stone dropped far off draws it away")]},
+    "moths": {"alt": [B(words=["bell", "ring", "chime", "hum", "sing"], note="a ringing note scatters them")],
+              "deep": [B(words=["open the shutters", "moonlight", "open the window"], note="they would rather have the moon")]},
+    "fog": {"alt": [B(words=["wind", "fan", "bellows", "blow"], note="moving air thins it")],
+            "deep": [B(words=["count its eyes", "count the eyes"], note="counted, its eyes close one by one")]},
+    "brood": {"alt": [B(words=["bell", "ring", "whistle"], note="a high sound sends them running")],
+              "deep": [B(words=["lullaby", "sing", "hum"], note="they settle at a lullaby")]},
+    "longman": {"alt": [B(words=["lantern on it", "light on it", "lamp on it", "shine"], note="a light kept on it holds it like a gaze")],
+                "deep": [B(words=["turn my back", "turn away", "ignore it", "close my eyes"], note="unwatched on purpose, calmly, it loses interest")]},
+    "manyjoint": {"alt": [B(words=["shout", "bang", "clap", "noise"], note="a sudden noise makes it fold up")],
+                  "deep": [B(words=["pretend to sleep", "lie still", "stay asleep"], note="it only hunts the waking")]},
+    "ashwolves": {"alt": [B(words=["shout", "bang", "bell", "noise", "howl back"], note="a loud noise breaks the pack's nerve")],
+                  "deep": [B(words=["the watcher", "their lookout", "the one keeping watch", "stare down"], note="face down the watcher and the pack scatters")]},
+    "crawl": {"alt": [B(words=["dig", "ditch", "trench"], note="a ditch turns it aside")],
+              "deep": [B(words=["salt", "line of ash", "ash line"], note="it won't cross a line of ash")]},
+    "thincrowd": {"alt": [B(words=["sing", "song", "bell"], note="a song sends them back a step")],
+                  "deep": [B(words=["welcome them", "invite them", "ask them in"], note="welcomed, they have nothing to come for")]},
+    "bentone": {"alt": [B(words=["lantern", "candle", "steady light", "shutter"], note="a steady light holds it too")],
+                "deep": [B(words=["mirror", "reflection"], note="it freezes at its own shape")]},
+    "watcher": {"alt": [B(words=["lamp in the window", "candle in the window", "light in the window"], note="a light inside the window dazzles it")],
+                "deep": [B(words=["wave", "greet", "nod", "say hello"], note="greeted, it seems embarrassed and goes")]},
+    "doorway": {"alt": [B(words=["salt", "line across", "line of ash", "threshold"], note="a line across the threshold")],
+                "deep": [B(words=["ask its name", "what is your name", "its name"], note="asked its name, it has to leave to remember it")]},
+}
+
+# Weather that blunts a being's main weakness (fire is hard to keep up in the rain, a steady
+# flame in a gale, a gaze in the fog).
+FAILS_IN = {"fog": ["rain", "storm"], "crawl": ["rain", "storm"], "bentone": ["wind", "storm"], "longman": ["fog"],
+            "thincrowd": ["fog"], "manyjoint": ["storm"], "ashwolves": ["snow"]}
+
+# How quickly each being gets used to a trick he keeps using (0: never; a third is quick). It
+# fades again if he leaves the trick alone (HALF_LIFE_DAYS in encounters.py). Clever and
+# long-memoried beings learn fast; simple, hungry or mindless ones barely at all, so a few
+# stay dependable puzzles.
+LEARNS = {"dragon": .3, "glassbeak": .3, "barrow": .3, "longman": .3, "well": .25, "doorway": .25, "watcher": .25,
+          "bentone": .25, "thincrowd": .2, "basilisk": .15, "ashwolves": .2, "brood": .15, "manyjoint": .15,
+          "golem": .15, "fog": .05, "wyrm": .05, "crawl": 0, "moths": .05}
+
 # How each one answers him, in plain words: (when it goes well, when it goes badly). The rules
 # pick which; these say what that looks like for this being (its behaviour mind, from session 6,
 # adds the particulars). Peril only.

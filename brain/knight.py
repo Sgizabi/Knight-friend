@@ -1409,6 +1409,8 @@ class Knight:
                 f"It is {part_of_day()}. {weather.describe(self.sky)} You were {doing}.\n"
                 f"{life.describe_needs(self.needs)}\n{encounters.describe_body(self.body)}\n\n"
                 f"{sc}\n{known}\n" + (f"\nSo far:\n{so_far}\n" if so_far else "") +
+                (f"\nThings you have made, if any are of use: {', '.join(o['name'] for o in self.keep['objects'][-8:])}.\n"
+                 if self.keep.get("objects") else "") +
                 "\nWhat do you do? It is yours to decide; no option is the right one, and each has its "
                 "own risks and rewards:\n" + "\n".join(f"- [{k}] {v}" for k, v in opts.items()) +
                 "\nOr something of your own: describe it in how, and put in choice the option above it is closest to.\n"
@@ -1428,7 +1430,8 @@ class Knight:
             checkpoint(f"{self.identity['name']} faces something")
             out = encounters.resolve(a, choice, how, {
                 "needs": self.needs, "body": self.body, "keep": self.keep, "entry": entry, "prepared": prepared,
-                "step": step, "week": encounters.recent(WORLD), "now": now(), "said": [h["happened"] for h in history]})
+                "step": step, "week": encounters.recent(WORLD), "now": now(), "said": [h["happened"] for h in history],
+                "sky": (weather.at(self.sky, now()) or {}).get("kind", "")})
             encounters.apply(out, a, self.needs, self.body, self.keep, entry, how)
             if out["turned_back"]:
                 creatures.turn_back(state, kind)

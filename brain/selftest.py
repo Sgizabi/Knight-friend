@@ -239,6 +239,28 @@ for _d in range(6):
     if _a:
         _seen.append(_a["chain"])
 assert _seen == [2, 3, 4, 5] and not _ch["chains"]
+# no answer works forever: individuals differ, beings get used to a trick and forget it again,
+# weather blunts some, the young don't know his tricks, deep weaknesses wait for long acquaintance
+_t1 = _t0 + _dt.timedelta(days=1)
+_lm = lambda i, mark="": {"id": f"longman-{i}", "kind": "longman", "variant": {"mark": mark}}   # noqa: E731
+assert any(encounters.weakness_used(_lm(i), "watch", "", {}, _t1)[2] == "other" for i in range(40))   # some don't answer
+_on = next(_lm(i) for i in range(40) if "main" in encounters.active(_lm(i), {}))
+assert encounters.weakness_used(_on, "watch", "", {}, _t1) == ("main", 1.0, "")
+assert encounters.weakness_used(_on, "watch", "", {}, _t1, sky="fog")[2] == "weather"           # can't hold a gaze in fog
+_ent = {"count": 1}
+for _ in range(3):                                                        # used again and again, it gets used to it
+    encounters.apply({"used": "main", "result": "good", "strength": 1, "effects": {}, "injury": None, "damage": None,
+                      "loss": None, "returned": None, "gift": None, "regard": 0, "tell": None, "choice": "watch"},
+                     _on, {n: 50.0 for n in life.NEEDS}, {"injuries": []}, _ek, _ent, "", _t1)
+_worn = encounters.weakness_used(_on, "watch", "", _ent, _t1)
+assert _worn[2] == "worn" and _worn[1] < .3
+assert encounters.weakness_used(_on, "watch", "", _ent, _t1 + _dt.timedelta(days=365))[1] > .9   # left alone, it forgets
+_young = dict(_on, variant={"mark": "young"})
+assert encounters.weakness_used(_young, "watch", "", _ent, _t1)[1] > _worn[1]                     # the young never learned it
+assert not encounters.weakness_used(_on, "hide", "I turn my back on it", {"count": 1}, _t1)
+assert encounters.weakness_used(_on, "hide", "I turn my back on it", {"count": encounters.DEEP_AFTER}, _t1)[0] == "deep0"
+assert all(k in beings.LEARNS for k in beings.MORE_WEAKNESSES) and all(
+    beings.CHARACTERS[k].get("weakness") for k in beings.MORE_WEAKNESSES)
 # beings that came while it slept are found in the morning; by day, glimpsed
 __import__("os").environ["KNIGHT_CREATURES"] = "on"
 _sw = Path(tempfile.mkdtemp())

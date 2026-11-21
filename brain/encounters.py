@@ -31,6 +31,13 @@ NOTICE_BEFORE = 20          # minutes before it arrives that the signs begin
 GIFT_CHANCE = .35
 WIN_BACK_CHANCE = .6
 HEAL_DAYS = {1: (2, 3), 2: (3, 5)}
+# So no answer works forever (beings.MORE_WEAKNESSES, FAILS_IN, LEARNS):
+DEEP_AFTER = 5              # meetings with a kind before its deep weakness can show itself
+HALF_LIFE_DAYS = 90         # a being's wariness of a trick halves each month he leaves it alone
+WISE_MOST = .85             # however used to a trick it gets, it never works less than this well... (1 - this)
+MARK_WISDOM = {"young": .3, "old": 1.25, "scarred": 1.25}   # the young don't know his tricks; the old and scarred do
+TOOL_BONUS = .08            # using something he made for the keep
+LIKES_SHARE = .6            # each individual cares for about this share of what its kind likes
 
 # (good, bad) for each nature and choice; the rest of the chance is "nothing much happens".
 # What "good" means depends on the choice: wonder when watching, accepted when offering,
@@ -288,14 +295,86 @@ def _says(text, words):
 
 
 def uses_weakness(kind, choice, how):
+    """Whether this uses the kind's main weakness (whatever this individual makes of it)."""
     w = character(kind).get("weakness")
     if not w:
         return False
     return choice in w.get("verbs", []) or _says(how, w.get("words", []))
 
 
-def offers_liked(kind, how):
-    return _says(how, character(kind).get("likes", []))
+def weaknesses(kind):
+    """Every way to keep this kind back: [(key, weakness)], the main one first."""
+    c, more = character(kind), beings.MORE_WEAKNESSES.get(kind, {})
+    out = [("main", {**c["weakness"], "fails_in": beings.FAILS_IN.get(kind, [])})] if c.get("weakness") else []
+    out += [(f"alt{i}", w) for i, w in enumerate(more.get("alt", []))]
+    out += [(f"deep{i}", {**w, "deep": True}) for i, w in enumerate(more.get("deep", []))]
+    return out
+
+
+def active(a, entry):
+    """Which weaknesses this individual answers to (the same all visit long)."""
+    rng = random.Random(f"{a.get('id', a['kind'])}:weak")
+    keys = []
+    for key, w in weaknesses(a["kind"]):
+        if w.get("deep"):
+            if (entry or {}).get("count", 0) >= DEEP_AFTER:
+                keys.append(key)
+        elif rng.random() < ((.92 - .5 * beings.LEARNS.get(a["kind"], .15)) if key == "main" else .5):
+            keys.append(key)
+    if not keys and weaknesses(a["kind"]):
+        keys.append(weaknesses(a["kind"])[0][0])
+    return keys
+
+
+def wariness(entry, key, now):
+    """How used the kind has got to this trick, faded by the time since he last used it."""
+    w = ((entry or {}).get("wise") or {}).get(key)
+    if not w or not _parse(w.get("at")):
+        return 0.0
+    days = max(0.0, (now - _parse(w["at"])).total_seconds() / 86400)
+    return w.get("level", 0) * .5 ** (days / HALF_LIFE_DAYS)
+
+
+def weakness_used(a, choice, how, entry, now, sky=""):
+    """The weakness he used, if any, and how well it works on this one: (key, strength 0-1, why).
+    why: "" it works, "worn" it's getting used to it, "weather" the weather blunts it, "other"
+    this one doesn't answer to it."""
+    best, on = None, active(a, entry)
+    mark = (a.get("variant") or {}).get("mark", "")
+    for key, w in weaknesses(a["kind"]):
+        if not (choice in w.get("verbs", []) or _says(how, w.get("words", []))):
+            continue
+        if key not in on and w.get("deep"):
+            continue                               # (not yet: it waits for a long acquaintance)
+        if key not in on:
+            found = (key, 0.0, "other")
+        elif sky in w.get("fails_in", []):
+            found = (key, .25, "weather")
+        else:
+            wise = min(WISE_MOST, wariness(entry, key, now) * MARK_WISDOM.get(mark, 1))
+            found = (key, 1 - wise, "worn" if wise > .35 else "")
+        if best is None or found[1] > best[1]:
+            best = found
+    return best
+
+
+def likes_of(a):
+    """What this individual cares for: most of what its kind likes, not all of it."""
+    likes = character(a["kind"]).get("likes", [])
+    if len(likes) <= 2:
+        return likes
+    rng = random.Random(f"{a.get('id', a['kind'])}:likes")
+    return rng.sample(likes, max(2, round(len(likes) * LIKES_SHARE)))
+
+
+def offers_liked(kind, how, a=None):
+    return _says(how, likes_of(a) if a else character(kind).get("likes", []))
+
+
+def uses_tool(how, keep):
+    """Whether he uses something he made for the keep (named in what he does)."""
+    words = {w for o in (keep.get("objects") or []) for w in re.findall(r"[a-z]{5,}", str(o.get("name", "")).lower())}
+    return bool(words) and _says(how, sorted(words))
 
 
 # --- the rules -----------------------------------------------------------------------------
@@ -309,8 +388,13 @@ def resolve(a, choice, how, ctx, rng=None):
     nature = k["nature"]
     choice = choice if choice in ODDS[nature] else "watch"
     good, bad = ODDS[nature][choice]
-    weak = uses_weakness(kind, choice, how)
-    liked = choice in ("offer", "speak", "approach") and offers_liked(kind, how)
+    used = weakness_used(a, choice, how, ctx.get("entry"), ctx["now"], ctx.get("sky", ""))
+    strength = used[1] if used else 0.0
+    weak = strength >= .5
+    liked = choice in ("offer", "speak", "approach") and offers_liked(kind, how, a)
+    tool = uses_tool(how, ctx["keep"])
+    if tool:
+        good += TOOL_BONUS
     regard = (ctx.get("entry") or {}).get("regard", 0) + a.get("regard", 0)
     if liked:
         good, bad = good + .2, bad * .5
@@ -327,8 +411,9 @@ def resolve(a, choice, how, ctx, rng=None):
         bad += .08
     if needs["warmth"] < 25:
         bad += .04
-    if weak:                                       # he found what keeps it back
-        good, bad = max(good, .9), min(bad, .02)
+    if strength:                                   # he found what keeps it back (as well as it works on this one)
+        good = good * (1 - strength) + max(good, .9) * strength
+        bad = bad * (1 - strength) + min(bad, .02) * strength
     good, bad = max(0, min(.95, good)), max(0, min(.9, bad))
     if good + bad > 1:
         good, bad = good / (good + bad), bad / (good + bad)
@@ -337,14 +422,21 @@ def resolve(a, choice, how, ctx, rng=None):
     if a.get("last") and not (result == "good" and choice in ("drive_off", "hide", "prepare")):
         result = "bad" if nature == "hostile" else result     # a slow presence that reaches the wall
 
-    out = {"choice": choice, "result": result, "weakness": weak, "liked": liked, "effects": {},
+    out = {"choice": choice, "result": result, "weakness": weak, "liked": liked, "effects": {}, "tool": tool,
+           "used": used[0] if used else None, "strength": round(strength, 2),
            "injury": None, "damage": None, "loss": None, "gift": None, "returned": None, "regard": 0,
            "tell": None, "turned_back": False}
     said = WEAKNESS_SAYS if weak and result == "good" else SAYS[(choice, result)]
     react = beings.REACTS.get(kind, ("", ""))[0 if result == "good" else 1]
     if any(react and react in t for t in ctx.get("said", [])):
-        react = ""                                 # (it already did that this time)
+        react = "It keeps on, as before." if result == "bad" else ""   # (it already did that this time)
     text = [said.replace("+", react).strip()]
+    if used and result == "good" and used[0].startswith("deep") and weak:
+        text.append("That was new: it answers to that like nothing else.")
+    elif used and result != "good":                # fair warning that a known answer isn't working
+        text.append({"worn": "It hesitates, but not for long: it seems to be getting used to that.",
+                     "weather": "In this weather it doesn't work the way it should.",
+                     "other": "It doesn't react the way you expected; this one seems different."}.get(used[2], ""))
     if result == "good":
         if choice in ("watch", "approach") and c.get("tell") and c["tell"] not in (ctx.get("entry") or {}).get("tells", []):
             out["tell"] = c["tell"]
@@ -478,6 +570,11 @@ def apply(out, a, needs, body, keep, entry, how, now=None):
             keep.setdefault("finds", []).append({"what": out["gift"], "from": a["kind"], "time": _iso(now)})
             keep["finds"] = keep["finds"][-30:]
     entry["regard"] = max(-3, min(3, entry.get("regard", 0) + out["regard"]))
+    if out.get("used") and out["result"] == "good" and out.get("strength", 0) > 0:   # it gets used to the trick
+        key, learns = out["used"], beings.LEARNS.get(a["kind"], .15)
+        if learns:
+            level = min(WISE_MOST, wariness(entry, key, now) + learns)
+            entry.setdefault("wise", {})[key] = {"level": round(level, 3), "at": _iso(now)}
     if out["tell"] and out["tell"] not in entry.setdefault("tells", []):
         entry["tells"].append(out["tell"])
     how = re.sub(r"\s+", " ", str(how or "")).strip()[:120]

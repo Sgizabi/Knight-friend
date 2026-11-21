@@ -90,6 +90,10 @@ the letter arrived (`20261119-230053-…` is 2026-11-19 23:00:53).
   under 25,000 a day, and `world/body.json` never lists more than two injuries. Injuries,
   damage to the keep and things taken are part of his life now, not problems; tell the keeper
   only if either limit is passed.
+- Monthly, once creatures are on (not urgent): skim the last month of `world/encounters.jsonl`.
+  If one being came three or more times and every meeting went the same way (same choice,
+  same result), or nothing he tried against some being ever worked, tell the keeper: the world
+  may want tuning (never Rooken).
 
 **6. Backup models.** Read `world/meta.json`.
 - Normal: no `model_log`, or the same entries as last time.
