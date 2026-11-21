@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-21T15:00:29+00:00",
-  "place": "raise:3",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-21T15:01:31+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "begin constructing the bathhouse in the courtyard",
-  "thought": "The roof is sealed, the glasshouse is alive, and the courtyard still has space. I could use a hot soak before nightfall."
+  "note": "",
+  "thought": ""
 }

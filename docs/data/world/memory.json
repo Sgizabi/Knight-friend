@@ -1,18 +1,15 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch the window frame, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 16.695,
-    "craft": 16.695
+    "repair": 17.027,
+    "craft": 17.027
   },
   "projects": [],
   "letters_seen": "",
-  "entries_since_condense": 3,
+  "entries_since_condense": 4,
   "pastimes": [],
   "last_long": "2026-11-21T02:30:24+00:00",
   "recent_thoughts": [
-    "The fire's crackle feels like a stone sigh.",
-    "The fire flickers, its heat eases my weariness.",
-    "The board fits, but that crack nags me.",
     "The fire flickers, stone stays still, ink waits.",
     "Stone crack nags, but fire keeps me warm",
     "Stone underfoot, board snug, fire warm, I can finish the roof.",
@@ -21,10 +18,13 @@
     "The fire crackles, stone stays cold, I’ll work the bench soon.",
     "Lantern oil's low, but the stone's still warm.",
     "The rain taps the stone, I could stay still.",
-    "Rain drums on stone, I could linger a bit longer."
+    "Rain drums on stone, I could linger a bit longer.",
+    "Rain drums on stone, I’ll shape the metal while it sings",
+    "Rain taps the stone, the fire's glow steadies me",
+    "The fire's glow keeps the cold at bay."
   ],
-  "last_glance": "2026-11-21T12:30:23+00:00",
-  "visits_seen_until": "2026-11-21T12:55:26+00:00",
+  "last_glance": "2026-11-21T14:30:26+00:00",
+  "visits_seen_until": "2026-11-21T14:55:27+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

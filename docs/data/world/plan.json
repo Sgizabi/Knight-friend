@@ -1,45 +1,35 @@
 {
-  "start": "2026-11-21T13:01:30+00:00",
+  "start": "2026-11-21T15:01:31+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "courtyard",
+      "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "question",
       "note": "",
       "thoughts": [
-        "These boards keep the rain out, for now."
-      ]
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "My thumb still measures better than any ruler."
-      ]
-    },
-    {
-      "place": "glasshouse",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Seedlings look hungry, maybe water later."
+        "Need sharper file for the bolts"
       ]
     },
     {
       "place": "fire",
-      "action": "sit",
+      "action": "work",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "dots",
       "note": "",
       "thoughts": [
-        "Fire's still quiet, must be on break."
+        "That beam could use a tighter brace"
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "Rain might soak the logs soon"
       ]
     }
   ]

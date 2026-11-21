@@ -30,75 +30,60 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 27,
-    "last_wake": "2026-11-21T13:01:31+00:00",
+    "wakeups": 28,
+    "last_wake": "2026-11-21T15:01:31+00:00",
     "nights_slept_through": 8
   },
   "plan": {
-    "start": "2026-11-21T13:01:30+00:00",
+    "start": "2026-11-21T15:01:31+00:00",
     "mood": "content",
     "steps": [
       {
-        "place": "courtyard",
+        "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
+        "emote": "question",
         "note": "",
         "thoughts": [
-          "These boards keep the rain out, for now."
-        ]
-      },
-      {
-        "place": "workbench",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "My thumb still measures better than any ruler."
-        ]
-      },
-      {
-        "place": "glasshouse",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "Seedlings look hungry, maybe water later."
+          "Need sharper file for the bolts"
         ]
       },
       {
         "place": "fire",
-        "action": "sit",
+        "action": "work",
         "minutes": 20,
-        "emote": "spark",
+        "emote": "dots",
         "note": "",
         "thoughts": [
-          "Fire's still quiet, must be on break."
+          "That beam could use a tighter brace"
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "",
+        "thoughts": [
+          "Rain might soak the logs soon"
         ]
       }
-    ],
-    "applied_until": "2026-11-21T14:30:26+00:00",
-    "live_thought": {
-      "text": "The fire's glow keeps the cold at bay.",
-      "time": "2026-11-21T14:30:26+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-21T15:00:29+00:00",
-    "place": "raise:3",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-21T15:01:31+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "begin constructing the bathhouse in the courtyard",
-    "thought": "The roof is sealed, the glasshouse is alive, and the courtyard still has space. I could use a hot soak before nightfall."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 88.0,
-    "warmth": 73.2,
+    "rest": 79.0,
+    "warmth": 77.9,
     "inspiration": 90.1,
-    "spirit": 86.1
+    "spirit": 87.5
   },
   "needs_prev": {
     "rest": 87.6,
@@ -106,7 +91,7 @@
     "inspiration": 90.1,
     "spirit": 87.1
   },
-  "needs_at": "2026-11-21T15:00:29+00:00",
+  "needs_at": "2026-11-21T15:01:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -674,6 +659,18 @@
         "kind": null,
         "look": null,
         "finished": "2026-11-21T13:00:28+00:00"
+      },
+      {
+        "key": "bathhouse",
+        "name": "the bathhouse",
+        "about": "a timber hut with a wooden tub and a stove",
+        "place": "bathhouse",
+        "plot": 3,
+        "done": 1,
+        "needed": 4,
+        "kind": null,
+        "look": null,
+        "finished": null
       }
     ],
     "plots": 4
@@ -707,8 +704,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-21T14:30:26+00:00",
-    "seen_until": "2026-11-21T12:55:26+00:00"
+    "updated": "2026-11-21T15:01:31+00:00",
+    "seen_until": "2026-11-21T14:55:27+00:00"
   },
   "gifts": [],
   "gate": [
@@ -824,5 +821,5 @@
       }
     }
   },
-  "exported": "2026-11-21T15:00:29+00:00"
+  "exported": "2026-11-21T15:01:32+00:00"
 }
