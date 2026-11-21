@@ -562,7 +562,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping, his instant reactions, live captions (**done**: switched on when the keeper sets `KNIGHT_CREATURES` to `on`) | **yes, creatures arrive** |
 | 8 | The companion | yes |
 | 9 | Visitor help and names | yes |
-| 10+ | The rest of the bestiary in waves of about 7 to 9 | yes, gradually |
+| 10+ | The rest of the bestiary in waves of about 7 to 9 (**wave 2 released**: the sky whale, the lamp-eaters, the barrow lord, the Thornmother, the Lantern Folk, the Pale Brood, the Thin Crowd, the Doorway Figure) | yes, gradually |
 
 **Starter set for wave 1** (chosen by the keeper; all seven now at final quality, and only these can come to the real keep until the next wave): the fog with eyes
 (common, mildly hostile), the giant axolotl (gentle), the Bell-Crab (neutral), the Glassbeak

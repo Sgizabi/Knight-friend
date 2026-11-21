@@ -158,6 +158,28 @@ function sheet(parent, pts, tris, material) {
   const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(arr, 3)); g.computeVertexNormals();
   const m = new T.Mesh(g, material); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
 }
+// Performance: many small still pieces (a woven body, a tangle of branches) cost one draw each.
+// Merge a group's direct mesh children into one mesh per material; what animates stays separate.
+function merge(group) {
+  const byMat = new Map();
+  for (const c of [...group.children]) {
+    if (!c.isMesh || c.isInstancedMesh || c.userData.keep) continue;
+    c.updateMatrix();
+    let geo = c.geometry.index ? c.geometry.toNonIndexed() : c.geometry.clone();
+    geo.applyMatrix4(c.matrix);
+    if (!geo.attributes.normal) geo.computeVertexNormals();
+    const list = byMat.get(c.material) || []; list.push(geo); byMat.set(c.material, list);
+    group.remove(c);
+  }
+  for (const [material, geos] of byMat) {
+    const n = geos.reduce((k, g) => k + g.attributes.position.count, 0);
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3);
+    let o = 0;
+    for (const g of geos) { pos.set(g.attributes.position.array, o * 3); nor.set(g.attributes.normal.array, o * 3); o += g.attributes.position.count; g.dispose(); }
+    const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('normal', new T.BufferAttribute(nor, 3));
+    const m = new T.Mesh(geo, material); m.castShadow = true; m.receiveShadow = true; group.add(m);
+  }
+}
 function canvasTex(w, h, draw) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
   const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
@@ -1744,58 +1766,97 @@ const BEASTS = {
   // ================================================================ THE THORNMOTHER
   thorn: {
     name: 'The Thornmother', hour: 13,
-    blurb: 'A walking thicket in the shape of a great stag, with antlers of briar and blossom. Brambles spring up where it steps. It is old, and it is not in a hurry.',
-    view: [[-9.4, 2.3, 2.0], [-11.5, 2.2, 7.8]],
+    blurb: 'A great stag woven of bramble and briar, deep in the chest and high in the neck, with antlers of thorn in blossom. Brambles spring up where it steps, and fade again. It is old, and it is not in a hurry.',
+    view: [[-8.2, 2.4, 3.6], [-11.4, 2.0, 7.8]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'question', note: 'watching the brambles grow where it walked' },
     build(root) {
-      const g = G(root, [-11, 0, 7.8]);
-      const bark = A.mat('#4a3b2a', 0, .95), barkD = A.mat('#33281d', 0, .95), leaf = A.mat('#56703a', 0, .9), leafL = A.mat('#7a9548', 0, .9);
-      const bloom = A.mat('#e8a6b8', 0, .7), thornM = A.mat('#2a2018', 0, .8), eye = glow('#c8ff9a', 1.8);
-      const body = G(g), r = A.rand(12);
-      P(body, A.ico(1, 1), bark, [0, 2.2, 0], { scale: [.36, .42, 1.0], jitter: .1 });
-      for (let i = 0; i < 46; i++) {   // the tangle
-        const a = V(r() - .5, r() - .5, r() - .5).multiply(V(1.1, 1.1, 2.6)), b = a.clone().add(V(r() - .5, r() - .5, r() - .5).multiplyScalar(1.1));
-        bone(body, [a.x, 2.2 + a.y, a.z], [b.x, 2.2 + b.y, b.z], .045, .02, i % 3 ? bark : barkD, 4);
-        if (i % 3 === 0) P(body, new T.ConeGeometry(.02, .12, 3), thornM, [b.x, 2.2 + b.y, b.z], { rot: [r() * 3, 0, r() * 3], cast: false });
-        if (i % 3 === 1) P(body, A.ico(.15 + (i % 4) * .03, 0), i % 2 ? leaf : leafL, [a.x * .95, 2.25 + a.y, a.z * .95], { jitter: .04 });
-        if (i % 9 === 4) P(body, A.ico(.05, 0), bloom, [b.x, 2.2 + b.y, b.z], { cast: false });
-      }
+      const v = root.userData.appearance?.variant || {};
+      const size = (v.size || 1) * (v.age === 'young' ? .7 : v.age === 'old' ? 1.1 : 1);
+      const g = G(root, [-11, 0, 7.8]); const stag = G(g); stag.scale.setScalar(size);
+      const bark = A.mat('#4a3b2a', 0, .95), barkD = A.mat('#2f251b', 0, .95), core = A.mat('#3a2e20', 0, 1);
+      const leaf = A.mat('#56703a', 0, .9), leafL = A.mat('#7a9548', 0, .9), moss = A.mat('#4f6a33', 0, 1);
+      const bloom = A.mat('#eab0c0', 0, .7, { emissive: '#3a1c24', emissiveIntensity: .3 }), bloomW = A.mat('#f3ecdc', 0, .7);
+      const thornM = A.mat('#22190f', 0, .8), hoof = A.mat('#1a1410', .1, .6), eye = glow('#c8ff9a', 1.4);
+      const r = A.rand(12 + Math.abs(Math.round((v.hue || 0) * 1000)));
+      // vines woven round a shape: arcs over the surface of an ellipsoid (centre c, radii rad)
+      const weave = (parent, c, rad, n, thick) => {
+        P(parent, A.ico(1, 1), core, c, { scale: rad.map(x => x * .72), jitter: .04 });            // the dark heart of the thicket
+        for (let i = 0; i < n; i++) {
+          const a0 = r() * 6.28, b0 = (r() - .5) * 2.4, da = (r() - .5) * 1.6, db = (r() - .5) * 1.2;
+          let prev = null;
+          for (let k = 0; k <= 4; k++) {
+            const a = a0 + da * k / 4, b = b0 + db * k / 4;
+            const p = [c[0] + Math.cos(a) * Math.cos(b) * rad[0], c[1] + Math.sin(b) * rad[1], c[2] + Math.sin(a) * Math.cos(b) * rad[2]];
+            if (prev) bone(parent, prev, p, thick, thick * .8, i % 3 ? bark : barkD, 4, .01);
+            if (prev && k === 2 && i % 2) P(parent, new T.ConeGeometry(.018, .1, 3), thornM, p, { rot: [r() * 3, 0, r() * 3], cast: false });
+            prev = p;
+          }
+          if (i % 4 === 0) P(parent, A.ico(.1 + r() * .08, 0), r() < .5 ? leaf : leafL, prev, { jitter: .03, cast: false });
+          if (i % 7 === 3) P(parent, A.ico(.045, 0), r() < .7 ? bloom : bloomW, prev, { cast: false });
+          if (i % 9 === 5) P(parent, A.ico(.08, 0), moss, prev, { scale: [1, .5, 1], cast: false });
+        }
+      };
+      const body = G(stag, [0, 0, 0]);
+      weave(body, [0, 2.05, .25], [.42, .5, .55], 64, .042);               // the deep chest
+      weave(body, [0, 2.0, -.5], [.36, .4, .5], 46, .036);                 // the belly and haunch
+      // legs: twisted bundles of three vines, jointed like a stag's, dark hooves
       const legs = [];
-      for (const [x, z] of [[-.35, .9], [.35, .9], [-.35, -.9], [.35, -.9]]) {
-        const l = G(body, [x, 2.0, z]);
-        for (let k = 0; k < 3; k++) { bone(l, [k * .04 - .04, 0, 0], [x * .2 + (k - 1) * .05, -1.0, .05], .06, .045, k % 2 ? bark : barkD, 5); bone(l, [x * .2 + (k - 1) * .05, -1.0, .05], [x * .1 + (k - 1) * .04, -2.0, 0], .045, .035, k % 2 ? barkD : bark, 5); }
-        legs.push({ l, ph: (x > 0 ? 0 : Math.PI) + (z > 0 ? 0 : Math.PI / 2) });
+      for (const [x, z, front] of [[-.24, .55, 1], [.24, .55, 1], [-.22, -.75, 0], [.22, -.75, 0]]) {
+        const top = G(body, [x, 1.75, z]);
+        const mid = G(top, [0, -.72, front ? .04 : -.14]);
+        const low = G(mid, [0, -.55, front ? -.04 : .12]);
+        for (let k = 0; k < 3; k++) {
+          const tw = (k - 1) * .035;
+          bone(top, [tw, .1, 0], [-tw, -.72, front ? .04 : -.14], .055, .04, k % 2 ? bark : barkD, 5);
+          bone(mid, [0, 0, 0], [tw, -.55, front ? -.04 : .12], .042, .032, k % 2 ? barkD : bark, 5);
+          bone(low, [0, 0, 0], [-tw * .5, -.46, .04], .03, .026, k % 2 ? bark : barkD, 5);
+        }
+        P(low, A.cyl(.05, .07, .1, 6), hoof, [0, -.5, .05]);
+        legs.push({ top, mid, front, ph: (x > 0 ? 0 : Math.PI) + (front ? 0 : Math.PI * .5) });
       }
-      const neck = G(body, [0, 2.5, 1.15], [-.6, 0, 0]);
-      for (let k = 0; k < 4; k++) bone(neck, [(k - 1.5) * .06, 0, 0], [(k - 1.5) * .04, .95, .05], .07, .05, k % 2 ? bark : barkD, 5);
-      const head = G(neck, [0, 1.0, .05], [.9, 0, 0]);
-      for (let k = 0; k < 4; k++) bone(head, [(k - 1.5) * .05, 0, -.1], [(k - 1.5) * .02, -.05, .65], .06, .025, k % 2 ? bark : barkD, 5);
-      for (const sx of [-1, 1]) P(head, A.ico(.04, 0), eye, [sx * .1, .04, .18], { cast: false });
+      // the neck, held high; the long head
+      const neck = G(body, [0, 2.3, .72], [-.95, 0, 0]);
+      weave(neck, [0, .45, 0], [.2, .55, .18], 26, .03);
+      const head = G(neck, [0, 1.0, 0], [1.25, 0, 0]);
+      weave(head, [0, 0, .25], [.13, .14, .34], 18, .025);
+      P(head, A.ico(.06, 0), hoof, [0, -.03, .58], { cast: false });         // the nose, a knot of dark wood
+      for (const sx of [-1, 1]) {
+        P(head, A.ico(.028, 0), eye, [sx * .11, .06, .2], { cast: false });  // faint and green, kindly enough
+        const ear = G(head, [sx * .12, .14, .0], [-.3, 0, sx * -.9]); P(ear, A.ico(.07, 0), leaf, [0, .08, 0], { scale: [.5, 1.3, .25] });
+      }
+      // antlers of briar, thorned, in blossom
       const branch = (from, dir, len, depth) => {
         const to = [from[0] + dir[0] * len, from[1] + dir[1] * len, from[2] + dir[2] * len];
-        bone(head, from, to, .03 + depth * .012, .015 + depth * .008, bark, 5);
+        bone(head, from, to, .03 + depth * .012, .015 + depth * .008, depth > 1 ? barkD : bark, 5);
         for (let k = 0; k < 2; k++) { const u = .3 + k * .4; P(head, new T.ConeGeometry(.015, .09, 3), thornM, [from[0] + dir[0] * len * u, from[1] + dir[1] * len * u + .03, from[2] + dir[2] * len * u], { cast: false }); }
-        if (depth === 0) { if (r() < .6) P(head, A.ico(.05, 0), bloom, to, { cast: false }); return; }
-        for (const s of [-1, 1]) { const d = V(dir[0] + s * .4 * (r() + .3), dir[1] + .15, dir[2] + (r() - .6) * .4).normalize(); branch(to, [d.x, d.y, d.z], len * .65, depth - 1); }
+        if (depth === 0) { P(head, A.ico(.055, 0), r() < .65 ? bloom : bloomW, to, { cast: false }); if (r() < .5) P(head, A.ico(.07, 0), leafL, [to[0], to[1] - .05, to[2]], { scale: [1, .4, 1], cast: false }); return; }
+        for (const s of [-1, 1]) { const d = V(dir[0] + s * .4 * (r() + .3), dir[1] + .15, dir[2] + (r() - .6) * .4).normalize(); branch(to, [d.x, d.y, d.z], len * .66, depth - 1); }
       };
-      for (const sx of [-1, 1]) branch([sx * .08, .1, -.05], [sx * .6, .75, -.3], .55, 3);
-      // brambles where it has walked
+      for (const sx of [-1, 1]) branch([sx * .09, .13, -.02], [sx * .55, .8, -.25], .6, 3);
+      merge(body); merge(neck); merge(head);                                // one draw per material, not hundreds
+      for (const { top, mid } of legs) { merge(top); merge(mid); }
+      // brambles where it has walked: they spring up, and fade again
       const brambles = Array.from({ length: 12 }, () => {
         const b = G(root); b.visible = false; const rr = A.rand(Math.floor(r() * 1e6));
-        for (let k = 0; k < 6; k++) { const a = rr() * 6.28; bone(b, [0, 0, 0], [Math.cos(a) * .35, .1 + rr() * .3, Math.sin(a) * .35], .02, .008, bark, 4); }
-        P(b, A.ico(.12, 0), leaf, [0, .1, 0]); if (rr() < .5) P(b, A.ico(.04, 0), bloom, [.1, .3, 0]);
-        return b;
+        for (let k = 0; k < 7; k++) { const a = rr() * 6.28; bone(b, [0, 0, 0], [Math.cos(a) * .4, .1 + rr() * .35, Math.sin(a) * .4], .022, .008, bark, 4); }
+        P(b, A.ico(.13, 0), leaf, [0, .1, 0]); if (rr() < .6) P(b, A.ico(.045, 0), bloom, [.1, .32, 0]);
+        merge(b); b.userData.born = -99; return b;
       });
       let lastX = -11, bi = 0, dir = 1;
       return (t, dt) => {
-        const x = -11.2 + Math.sin(t * .045) * 4.2, v = x - g.position.x;
-        if (Math.abs(v) > 1e-5) dir = Math.sign(v);
-        g.position.x = x; g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 1.5);
-        const moving = Math.abs(Math.cos(t * .045)) > .12, ph = t * 2.2;
-        for (const { l, ph: p } of legs) l.rotation.x = moving ? Math.sin(ph + p) * .28 : 0;
-        body.position.y = moving ? Math.abs(Math.sin(ph)) * .05 : 0;
-        neck.rotation.x = -.6 + Math.sin(t * .3) * .08; head.rotation.y = Math.sin(t * .25) * .3;
-        if (Math.abs(x - lastX) > 1.1) { const b = brambles[bi++ % brambles.length]; b.position.set(x, 0, 7.8 + (bi % 2 ? .5 : -.5)); b.rotation.y = bi; b.visible = true; lastX = x; }
+        const x = -11.2 + Math.sin(t * .045) * 4.2, vx = x - g.position.x;
+        if (Math.abs(vx) > 1e-5) dir = Math.sign(vx);
+        g.position.set(x, gy(x, 7.8), 7.8); g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 1.5);
+        const moving = Math.abs(Math.cos(t * .045)) > .12, ph = t * 2.0;
+        for (const { top, mid, front, ph: p } of legs) {
+          const s = moving ? Math.sin(ph + p) : 0;
+          top.rotation.x = s * .3; mid.rotation.x = Math.max(0, front ? -s : s) * .5 * (front ? 1 : -1);
+        }
+        body.position.y = moving ? Math.abs(Math.sin(ph)) * .04 : 0;
+        neck.rotation.x = -.95 + Math.sin(t * .3) * .06 + (moving ? 0 : pulse(t, 17, 6) * .5);   // stops now and then to graze
+        head.rotation.y = Math.sin(t * .25) * .3;
+        if (Math.abs(x - lastX) > 1.1) { const b = brambles[bi++ % brambles.length]; b.position.set(x, gy(x, 7.8), 7.8 + (bi % 2 ? .5 : -.5)); b.rotation.y = bi; b.visible = true; b.userData.born = t; lastX = x; }
+        for (const b of brambles) if (b.visible) { const k = (t - b.userData.born) / 40; b.scale.setScalar(Math.min(1, (t - b.userData.born) * 1.5) * (1 - smooth(.7, 1, k))); if (k > 1) b.visible = false; }
       };
     },
   },
@@ -2166,6 +2227,7 @@ const BEASTS = {
       }
       sheet(segs[1], [[0, .38, .3], [0, .46, 0], [0, .5, -.4], [0, .38, -.62], [0, .3, -.62], [0, .3, .3]], [[0, 1, 5], [1, 4, 5], [1, 2, 4], [2, 3, 4]], finM);
 
+      segs.forEach(merge); merge(head); tail.forEach(merge);               // fewer draws, same look
       // where it goes: a slow loop along the lane between the building plots, turning in the open
       // at either end, resting now and then nearest the warm doorway. Its body follows its own path
       // (each part where the head has been), so it never swings through a wall, the well or him.

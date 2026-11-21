@@ -95,7 +95,8 @@ STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off
 # Beings that can come to the real keep: the waves released so far, each with its final art.
 # The rest are fully built behind the scenes and come as their waves are released (tests, the
 # simulator and the preview can use all of them: KNIGHT_ALL_BEINGS=on).
-RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "longman"}   # wave 1
+RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "longman",       # wave 1
+            "whale", "moths", "barrow", "thorn", "lanternheads", "brood", "thincrowd", "doorway"}   # wave 2
 
 
 def released(kind):
