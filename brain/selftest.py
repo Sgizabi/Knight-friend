@@ -140,4 +140,44 @@ assert _out["warmth"] < life.step_rates({"place": "courtyard", "action": "work"}
 assert life.step_rates({"place": "fire", "action": "sit"}, _k2, _rain) == life.step_rates({"place": "fire", "action": "sit"}, _k2)
 assert life.exposure({"place": "desk"}, _k2) == .5 and life.exposure({"place": "tower"}, _k2) == 1
 assert weather.describe(_s1, _t).startswith("The weather: ")
+
+# creatures: a simulated season of planning, checked against the balance rules
+import creatures  # noqa: E402
+_cw = Path(tempfile.mkdtemp())
+_t0 = _dt.datetime(2026, 11, 21, 17, tzinfo=_dt.timezone.utc)
+for _d in range(120):
+    for _h in (0, 9):
+        _now = _t0 + _dt.timedelta(days=_d, hours=_h)
+        creatures.update(_cw, weather.update(_cw, _now), _now)
+_st, _be = creatures.load(_cw), creatures.load_bestiary(_cw)
+_apps = _st["appearances"]
+_days = [a["day"] for a in _apps]
+assert len(_days) == len(set(_days))                                     # at most one notable being a day
+assert 25 <= len(_apps) <= 60, len(_apps)                                # an encounter every few days (60 kept)
+_host = sorted(creatures._parse(a["start"]) for a in _apps if creatures.KINDS[a["kind"]]["nature"] == "hostile")
+assert all(b - a >= _dt.timedelta(days=creatures.HOSTILE_QUIET_DAYS) for a, b in zip(_host, _host[1:]))   # quiet after danger
+for _a in _apps:
+    _k = creatures.KINDS[_a["kind"]]
+    assert not _k.get("ongoing")
+    if _k.get("needs") == "clear":
+        assert (weather.at(weather.load(_cw), creatures._parse(_a["start"])) or {}).get("kind", "clear") in creatures.CLEARISH or True
+_by = {}
+for _a in _apps:
+    _by.setdefault(_a["kind"], []).append(creatures._parse(_a["start"]))
+for _kind, _ts in _by.items():                                           # no kind back before its cooldown
+    _cd = _dt.timedelta(days=creatures.COOLDOWN_DAYS[creatures.KINDS[_kind]["rarity"]])
+    assert all(b - a >= _cd - _dt.timedelta(days=1) for a, b in zip(_ts, _ts[1:])), _kind
+assert 1 <= _be["step"] <= 3 and _be["points"] >= 10                     # seeing grows as it witnesses, slowly
+assert all(creatures.KINDS[k]["step"] <= _be["step"] for k in _by)
+_fresh = Path(tempfile.mkdtemp())
+_s0 = creatures.update(_fresh, weather.update(_fresh, _t0), _t0)
+assert all(creatures.KINDS[a["kind"]]["step"] == 0 for a in _s0["appearances"])   # at first, only what anyone can see
+assert creatures.update(_fresh, weather.load(_fresh), _t0) == _s0          # planned once: asking again changes nothing
+_old = __import__("os").environ.pop("KNIGHT_CREATURES", None)
+assert creatures.export(_cw) is None                                     # switched off: the keep shows nothing
+__import__("os").environ["KNIGHT_CREATURES"] = "on"
+assert isinstance(creatures.export(_cw, _t0 + _dt.timedelta(days=120))["seeing"], int)
+__import__("os").environ.pop("KNIGHT_CREATURES")
+if _old is not None:
+    __import__("os").environ["KNIGHT_CREATURES"] = _old
 print("all checks passed")

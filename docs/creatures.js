@@ -2253,6 +2253,27 @@ function buildUI() {
   for (const ev of ['pointerdown', 'keydown', 'wheel']) el.addEventListener(ev, e => e.stopPropagation());
 }
 
+// For the live keep: build one being where it belongs, without the preview's panel, camera or
+// stand-in knight. Returns how to animate it and how to take it away again.
+export function spawn(key, api, appearance = {}) {
+  T = api.THREE; A = api; A.mat = api.mat;
+  const def = BEASTS[key];
+  if (!def) return null;
+  const root = new T.Group(); root.userData.appearance = appearance;
+  A.scene.add(root);
+  const tick = def.build(root);
+  A.onTick.push(tick);
+  return {
+    tick,
+    remove() {
+      def.exit?.();
+      const i = A.onTick.indexOf(tick); if (i >= 0) A.onTick.splice(i, 1);
+      A.scene.remove(root);
+      root.traverse(o => { if (o.isMesh) o.geometry?.dispose(); });
+    },
+  };
+}
+
 export function start(key, api) {
   T = api.THREE; A = api; A.mat = api.mat;
   buildUI();

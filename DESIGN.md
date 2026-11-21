@@ -5,7 +5,7 @@ weather, creatures with minds of their own, a companion, and visitors who can st
 something dangerous comes. It gathers everything the keeper has decided so far, in one place,
 so it can be approved before anything real is built.
 
-**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2) and **weather** (section 3).
+**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2) and **weather** (section 3). Built but switched off until wave 1: **the creature foundations** (section 4).
 The creature mockups can be seen at
 `https://sgizabi.github.io/Knight-friend/keep.html?demo&creature=dragon` (use ◀ ▶ to step through).
 Anything marked **open question** is still the keeper's call.
@@ -390,7 +390,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 1 | This design, approved by the keeper | — |
 | 2 | The bigger world: landscape, wider camera, room for plots beyond the walls (**done**) | yes (scenery) |
 | 3 | Weather: rules, visuals, effects on his needs (**done**) | yes |
-| 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep | behind the scenes |
+| 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep (**done**, switched off until wave 1) | behind the scenes |
 | 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary | behind the scenes |
 | 6 | Minds: behaviour minds and voices, real-model tests, budget caps, the watch list updated | behind the scenes |
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping | **yes, creatures arrive** |

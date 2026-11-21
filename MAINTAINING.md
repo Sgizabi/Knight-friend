@@ -25,6 +25,8 @@ Look at these, roughly in this order:
    - `weather.json`: the sky over the keep, about a day either side. The world chooses it by
      simple rules (no AI, no tokens); it nudges his warmth and rest, and very heavy weather
      keeps courtyard work from being possible until it passes.
+   - `creatures.json` and `bestiary.json` (once creatures are switched on): who is coming to
+     the keep and when (planned a day ahead by fair rules, no AI), and what he has seen so far.
 
 If something checks on Rooken for you (such as Claude Duet), point it at
 [WATCHLIST.md](WATCHLIST.md): what to check, what's normal, when to tell you, and what it must
@@ -58,6 +60,7 @@ All of these are set in the repository: **Settings → Secrets and variables →
 | Red runs that say `HTTP 401` (the Groq key stopped working) | Make a new key at [console.groq.com/keys](https://console.groq.com/keys). Put it in three places: the **secret** `GROQ_API_KEY`, the Streamlit secret `groq_api_key`, and your local `.env`. |
 | Visits or letters on the home page fail ("could not send") | The GitHub token in the Streamlit secrets has probably expired. Make a new fine-grained token at GitHub → Settings → Developer settings → Personal access tokens. Limit it to the Knight-friend repository with **Actions: Read and write**, and put it in the Streamlit secret `github_token`. |
 | No check-ins at all (Actions shows no *Alarm check-in* runs) | The alarm lives at [cron-job.org](https://cron-job.org). It stops a job after too many failures in a row, so check it there. The job POSTs to `https://api.github.com/repos/Sgizabi/Knight-friend/actions/workflows/wake.yml/dispatches` with the body `{"ref":"main","inputs":{"check_in":"true"}}`. If its token has expired, make a new one like the one above (Actions read/write on this repository only) and paste it into the job's `Authorization: Bearer …` header. |
+| Switching the creatures on or off | **Variable** `KNIGHT_CREATURES`: `on` lets beings come to the keep (from wave 1); delete it, or set anything else, and none come. Nothing is lost either way. |
 | The home page says the app is asleep | Streamlit apps sleep after a few days without visitors. Opening the page and pressing the button wakes it. Rooken itself keeps living either way. |
 
 **Streamlit secrets** are under share.streamlit.io → the app → **Settings → Secrets**. There

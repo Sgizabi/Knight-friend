@@ -13,6 +13,7 @@ import math
 import re
 from pathlib import Path
 
+import creatures
 import weather
 
 NEEDS = ["rest", "warmth", "inspiration", "spirit"]
@@ -557,6 +558,8 @@ def export_state(world: Path, docs: Path):
         "health": {k: v for k, v in _load(world / "health.json", {}).items() if k in ("unwell", "failing_since")},
         # the sky over the keep, a day either side, and how it moves the bars
         "weather": weather.export(world),
+        # beings at the keep now or soon, and how much it can see (only once creatures are switched on)
+        **({"creatures": c} if (c := creatures.export(world)) else {}),
         "exported": _now().replace(microsecond=0).isoformat(),
     }
     _save(docs / "data" / "state.json", state)

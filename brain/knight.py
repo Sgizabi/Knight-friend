@@ -30,6 +30,7 @@ import letterbox  # noqa: E402
 import site_builder  # noqa: E402
 import visitors as visits  # noqa: E402
 import weather  # noqa: E402
+import creatures  # noqa: E402
 from llm import (Brain, DailyLimit, FakeBrain, LLMError, chosen_models, parse_json, read_meta,  # noqa: E402
                  TPM_LIMIT, tests_today, write_meta)
 
@@ -397,6 +398,8 @@ class Knight:
         self.keep = life.load_keep(WORLD)
         self.needs = life.load_needs(WORLD)
         self.sky = weather.update(WORLD)   # the weather a day either side (chosen by the world, no AI)
+        if creatures.enabled():            # who comes to the keep, planned a day ahead (no AI; off until wave 1)
+            creatures.update(WORLD, self.sky)
         # how long since its needs were last saved (for the slow drift of time), and where they
         # stood, so the page can show what changed this wake-up
         self.needs_idle_minutes = minutes_since(self.needs.get("updated")) or 0

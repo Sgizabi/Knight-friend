@@ -105,6 +105,8 @@ const CREATURE = DEMO ? params.get('creature') : null;   // a preview of a creat
 let skyHour = DEMO && params.has('hour') ? +params.get('hour') : null;   // previews: a fixed time of day
 let fireDim = 1;   // previews: something eating the light
 const onTick = [];   // previews: creatures animate here
+const beings = new Map();   // beings at the keep now: appearance id -> what spawn() returned
+let creatureMod = null, beingsReady = false;   // (the loader runs once the page has started)
 const HOME = 'https://knight-friend.streamlit.app';   // its home page, where visitors knock, leave gifts and so on
 let injected = null;
 try { injected = JSON.parse($('knight-data').textContent); } catch { /* not injected: we're on the website */ }
@@ -1638,6 +1640,9 @@ function demoState() {
     writings: [{ title: 'Ode to a Candle', form: 'poem' }, { title: 'Complaint about the Rain', form: 'letter' }],
     plan: { mood: 'curious' },
     visits: { candles_tonight: +(params.get('candles') ?? 6), knocks_today: 4 },
+    // ?demo&appear=glassbeak: a being at the keep, the way the live keep would show one
+    ...(params.has('appear') ? { creatures: { seeing: 4, current: [{ id: 'demo', kind: params.get('appear'), render: params.get('appear'),
+      start: new Date(Date.now() - 60000).toISOString(), end: new Date(Date.now() + 3600000).toISOString() }] } } : {}),
     gifts: ['pebble', 'book:sea', 'feather', 'pebble', 'oak', 'book:birds', 'candle', 'book:stars', 'pebble', 'feather'],
   };
 }
@@ -1750,6 +1755,7 @@ function applyState(next, fetched = false) {
   showDoorstep();   // gifts it brought in at its last wake-up are no longer waiting outside
   showCandles();
   updateSky();      // the weather may have changed with the new state
+  showBeings();     // and someone may have come, or gone
 }
 
 // =====================================================================================
@@ -2354,16 +2360,32 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog,
     const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ'); lookYaw = e.y; lookPitch = e.x; flyVel.set(0, 0, 0);
   },
   updateSky, visitorArrived,
+  setCreatures(list) { state = { ...(state || {}), creatures: { seeing: 4, current: list } }; return showBeings().then(() => beings.size); },   // testing
+  get beingsHere() { return [...beings.keys()]; },
   setCandles: n => { liveCandles = { n, at: Date.now() }; state = { ...(state || {}), visits: { candles_tonight: n } }; showCandles(); },
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
   get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
-if (CREATURE) import(`${ASSETS || './'}creatures.js?v=${Date.now()}`)   // always the newest preview, never a cached copy
-  .then(m => m.start(CREATURE, {
+const creatureApi = () => ({
   THREE, scene, camera, M, BM, mat, part, facet, hash, rand, cyl, box, ico, onTick, K, fireLight, updateSky, toast,
   view: window.__keep.view, setHour(h) { skyHour = h; updateSky(); }, get hour() { return skyHour; },
   setFireDim(v) { fireDim = v; }, force(goal) { window.__force = goal; },
-})).catch(e => console.error('creature preview', e));
+});
+const loadCreatures = () => import(`${ASSETS || './'}creatures.js?v=${Date.now()}`);   // always the newest, never a cached copy
+if (CREATURE) loadCreatures().then(m => m.start(CREATURE, creatureApi())).catch(e => console.error('creature preview', e));
+
+// Beings at the keep (state.creatures, once they are switched on): fetched only when one is
+// coming, placed while it is here, taken away when it leaves. Everyone sees the same ones.
+async function showBeings() {
+  if (CREATURE || !beingsReady) return;   // the preview shows its own
+  const now = Date.now(), list = state?.creatures?.current || [];
+  if (list.length && !creatureMod) creatureMod = await loadCreatures().catch(() => null);   // fetched ahead, while it's still on its way
+  if (!creatureMod) return;
+  const here = list.filter(a => Date.parse(a.start) <= now && now < Date.parse(a.end));
+  for (const [id, b] of beings) if (!here.some(a => a.id === id)) { b?.remove(); beings.delete(id); }
+  for (const a of here) if (!beings.has(a.id)) beings.set(a.id, creatureMod.spawn(a.render || a.kind, creatureApi(), a));
+}
+beingsReady = true; showBeings(); setInterval(showBeings, 30000);
 </script>
 </body>
 </html>
