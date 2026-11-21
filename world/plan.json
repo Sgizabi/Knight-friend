@@ -1,18 +1,46 @@
 {
-  "start": "2026-11-21T11:00:33+00:00",
-  "mood": "sleepy",
-  "applied_until": "2026-11-21T12:30:23+00:00",
+  "start": "2026-11-21T13:01:30+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 120,
-      "emote": "zzz",
-      "note": "asleep for the night"
+      "place": "courtyard",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "These boards keep the rain out, for now."
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "My thumb still measures better than any ruler."
+      ]
+    },
+    {
+      "place": "glasshouse",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "Seedlings look hungry, maybe water later."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "Fire's still quiet, must be on break."
+      ]
     }
-  ],
-  "live_thought": {
-    "text": "Rain drums on stone, I could linger a bit longer.",
-    "time": "2026-11-21T12:30:23+00:00"
-  }
+  ]
 }

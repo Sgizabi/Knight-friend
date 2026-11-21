@@ -1,60 +1,45 @@
 {
-  "start": "2026-11-21T02:40:38+00:00",
-  "mood": "sleepy",
+  "start": "2026-11-21T13:01:30+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 70,
-      "emote": "zzz",
-      "note": "rest",
-      "thoughts": [
-        "Cold stone still bites.",
-        "Need to let the fire keep the night."
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
+      "place": "courtyard",
+      "action": "work",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "warm up",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "The flames are finally quiet.",
-        "Maybe I should thank the fire for overtime."
+        "These boards keep the rain out, for now."
       ]
     },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
-      "note": "check lantern oil",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "Oil level is worrying.",
-        "Should I craft a refill bottle later?"
+        "My thumb still measures better than any ruler."
       ]
     },
     {
-      "place": "courtyard",
-      "action": "gaze",
-      "minutes": 20,
-      "emote": "cloud",
-      "note": "inspect glasshouse",
-      "thoughts": [
-        "One pane missing, still holds heat.",
-        "Stone looks less stubborn today."
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
+      "place": "glasshouse",
+      "action": "work",
       "minutes": 20,
       "emote": "spark",
-      "note": "log day's work",
+      "note": "",
       "thoughts": [
-        "Ink is half‑full, good enough.",
-        "Will add the glasshouse note tomorrow."
+        "Seedlings look hungry, maybe water later."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "Fire's still quiet, must be on break."
       ]
     }
   ]

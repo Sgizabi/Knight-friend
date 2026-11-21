@@ -30,42 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 26,
-    "last_wake": "2026-11-21T11:00:33+00:00",
+    "wakeups": 27,
+    "last_wake": "2026-11-21T13:01:31+00:00",
     "nights_slept_through": 8
   },
   "plan": {
-    "start": "2026-11-21T11:00:33+00:00",
-    "mood": "sleepy",
-    "applied_until": "2026-11-21T12:30:23+00:00",
+    "start": "2026-11-21T13:01:30+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
-        "emote": "zzz",
-        "note": "asleep for the night"
+        "place": "courtyard",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "These boards keep the rain out, for now."
+        ]
+      },
+      {
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "My thumb still measures better than any ruler."
+        ]
+      },
+      {
+        "place": "glasshouse",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "Seedlings look hungry, maybe water later."
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "Fire's still quiet, must be on break."
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "Rain drums on stone, I could linger a bit longer.",
-      "time": "2026-11-21T12:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-21T13:00:27+00:00",
-    "place": "raise:2",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-21T13:01:31+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "install the last pane and secure the frame",
-    "thought": "The glass panes are almost in place, just need a final seal."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
-    "warmth": 62.2,
+    "rest": 91.0,
+    "warmth": 68.8,
     "inspiration": 89.7,
-    "spirit": 78.1
+    "spirit": 90.1
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +101,7 @@
     "inspiration": 89.1,
     "spirit": 78.8
   },
-  "needs_at": "2026-11-21T13:00:27+00:00",
+  "needs_at": "2026-11-21T13:01:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -112,6 +140,11 @@
       "woodshed": {
         "rest": -0.04,
         "warmth": -0.12
+      },
+      "glasshouse": {
+        "warmth": -0.03,
+        "rest": -0.02,
+        "inspiration": 0.07
       }
     },
     "spirit_home": 55.0,
@@ -631,11 +664,11 @@
         "about": "salvaged panes over a potting bench, warm even in winter",
         "place": "glasshouse",
         "plot": 2,
-        "done": 3,
+        "done": 4,
         "needed": 4,
         "kind": null,
         "look": null,
-        "finished": null
+        "finished": "2026-11-21T13:00:28+00:00"
       }
     ],
     "plots": 4
@@ -651,7 +684,8 @@
     "courtyard",
     "tower",
     "forge",
-    "woodshed"
+    "woodshed",
+    "glasshouse"
   ],
   "gallery": [],
   "projects": [],
@@ -668,8 +702,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-21T12:30:23+00:00",
-    "seen_until": "2026-11-21T02:25:25+00:00"
+    "updated": "2026-11-21T13:01:31+00:00",
+    "seen_until": "2026-11-21T12:55:26+00:00"
   },
   "gifts": [],
   "gate": [
@@ -785,5 +819,5 @@
       }
     }
   },
-  "exported": "2026-11-21T13:00:27+00:00"
+  "exported": "2026-11-21T13:01:32+00:00"
 }

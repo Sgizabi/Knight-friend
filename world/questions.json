@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261119",
-      "items": [
-        {
-          "id": "t20261119-0",
-          "text": "That oil seal still leaking like gossip?"
-        },
-        {
-          "id": "t20261119-1",
-          "text": "Thumb still throbbing from the hammer?"
-        },
-        {
-          "id": "t20261119-2",
-          "text": "Stair feels steady enough for a climb?"
-        },
-        {
-          "id": "t20261119-3",
-          "text": "Did the mortar’s grit ruin the wall’s look?"
-        },
-        {
-          "id": "t20261119-4",
-          "text": "Why the fire crackles louder when you work?"
-        },
-        {
-          "id": "t20261119-5",
-          "text": "What’s the weirdest thing you’ve found in the rubble?"
-        }
-      ]
-    },
-    {
       "date": "20261120",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261120-5",
           "text": "Do you ever miss the roof’s warmth?"
+        }
+      ]
+    },
+    {
+      "date": "20261121",
+      "items": [
+        {
+          "id": "t20261121-0",
+          "text": "That cracked stone—do you think it'll hold?"
+        },
+        {
+          "id": "t20261121-1",
+          "text": "Why does the fire stay so quiet now?"
+        },
+        {
+          "id": "t20261121-2",
+          "text": "Did the new roof board sing when you nailed it?"
+        },
+        {
+          "id": "t20261121-3",
+          "text": "How's the glasshouse vibe with those seedlings?"
+        },
+        {
+          "id": "t20261121-4",
+          "text": "Do the woodshed logs ever argue with each other?"
+        },
+        {
+          "id": "t20261121-5",
+          "text": "Is the east wall whispering anything as you work?"
         }
       ]
     }
