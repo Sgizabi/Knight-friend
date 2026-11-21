@@ -425,20 +425,25 @@ const BEASTS = {
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'very carefully not meeting its eyes' },
     build(root) {
       const v = root.userData.appearance?.variant || {};
-      const size = (v.size || 1) * (v.age === 'young' ? .6 : v.age === 'old' ? 1.1 : 1);
+      const young = v.age === 'young', old = v.age === 'old';
+      // the young: bright banding, hardly a frill, a shorter tail, bigger eyes. The old: faded, plates
+      // cracked and missing, one eye clouded over, old scars.
+      const size = (v.size || 1) * (young ? .55 : old ? 1.12 : 1);
       // it lies along the lane, head toward the doorway, and shifts a little forward and back (it never needs to turn)
       const g = G(root, [-10.0, 0, .1], [0, Math.PI / 2, 0]); const lizard = G(g); lizard.scale.setScalar(size);
-      const hide = A.mat('#56664a', 0, .7), hideD = A.mat('#3a4632', 0, .75), belly = A.mat('#9c9a70', 0, .8);
+      const hide = A.mat(young ? '#6f9a3c' : old ? '#6a7064' : '#56664a', 0, .7), hideD = A.mat(young ? '#2f4a1c' : old ? '#4a5048' : '#3a4632', 0, .75);
+      const belly = A.mat(young ? '#c8c27a' : '#9c9a70', 0, .8);
       const plate = A.mat('#8e9088', .1, .6), frill = ds('#6a2c26', 0, .8), claw = A.mat('#1a1712', .2, .5);
       const lidM = A.mat('#46543a', 0, .7);
-      const N = 12, segs = [];
+      const N = young ? 9 : 12, segs = [];
       let parent = lizard;
       for (let i = 0; i < N; i++) {                                   // overlapping, so it reads as one long body
         const r = i < 4 ? .42 + i * .02 : .5 * (1 - (i - 3) / (N - 1)) + .06;
         const s = G(parent, [0, i ? 0 : .42, i ? -.42 : 0]);
         P(s, A.ico(1, 2), i % 3 ? hide : hideD, [0, 0, 0], { scale: [r * 1.15, r * .72, r * 1.25], jitter: .015 });
         P(s, A.ico(1, 1), belly, [0, -r * .32, 0], { scale: [r * 1.05, r * .42, r * 1.15] });
-        P(s, A.box(r * .55, r * .12, r * .7), plate, [0, r * .7, 0], { rot: [-.25, 0, 0], jitter: .02 });   // a grey plate on the ridge
+        if (!(old && i % 4 === 2)) P(s, A.box(r * .55, r * .12, r * .7), plate, [0, r * .7, 0], { rot: [-.25, old ? (i % 3 - 1) * .2 : 0, old ? (i % 2 - .5) * .3 : 0], jitter: .02 });   // a grey plate on the ridge (cracked and missing, when old)
+        if (old && i === 2) P(s, A.box(.03, .02, .7), A.mat('#2a2a24'), [r * .7, r * .4, 0], { rot: [0, .2, .4], cast: false });   // a scar
         segs.push({ s, r }); parent = s;
       }
       const legs = [];
@@ -458,7 +463,7 @@ const BEASTS = {
       const lids = [];
       for (const sx of [-1, 1]) {
         const e = G(head, [sx * .2, .1, .3]);
-        P(e, A.ico(.055, 1), eyeMat, [0, 0, 0], { cast: false });
+        P(e, A.ico(young ? .075 : .055, 1), old && sx > 0 ? A.mat('#9a9a92', .1, .5) : eyeMat, [0, 0, 0], { cast: false });   // the old: one eye clouded
         P(e, A.box(.012, .07, .02), A.mat('#0a0a06'), [0, 0, .05], { cast: false });   // a slit pupil
         const lid = G(e, [0, 0, 0]); P(lid, new T.SphereGeometry(.065, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), lidM, [0, 0, 0], { cast: false, jitter: 0 });
         lids.push(lid);
@@ -466,7 +471,8 @@ const BEASTS = {
       }
       const crest = G(head, [0, .12, .02]);                             // a frill of bony spines with dull red skin between
       const tips = [];
-      for (let i = 0; i < 5; i++) { const a = -.9 + i * .45, tip = [Math.sin(a) * .42, .32 + Math.cos(a) * .4 - .2 * Math.abs(Math.sin(a)), -.25 - Math.cos(a) * .15]; bone(crest, [0, 0, 0], tip, .035, .01, plate, 5); tips.push(tip); }
+      const fr = young ? .35 : 1;                                       // the young: hardly a frill yet
+      for (let i = 0; i < 5; i++) { const a = -.9 + i * .45, tip = [Math.sin(a) * .42 * fr, (.32 + Math.cos(a) * .4 - .2 * Math.abs(Math.sin(a))) * fr, (-.25 - Math.cos(a) * .15) * fr]; bone(crest, [0, 0, 0], tip, .035, .01, plate, 5); tips.push(tip); }
       sheet(crest, [[0, 0, 0], ...tips], [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5]], frill);
       const tongue = G(head, [0, -.04, .7]);
       for (const sx of [-1, 1]) P(tongue, A.box(.02, .01, .2), A.mat('#8a2a3a'), [sx * .025, 0, .1], { rot: [0, sx * .25, 0], cast: false });
@@ -732,22 +738,27 @@ const BEASTS = {
     knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching the sky whale pass over' },
     build(root) {
       const v = root.userData.appearance?.variant || {};
-      const big = (v.size || 1) * (v.age === 'young' ? .55 : v.age === 'old' ? 1.15 : 1);
+      const young = v.age === 'young', old = v.age === 'old';
+      // the young: a rounder calf, paler, a handful of stars, short tendrils, quick little songs. The
+      // old: crowded with stars like barnacles, scarred, a notched fluke, long trailing tendrils,
+      // slow, deep rare songs.
+      const big = (v.size || 1) * (young ? .5 : old ? 1.18 : 1);
       const g = G(root, [0, 13, 0], [0, -Math.PI / 2, 0]); g.scale.setScalar(big);
-      const hide = A.mat('#2c3d5a', .05, .75, { emissive: '#1a2c48', emissiveIntensity: 1 });
+      const hide = A.mat(young ? '#4a6a8a' : old ? '#25303f' : '#2c3d5a', .05, .75, { emissive: young ? '#2a4a6a' : '#1a2c48', emissiveIntensity: 1 });
       const bellyM = A.mat('#6f7f96', 0, .8, { emissive: '#1a2333', emissiveIntensity: .5 });
       const finM = ds('#2b3c58', .05, .8);
       const prof = [[0, -8], [1.2, -7], [2.2, -5], [2.6, -2.5], [2.5, 0], [2.1, 2.5], [1.5, 4.5], [.9, 6.4], [.5, 7.8], [.12, 8.6], [0, 8.7]]
         .map(([r, y]) => new T.Vector2(r, y));
       const body = new T.Mesh(A.facet(new T.LatheGeometry(prof, 18), .12, 3), hide);
-      body.rotation.x = Math.PI / 2; body.scale.set(1.1, 1, .85); g.add(body);
+      body.rotation.x = Math.PI / 2; body.scale.set(1.1, young ? .78 : 1, .85 * (young ? 1.12 : 1)); g.add(body);
+      if (old) for (let i = 0; i < 6; i++) P(g, A.box(.05, .04, 1.6 + i * .2), A.mat('#5a6474', 0, .9), [(i % 2 ? 1 : -1) * 2.1, .4 - i * .15, -2 + i * .9], { rot: [0, (i % 2 ? 1 : -1) * .2, .3], cast: false });   // old scars
       P(g, A.ico(1, 2), bellyM, [0, -1.1, -1], { scale: [1.9, .9, 6.5], jitter: .05 });
       const pleatM = A.mat('#3b4a63', 0, .85, { emissive: '#141c2a', emissiveIntensity: .5 });
       for (let i = 0; i < 9; i++) P(g, A.box(.06, .05, 5.2), pleatM, [(i - 4) * .3, -1.72 + Math.abs(i - 4) * .1, 3.2], { cast: false, jitter: 0 });   // throat grooves
       const spots = new T.MeshBasicMaterial({ color: '#7ff0e6', fog: false });
       const r = A.rand(77);
       const spotMeshes = [];
-      for (let c = 0; c < 9; c++) {                                    // little constellations along its back and flanks
+      for (let c = 0; c < (young ? 3 : old ? 16 : 9); c++) {         // little constellations along its back and flanks
         const z0 = -6.5 + r() * 13, side = c % 2 ? 1 : -1, a0 = .3 + r() * .9;
         for (let i = 0; i < 4 + Math.floor(r() * 4); i++) {
           const z = z0 + (r() - .5) * 1.6, a = a0 + (r() - .5) * .35, rr = 2.5 * Math.sin(Math.PI * (z + 8) / 16.7) * 1.05;
@@ -771,12 +782,12 @@ const BEASTS = {
         fins.push({ f, sx });
       }
       const fluke = G(g, [0, 0, -8]);
-      sheet(fluke, [[0, 0, .6], [3.4, 0, -1.6], [1.2, 0, -.6], [0, 0, -.9], [-1.2, 0, -.6], [-3.4, 0, -1.6]], [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5]], finM);
+      sheet(fluke, [[0, 0, .6], [3.4, 0, -1.6], [1.2, 0, -.6], [0, 0, -.9], [-1.2, 0, -.6], [-3.4, 0, -1.6]], old ? [[0, 1, 2], [0, 2, 3], [0, 3, 4]] : [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5]], finM);   // a notch out of the old one's fluke
       const tendrils = [];
       const tMat = A.mat('#3a5a78', 0, .7, { emissive: '#1d4f6a', emissiveIntensity: .8 });
       for (let i = 0; i < 7; i++) {
         const base = G(g, [(i % 2 ? 1 : -1) * (.4 + (i % 3) * .35), -1.7, -4 + i * 1.2], [Math.PI, 0, 0]);
-        tendrils.push(chain(base, 9, .55, .07, .015, tMat, { sides: 5, jitter: .005 }));
+        tendrils.push(chain(base, young ? 4 : old ? 13 : 9, .55, .07, .015, tMat, { sides: 5, jitter: .005 }));
       }
       // star-dust trailing behind it, and rings when it sings
       const DN = 70, dp = new Float32Array(DN * 3), dl = Float32Array.from({ length: DN }, (_, i) => i / DN);
@@ -799,10 +810,10 @@ const BEASTS = {
           dp[i * 3 + 1] -= dt * .25;                                    // drifting slowly down
         }
         dg.attributes.position.needsUpdate = true;
-        if (t - lastSong > 12 + (Math.floor(t / 12) % 3) * 4) {        // it sings
+        if (t - lastSong > (young ? 5 : old ? 20 : 12) + (Math.floor(t / 12) % 3) * 4) {   // it sings (calves often, the old rarely)
           lastSong = t; const sg = songs[si++ % 3]; sg.born = t; g.localToWorld(head.set(0, 0, 6.5)); sg.m.position.copy(head);
         }
-        for (const sg of songs) { const q = (t - sg.born) / 5; sg.m.visible = q < 1; if (q < 1) { sg.m.scale.setScalar(1 + q * 12); sg.m.material.opacity = .28 * (1 - q) * (1 - q); sg.m.lookAt(A.camera.position); } }
+        for (const sg of songs) { const q = (t - sg.born) / (old ? 8 : 5); sg.m.visible = q < 1; if (q < 1) { sg.m.scale.setScalar(1 + q * (young ? 5 : old ? 18 : 12)); sg.m.material.opacity = .28 * (1 - q) * (1 - q); sg.m.lookAt(A.camera.position); } }
       };
     },
   },
@@ -1816,10 +1827,13 @@ const BEASTS = {
     knight: { place: 'courtyard', action: 'gaze', emote: 'question', note: 'watching the brambles grow where it walked' },
     build(root) {
       const v = root.userData.appearance?.variant || {};
-      const size = (v.size || 1) * (v.age === 'young' ? .7 : v.age === 'old' ? 1.1 : 1);
+      const young = v.age === 'young', old = v.age === 'old';
+      // the young: antler buds only, bright fresh leaves, many blossoms, quicker. The old: great bare
+      // antlers, autumn-brown leaves, hardly a blossom, heavy moss, slow.
+      const size = (v.size || 1) * (young ? .62 : old ? 1.12 : 1);
       const g = G(root, [-11, 0, 7.8]); const stag = G(g); stag.scale.setScalar(size);
       const bark = A.mat('#4a3b2a', 0, .95), barkD = A.mat('#2f251b', 0, .95), core = A.mat('#3a2e20', 0, 1);
-      const leaf = A.mat('#56703a', 0, .9), leafL = A.mat('#7a9548', 0, .9), moss = A.mat('#4f6a33', 0, 1);
+      const leaf = A.mat(young ? '#6fa040' : old ? '#7a5a2e' : '#56703a', 0, .9), leafL = A.mat(young ? '#9ccc5a' : old ? '#9a7038' : '#7a9548', 0, .9), moss = A.mat('#4f6a33', 0, 1);
       const bloom = A.mat('#eab0c0', 0, .7, { emissive: '#3a1c24', emissiveIntensity: .3 }), bloomW = A.mat('#f3ecdc', 0, .7);
       const thornM = A.mat('#22190f', 0, .8), hoof = A.mat('#1a1410', .1, .6), eye = glow('#c8ff9a', 1.4);
       const r = A.rand(12 + Math.abs(Math.round((v.hue || 0) * 1000)));
@@ -1837,8 +1851,8 @@ const BEASTS = {
             prev = p;
           }
           if (i % 4 === 0) P(parent, A.ico(.1 + r() * .08, 0), r() < .5 ? leaf : leafL, prev, { jitter: .03, cast: false });
-          if (i % 7 === 3) P(parent, A.ico(.045, 0), r() < .7 ? bloom : bloomW, prev, { cast: false });
-          if (i % 9 === 5) P(parent, A.ico(.08, 0), moss, prev, { scale: [1, .5, 1], cast: false });
+          if (i % (young ? 4 : old ? 23 : 7) === 3) P(parent, A.ico(.045, 0), r() < .7 ? bloom : bloomW, prev, { cast: false });
+          if (i % (old ? 3 : 9) === (old ? 1 : 5)) P(parent, A.ico(old ? .11 : .08, 0), moss, prev, { scale: [1, .5, 1], cast: false });
         }
       };
       const body = G(stag, [0, 0, 0]);
@@ -1874,10 +1888,11 @@ const BEASTS = {
         const to = [from[0] + dir[0] * len, from[1] + dir[1] * len, from[2] + dir[2] * len];
         bone(head, from, to, .03 + depth * .012, .015 + depth * .008, depth > 1 ? barkD : bark, 5);
         for (let k = 0; k < 2; k++) { const u = .3 + k * .4; P(head, new T.ConeGeometry(.015, .09, 3), thornM, [from[0] + dir[0] * len * u, from[1] + dir[1] * len * u + .03, from[2] + dir[2] * len * u], { cast: false }); }
-        if (depth === 0) { P(head, A.ico(.055, 0), r() < .65 ? bloom : bloomW, to, { cast: false }); if (r() < .5) P(head, A.ico(.07, 0), leafL, [to[0], to[1] - .05, to[2]], { scale: [1, .4, 1], cast: false }); return; }
+        if (depth === 0) { if (!old || r() < .12) P(head, A.ico(.055, 0), r() < .65 ? bloom : bloomW, to, { cast: false }); if (!old && r() < .5) P(head, A.ico(.07, 0), leafL, [to[0], to[1] - .05, to[2]], { scale: [1, .4, 1], cast: false }); return; }
         for (const s of [-1, 1]) { const d = V(dir[0] + s * .4 * (r() + .3), dir[1] + .15, dir[2] + (r() - .6) * .4).normalize(); branch(to, [d.x, d.y, d.z], len * .66, depth - 1); }
       };
-      for (const sx of [-1, 1]) branch([sx * .09, .13, -.02], [sx * .55, .8, -.25], .6, 3);
+      if (young) for (const sx of [-1, 1]) { bone(head, [sx * .09, .13, -.02], [sx * .14, .26, -.06], .035, .02, bark, 5); P(head, A.ico(.04, 0), leafL, [sx * .14, .28, -.06], { cast: false }); }   // buds
+      else for (const sx of [-1, 1]) branch([sx * .09, .13, -.02], [sx * .55, .8, -.25], old ? .78 : .6, old ? 4 : 3);   // the old: great bare antlers
       merge(body); merge(neck); merge(head);                                // one draw per material, not hundreds
       for (const { top, mid } of legs) { merge(top); merge(mid); }
       // brambles where it has walked: they spring up, and fade again
@@ -1892,7 +1907,7 @@ const BEASTS = {
         const x = -11.2 + Math.sin(t * .045) * 4.2, vx = x - g.position.x;
         if (Math.abs(vx) > 1e-5) dir = Math.sign(vx);
         g.position.set(x, gy(x, 7.8), 7.8); g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 1.5);
-        const moving = Math.abs(Math.cos(t * .045)) > .12, ph = t * 2.0;
+        const moving = Math.abs(Math.cos(t * .045)) > .12, ph = t * (young ? 2.8 : old ? 1.4 : 2.0);
         for (const { top, mid, front, ph: p } of legs) {
           const s = moving ? Math.sin(ph + p) : 0;
           top.rotation.x = s * .3; mid.rotation.x = Math.max(0, front ? -s : s) * .5 * (front ? 1 : -1);
