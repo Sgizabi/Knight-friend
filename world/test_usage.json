@@ -1,14 +1,18 @@
 {
   "date": "2026-11-21",
-  "tokens": 6740,
+  "tokens": 13208,
   "by_model": {
-    "openai/gpt-oss-120b": 6323,
-    "openai/gpt-oss-20b": 417
+    "openai/gpt-oss-120b": 12408,
+    "openai/gpt-oss-20b": 800
   },
   "runs": [
     {
       "note": "letter replies test",
       "tokens": 6740
+    },
+    {
+      "note": "letter replies test",
+      "tokens": 6468
     }
   ]
 }
