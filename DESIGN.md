@@ -189,7 +189,7 @@ curious or neutral (wonder and dread, not threat), rare, and seen only once he h
 | Being | Nature | Rarity | Step | Notes |
 |---|---|---|---|---|
 | The Night-Grown | neutral | rare | 2 | thin, stooped figures of dark glass with constellations moving inside them, small smooth heads split by one seam of light; they gather on the plain at starfall and reach upward, as if listening to the sky |
-| The clock-headed figure | neutral | rare | 3 | very tall and thin, an old clock face where its head should be, its hands spinning wrong; time stutters around it (frozen mid-step, then further along, sometimes walking backward), rain falls upward near it, the fire flickers backward (it absorbs the Backward Visitor idea) |
+| The clock-headed figure | neutral | rare | 3 | very tall and thin, an old clock face where its head should be, its hands spinning wrong; time stutters around it (frozen mid-step, then further along, sometimes walking backward), the fire flickers backward (it absorbs the Backward Visitor idea) |
 | The Lander's crew | neutral | rare | 2 | slender beings of glassy light who step out of a landed craft, take samples, measure the keep with light, and leave; one always lingers a moment, looking at him |
 
 **Arrival events.** Some beings don't simply appear: they *arrive*, and leave a trace.

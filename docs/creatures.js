@@ -2256,7 +2256,7 @@ const BEASTS = {
   // ================================================================ THE CLOCK-HEADED FIGURE
   clockhead: {
     name: 'The clock-headed figure', hour: 22,
-    blurb: 'Otherworldly. Very tall and thin, with an old clock face where its head should be, its hands spinning wrong. Time stutters around it: it freezes mid-step, then is suddenly further along, sometimes walks backward; rain falls upward near it, and the fire flickers the wrong way.',
+    blurb: 'Otherworldly. Very tall and thin, with an old clock face where its head should be, its hands spinning wrong. Time stutters around it: it freezes mid-step, then is suddenly further along, sometimes walks backward, and the fire flickers the wrong way.',
     view: [[-6.6, 1.8, 4.6], [-12.2, 2.2, .8]],
     knight: { place: 'repair:doorway', action: 'stand', emote: 'question', note: 'not sure what time it is any more' },
     build(root) {
@@ -2284,10 +2284,6 @@ const BEASTS = {
       P(hour, A.box(.03, .2, .012), A.mat('#120e0a'), [0, .09, 0], { jitter: 0, cast: false });
       P(minute, A.box(.02, .3, .012), A.mat('#120e0a'), [0, .14, 0], { jitter: 0, cast: false });
       P(head, A.ico(.03, 0), brass, [0, 0, .075], { jitter: 0, cast: false });
-      // rain falling upward, only around it
-      const N = 70, rp = new Float32Array(N * 3), rg = new T.BufferGeometry(); rg.setAttribute('position', new T.BufferAttribute(rp, 3));
-      for (let i = 0; i < N; i++) rp.set([(Math.random() - .5) * 3, Math.random() * 4, (Math.random() - .5) * 3], i * 3);
-      g.add(new T.Points(rg, new T.PointsMaterial({ color: '#b9d2e8', size: .05, transparent: true, opacity: .8, depthWrite: false })));
       let mode = 'freeze', until = 0, x = -12, dir = 1, handH = 0, handM = 0;
       const pose = () => { arms.forEach(a => { a.rotation.set((Math.random() - .5) * 1.6, 0, (Math.random() - .5) * .8); }); legs.forEach(l => { l.rotation.x = (Math.random() - .5) * .9; }); head.rotation.z = (Math.random() - .5) * .9; };
       return (t, dt) => {
@@ -2302,8 +2298,6 @@ const BEASTS = {
         const speed = { freeze: 0, skip: 0, backward: -9, race: 40 }[mode];
         handM += speed * dt; handH += speed * dt / 12;
         minute.rotation.z = -handM; hour.rotation.z = -handH;
-        for (let i = 0; i < N; i++) { rp[i * 3 + 1] += dt * 3; if (rp[i * 3 + 1] > 4.5) rp[i * 3 + 1] = 0; }
-        rg.attributes.position.needsUpdate = true;
         A.setFireDim(mode === 'backward' ? .7 + .3 * Math.sin(t * 13) : 1);
       };
     },
