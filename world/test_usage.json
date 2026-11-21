@@ -1,32 +1,14 @@
 {
-  "date": "2026-11-19",
-  "tokens": 39389,
+  "date": "2026-11-21",
+  "tokens": 6740,
   "by_model": {
-    "qwen/qwen3.8-27b": 9580,
-    "openai/gpt-oss-safeguard-20b": 881,
-    "openai/gpt-oss-120b": 27939,
-    "openai/gpt-oss-20b": 989
+    "openai/gpt-oss-120b": 6323,
+    "openai/gpt-oss-20b": 417
   },
   "runs": [
     {
-      "note": "backup model wake-up test",
-      "tokens": 10461
-    },
-    {
-      "note": "mixed-language letters test",
-      "tokens": 10472
-    },
-    {
-      "note": "building design test",
-      "tokens": 3402
-    },
-    {
-      "note": "diary repeat test",
-      "tokens": 3519
-    },
-    {
-      "note": "pastime wording test",
-      "tokens": 11535
+      "note": "letter replies test",
+      "tokens": 6740
     }
   ]
 }
