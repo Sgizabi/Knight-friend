@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-21T17:00:32+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-21T17:00:35+00:00",
+  "place": "repair:wall",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "replace the squeaky joint and add shims to stabilize the floor",
+  "thought": "The roof is sealed, the glasshouse is alive. The bathhouse needs its floor fixed before the rain seeps in."
 }

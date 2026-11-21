@@ -77,18 +77,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T17:00:32+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-21T17:00:35+00:00",
+    "place": "repair:wall",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "replace the squeaky joint and add shims to stabilize the floor",
+    "thought": "The roof is sealed, the glasshouse is alive. The bathhouse needs its floor fixed before the rain seeps in."
   },
   "needs": {
-    "rest": 77.7,
-    "warmth": 81.9,
+    "rest": 78.4,
+    "warmth": 82.5,
     "inspiration": 90.1,
-    "spirit": 84.6
+    "spirit": 83.7
   },
   "needs_prev": {
     "rest": 77.7,
@@ -96,7 +96,7 @@
     "inspiration": 90.1,
     "spirit": 84.6
   },
-  "needs_at": "2026-11-21T17:00:32+00:00",
+  "needs_at": "2026-11-21T17:00:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -826,5 +826,5 @@
       }
     }
   },
-  "exported": "2026-11-21T17:00:32+00:00"
+  "exported": "2026-11-21T17:00:35+00:00"
 }
