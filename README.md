@@ -166,3 +166,4 @@ of its own. The knight, its keep and all of its code and writing are original.
 - `world/`: its memory: identity, diary, interests, plans, needs, the keep, letters
 - `MAINTAINING.md`: the keeper's guide (health, settings, keys, testing with the real key)
 - `WATCHLIST.md`: what a read-only watcher (such as Claude Duet) checks, and when it tells the keeper
+- `DESIGN.md`: the plan for the living world (landscape, weather, creatures, encounters, the companion, visitor help), for the keeper to approve
