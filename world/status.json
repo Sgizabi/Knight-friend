@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-21T02:30:26+00:00",
-  "place": "repair:roof",
+  "since": "2026-11-21T02:33:28+00:00",
+  "place": "raise:2",
   "action": "work",
   "emote": "dots",
-  "note": "seal the crack in the stone and reinforce the roof board",
-  "thought": "The fire's hum is steady. I notice the thin crack in the stone near the roof board. I should seal it before it widens."
+  "note": "start building the glasshouse in the courtyard",
+  "thought": "The fire crackles while I picture a glasshouse holding seedlings."
 }
