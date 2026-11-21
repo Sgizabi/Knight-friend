@@ -78,11 +78,16 @@
           "Dry logs are scarce, but the rain won’t let me gather outside."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-21T17:30:23+00:00",
+    "live_thought": {
+      "text": "Rain drums, I’ll shape a new handle.",
+      "time": "2026-11-21T17:30:23+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-21T17:01:38+00:00",
+    "since": "2026-11-21T17:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 69.6,
+    "warmth": 87.8,
+    "inspiration": 90.1,
+    "spirit": 92.2
+  },
+  "needs_prev": {
     "rest": 69.4,
     "warmth": 85.6,
     "inspiration": 90.1,
     "spirit": 93.3
   },
-  "needs_prev": {
-    "rest": 77.7,
-    "warmth": 81.9,
-    "inspiration": 90.1,
-    "spirit": 84.6
-  },
-  "needs_at": "2026-11-21T17:01:38+00:00",
+  "needs_at": "2026-11-21T17:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -714,7 +719,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-21T17:01:38+00:00",
+    "updated": "2026-11-21T17:30:23+00:00",
     "seen_until": "2026-11-21T16:55:33+00:00"
   },
   "gifts": [],
@@ -770,6 +775,12 @@
         "end": "2026-11-22T23:27:09+00:00",
         "kind": "clear",
         "intensity": 0.46
+      },
+      {
+        "start": "2026-11-22T23:27:09+00:00",
+        "end": "2026-11-23T07:26:59+00:00",
+        "kind": "clear",
+        "intensity": 0.72
       }
     ],
     "effects": {
@@ -831,5 +842,5 @@
       }
     }
   },
-  "exported": "2026-11-21T17:01:38+00:00"
+  "exported": "2026-11-21T17:30:24+00:00"
 }
