@@ -2916,6 +2916,7 @@ function clear() {
 function show(key, hour) {
   clear();
   const def = BEASTS[key], root = new T.Group();
+  root.userData.appearance = { variant: { size: 1, age: ui?.age?.value || '' } };   // the preview's chosen age
   A.scene.add(root);
   const tick = def.build(root);
   cur = { key, def, root, tick };
@@ -2942,10 +2943,13 @@ function buildUI() {
   document.head.append(css);
   const el = document.createElement('div'); el.id = 'bestiary'; el.className = 'panel';
   el.innerHTML = `<div class="row"><button data-d="-1" title="Previous">◀</button><b></b><small class="n"></small><button data-d="1" title="Next">▶</button>
-    <select title="Time of day">${TIMES.map(([n, h]) => `<option value="${h}">${n}</option>`).join('')}</select></div>
+    <select title="Time of day">${TIMES.map(([n, h]) => `<option value="${h}">${n}</option>`).join('')}</select>
+    <select title="Age" class="age"><option value="">grown</option><option value="young">young</option><option value="old">old</option></select></div>
     <p></p><small>Mockup only: not part of Rooken's world (yet). ${matchMedia('(pointer: coarse)').matches ? 'Drag to look around.' : 'Drag to look around, WASD to fly.'}</small>`;
   document.body.append(el);
-  ui = { name: el.querySelector('b'), blurb: el.querySelector('p'), count: el.querySelector('.n'), time: el.querySelector('select') };
+  ui = { name: el.querySelector('b'), blurb: el.querySelector('p'), count: el.querySelector('.n'), time: el.querySelector('select'), age: el.querySelector('select.age') };
+  const qAge = new URLSearchParams(location.search).get('age'); if (qAge) ui.age.value = qAge;
+  ui.age.onchange = () => { const u = new URL(location.href); u.searchParams.set('age', ui.age.value); history.replaceState(null, '', u); show(cur.key, A.hour); ui.age.blur(); };
   el.querySelectorAll('button').forEach(b => b.onclick = () => {
     const i = (ORDER.indexOf(cur.key) + +b.dataset.d + ORDER.length) % ORDER.length; show(ORDER[i]); b.blur();
   });
