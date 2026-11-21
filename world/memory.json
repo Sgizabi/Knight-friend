@@ -1,23 +1,23 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch the window frame, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 17.652,
-    "craft": 17.652
+    "repair": 17.946,
+    "craft": 17.946
   },
   "projects": [
     {
       "slug": "bathhouse-builder",
-      "title": "Bathhouse Builder",
+      "title": "Bathhouse Builder – Updated with Shim Test",
       "started": "2026-11-21T19:01:31+00:00",
       "status": "in progress",
-      "versions": 1,
-      "about": "A tiny interactive floor plan where you can place tiles and water for a simple bathhouse layout.",
-      "updated": "2026-11-21T19:01:31+00:00",
-      "next": "Add a second shim to the bathhouse floor joint and test stability. Then sketch a simple water flow diagram for the layout."
+      "versions": 2,
+      "about": "Added a “Add Shim” button that inserts a visual shim cell, a “Test Stability” button that highlights unstable walls, and",
+      "updated": "2026-11-21T21:01:35+00:00",
+      "next": "Add a final stability verification step and record the pass/fail result in the builder page."
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 6,
+  "entries_since_condense": 7,
   "pastimes": [],
   "last_long": "2026-11-21T02:30:24+00:00",
   "recent_thoughts": [
@@ -35,7 +35,7 @@
     "Rain drums, fire crackles, I’ll watch the flames awhile."
   ],
   "last_glance": "2026-11-21T20:30:23+00:00",
-  "visits_seen_until": "2026-11-21T18:55:26+00:00",
+  "visits_seen_until": "2026-11-21T20:55:29+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

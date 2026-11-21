@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-21T21:00:31+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-21T21:02:38+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "add second shim to the floor joint and test stability",
-  "thought": "The rain's drumming makes the wood creak, so I’ll tighten that last joint before it gets any worse."
+  "note": "",
+  "thought": ""
 }

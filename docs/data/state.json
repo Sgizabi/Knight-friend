@@ -30,12 +30,12 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 30,
-    "last_wake": "2026-11-21T19:02:35+00:00",
+    "wakeups": 31,
+    "last_wake": "2026-11-21T21:02:38+00:00",
     "nights_slept_through": 8
   },
   "plan": {
-    "start": "2026-11-21T19:02:35+00:00",
+    "start": "2026-11-21T21:02:38+00:00",
     "mood": "content",
     "steps": [
       {
@@ -43,9 +43,10 @@
         "action": "work",
         "minutes": 20,
         "emote": "question",
-        "note": "Add final shim to bathhouse floor.",
+        "note": "check shim placement",
         "thoughts": [
-          "Why does wood always find a way to move?"
+          "Does this shim feel too thick?",
+          "Rain sounds like a hammer."
         ]
       },
       {
@@ -53,52 +54,39 @@
         "action": "work",
         "minutes": 20,
         "emote": "dots",
-        "note": "Heat some metal for a new latch.",
+        "note": "heat some metal for future tools",
         "thoughts": [
-          "Rain makes the forge feel like a sauna."
+          "Cold iron needs a warm welcome.",
+          "Hope the fire stays cooperative."
         ]
       },
       {
-        "place": "bookshelf",
-        "action": "read",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "Check a repair manual for roof joints.",
-        "thoughts": [
-          "Manuals are louder than the wind."
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
+        "place": "glasshouse",
+        "action": "gaze",
         "minutes": 20,
         "emote": "heart",
-        "note": "Take a short break, let the fire keep me warm.",
+        "note": "watch seedlings sway",
         "thoughts": [
-          "Fire never asks for overtime."
+          "Green against stone is oddly satisfying.",
+          "Maybe I’ll add a support beam later."
         ]
       }
-    ],
-    "applied_until": "2026-11-21T20:30:23+00:00",
-    "live_thought": {
-      "text": "Rain drums, fire crackles, I’ll watch the flames awhile.",
-      "time": "2026-11-21T20:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-21T21:00:31+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-21T21:02:38+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "add second shim to the floor joint and test stability",
-    "thought": "The rain's drumming makes the wood creak, so I’ll tighten that last joint before it gets any worse."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 60.4,
+    "rest": 53.4,
     "warmth": 86.1,
-    "inspiration": 75.0,
-    "spirit": 87.0
+    "inspiration": 59.0,
+    "spirit": 89.6
   },
   "needs_prev": {
     "rest": 59.2,
@@ -106,7 +94,7 @@
     "inspiration": 75.0,
     "spirit": 88.0
   },
-  "needs_at": "2026-11-21T21:00:31+00:00",
+  "needs_at": "2026-11-21T21:02:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -708,7 +696,7 @@
   "projects": [
     {
       "slug": "bathhouse-builder",
-      "title": "Bathhouse Builder",
+      "title": "Bathhouse Builder – Updated with Shim Test",
       "status": "in progress"
     }
   ],
@@ -725,8 +713,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-21T20:30:23+00:00",
-    "seen_until": "2026-11-21T18:55:26+00:00"
+    "updated": "2026-11-21T21:02:38+00:00",
+    "seen_until": "2026-11-21T20:55:29+00:00"
   },
   "gifts": [],
   "gate": [
@@ -853,5 +841,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-21T21:00:31+00:00"
+  "exported": "2026-11-21T21:02:39+00:00"
 }
