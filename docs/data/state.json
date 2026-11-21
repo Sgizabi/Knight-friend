@@ -94,15 +94,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-21T04:00:25+00:00",
+    "applied_until": "2026-11-21T04:30:22+00:00",
     "live_thought": {
-      "text": "The fire crackles, stone stays cold, I’ll work the bench soon.",
-      "time": "2026-11-21T04:00:25+00:00"
+      "text": "Lantern oil's low, but the stone's still warm.",
+      "time": "2026-11-21T04:30:22+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-21T04:00:25+00:00",
+    "since": "2026-11-21T04:30:22+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -110,18 +110,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 32.4,
+    "warmth": 88.6,
+    "inspiration": 72.2,
+    "spirit": 94.0
+  },
+  "needs_prev": {
     "rest": 33.3,
     "warmth": 89.1,
     "inspiration": 72.2,
     "spirit": 95.2
   },
-  "needs_prev": {
-    "rest": 25.7,
-    "warmth": 88.9,
-    "inspiration": 71.2,
-    "spirit": 96.5
-  },
-  "needs_at": "2026-11-21T04:00:25+00:00",
+  "needs_at": "2026-11-21T04:30:22+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -715,7 +715,7 @@
   "visits": {
     "candles_tonight": 2,
     "knocks_today": 1,
-    "updated": "2026-11-21T04:00:25+00:00",
+    "updated": "2026-11-21T04:30:22+00:00",
     "seen_until": "2026-11-21T02:25:25+00:00"
   },
   "gifts": [],
@@ -826,5 +826,5 @@
       }
     }
   },
-  "exported": "2026-11-21T04:00:25+00:00"
+  "exported": "2026-11-21T04:30:22+00:00"
 }
