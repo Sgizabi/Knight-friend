@@ -373,6 +373,24 @@ const BEASTS = {
         blk(g, [.58, .8, .62], [sx * .45, 1.35, 0], 0);
       }
       blk(g, [1.25, .45, .72], [0, 1.85, 0], 1);
+      // magma underneath: glowing seams between the stones, cracks down the legs, scorched ground
+      for (const sx of [-1, 1]) {
+        for (const y of [.25, .99, 1.76]) P(g, A.box(.46, .035, .5), seam, [sx * .47, y, .02], { cast: false, jitter: .01 });
+        P(g, A.box(.03, .42, .02), seam, [sx * .44, .6, .31], { rot: [0, 0, sx * .25], cast: false });
+        P(g, A.box(.03, .3, .02), seam, [sx * .52, 1.4, .32], { rot: [0, 0, -sx * .4], cast: false });
+        P(g, A.box(.02, .25, .03), seam, [sx * .73, .55, .1], { rot: [.3, 0, 0], cast: false });
+      }
+      const scorch = new T.Mesh(new T.CircleGeometry(1.6, 12), A.mat('#1a1411', 0, 1)); scorch.rotation.x = -Math.PI / 2; scorch.position.y = .03; g.add(scorch);
+      const er = A.rand(71);
+      for (let i = 0; i < 12; i++) { const a = er() * 6.28, d = .6 + er() * .9; P(g, A.box(.05, .02, .12), seam, [Math.cos(a) * d, .04, Math.sin(a) * d], { rot: [0, a, 0], cast: false }); }
+      const heat = new T.PointLight('#ff7a2a', 2.5, 4, 1.6); heat.position.set(0, .4, .6); g.add(heat);
+      const EN = 36, ep = new Float32Array(EN * 3), eLife = Float32Array.from({ length: EN }, (_, i) => i / EN);
+      const eFrom = Array.from({ length: EN }, (_, i) => [[-.47, .99], [.47, .99], [-.47, 1.76], [.47, 1.76], [-.47, .25], [.47, .25]][i % 6]);
+      const eg = new T.BufferGeometry(); eg.setAttribute('position', new T.BufferAttribute(ep, 3));
+      g.add(new T.Points(eg, new T.PointsMaterial({ color: '#ffb35a', size: .05, transparent: true, depthWrite: false })));
+      const smoke = Array.from({ length: 4 }, (_, i) => {
+        const s = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#3a3330', transparent: true, opacity: .3, depthWrite: false })); g.add(s); return { s, ph: i / 4 };
+      });
       const torso = G(g, [0, 2.05, 0]);
       blk(torso, [1.45, .55, .82], [0, .3, 0], 0);
       blk(torso, [1.8, .7, .95], [0, .9, .02], 2);
@@ -426,6 +444,14 @@ const BEASTS = {
           f.m.rotation.set(t * f.sp, t * .7, 0);
         }
         seam.emissiveIntensity = eyes.emissiveIntensity = 2.2 + Math.sin(t * 1.3) * .8; core.intensity = 1.6 + Math.sin(t * 1.3) * .6;
+        heat.intensity = 2.2 + Math.sin(t * 1.3) * .6 + Math.sin(t * 7) * .2;
+        for (let i = 0; i < EN; i++) {
+          eLife[i] += .006 + (i % 4) * .0015; if (eLife[i] > 1) eLife[i] = 0;
+          const k = eLife[i], [x, y] = eFrom[i];
+          ep[i * 3] = x + Math.sin(i * 5.3 + k * 4) * .2; ep[i * 3 + 1] = y + k * 1.4; ep[i * 3 + 2] = .1 + Math.cos(i * 2.7) * .25;
+        }
+        eg.attributes.position.needsUpdate = true;
+        for (const { s, ph } of smoke) { const k = (t * .12 + ph) % 1; s.position.set((ph - .5) * .9, 1.8 + k * 2.2, -.1); s.scale.setScalar(.6 + k * 1.6); s.material.opacity = .25 * (1 - k); }
       };
     },
   },
@@ -1704,6 +1730,133 @@ const BEASTS = {
           const rg = rings[ri++ % 2]; rg.born = t; rg.m.position.set(x, 2.6, 9.6); lastPeak = t;
         }
         for (const rg of rings) { const k = (t - rg.born) / 2.2; rg.m.visible = k < 1; if (k < 1) { rg.m.scale.setScalar(.5 + k * 5); rg.m.material.opacity = .6 * (1 - k); } }
+      };
+    },
+  },
+  // ================================================================ THE LONG CRAWL
+  crawl: {
+    name: 'The Long Crawl', hour: 18,
+    blurb: 'Hostile, and endlessly patient. A vast, slow, shelled thing that creeps toward the keep across the plain, a little closer every day. It never arrives: when it nears the wall, the knight\'s companion sends it back to the horizon, and it starts again. (Sped up here: in his world one crossing takes days.)',
+    view: [[-6, 3.2, 20], [8, 1.2, 12]],
+    knight: { place: 'fire', action: 'stand', emote: 'dots', note: 'checking how far it has come today' },
+    build(root) {
+      const flesh = A.mat('#6a5f72', 0, .45, { emissive: '#1d1624', emissiveIntensity: .6 }), fleshL = A.mat('#8a7f92', 0, .45);
+      const shellM = A.mat('#6b6578', .1, .6, { emissive: '#14121c', emissiveIntensity: .5 }), shellD = A.mat('#46404f', .1, .7, { emissive: '#0e0c14', emissiveIntensity: .5 }), tipM = glow('#cfe6ff', 2);
+      const g = G(root);
+      const body = G(g);
+      P(body, A.ico(1, 1), flesh, [0, .35, 0], { scale: [1.1, .42, 2.8], jitter: .06 });
+      P(body, A.ico(.7, 1), flesh, [0, .5, 2.2], { scale: [.95, .75, 1.1] });   // its head end
+      for (let i = 0; i < 10; i++) P(body, A.box(.06, .03, 1.4), fleshL, [(i - 4.5) * .2, .12, 0], { cast: false });
+      const stalks = [];
+      for (const sx of [-1, 1]) {
+        const s = G(body, [sx * .3, .9, 2.5], [-.4, 0, sx * -.3]);
+        const c = chain(s, 4, .22, .07, .035, flesh, { sides: 6, jitter: .005 });
+        P(c[3], A.ico(.07, 1), tipM, [0, .25, 0], { cast: false });
+        stalks.push(s);
+      }
+      // the shell: a spiral of stone with stars in it
+      const shell = G(body, [0, .7, -.4]);
+      for (let i = 0; i < 26; i++) {
+        const a = i * .45, rad = 1.7 * Math.exp(-i * .08), r = .8 * Math.exp(-i * .075);
+        P(shell, A.ico(r, 1), i % 2 ? shellM : shellD, [0, Math.sin(a) * rad + 1.1, -Math.cos(a) * rad], { scale: [.85, 1, 1], jitter: .04 });
+      }
+      const sp = [], rr = A.rand(19);
+      for (let k = 0; k < 120; k++) { const a = rr() * 6.28, b = rr() * 3.14; const rad = 1.0 + rr() * .9; sp.push(Math.cos(a) * Math.sin(b) * rad * .95, 1.1 + Math.cos(b) * rad, Math.sin(a) * Math.sin(b) * rad); }
+      const sg = new T.BufferGeometry(); sg.setAttribute('position', new T.Float32BufferAttribute(sp, 3));
+      shell.add(new T.Points(sg, new T.PointsMaterial({ color: '#e8f0ff', size: .12, transparent: true, depthWrite: false })));
+      // its glittering trail
+      const trailM = new T.MeshBasicMaterial({ color: '#b8c8ff', transparent: true, opacity: .35, depthWrite: false });
+      const trail = new T.Mesh(new T.PlaneGeometry(1.6, 1), trailM); trail.rotation.x = -Math.PI / 2; trail.position.y = .02; root.add(trail);
+      // a stand-in companion: a hound by the south wall that barks it back
+      const dog = G(root, [3.5, 0, 6.6], [0, .6, 0]), furM = A.mat('#6a4a32', 0, .9), furD = A.mat('#4a3424', 0, .9);
+      P(dog, A.ico(.2, 1), furM, [0, .42, 0], { scale: [.8, .8, 1.6] });
+      const dHead = G(dog, [0, .58, .32]);
+      P(dHead, A.ico(.12, 1), furM, [0, 0, 0]); P(dHead, new T.ConeGeometry(.06, .16, 5), furD, [0, -.03, .14], { rot: [Math.PI / 2, 0, 0] });
+      for (const sx of [-1, 1]) P(dHead, new T.ConeGeometry(.04, .1, 4), furD, [sx * .07, .1, -.02], { rot: [0, 0, sx * -.4] });
+      for (const [x, z] of [[-.08, .2], [.08, .2], [-.08, -.2], [.08, -.2]]) bone(dog, [x, .35, z], [x, 0, z], .035, .025, furD, 5);
+      const dTail = G(dog, [0, .5, -.3], [-.8, 0, 0]); bone(dTail, [0, 0, 0], [0, .25, 0], .025, .01, furM, 4);
+      const rings = [0, 1, 2].map(() => { const m = new T.Mesh(new T.TorusGeometry(1, .02, 3, 24), new T.MeshBasicMaterial({ color: '#fff2c8', transparent: true, opacity: 0, depthWrite: false })); root.add(m); return { m, born: -9 }; });
+      let ri = 0, lastBark = -9;
+      const from = V(13, 0, 20), to = V(5.0, 0, 9.0), dir = to.clone().sub(from).normalize();
+      g.rotation.y = Math.atan2(-dir.x, -dir.z);   // its head end faces the keep
+      const CYCLE = 60;
+      return (t) => {
+        const k = t % CYCLE;
+        let u, hide = 0;
+        if (k < 44) u = k / 44;                                     // creeping in
+        else if (k < 50) { u = 1; hide = smooth(44, 46, k); }       // the hound barks; it pulls into its shell
+        else { u = 1 - smooth(50, 60, k); hide = 1 - smooth(57, 60, k); }   // and slides back to the horizon
+        g.position.lerpVectors(from, to, u);
+        body.scale.set(1, 1, 1 - hide * .35); stalks.forEach(s => s.scale.setScalar(1 - hide * .9));
+        shell.position.z = -.4 + hide * .5;
+        body.position.y = Math.sin(t * 1.2) * .02;
+        stalks.forEach((s, i) => { s.rotation.z = (i ? -.3 : .3) + Math.sin(t * .8 + i) * .15; });
+        const mid = g.position.clone().lerp(from, .5); trail.position.set(mid.x, .02, mid.z); trail.scale.set(1, g.position.distanceTo(from) + .01, 1);
+        trail.rotation.z = Math.atan2(dir.x, dir.z); trailM.opacity = .25 + Math.sin(t * 2) * .05;
+        const barking = k > 44 && k < 49;
+        if (barking && t - lastBark > .7) { const rg = rings[ri++ % 3]; rg.born = t; rg.m.position.set(dog.position.x, .7, dog.position.z); rg.m.rotation.x = Math.PI / 2; lastBark = t; }
+        dHead.rotation.x = barking ? -.3 + Math.abs(Math.sin(t * 9)) * -.25 : Math.sin(t * .5) * .1;
+        dTail.rotation.z = Math.sin(t * (barking ? 14 : 4)) * .5;
+        for (const rg of rings) { const q = (t - rg.born) / 1.6; rg.m.visible = q < 1; if (q < 1) { rg.m.scale.setScalar(.3 + q * 4); rg.m.material.opacity = .7 * (1 - q); } }
+      };
+    },
+  },
+
+  // ================================================================ THE GIANT AXOLOTL
+  axolotl: {
+    name: 'The giant axolotl', hour: 13,
+    blurb: 'Gentle. After heavy rain, when the courtyard floods into shallow pools, something pale and pink wades out of the mist: bigger than the knight, with glowing feathery gills and a permanent small smile. It likes the warmth of the fire. It leaves when the water drains.',
+    view: [[-8.4, 1.8, 4.4], [-12.6, .7, 1.2]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'heart', note: 'being looked at, very kindly, by something enormous' },
+    build(root) {
+      const water = new T.MeshStandardMaterial({ color: '#6f8f9a', roughness: .08, metalness: .3, transparent: true, opacity: .75 });
+      const r = A.rand(8);
+      for (const [x, z, s] of [[-12.8, 1.4, 2.4], [-10.4, .2, 1.3], [-14.9, -.6, 1.5], [-9.8, 2.6, .9], [-13.6, 3.2, 1.1], [-11.6, -1.0, .8]]) {
+        const pool = new T.Mesh(new T.CircleGeometry(s, 12), water); pool.rotation.x = -Math.PI / 2; pool.position.set(x, .035, z); pool.scale.set(1, .6 + r() * .4, 1); root.add(pool);
+      }
+      const skin = A.mat('#f2b8c6', 0, .45), skinL = A.mat('#f8d3dc', 0, .4), dark = A.mat('#1a1012', .2, .2), gillM = glow('#ff7fa8', .9);
+      const g = G(root, [-12.9, 0, 1.3], [0, 1.2, 0]);
+      const body = G(g, [0, .55, 0]);
+      P(body, A.ico(1, 2), skin, [0, 0, 0], { scale: [.62, .5, 1.25], jitter: .01 });
+      P(body, A.ico(.8, 1), skinL, [0, -.2, .1], { scale: [.7, .4, 1.3], jitter: .01 });
+      const head = G(body, [0, .1, 1.25]);
+      P(head, A.ico(.6, 2), skin, [0, 0, .2], { scale: [1.25, .62, 1], jitter: .01 });
+      const smile = new T.Mesh(new T.TorusGeometry(.42, .015, 3, 16, 1.6), dark); smile.rotation.set(Math.PI / 2 + .1, 0, Math.PI + .78); smile.position.set(0, -.12, .45); head.add(smile);
+      const eyes = [];
+      for (const sx of [-1, 1]) { const e = G(head, [sx * .42, .16, .4]); P(e, A.ico(.065, 1), dark, [0, 0, 0], { jitter: 0 }); eyes.push(e); }
+      const gills = [];
+      for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) {
+        const base = G(head, [sx * .62, .12 + (1 - k) * .14, -.05], [-.2 + (k - 1) * .5, 0, sx * -(1.0 + (k - 1) * .25)]);
+        const c = chain(base, 3, .22, .06, .03, gillM, { sides: 5, jitter: .004, each: (i, j) => { for (const s of [-1, 1]) P(j, new T.ConeGeometry(.02, .14, 3), gillM, [s * .05, .12, 0], { rot: [0, 0, s * 1.1], cast: false }); } });
+        gills.push({ c, ph: k + sx });
+      }
+      const legs = [];
+      for (const [x, z] of [[-.5, .65], [.5, .65], [-.5, -.6], [.5, -.6]]) {
+        const l = G(body, [x * .9, -.15, z]);
+        bone(l, [0, 0, 0], [x * .5, -.3, .1], .1, .07, skin); bone(l, [x * .5, -.3, .1], [x * .6, -.52, .2], .07, .05, skin);
+        for (let f = 0; f < 4; f++) bone(l, [x * .6, -.52, .2], [x * .6 + (f - 1.5) * .06, -.55, .32], .02, .012, skinL, 4);
+        legs.push({ l, ph: (x > 0 ? 0 : Math.PI) + (z > 0 ? 0 : Math.PI) });
+      }
+      const tailBase = G(body, [0, .05, -1.15], [-Math.PI / 2 - .1, 0, 0]);
+      const tail = chain(tailBase, 6, .32, .38, .06, skin, { sides: 7, jitter: .005, each: (i, j, ra) => sheet(j, [[0, 0, -ra], [0, .34, -ra], [0, .34, -ra - .25 + i * .03], [0, 0, -ra - .28 + i * .03]], [[0, 1, 2], [0, 2, 3]], ds('#f6c3cf', 0, .5)) });
+      tail.forEach(j => { j.scale.x = .6; });
+      const glowLight = new T.PointLight('#ff9fbf', 1.5, 4, 1.6); glowLight.position.set(0, .3, 1.4); body.add(glowLight);
+      const cam = V(), hp = V();
+      let tilt = 0;
+      return (t, dt) => {
+        const a = t * .06;
+        g.position.set(-12.6 + Math.sin(a) * 1.4, 0, 1.3 + Math.sin(a * 2) * .6);
+        g.rotation.y = 1.2 + Math.cos(a) * .5;
+        const ph = t * 1.6;
+        legs.forEach(({ l, ph: p }) => { l.rotation.x = Math.sin(ph + p) * .3; });
+        body.position.y = .55 + Math.sin(ph * 2) * .015; body.rotation.y = Math.sin(ph) * .05;
+        tail.forEach((j, i) => { j.rotation.z = Math.sin(t * 1.4 - i * .6) * .22; });
+        gills.forEach(({ c, ph: p }) => c.forEach((j, i) => { j.rotation.x = Math.sin(t * 2 + p + i) * .12; }));
+        gillM.emissiveIntensity = .8 + Math.sin(t * 1.5) * .3;
+        // every so often it notices you and tilts its head
+        const want = pulse(t + 2, 9, 3) * .45; tilt += (want - tilt) * Math.min(1, dt * 3);
+        head.rotation.z = tilt; head.rotation.y = Math.sin(t * .3) * .25;
+        eyes.forEach(e => { e.scale.y = 1 - pulse(t, 4.3, .18) * .9; });
       };
     },
   },
