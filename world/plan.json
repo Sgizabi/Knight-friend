@@ -32,5 +32,10 @@
         "Rain might soak the logs soon"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-21T15:30:23+00:00",
+  "live_thought": {
+    "text": "Rain drums on stone, fire keeps me warm.",
+    "time": "2026-11-21T15:30:23+00:00"
+  }
 }
