@@ -123,7 +123,7 @@ $('view').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2('#0b0908', .05);
-const camera = new THREE.PerspectiveCamera(45, 1, .1, 80);
+const camera = new THREE.PerspectiveCamera(45, 1, .1, 400);
 camera.position.set(2.2, 2.6, 7.2);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, .9, 0);
@@ -265,9 +265,7 @@ function buildWorld(st) {
   const g = worldGroup = new THREE.Group();
   scene.add(g);
 
-  // ground: the hall's flagstones, the courtyard's grass, dirt beyond
-  const outside = new THREE.PlaneGeometry(60, 60, 30, 30); outside.rotateX(-Math.PI / 2);
-  slab(outside, M.dirt, [0, -.02, 0], { jitter: .25 });
+  // ground: the hall's flagstones and the courtyard's grass (the land beyond is built once, in buildLand)
   const hall = new THREE.PlaneGeometry(11.2, 9.2, 22, 18); hall.rotateX(-Math.PI / 2);
   slab(hall, M.floor, [0, 0, 0], { jitter: .04 });
   for (let i = 0; i < 40; i++) slab(box(.9, .02, .9), i % 2 ? M.stoneD : M.floor,
@@ -435,6 +433,128 @@ function buildWorld(st) {
 // stages (footings, walls rising, a full frame, then roof and fittings), from the
 // catalogue or to its own design (a choice of safe parts), and can be walked into.
 // =====================================================================================
+// =====================================================================================
+// The land around the keep: hills, the plain, the lake, the road, the forest edge, the
+// barrow mound, and mountains on the horizon. Built once; nothing here moves.
+// =====================================================================================
+const smoothstep = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+const ROAD = [[-120, 3], [-70, 1.8], [-40, .6], [-25, .2], [-17.6, .1], [-16.6, 3.6], [-12, 7.4], [-3, 8.4], [10, 8.6], [26, 7.4], [48, 9.4], [120, 13]];
+function roadDist(x, z) {
+  let best = 1e9;
+  for (let i = 1; i < ROAD.length; i++) {
+    const [ax, az] = ROAD[i - 1], [bx, bz] = ROAD[i], dx = bx - ax, dz = bz - az;
+    const u = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz)));
+    best = Math.min(best, Math.hypot(x - ax - dx * u, z - az - dz * u));
+  }
+  return best;
+}
+const LAKE = [27, 23], LAKE_LEVEL = -.35;
+function landHeight(x, z) {
+  const kx = (x + 6) / 27, kz = z / 19, d = Math.sqrt(kx * kx + kz * kz);
+  const rise = smoothstep(1, 2.1, d);                                          // flat ground around the keep, then rising
+  const plain = smoothstep(6, 14, z) * (1 - smoothstep(24, 40, Math.abs(x - 2))) * (1 - smoothstep(55, 75, z));   // the open plain to the south
+  let h = (Math.sin(x * .045) + Math.sin(z * .05 + 1.3)) * 2.4 + Math.sin((x + z) * .09) * 1.1 + Math.sin(x * .13 - z * .11) * .55;
+  h = (h + 2.6) * rise * (1 - plain * .8);
+  const r = Math.hypot(x + 6, z), a = Math.atan2(z, x + 6);
+  const ring = smoothstep(68, 115, r) * (.5 + .5 * Math.max(0, -Math.sin(a)) + .3 * Math.max(0, Math.cos(a)));   // mountains, mostly north and east
+  h += ring * (22 + 12 * Math.sin(a * 5 + 1) + 7 * Math.sin(a * 11 + 2) + 4 * Math.sin(a * 23));
+  const ld = Math.hypot(x - LAKE[0], (z - LAKE[1]) * 1.25), bowl = 1 - smoothstep(6, 12, ld);
+  h = h * smoothstep(10, 26, ld) * (1 - bowl) - 1.4 * bowl;                     // the lake, in a gentle hollow
+  h *= .3 + .7 * smoothstep(1.6, 5, roadDist(x, z));                            // the road runs level
+  return h - .05;
+}
+const landHaze = [];
+function buildLand() {
+  const land = new THREE.Group(), rnd = rand(4242);
+  // the ground, coloured by what it is: grass, road, shore, rock and snow
+  const geo = new THREE.PlaneGeometry(280, 280, 140, 140); geo.rotateX(-Math.PI / 2);
+  const p = geo.attributes.position, col = new Float32Array(p.count * 3), c = new THREE.Color();
+  const C = { g: new THREE.Color('#3e4a2c'), gl: new THREE.Color('#566a38'), gd: new THREE.Color('#2f3a22'), dirt: new THREE.Color('#5c4b36'),
+              sand: new THREE.Color('#8a7a58'), rock: new THREE.Color('#5f5852'), rockD: new THREE.Color('#46413c'), snow: new THREE.Color('#d9dee4') };
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), z = p.getZ(i), h = landHeight(x, z);
+    p.setY(i, h);
+    const slope = Math.abs(landHeight(x + 1, z) - h) + Math.abs(landHeight(x, z + 1) - h);
+    const n = hash(Math.round(x), 7, Math.round(z));
+    c.copy(C.g).lerp(n > .5 ? C.gl : C.gd, Math.abs(n - .5) * 1.2);
+    c.lerp(C.rock, smoothstep(10, 20, h) * .9); c.lerp(C.rockD, smoothstep(.9, 1.8, slope) * .8);
+    c.lerp(C.snow, smoothstep(30, 38, h));
+    const ld = Math.hypot(x - LAKE[0], (z - LAKE[1]) * 1.25);
+    c.lerp(C.sand, (1 - smoothstep(9.5, 13, ld)) * .8);
+    c.lerp(C.dirt, 1 - smoothstep(1.1, 2.4, roadDist(x, z)));
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); geo.computeVertexNormals();
+  const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .95, flatShading: true }));
+  ground.receiveShadow = true; land.add(ground);
+  // the lake, with reeds along its edge
+  const water = new THREE.Mesh(new THREE.CircleGeometry(11.6, 28), new THREE.MeshStandardMaterial({ color: '#4c6c7a', roughness: .08, metalness: .35, transparent: true, opacity: .88 }));
+  water.rotation.x = -Math.PI / 2; water.scale.set(1, .8, 1); water.position.set(LAKE[0], LAKE_LEVEL, LAKE[1]); land.add(water);
+  const instanced = (g, m, n, place) => {
+    const mesh = new THREE.InstancedMesh(g, m, n), dummy = new THREE.Object3D(); let k = 0;
+    for (let tries = 0; k < n && tries < n * 40; tries++) { if (place(dummy, k)) { dummy.updateMatrix(); mesh.setMatrixAt(k++, dummy.matrix); } }
+    mesh.count = k; mesh.instanceMatrix.needsUpdate = true; land.add(mesh); return mesh;
+  };
+  const reedGeo = new THREE.ConeGeometry(.04, 1, 3); reedGeo.translate(0, .5, 0);
+  instanced(reedGeo, mat('#6b7a3a'), 60, d => {
+    const a = rnd() * 6.28, rr = 9.6 + rnd() * 2.2; const x = LAKE[0] + Math.cos(a) * rr, z = LAKE[1] + Math.sin(a) * rr * .8;
+    d.position.set(x, Math.max(LAKE_LEVEL, landHeight(x, z)), z); d.rotation.set((rnd() - .5) * .3, 0, (rnd() - .5) * .3); d.scale.setScalar(.6 + rnd() * .8); return true;
+  });
+  // trees: the forest edge to the west, and some scattered over the hills
+  const ok = (x, z) => {
+    const kx = (x + 6) / 27, kz = z / 19;
+    return Math.sqrt(kx * kx + kz * kz) > 1.35 && roadDist(x, z) > 3.5 && Math.hypot(x - LAKE[0], (z - LAKE[1]) * 1.25) > 14
+      && landHeight(x, z) < 18 && !(x > -30 && x < -18 && Math.abs(z) < 8);
+  };
+  const spots = [];
+  for (let tries = 0; spots.length < 430 && tries < 20000; tries++) {
+    const forest = spots.length < 330;
+    const x = forest ? -34 - Math.pow(rnd(), .7) * 95 : (rnd() - .5) * 240, z = (rnd() - .5) * (forest ? 150 : 240);
+    if (forest && x > -40 + hash(Math.round(z), 3, 1) * 10) continue;   // a ragged edge
+    if (ok(x, z)) spots.push([x, z, .8 + rnd() * .9, rnd() * 6.28, rnd()]);
+  }
+  const trunkGeo = new THREE.CylinderGeometry(.12, .2, 1.4, 5); trunkGeo.translate(0, .7, 0);
+  const crownGeo = facet(new THREE.ConeGeometry(.95, 2.8, 6), .08, 5); crownGeo.translate(0, 2.8, 0);
+  const crown2 = facet(new THREE.ConeGeometry(.7, 2.0, 6), .06, 6); crown2.translate(0, 3.9, 0);
+  const crownMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .95, flatShading: true });
+  const place = (d, k) => { const [x, z, s, a] = spots[k]; d.position.set(x, landHeight(x, z) - .1, z); d.rotation.set(0, a, 0); d.scale.set(s, s * (.9 + spots[k][4] * .4), s); return true; };
+  instanced(trunkGeo, M.woodD, spots.length, place);
+  for (const g of [crownGeo, crown2]) {
+    const m = instanced(g, crownMat, spots.length, place);
+    spots.forEach(([, , , , v], k) => m.setColorAt(k, new THREE.Color().setHSL(.27 + v * .06, .32 + v * .1, .16 + v * .07)));
+    m.instanceColor.needsUpdate = true;
+  }
+  // rocks on the hills
+  instanced(facet(new THREE.IcosahedronGeometry(1, 0), .15, 9), M.stone, 120, d => {
+    const x = (rnd() - .5) * 230, z = (rnd() - .5) * 230, kx = (x + 6) / 27, kz = z / 19;
+    if (Math.sqrt(kx * kx + kz * kz) < 1.4 || roadDist(x, z) < 3 || Math.hypot(x - LAKE[0], (z - LAKE[1]) * 1.25) < 12) return false;
+    d.position.set(x, landHeight(x, z) - .2, z); d.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3); d.scale.set(.4 + rnd() * 1.6, .3 + rnd(), .4 + rnd() * 1.4); return true;
+  });
+  // the barrow: an old grave mound beyond the west wall, with standing stones
+  const bx = -24.5, bz = -1.5, barrow = new THREE.Group(); barrow.position.set(bx, landHeight(bx, bz), bz); land.add(barrow);
+  part(barrow, new THREE.IcosahedronGeometry(1, 1), mat('#3a4729', 0, 1), [0, -.35, 0], { scale: [3.4, 1.25, 2.9], jitter: .1, cast: false });
+  part(barrow, box(.3, 1.7, .9), M.stoneD, [3.1, .7, -1.6], { rot: [0, .25, .12], jitter: .06 });
+  part(barrow, box(.3, 1.4, .8), M.stoneD, [3.0, .6, 1.7], { rot: [0, -.3, -.1], jitter: .06 });
+  part(barrow, box(.28, 1.9, .7), M.stone, [-.4, .8, -3.1], { rot: [0, 1.3, .06], jitter: .06 });
+  part(barrow, box(1.3, .2, 1.0), M.stone, [2.2, .3, .2], { rot: [.1, .3, -.45], jitter: .05 });
+  // mountains on the far horizon: flat silhouettes in the colours of the sky
+  for (const [n, r0, r1, hh, near] of [[30, 205, 240, 1, 0], [22, 160, 185, .75, 1]]) {
+    const m = new THREE.MeshBasicMaterial({ color: '#8193a8', fog: false });
+    landHaze.push({ m, near });
+    for (let i = 0; i < n; i++) {
+      const a = i / n * 6.28 + rnd() * .2, w = Math.max(0, -Math.sin(a)) * .5 + Math.max(0, Math.cos(a)) * .35 + .35;   // tallest to the north and east
+      const rr = r0 + rnd() * (r1 - r0), h = (35 + rnd() * 55) * w * hh + 12;
+      const mm = new THREE.Mesh(facet(new THREE.ConeGeometry(28 + rnd() * 30, h, 7), 2.5, i + n), m);
+      mm.position.set(-6 + Math.cos(a) * rr, h / 2 - 6, Math.sin(a) * rr); mm.rotation.y = rnd() * 3; land.add(mm);
+    }
+  }
+  return land;
+}
+function setLandHaze(night, dusk) {   // the far mountains take the colours of the sky
+  const look = night ? ['#141a28', '#0e121c'] : dusk ? ['#6b5873', '#56465f'] : ['#9eb1c5', '#8496ab'];
+  for (const { m, near } of landHaze) m.color.set(look[near]);
+}
+
 const PLOTS = [[-11.9, -2.5, 0], [-11.9, 2.7, Math.PI], [-15.2, -2.5, 0], [-15.2, 2.7, Math.PI]];   // x, z, turn (door to the path)
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const ACCENT = { 'rust red': '#8e3b26', 'sea blue': '#3b5f7e', 'moss green': '#4f6a3a', plum: '#5e3a5a', ochre: '#b0802f',
@@ -1012,9 +1132,9 @@ moon.position.set(-14, 26, -30); scene.add(moon);
 function updateSky() {   // follows the viewer's own clock
   const h = skyHour ?? (new Date().getHours() + new Date().getMinutes() / 60);
   const night = h < 5 || h >= 20, dusk = !night && (h < 7 || h >= 17);
-  const look = night ? { bg: '#0a0d16', fog: '#0a0b10', d: .045, hs: '#2a3550', hg: '#2a1e16', hi: .75, sc: '#7088c0', si: .5, fi: .35 }
-             : dusk  ? { bg: '#4a3f5c', fog: '#3a3040', d: .04, hs: '#8a6a80', hg: '#3a2a1e', hi: 1.05, sc: '#ff9a5a', si: 1.0, fi: .45 }
-                     : { bg: '#8aa4bf', fog: '#7a8a99', d: .028, hs: '#b9cbe0', hg: '#4a3a2a', hi: 1.1, sc: '#fff1d6', si: 1.8, fi: .3 };
+  const look = night ? { bg: '#0a0d16', fog: '#0a0b10', d: .03, hs: '#2a3550', hg: '#2a1e16', hi: .75, sc: '#7088c0', si: .5, fi: .35 }
+             : dusk  ? { bg: '#4a3f5c', fog: '#3a3040', d: .022, hs: '#8a6a80', hg: '#3a2a1e', hi: 1.05, sc: '#ff9a5a', si: 1.0, fi: .45 }
+                     : { bg: '#8aa4bf', fog: '#7a8a99', d: .013, hs: '#b9cbe0', hg: '#4a3a2a', hi: 1.1, sc: '#fff1d6', si: 1.8, fi: .3 };
   fill.intensity = look.fi;
   scene.background = new THREE.Color(look.bg);
   scene.fog.color.set(look.fog); scene.fog.density = look.d;
@@ -1023,6 +1143,7 @@ function updateSky() {   // follows the viewer's own clock
   sky.position.set(night ? -4 : 6, dusk ? 3 : 9, night ? -6 : -3);
   stars.visible = moon.visible = night;
   BM.lamp.emissiveIntensity = night ? 2.2 : dusk ? 1.3 : .35;
+  setLandHaze(night, dusk);
 }
 
 // =====================================================================================
@@ -1563,10 +1684,10 @@ function updateCamera(dt) {
       camera.position.addScaledVector(fwd, step); scrollGlide -= step;
     }
     // stay above the floor and around the keep
-    const r = CREATURE ? 28 : 0;   // previews may roam further, to see the big ones
-    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -18 - r, 8 + r);
-    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -7 - r, 9 + r);
-    camera.position.y = THREE.MathUtils.clamp(camera.position.y, groundAt(camera.position.x, camera.position.z) + .25, CREATURE ? 20 : 7);
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -60, 50);   // the land around the keep
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -50, 55);
+    const floor = Math.max(groundAt(camera.position.x, camera.position.z), landHeight(camera.position.x, camera.position.z) + .15);
+    camera.position.y = THREE.MathUtils.clamp(camera.position.y, floor + .25, 24);
   }
 }
 const MOVE_KEYS = ['w', 'a', 's', 'd', 'q', 'e', 'c', ' ', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
@@ -2008,6 +2129,7 @@ async function refresh() {
     if (r.ok) applyState(await r.json(), true);
   } catch { /* the knight is between pages; try again later */ }
 }
+scene.add(buildLand());
 updateSky(); setInterval(updateSky, 60000);
 applyQuality(qLevel);
 setCam('follow');

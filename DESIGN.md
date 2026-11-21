@@ -5,7 +5,7 @@ weather, creatures with minds of their own, a companion, and visitors who can st
 something dangerous comes. It gathers everything the keeper has decided so far, in one place,
 so it can be approved before anything real is built.
 
-**Status:** draft for the keeper's approval. Nothing in here is live in Rooken's world yet.
+**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2).
 The creature mockups can be seen at
 `https://sgizabi.github.io/Knight-friend/keep.html?demo&creature=dragon` (use ◀ ▶ to step through).
 Anything marked **open question** is still the keeper's call.
@@ -49,7 +49,7 @@ drawn in batches, and fog for depth):
 | Rolling hills | all around, the breathing hill among them | the hill, the Antlered Listener, the Thin Crowd at dusk |
 | Mountains | on the horizon | the dragon's way in, the sky whale's path |
 | The forest edge | west, past the barrow | the Thornmother, wanderers, animals |
-| A lake and stream | south-east | the giant axolotl, the sky whale's reflection |
+| A lake | south-east | the giant axolotl, the sky whale's reflection |
 | The old road | east to west | travellers, knights, the Bloom-Headed Wanderer, the Borrowed Man |
 | The barrow mound | beyond the west wall | the barrow lord |
 | The open plain | south | the Long Crawl's slow crossing |
@@ -365,7 +365,7 @@ silent first.
 | # | Session | Live for Rooken? |
 |---|---|---|
 | 1 | This design, approved by the keeper | — |
-| 2 | The bigger world: landscape, wider camera, room for plots beyond the walls | yes (scenery) |
+| 2 | The bigger world: landscape, wider camera, room for plots beyond the walls (**done**) | yes (scenery) |
 | 3 | Weather: rules, visuals, effects on his needs | yes |
 | 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep | behind the scenes |
 | 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary | behind the scenes |
