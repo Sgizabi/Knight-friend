@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T21:00:28+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-21T21:00:31+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "add second shim to the floor joint and test stability",
+    "thought": "The rain's drumming makes the wood creak, so I’ll tighten that last joint before it gets any worse."
   },
   "needs": {
-    "rest": 59.2,
-    "warmth": 85.6,
+    "rest": 60.4,
+    "warmth": 86.1,
     "inspiration": 75.0,
-    "spirit": 88.0
+    "spirit": 87.0
   },
   "needs_prev": {
     "rest": 59.2,
@@ -106,7 +106,7 @@
     "inspiration": 75.0,
     "spirit": 88.0
   },
-  "needs_at": "2026-11-21T21:00:28+00:00",
+  "needs_at": "2026-11-21T21:00:31+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -853,5 +853,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-21T21:00:28+00:00"
+  "exported": "2026-11-21T21:00:31+00:00"
 }
