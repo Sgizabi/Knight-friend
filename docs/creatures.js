@@ -337,7 +337,7 @@ const BEASTS = {
       }
       const held = P(beakUp, new T.TetrahedronGeometry(.05), sparkle[0], [0, -.03, blen * .8], { cast: false });
       // how it moves: slow, deliberate steps; a pause; a bob of the head (its tell); a dart
-      const pathAt = t => { const a = t * .03; return [-10.4 + Math.sin(a) * 1.4, .2 + Math.sin(a * 1.7) * 1.3]; };
+      const pathAt = t => { const a = t * .03; return [-10.6 + Math.sin(a) * 1.2, .15 + Math.sin(a * 1.7) * .75]; };   // the lane: clear of the buildings, the tree and him
       let yaw = 0, last = pathAt(0), stride = 0;
       return (t, dt) => {
         const cycle = t % 14, stalking = cycle < 9;                          // walk a while, then stop to hunt
@@ -1724,7 +1724,7 @@ const BEASTS = {
   ashwolves: {
     name: 'The Ashwolf pack', hour: 22,
     blurb: 'Wolves of charred ash with fire still in the cracks of them, smoke streaming off their backs. Drawn to the forge\'s heat. They circle just beyond the walls, and one of them always sits apart, keeping watch: when it howls, the pack moves.',
-    view: [[-6.6, 2.3, 4.6], [-13, .7, .2]],
+    view: [[-14.2, 2.6, 3.2], [-20.5, .6, -.4]],
     knight: { place: 'repair:doorway', action: 'stand', emote: 'exclaim', note: 'keeping the doorway between him and them' },
     build(root) {
       const v = root.userData.appearance?.variant || {};
@@ -1779,7 +1779,7 @@ const BEASTS = {
       const sizes = { young: .6, old: 1.12 };
       const wolves = Array.from({ length: count }, (_, n) => wolf(n, n === 0 ? 1.08 * (sizes[age] || 1) : (sizes[age] || 1) * (.85 + A.rand(n + 40)() * .2)));
       const watcher = wolves[0];                                    // the one that sits apart, on the rubble, and watches
-      const WATCH = [-9.6, .45, -3.2];
+      const WATCH = [-18.6, 0, -3.6];                              // just outside the west wall's corner
       const EN = 60, ep = new Float32Array(EN * 3), eLife = Float32Array.from({ length: EN }, (_, i) => i / EN);
       const eg = new T.BufferGeometry(); eg.setAttribute('position', new T.BufferAttribute(ep, 3));
       root.add(new T.Points(eg, new T.PointsMaterial({ color: '#ffb35a', size: .05, transparent: true, depthWrite: false })));
@@ -1800,8 +1800,8 @@ const BEASTS = {
             // circling just beyond the wall, slowly while waiting, at a lope once the watcher has howled
             const speed = moving ? .34 : .1, k = n * 2.2;
             wf.a = (wf.a ?? k) + dt * speed;
-            const a = wf.a, x = -14.2 + Math.cos(a) * 3.4, z = .4 + Math.sin(a) * 2.6;
-            w.position.set(x, gy(x, z), z); w.rotation.y = Math.atan2(-Math.sin(a) * 3.4, Math.cos(a) * 2.6);
+            const a = wf.a, x = -21.2 + Math.cos(a) * 2.2, z = .3 + Math.sin(a) * 3.4;   // beyond the west wall
+            w.position.set(x, gy(x, z), z); w.rotation.y = Math.atan2(-Math.sin(a) * 2.2, Math.cos(a) * 3.4);
             const ph = t * (moving ? 9 : 4) + n;
             body.position.y = .66 * (body.scale.x) + Math.abs(Math.sin(ph)) * (moving ? .04 : .015);
             legs.forEach(({ top, mid, front, ph: p }) => { const s = Math.sin(ph + p); top.rotation.x = s * (moving ? .55 : .3); mid.rotation.x = Math.max(0, front ? -s : s) * .6 * (front ? -1 : 1); });
@@ -2010,7 +2010,7 @@ const BEASTS = {
       const water = new T.MeshStandardMaterial({ color: '#6d8d99', roughness: .06, metalness: .35, transparent: true, opacity: .72 });
       const rippleM = new T.MeshBasicMaterial({ color: '#cfe3ea', transparent: true, opacity: .0, depthWrite: false });
       const r = A.rand(8);
-      const pools = [[-12.8, 1.4, 2.4], [-10.4, .2, 1.3], [-14.9, -.6, 1.5], [-9.8, 2.6, .9], [-13.6, 3.2, 1.1], [-11.6, -1.0, .8]];
+      const pools = [[-11.2, .5, .9], [-10.0, -.3, .7], [-12.4, -.4, .6], [-9.6, .6, .5], [-13.0, .3, .5]];   // in the lane, clear of the buildings
       for (const [x, z, s] of pools) {
         const pool = new T.Mesh(new T.CircleGeometry(s, 16), water); pool.rotation.x = -Math.PI / 2;
         pool.position.set(x, gy(x, z) + .035, z); pool.scale.set(1, .6 + r() * .4, 1); root.add(pool);
@@ -2086,29 +2086,41 @@ const BEASTS = {
       }
       sheet(segs[1], [[0, .38, .3], [0, .46, 0], [0, .5, -.4], [0, .38, -.62], [0, .3, -.62], [0, .3, .3]], [[0, 1, 5], [1, 4, 5], [1, 2, 4], [2, 3, 4]], finM);
 
-      // where it goes: wading between the pools, now and then nosing toward the warm doorway
-      const path = t => {
-        const a = t * .045, toFire = pulse(t, 70, 26);              // every so often it heads for the warmth
-        const x = -12.6 + Math.sin(a) * 1.4 + toFire * 2.4, z = .5 + Math.sin(a * 2) * .5 + toFire * .5;   // never into the doorway, him, or a wall
-        return [x, z];
+      // where it goes: a slow loop along the lane between the building plots, turning in the open
+      // at either end, resting now and then nearest the warm doorway. Its body follows its own path
+      // (each part where the head has been), so it never swings through a wall, the well or him.
+      const E = [-9.9, .05], W = [-12.3, .05], R = .5, ST = E[0] - W[0], LOOP = 2 * ST + 2 * Math.PI * R;
+      const along = d => {
+        d = ((d % LOOP) + LOOP) % LOOP;
+        if (d < ST) return [E[0] - d, W[1] + R];                                  // west along the north side
+        d -= ST; if (d < Math.PI * R) { const f = d / R; return [W[0] - Math.sin(f) * R, W[1] + Math.cos(f) * R]; }
+        d -= Math.PI * R; if (d < ST) return [W[0] + d, W[1] - R];                // east along the south side
+        d -= ST; const f = d / R; return [E[0] + Math.sin(f) * R, E[1] - Math.cos(f) * R];
       };
-      const cam = V(); let tilt = 0, yaw = 0, last = path(0), step = 0;
+      const heading = d => { const [x0, z0] = along(d - .05), [x1, z1] = along(d + .05); return Math.atan2(x1 - x0, z1 - z0); };
+      const SPEED = .2, PIV = [0, .15, .65, 1.15];                              // how far behind the front each part sits
+      const WALK = LOOP / SPEED, CYCLE = WALK + 16;                             // once round, then a rest facing the doorway
+      const travelled = t => SPEED * (Math.floor(t / CYCLE) * WALK + Math.min(t % CYCLE, WALK)) - Math.PI * R / 2;
+      const cam = V(); let tilt = 0, step = 0, lastD = 0;
       return (t, dt) => {
-        const [x, z] = path(t), dx = x - last[0], dz = z - last[1], speed = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
-        const want = Math.atan2(dx, dz);
-        if (Math.hypot(dx, dz) > 1e-4) { let d = want - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * Math.min(1, dt * 1.5); }
-        last = [x, z];
-        g.position.set(x, gy(x, z), z); g.rotation.y = yaw;
-        step += dt * (1 + speed * 5);
-        const sw = Math.sin(step * 1.6);
-        segs.forEach((s, i) => { if (i) s.rotation.y = sw * .08 * (i % 2 ? 1 : -1); });   // the S of the walk
-        segs[0].rotation.y = -sw * .06;
+        const d = travelled(t), speed = (d - lastD) / Math.max(dt, 1e-3); lastD = d;
+        const [x, z] = along(d), h0 = heading(d);
+        g.position.set(x, gy(x, z), z); g.rotation.y = h0;
+        const hs = PIV.map(k => heading(d - k));
+        segs[1].rotation.y = hs[1] - hs[0]; segs[2].rotation.y = hs[2] - hs[1];
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        segs[1].rotation.y = wrap(segs[1].rotation.y); segs[2].rotation.y = wrap(segs[2].rotation.y);
+        let prev = hs[2];
+        tail.forEach((j, i) => { const hk = heading(d - 1.15 - i * .3); j.rotation.y = wrap(hk - prev); prev = hk; });
+        step += dt * (speed > .05 ? 1 + speed * 5 : 0);
+        const sw = Math.sin(step * 1.6), walking = speed > .05;
+        segs[0].rotation.y = -sw * .05 * walking; segs[1].rotation.y += sw * .05 * walking;   // a little S in the walk
         legs.forEach(({ upper, knee, sx, ph }) => {
           const c = Math.sin(step * 1.6 + ph);
           upper.rotation.y = c * .45 * sx; upper.rotation.z = Math.max(0, -c) * .35 * sx; knee.rotation.x = Math.max(0, c) * .2;
         });
         body.position.y = (.5 + Math.abs(sw) * .02) * scale;
-        tail.forEach((j, i) => { j.rotation.y = Math.sin(step * 1.6 - i * .55) * .16 + Math.sin(t * .4) * .04; });
+        tail.forEach((j, i) => { j.rotation.y += Math.sin(step * 1.6 - i * .55) * .06 * walking + Math.sin(t * .4 + i * .5) * .03; });
         gills.forEach(({ c, ph }) => c.forEach((j, i) => { j.rotation.x = (i ? .28 : 0) + Math.sin(t * 1.8 + ph + i * .7) * .12; }));   // curling fronds
         gillM.emissiveIntensity = .75 + Math.sin(t * 1.2) * .2 + pulse(t + 3, 9, 3) * .3;   // flushes when it is happy
         // every so often it notices whoever is watching and tilts its head, smiling
