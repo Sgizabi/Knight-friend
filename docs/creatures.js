@@ -63,6 +63,26 @@ function thinFigure(g, h, dark, face) {
   P(head, A.ico(.17 * k, 1), face, [0, 0, 0], { scale: [.8, 1.25, .85] });
   return { head };
 }
+// a face that is not there: an oval of pure black that takes no light and ignores the mist,
+// optionally with a few faint specks drifting deep inside it. Returns a tick for the specks.
+let ovalTex = null;
+const ovalMask = () => ovalTex ??= canvasTex(64, 64, (c, w) => { c.fillStyle = '#000'; c.fillRect(0, 0, w, w); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(w / 2, w / 2, w * .47, w * .47, 0, 0, 6.3); c.fill(); });
+function voidFace(head, specks, scale = [.78, 1.25, .85], r = .17) {
+  // a cap following the curve of the head, so it reads as a hole in the face, not a disc on it
+  const cap = new T.Mesh(new T.SphereGeometry(r * 1.035, 24, 16, Math.PI / 2 - .62, 1.24, Math.PI / 2 - .6, 1.15),
+                         new T.MeshBasicMaterial({ color: '#000000', fog: false, alphaMap: ovalMask(), alphaTest: .5 }));
+  cap.scale.set(...scale); head.add(cap);
+  if (!specks) return () => {};
+  const N = 7, pos = new Float32Array(N * 3), seeds = Array.from({ length: N }, (_, i) => ({ a: i * 2.4, r: .25 + (i % 3) * .22, sp: .08 + (i % 4) * .03 }));
+  const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+  const mat = new T.PointsMaterial({ color: '#cfd8ff', size: 1.6, sizeAttenuation: false, transparent: true, opacity: .75, fog: false, depthWrite: false });
+  const pts = new T.Points(geo, mat); head.add(pts);
+  const front = r * 1.04 * scale[2] + .002, w = r * scale[0] * .45, h = r * scale[1] * .45;
+  return t => {
+    seeds.forEach((s, i) => { const a = s.a + t * s.sp; pos[i * 3] = Math.cos(a) * s.r * w; pos[i * 3 + 1] = Math.sin(a * 1.3) * s.r * h; pos[i * 3 + 2] = front; });
+    geo.attributes.position.needsUpdate = true; mat.opacity = .55 + Math.sin(t * .7) * .2;
+  };
+}
 // an eye: white, a glowing iris and a pupil, looking along +z
 function eyeball(parent, r, iris, pos) {
   const e = G(parent, pos);
@@ -1322,6 +1342,7 @@ const BEASTS = {
       bone(g, [0, 4.7, 0], [0, 5.2, .02], .04, .035, dark);
       const head = G(g, [0, 5.42, .03]);
       P(head, A.ico(.17, 1), face, [0, 0, 0], { scale: [.8, 1.25, .85] });
+      voidFace(head, false, [.8, 1.25, .85]);
       const mist = Array.from({ length: 10 }, (_, i) => {
         const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8c8697', transparent: true, opacity: .3, depthWrite: false }));
         sp.userData = { x: -32 + (i % 5) * 3.2, z: -5 + Math.floor(i / 5) * 6, ph: i }; root.add(sp); return sp;
@@ -1443,8 +1464,8 @@ const BEASTS = {
 
   // ================================================================ THE LANTERN FOLK (three styles to compare)
   lanternheads: {
-    name: 'Lantern folk: lantern-headed', hour: 22,
-    blurb: 'Style A. Slender figures of dark wood and iron whose heads are glass lanterns, a small living flame where a face would be. They cross the courtyard on certain nights, going somewhere.',
+    name: 'The Lantern Folk', hour: 22,
+    blurb: 'Slender figures of dark wood and iron whose heads are glass lanterns, a small living flame where a face would be. They cross the courtyard on certain nights, going somewhere.',
     view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching them go by, very quietly' },
     build(root) {
@@ -1467,55 +1488,6 @@ const BEASTS = {
       });
     },
   },
-  glassfolk: {
-    name: 'Lantern folk: glass', hour: 22,
-    blurb: 'Style B. Clear, glassy figures with a lantern flame burning in the chest, so they light up from inside. They cross the courtyard on certain nights, going somewhere.',
-    view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
-    knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching the light move through them' },
-    build(root) {
-      const glass = new T.MeshStandardMaterial({ color: '#d8ecf5', transparent: true, opacity: .32, roughness: .05, metalness: .2, emissive: '#5a7a8a', emissiveIntensity: .35, flatShading: true, depthWrite: false });
-      const edge = new T.MeshStandardMaterial({ color: '#eaf6ff', transparent: true, opacity: .55, roughness: .05, metalness: .3, flatShading: true, depthWrite: false });
-      return procession(root, (w, i) => {
-        const legs = [-1, 1].map(sx => { const l = G(w, [sx * .09, .82, 0]); bone(l, [0, 0, 0], [0, -.82, .02], .05, .035, glass, 6); return l; });
-        P(w, A.ico(.2, 1), glass, [0, 1.15, 0], { scale: [1, 1.5, .8], cast: false });
-        P(w, A.ico(.21, 1), edge, [0, 1.15, 0], { scale: [1.02, 1.52, .82], cast: false, jitter: .03 });
-        const arms = [-1, 1].map(sx => { const a = G(w, [sx * .2, 1.4, 0]); bone(a, [0, 0, 0], [sx * .05, -.55, .05], .035, .025, glass, 5); return a; });
-        P(w, A.ico(.13, 1), glass, [0, 1.7, 0], { scale: [.9, 1.1, .9], cast: false });
-        const heart = G(w, [0, 1.18, 0]);
-        P(heart, A.ico(.07, 1), glow('#ffcf7a', 2.5), [0, 0, 0], { cast: false });
-        const flame = new T.Mesh(new T.ConeGeometry(.04, .14, 6), glow('#ffb347', 3)); flame.position.y = .09; heart.add(flame);
-        return { legs, arms, flicker: t => { flame.scale.set(1, .8 + Math.sin(t * 12 + i) * .25, 1); heart.scale.setScalar(1 + Math.sin(t * 3 + i) * .08); }, lightY: 1.18 };
-      });
-    },
-  },
-  paperfolk: {
-    name: 'Lantern folk: paper', hour: 22,
-    blurb: 'Style C. Figures of pale paper stretched over thin frames, glowing softly from inside like paper lanterns. Fragile, rustling, and very gentle. They cross the courtyard on certain nights, going somewhere.',
-    view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
-    knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching them go by, very quietly' },
-    build(root) {
-      const paper = new T.MeshStandardMaterial({ color: '#f6e6c4', emissive: '#ffb45a', emissiveIntensity: 1.1, roughness: 1, flatShading: true, side: T.DoubleSide });
-      const rib = A.mat('#4a3424', 0, .8), cap = A.mat('#2e2219', 0, .8);
-      const lantern = (parent, y, r, h) => {
-        const prof = [[.02, -h / 2], [r * .7, -h * .45], [r, -h * .2], [r, h * .2], [r * .7, h * .45], [.02, h / 2]].map(([a, b]) => new T.Vector2(a, b));
-        const m = new T.Mesh(new T.LatheGeometry(prof, 10), paper); m.position.y = y; parent.add(m);
-        for (const k of [-.3, 0, .3]) { const rr = new T.Mesh(new T.TorusGeometry(r * (k ? .93 : 1.0), .006, 3, 12), rib); rr.rotation.x = Math.PI / 2; rr.position.y = y + k * h * .8; parent.add(rr); }
-        P(parent, A.cyl(r * .5, r * .5, .03, 10), cap, [0, y + h / 2, 0]); P(parent, A.cyl(r * .5, r * .5, .03, 10), cap, [0, y - h / 2, 0]);
-        return m;
-      };
-      return procession(root, (w, i) => {
-        const legs = [-1, 1].map(sx => { const l = G(w, [sx * .08, .8, 0]); P(l, A.cyl(.04, .035, .8, 6), paper, [0, -.4, 0], { cast: false }); return l; });
-        const body = lantern(w, 1.12, .2, .6);
-        const arms = [-1, 1].map(sx => { const a = G(w, [sx * .2, 1.36, 0]); P(a, A.cyl(.03, .025, .55, 6), paper, [sx * .02, -.28, .02], { cast: false }); return a; });
-        bone(w, [0, 1.42, 0], [0, 1.52, 0], .012, .012, rib, 4);
-        const head = lantern(w, 1.66, .13, .26);
-        for (const sx of [-1, 1]) P(w, A.ico(.018, 0), cap, [sx * .045, 1.68, .125], { cast: false });   // two dark dots for eyes
-        const tassel = G(w, [0, .82, 0]); bone(tassel, [0, 0, 0], [0, -.2, 0], .008, .004, A.mat('#9a2b1f'), 3);
-        return { legs, arms, flicker: t => { paper.emissiveIntensity = 1 + Math.sin(t * 2.3) * .12; tassel.rotation.x = Math.sin(t * 5 + i) * .3; body.rotation.y = Math.sin(t * 1.3 + i) * .08; }, lightY: 1.2 };
-      });
-    },
-  },
-
   // ================================================================ THE CARTOGRAPHER MOTH
   cartographer: {
     name: 'The Cartographer Moth', hour: 19,
@@ -2183,7 +2155,7 @@ const BEASTS = {
 
   // ================================================================ THE LONG MAN, FINAL LOOK (art pass)
   longman2: {
-    name: 'The Long Man (final look)', hour: 18,
+    name: 'The Long Man (final look, void)', hour: 18,
     blurb: 'Art pass: how the Long Man would look in the finished version. It only moves when no one is watching, and each time it is a little closer, standing a little differently. (Try looking away.)',
     view: [[-7.6, 1.7, 1.4], [-24, 3.4, -1.6]],
     knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'not looking at it. Not looking at it.' },
@@ -2220,9 +2192,7 @@ const BEASTS = {
       for (let k = 0; k < 4; k++) P(g, A.ico(.022, 0), skinD, [0, 4.75 + k * .12, -.035]);
       const head = G(g, [0, 5.44, .03]);
       P(head, A.ico(.17, 2), face, [0, 0, 0], { scale: [.78, 1.25, .85], jitter: .006 });
-      P(head, A.box(.17, .025, .04), faceD, [0, .06, .12], { rot: [.2, 0, 0], jitter: .004 });
-      P(head, new T.ConeGeometry(.018, .09, 4), faceD, [0, -.01, .135], { rot: [.25, 0, 0], jitter: 0 });
-      for (const sx of [-1, 1]) P(head, A.ico(.035, 1), faceD, [sx * .05, .03, .11], { scale: [1, .7, .4], jitter: 0 });
+      const voidTick = voidFace(head, this.specks, [.78, 1.25, .85]);   // no face at all: a hole
       // a long coat hanging open from its shoulders, ragged at the hem
       const panels = [];
       const back = G(g, [0, 4.62, -.06]);
@@ -2243,6 +2213,7 @@ const BEASTS = {
       let pi = 0;
       const p = V(); let seen = true;
       return (t, dt) => {
+        voidTick(t);
         head.getWorldPosition(p); p.project(A.camera);
         const onScreen = Math.abs(p.x) < 1.02 && Math.abs(p.y) < 1.02 && p.z < 1;
         if (seen && !onScreen && g.position.x < -19.8) { g.position.x = Math.min(-19.8, g.position.x + 2.3); pi = (pi + 1) % poses.length; }
@@ -2257,6 +2228,8 @@ const BEASTS = {
     },
   },
 };
+BEASTS.longman3 = { ...BEASTS.longman2, name: 'The Long Man (final look, void with specks)', specks: true,
+  blurb: 'The same final look, but with a few faint specks deep in the void of its face, as if it goes much further back than its head does. (Try looking away.)' };
 const ORDER = Object.keys(BEASTS);
 const TIMES = [['day', 13], ['dusk', 18], ['night', 22]];
 
