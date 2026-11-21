@@ -180,6 +180,17 @@ function merge(group) {
     const m = new T.Mesh(geo, material); m.castShadow = true; m.receiveShadow = true; group.add(m);
   }
 }
+// Performance: a glow that stands in for a light (no real light: every light makes everything
+// dearer). It answers to .intensity like a light does, so a being's animation needs no change.
+function softLight(color, intensity = 2, size = 3) {
+  const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color, transparent: true, opacity: 0, depthWrite: false,
+                                                 blending: T.AdditiveBlending, fog: false }));
+  sp.scale.setScalar(size);
+  Object.defineProperty(sp, 'intensity', { get() { return sp.userData.i ?? 0; },
+    set(v) { sp.userData.i = v; sp.material.opacity = Math.min(.75, v * .09); } });
+  sp.intensity = intensity;
+  return sp;
+}
 function canvasTex(w, h, draw) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
   const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
@@ -1221,7 +1232,7 @@ const BEASTS = {
       const head = segs[N - 1].s;
       P(head, new T.CircleGeometry(.1, 10), dark, [0, 0, .17], { cast: false, jitter: 0 });
       for (const sx of [-1, 1]) bone(head, [sx * .06, .08, .1], [sx * .16, .26, .25], .015, .006, band, 4);
-      const lamp = new T.PointLight('#9fb4ff', 2.5, 7, 1.6); lamp.position.set(cx, .8, cz); root.add(lamp);
+      const lamp = softLight('#9fb4ff', 2.5, 3.2); lamp.position.set(cx, .8, cz); root.add(lamp);
       const p = V(), q = V();
       return (t) => {
         const R = 1.5 + Math.sin(t * .35) * .08;
@@ -1396,7 +1407,8 @@ const BEASTS = {
       bone(g, [.45, 0, .5], [.45, 1.9, .5], .03, .025, A.M.woodD);   // a walking staff
       bone(g, [-.3, 1.45, .1], [-.34, .9, .15], .05, .04, cloth);
       const head = G(hood, [0, .12, .04]); head.scale.setScalar(1.45);
-      const bloomLight = new T.PointLight('#ffcbb8', 0, 3, 1.5); bloomLight.position.set(0, .2, .25); head.add(bloomLight);
+      const bloomLight = softLight('#ffcbb8', 0, 1.4); bloomLight.position.set(0, .2, .25); head.add(bloomLight);
+      const apB = root.userData.appearance || {}, canBloom = !apB.id || (apB.seeing ?? 0) >= 2;   // he sees it bloom only from seeing step 2
       const bulb = P(head, A.ico(.13, 1), A.mat('#cdb8ae', 0, .6), [0, 0, 0], { scale: [1, 1.15, 1] });
       const petals = [];
       for (let i = 0; i < 6; i++) {
@@ -1414,13 +1426,13 @@ const BEASTS = {
       }
       return (t) => {
         const open = smooth(0, 1, pulse(t + 2, 12, 6) * 1.6);
-        petals.forEach((h, i) => { h.rotation.x = open * (1.0 + Math.sin(t * 2 + i) * .08); });
+        petals.forEach((h, i) => { h.rotation.x = open * (canBloom ? 1 : 0) * (1.0 + Math.sin(t * 2 + i) * .08); });
         bulb.scale.setScalar(1 - open * .5);
         for (const { b, c, ph } of tendrils) {
           b.scale.setScalar(.05 + open * .95);
           c.forEach((j, i) => { j.rotation.x = Math.sin(t * 2.2 - i * .6 + ph) * .35 * open; j.rotation.z = Math.cos(t * 1.7 - i * .5 + ph) * .25 * open; });
         }
-        bloomLight.intensity = open * 2.2;
+        bloomLight.intensity = open * 2.2 * (canBloom ? 1 : 0);
         head.rotation.x = -open * .25; hood.rotation.y = Math.sin(t * .4) * .2 * (1 - open);
       };
     },
@@ -1457,7 +1469,9 @@ const BEASTS = {
       const thing = G(cage, [0, -.09, 0]), light = glow('#bfe8ff', 2.5);
       P(thing, A.ico(.035, 0), light, [0, 0, 0], { cast: false });
       const wings = [-1, 1].map(sx => { const w = G(thing); sheet(w, [[0, 0, 0], [sx * .09, .03, .02], [sx * .07, -.02, -.03]], [[0, 1, 2]], glow('#dff4ff', 1.2, { side: T.DoubleSide, transparent: true, opacity: .8 })); return { w, sx }; });
-      const lamp = new T.PointLight('#9fd8ff', 6, 10, 1.4); cage.add(lamp);
+      const lamp = softLight('#9fd8ff', 6, 1.6); cage.add(lamp);
+      const apW = root.userData.appearance || {};
+      thing.visible = !apW.id || (apW.seeing ?? 0) >= 2;            // the lantern looks empty until he can see what lives in it
       let x = -11, dir = 1;
       return (t, dt) => {
         const target = -11.3 + Math.sin(t * .09) * 3.8, v = target - x; x = target;

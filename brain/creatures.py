@@ -96,7 +96,8 @@ STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off
 # The rest are fully built behind the scenes and come as their waves are released (tests, the
 # simulator and the preview can use all of them: KNIGHT_ALL_BEINGS=on).
 RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "longman",       # wave 1
-            "whale", "moths", "barrow", "thorn", "lanternheads", "brood", "thincrowd", "doorway"}   # wave 2
+            "whale", "moths", "barrow", "thorn", "lanternheads", "brood", "thincrowd", "doorway",    # wave 2
+            "basilisk", "wyrm", "crawl", "golem", "well", "bloom", "warden", "larva"}               # wave 3
 
 
 def released(kind):

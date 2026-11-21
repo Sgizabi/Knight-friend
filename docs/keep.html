@@ -2401,7 +2401,7 @@ async function showBeings() {
   const here = list.filter(a => Date.parse(a.start) <= now && now < Date.parse(a.end));
   for (const [id, b] of beings) if (!here.some(a => a.id === id)) { b?.remove(); beings.delete(id); }
   for (const a of here) if (!beings.has(a.id)) {
-    const b = creatureMod.spawn(a.render || a.kind, creatureApi(), a);
+    const b = creatureMod.spawn(a.render || a.kind, creatureApi(), { ...a, seeing: state?.creatures?.seeing ?? 0 });   // (it shows what he can see)
     beings.set(a.id, b);
     if (b?.root && now - Date.parse(a.start) < 3 * 60000) setTimeout(() => noticeBeing(b, a, 6), 1200);   // it has just come
   }
