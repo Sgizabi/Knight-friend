@@ -229,5 +229,13 @@
     "emote": "spark",
     "text": "I cut a new timber beam for the bathhouse floor and fit it. The joint squeaked a bit, so I added a shim. Not much else moved today.",
     "creations": []
+  },
+  {
+    "time": "2026-11-21T17:01:38+00:00",
+    "activity": "repair",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I patched the east wall and the hall feels solid again. While checking the doorway I found a loose stone that kept wobbling when I stepped on it. Guess the stone still needs its coffee break.",
+    "creations": []
   }
 ]

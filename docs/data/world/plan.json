@@ -1,35 +1,45 @@
 {
-  "start": "2026-11-21T15:01:31+00:00",
+  "start": "2026-11-21T17:01:38+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "forge",
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "",
+      "thoughts": [
+        "The rain makes the fire sound like a kettle."
+      ]
+    },
+    {
+      "place": "workbench",
       "action": "work",
       "minutes": 20,
       "emote": "question",
       "note": "",
       "thoughts": [
-        "Need sharper file for the bolts"
+        "Need to secure that squeaky joint on the bathhouse floor."
       ]
     },
     {
-      "place": "fire",
-      "action": "work",
+      "place": "desk",
+      "action": "write",
       "minutes": 20,
-      "emote": "dots",
+      "emote": "music",
       "note": "",
       "thoughts": [
-        "That beam could use a tighter brace"
+        "Inventory list will keep the chaos in check."
       ]
     },
     {
       "place": "woodshed",
       "action": "stand",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "exclaim",
       "note": "",
       "thoughts": [
-        "Rain might soak the logs soon"
+        "Dry logs are scarce, but the rain won’t let me gather outside."
       ]
     }
   ]
