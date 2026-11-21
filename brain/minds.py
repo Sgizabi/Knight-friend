@@ -86,6 +86,8 @@ def _who(a):
                      "beyond what you have heard.")
     elif age == "old":
         lines.append("You are old: big, worn and slow, patient and hard to fool; you remember a great deal.")
+    if beings.AGE_LOOKS.get(a["kind"], {}).get(age):
+        lines.append(f"How you look: {beings.AGE_LOOKS[a['kind']][age]}.")
     if mark == "scarred":
         lines.append("You carry an old scar.")
     if c.get("likes"):

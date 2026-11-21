@@ -139,7 +139,7 @@ CHARACTERS = {
         traits=["gentle", "curious", "growing", "hungry for warmth"],
         drives=["warmth", "it is lost", "it is looking for whoever it saw last time", "food"],
         signs=["a soft glow moving through the long grass", "a faint chirring, like a cricket singing underwater"],
-        looks="a pale, soft larva the length of an arm, faintly glowing, nosing toward the fire",
+        looks="a pale, soft grub as big as a cart, lit from inside with starlight, curled in a crater beyond the south wall, lifting its head toward the warmth of the keep",
         tell="it glows brighter when it is content", likes=["warm", "fire", "food", "bread", "blanket", "stroke", "gentle"],
         danger=0, gifts=["a cast-off skin that glows for a while"], trace="a glowing slime trail that fades by noon"),
     "listener": B(
@@ -385,6 +385,31 @@ MORE_WEAKNESSES = {
 # flame in a gale, a gaze in the fog).
 FAILS_IN = {"fog": ["rain", "storm"], "crawl": ["rain", "storm"], "bentone": ["wind", "storm"], "longman": ["fog"],
             "thincrowd": ["fog"], "manyjoint": ["storm"], "ashwolves": ["snow"]}
+
+# What a young or an old one looks like, where age changes the whole shape of it (not just its
+# size). Said after `looks`; a kind not listed gets the plain "young: small and quick" lines.
+AGE_LOOKS = {
+    "larva": {"young": "not one grub but a brood of them: five little pale grubs, each the size of a dog, nosing about the crater",
+              "old": "no longer a grub at all: a tall chrysalis standing in the crater, split down the front with light, crumpled wings pushing out of the top"},
+    "axolotl": {"young": "a young one: no legs yet, all tail and enormous feathery gills, darting about the pools like a fish",
+                "old": "an old one: huge, half-sunk in the water and slow as a log, lilies and weed growing on its back, its gills faded to the pink of old roses"},
+    "dragon": {"young": "a wyrmling no bigger than a large dog, scrambling along the wall top, snapping at moths and huffing smoke it cannot yet light",
+               "old": "an old dragon draped along the wall, its torn wings folded round it like a cloak, smoke always curling from its nostrils, one horn broken short"},
+    "whale": {"young": "a calf, swimming close beside its mother: two whales in the sky, one small",
+              "old": "an old one, crusted and slow, trailing a long cloud of small lights behind it like a wake of stars"},
+    "thorn": {"young": "a fawn of bramble spotted with blossom, all legs, leaping about the meadow",
+              "old": "an old one: its antlers grown into the crown of a tree, birds nesting in them, moss hanging from its chin like a beard"},
+    "basilisk": {"young": "a speckled hatchling, all eyes, its gaze too weak to do more than make the skin prickle",
+                 "old": "an old one, half turned to stone itself, moss on its back and its eyes shut; it seldom needs to open them"},
+    "wyrm": {"young": "three young worms, each out of its own hole, rising and ducking back like a game",
+             "old": "an old one, vast, its hide crusted with stone and roots, rising like a column of the earth itself"},
+    "glassbeak": {"young": "a fledgling, its glass beak too heavy for it, wobbling on its stilt legs",
+                  "old": "an old one, hunched, its neck drawn in, its glass beak cracked and clouded, still as a post for long stretches"},
+    "bellcrab": {"young": "a small crab in a hand bell, scuttling sideways",
+                 "old": "an old one, its bell so overgrown with moss and grass that it looks like a little hill that walks"},
+    "ashwolves": {"young": "the pack is mostly pups, tumbling and play-fighting in the ash, one grown wolf keeping watch",
+                  "old": "led by an old grey wolf, heavy and hunched, a mane of pale ash at its neck"},
+}
 
 # How quickly each being gets used to a trick he keeps using (0: never; a third is quick). It
 # fades again if he leaves the trick alone (HALF_LIFE_DAYS in encounters.py). Clever and

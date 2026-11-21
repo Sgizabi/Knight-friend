@@ -178,6 +178,8 @@ for _kind, _ts in _by.items():                                           # no ki
 assert 1 <= _be["step"] <= 3 and _be["points"] >= 10                     # seeing grows as it witnesses, slowly
 assert all(creatures.KINDS[k]["step"] <= _be["step"] for k in _by)
 assert all(not (a.get("variant") or {}).get("age") or a["kind"] in creatures.AGED for a in _apps)   # ages only where they mean something
+import beings as _b  # noqa: E402
+assert set(_b.AGE_LOOKS) <= creatures.AGED and all(set(v) == {"young", "old"} for v in _b.AGE_LOOKS.values())   # each age its own shape
 assert any((a.get("variant") or {}).get("age") for a in _apps)
 _ids = {a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
 _pairs = [(a, _ids.get(a["with"])) for a in _apps if a.get("companion")]

@@ -264,7 +264,9 @@ def scene(a, entry, seeing, ph, history):
         lines.append(f"Then you see it: {looks}.")
         age, mark = age_of(a), (a.get("variant") or {}).get("mark")
         if age:
-            lines.append({"old": "This one is old: bigger, worn, slower.", "young": "This one is young: small and quick."}[age])
+            own = beings.AGE_LOOKS.get(a["kind"], {}).get(age)
+            lines.append(f"This one is {age}: {own}." if own else
+                         {"old": "This one is old: bigger, worn, slower.", "young": "This one is young: small and quick."}[age])
         if mark == "scarred" and entry and entry.get("count"):
             lines.append("This one has an old scar.")
         if a.get("chain"):
