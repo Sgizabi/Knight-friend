@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T01:00:23+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-21T01:00:25+00:00",
+    "place": "repair:roof",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "replace the warped board and seal the draft",
+    "thought": "The wind still whistles through the roof gap. I need another board before the stone cracks more."
   },
   "needs": {
-    "rest": 45.9,
-    "warmth": 84.6,
+    "rest": 47.1,
+    "warmth": 85.1,
     "inspiration": 67.2,
-    "spirit": 84.7
+    "spirit": 87.6
   },
   "needs_prev": {
     "rest": 45.9,
@@ -106,7 +106,7 @@
     "inspiration": 67.2,
     "spirit": 84.7
   },
-  "needs_at": "2026-11-21T01:00:23+00:00",
+  "needs_at": "2026-11-21T01:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -701,5 +701,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-21T01:00:23+00:00"
+  "exported": "2026-11-21T01:00:25+00:00"
 }
