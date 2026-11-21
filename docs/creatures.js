@@ -2916,7 +2916,7 @@ const BEASTS = {
   dragon2: {
     name: 'The dragon (final look)', hour: 18,
     blurb: 'Art pass: how the dragon would look in the finished version. Legendary. It lands on the courtyard wall, peers down at whoever is there, and breathes fire when it is angry or showing off.',
-    view: [[-6.0, 2.4, 3.2], [-15.6, 2.6, .1]],
+    view: [[-6.0, 2.4, 3.2], [-15.6, 2.6, .1]], views: { young: [[-5.6, 2.0, 1.4], [-7.8, 1.5, -4.3]] },   // the young: on the north wall
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'face to face with a dragon' },
     build(root) {
       const v = root.userData.appearance?.variant || {}, young = v.age === 'young', old = v.age === 'old';
@@ -2924,7 +2924,7 @@ const BEASTS = {
       // wings, scrambling up and down the wall top and snapping at moths; only smoke yet. The old:
       // hunched low on the wall, torn wings folded round it like a cloak, head lowered, a greyed muzzle,
       // one horn broken short, smoke always curling from its nostrils.
-      const g = G(root, [young ? -17.3 : old ? -17.95 : -17.6, old ? .95 : 1.15, .1], [0, Math.PI / 2, 0]); g.scale.setScalar((v.size || 1) * (young ? .36 : old ? 1.12 : 1));   // on the west wall, facing the keep
+      const g = G(root, young ? [-8.15, 1.25, -4.3] : [old ? -17.95 : -17.6, old ? .95 : 1.15, .1], [0, Math.PI / 2, 0]); g.scale.setScalar((v.size || 1) * (young ? .36 : old ? 1.12 : 1));   // the young: the north wall, by the keep; the others on the west wall, facing the keep
       const sA = A.mat(young ? '#a8432a' : old ? '#5a2a24' : '#6e2a20', .2, .55), sB = A.mat(young ? '#7a2e1e' : old ? '#3e1f1a' : '#4a1b16', .2, .6);
       const sC = A.mat(young ? '#c85a34' : old ? '#6e3a2e' : '#8e3a28', .2, .5);
       const belly = A.mat('#caa070', .05, .6), horn = A.mat('#e2d6bd', 0, .5), hornD = A.mat('#9c8a6c', 0, .6), claw = A.mat('#16110f', .3, .4);
@@ -3051,7 +3051,7 @@ const BEASTS = {
       // the young: moths about its head, which it snaps at (and misses)
       const moths = young ? Array.from({ length: 3 }, (_, i) => { const m = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#fff2c0', transparent: true, opacity: .85, depthWrite: false, blending: T.AdditiveBlending }));
         m.scale.setScalar(.09); root.add(m); return { m, ph: i * 2.1 }; }) : [];
-      let zAt = 0, face = 0;
+      let zAt = 0, face = 0, turnK = 0, tailSide = 1;
       return (t, dt) => {
         const b = Math.sin(t * 1.05);
         torso.scale.set(1 + .02 * b, 1 + .03 * b, 1);
@@ -3060,23 +3060,27 @@ const BEASTS = {
         const lim = young ? .45 : .7, want = Math.max(-lim, Math.min(lim, Math.atan2(Math.sin(rel), Math.cos(rel))));
         look += (want - look) * Math.min(1, dt * 1.5);
         neck.forEach((j, i) => { j.rotation.y = look / 9 + .05 * Math.sin(t * .45 + i * .35); });
-        neck[0].rotation.x = (old ? 1.15 : .5) + .05 * Math.sin(t * .3);        // the old: head low, resting near the wall top
+        neck[0].rotation.x = (old ? 1.15 : young ? .15 : .5) + .05 * Math.sin(t * .3);   // (the young: head up, alert)        // the old: head low, resting near the wall top
         if (old) for (let i = 1; i < 9; i++) neck[i].rotation.x = i < 5 ? .05 : .2;
         if (young) {                                                        // scrambling along the wall top in fits and starts
-          const want = Math.sin(t * .23) * .75 + Math.sin(t * .61) * .25, step = want - zAt;   // the stretch of wall between the buildings zAt += step * Math.min(1, dt * 1.6);
+          const sit = pulse(t + 5, 13, 4) > 0;                             // now and then it sits a while and snaps at the moths
+          const want = sit ? zAt : Math.sin(t * .23) * .42 + Math.sin(t * .61) * .18, step = want - zAt;   // the stretch of wall between the dead tree and the keep
+          zAt += step * Math.min(1, dt * 1.6);
           const v = step * 1.6;
-          if (Math.abs(v) > .15) face += (((v > 0 ? 0 : Math.PI) - face + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 5);
-          g.position.z = .1 + zAt; g.rotation.y = face; g.position.y = 1.15 + Math.abs(Math.sin(t * 11)) * .04 * Math.min(1, Math.abs(v));
+          if (Math.abs(v) > .15) { turnK += ((v > 0 ? 0 : 1) - turnK) * Math.min(1, dt * 5); face = Math.PI / 2 - turnK * Math.PI; }   // it turns about facing the courtyard, so its tail swings outside the wall
+          g.position.x = -8.15 + zAt; g.rotation.y = face; g.position.y = 1.15 + Math.abs(Math.sin(t * 11)) * .04 * Math.min(1, Math.abs(v));
           g.rotation.z = Math.sin(t * 11) * .05 * Math.min(1, Math.abs(v));
         }
         const fireOn = young ? 0 : pulse(t + 3, old ? 20 : 14, 2.6), idle = pulse(t, 7, 1.4) * .35;   // the young have only smoke yet
-        const snap = young ? Math.max(0, Math.sin(t * 5.3)) ** 8 * pulse(t, 3.1, 1.2) : 0;   // snapping at the moths
+        const snap = young ? Math.max(0, Math.sin(t * 5.3)) ** 8 * Math.max(pulse(t, 3.1, 1.2), pulse(t + 5, 13, 4)) : 0;   // snapping at the moths (most of all while it sits)
         jaw.rotation.x = .04 + Math.max(idle, fireOn, snap) * .55;
         breath.intensity = fireOn * 7 + idle * 1.5;
         nostrils.emissiveIntensity = 1.2 + fireOn * 4 + Math.sin(t * 3) * .3;
         const glowK = 2 + Math.sin(t * 1.05) * .6 + fireOn * 2; fire.emissiveIntensity = glowK; seams.forEach(s => { s.visible = true; });
         head.children.forEach(c => { if (c.material === eyeM) c.scale.y = 1 - pulse(t, 6.5, .2) * .85; });
-        for (let i = 1; i < 14; i++) tail[i].rotation.z = (old ? .27 : .2) + .05 * Math.sin(t * .7 - i * .45);   // (the old's coiled tighter, off the barrow stones)
+        if (young) { tailSide = -Math.sin(face); tail[0].rotation.z = tailSide * 1.1; }   // the young turn about: its tail always hangs down the outside (north) of the wall
+        const outward = young ? tailSide : 1;
+        for (let i = 1; i < 14; i++) tail[i].rotation.z = outward * (old ? .27 : .2) + .05 * Math.sin(t * .7 - i * .45);   // (the old's coiled tighter, off the barrow stones)
         const stretch = pulse(t + 8, 17, 4);
         for (const { w, sx } of wings) {
           if (old) { w.rotation.z = sx * (-1.3 + .03 * Math.sin(t * .4)); w.rotation.y = sx * .25; continue; }   // folded down and back over its haunches   // folded round it like a cloak
@@ -3358,7 +3362,7 @@ function show(key, hour) {
   A.onTick.push(tick);
   A.setHour(hour ?? def.hour);
   A.force({ ...def.knight, awake: false });
-  const [pos, at] = def.view, far = innerWidth / innerHeight < 1 ? 1.75 : 1;   // tall screens: step back to fit it in
+  const [pos, at] = def.views?.[root.userData.appearance.variant.age] || def.view, far = innerWidth / innerHeight < 1 ? 1.75 : 1;   // (an age can have its own view); tall screens: step back to fit it in
   A.view(pos.map((v, i) => at[i] + (v - at[i]) * far), at);
   const u = new URL(location.href); u.searchParams.set('creature', key); u.searchParams.set('hour', A.hour);
   history.replaceState(null, '', u);

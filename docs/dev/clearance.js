@@ -25,7 +25,7 @@ const OBSTACLES = [
   ['Rooken (courtyard)', -7.75, -7.05, -1, 1.9, .65, 1.35],
 ];
 // what a being is meant to touch (it perches on, or leans in at, or lives inside)
-const ALLOWED = { dragon2: ['courtyard west wall'], doorway: ['the lintel'], well: ['the well'] };
+const ALLOWED = { dragon2: ['courtyard west wall', 'courtyard north wall'], doorway: ['the lintel'], well: ['the well'] };
 const NATURE = { fog: 'hostile', axolotl: 'gentle', bellcrab: 'neutral', glassbeak: 'nuisance', ashwolves: 'hostile',
   dragon2: 'proud', longman2: 'hostile', whale: 'gentle', moths: 'nuisance', barrow: 'proud', thorn: 'neutral',
   lanternheads: 'gentle', brood: 'nuisance', thincrowd: 'hostile', doorway: 'hostile', basilisk: 'hostile', wyrm: 'hostile',
