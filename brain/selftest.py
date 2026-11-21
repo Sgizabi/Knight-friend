@@ -151,7 +151,7 @@ for _d in range(120):
         creatures.update(_cw, weather.update(_cw, _now), _now)
 _st, _be = creatures.load(_cw), creatures.load_bestiary(_cw)
 _apps = _st["appearances"]
-_days = [a["day"] for a in _apps]
+_days = [a["day"] for a in _apps if not a.get("companion")]   # (a companion comes with the day's being)
 assert len(_days) == len(set(_days))                                     # at most one notable being a day
 assert 25 <= len(_apps) <= 60, len(_apps)                                # an encounter every few days (60 kept)
 _host = sorted(creatures._parse(a["start"]) for a in _apps          # (a slow presence's return visits are one event)
@@ -164,12 +164,23 @@ for _a in _apps:
         assert (weather.at(weather.load(_cw), creatures._parse(_a["start"])) or {}).get("kind", "clear") in creatures.CLEARISH or True
 _by = {}
 for _a in _apps:
-    _by.setdefault(_a["kind"], []).append(creatures._parse(_a["start"]))
+    if _a.get("chain", 1) == 1:                                          # (a slow presence's returns are one visit)
+        _by.setdefault(_a["kind"], []).append(creatures._parse(_a["start"]))
 for _kind, _ts in _by.items():                                           # no kind back before its cooldown
     _cd = _dt.timedelta(days=creatures.COOLDOWN_DAYS[creatures.KINDS[_kind]["rarity"]])
     assert all(b - a >= _cd - _dt.timedelta(days=1) for a, b in zip(_ts, _ts[1:])), _kind
 assert 1 <= _be["step"] <= 3 and _be["points"] >= 10                     # seeing grows as it witnesses, slowly
 assert all(creatures.KINDS[k]["step"] <= _be["step"] for k in _by)
+_ids = {a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
+_pairs = [(a, _ids.get(a["with"])) for a in _apps if a.get("companion")]
+assert 1 <= len(_pairs) <= len(_apps) // 4, len(_pairs)
+for _b, _a in _pairs:
+    assert _a is None or (_a["with"] == _b["id"] and _a["stance"] in creatures.STANCES and _b["stance"] in creatures.STANCES)
+    assert not (creatures.KINDS[_b["kind"]]["rarity"] == "legendary" and _a and creatures.KINDS[_a["kind"]]["rarity"] == "legendary")
+    assert creatures.KINDS[_b["kind"]]["nature"] != "hostile" or (_a and creatures.KINDS[_a["kind"]]["nature"] == "hostile")
+_rel = {}
+creatures.note_relation({"relations": _rel}, "fog", "ashwolves", "rival")
+assert _rel == {"ashwolves|fog": -1}                                     # their kinds remember
 _fresh = Path(tempfile.mkdtemp())
 _s0 = creatures.update(_fresh, weather.update(_fresh, _t0), _t0)
 assert all(creatures.KINDS[a["kind"]]["step"] == 0 for a in _s0["appearances"])   # at first, only what anyone can see

@@ -1486,13 +1486,19 @@ class Knight:
                 x["seen"] = True
                 if a.get("mind"):
                     x["mind"] = a["mind"]
+            if a.get("with") and x.get("id") == a["with"]:        # the one it came with was met too
+                x["met"] = {"outcome": "with", "time": iso()}
+                x["seen"] = True
+        if a.get("with_kind"):
+            creatures.note_relation(state, kind, a["with_kind"], a.get("stance", ""))
         (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
         (WORLD / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
         encounters.record(WORLD, {"time": iso(start), "id": a["id"], "kind": kind, "woke": woke, "steps": history,
                                   "injury": any(h.get("injury") for h in history),
                                   "damage": any(h.get("damage") for h in history),
                                   "loss": any(h.get("loss") for h in history), "note": note,
-                                  "why": (a.get("mind") or {}).get("why", a.get("drive", ""))})
+                                  "why": (a.get("mind") or {}).get("why", a.get("drive", "")),
+                                  **({"with": a["with_kind"], "stance": a.get("stance")} if a.get("with_kind") else {})})
         told = " ".join(f"You chose to {h['choice'].replace('_', ' ')} ({h['how']}). {h['happened']}" for h in history)
         self.memory["beings_since"].append({"time": iso(start), "kind": kind, "text": (
             ("It woke you in the night. " if woke else "") + encounters.scene(a, entry, best["step"], "here", [])

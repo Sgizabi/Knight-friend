@@ -83,6 +83,14 @@ DRAWN_BY = {"wyrm": ["hill"], "moths": ["lanternheads", "warden"], "larva": ["mo
             "glassbeak": ["nightgrown", "glassy1", "moon2"], "brood": ["nightgrown", "glassy3"], "ashwolves": ["dragon"]}
 TRACE_DAYS = {"meteor": 4, "ship": 3}
 
+# Meetings: now and then (about one notable day in eight) a second being is about at the same
+# time. Never two legendary beings; two hostile ones only together (and they count as one
+# dangerous event). How they treat each other (their stance) comes from who they are and what
+# has passed between their kinds before; fair rules say who prevails.
+MEET_CHANCE = .125
+STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off", "follow", "compete",
+           "steal from", "uneasy truce", "size up"]
+
 RARITY_WEIGHT = {"common": 10, "uncommon": 5, "rare": 2, "legendary": .9}   # legendary: about 3-5 a year
 COOLDOWN_DAYS = {"common": 4, "uncommon": 7, "rare": 20, "legendary": 60}
 WITNESS_POINTS = {"common": 1, "uncommon": 2, "rare": 4, "legendary": 8}
@@ -215,7 +223,7 @@ def plan_day(state, day, sched, step, rng=None, keep=None):
     last_hostile = max((_parse(a["start"]) for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"), default=None)
     week_start = start - dt.timedelta(days=weather.keeper_time(start).weekday())
     hostile_this_week = sum(1 for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"
-                            and _parse(a["start"]) >= week_start and a.get("chain", 1) == 1)
+                            and _parse(a["start"]) >= week_start and a.get("chain", 1) == 1 and not a.get("companion"))
     hostile_ok = (last_hostile is None or start - last_hostile >= dt.timedelta(days=HOSTILE_QUIET_DAYS)) and hostile_this_week < HOSTILE_PER_WEEK
     choices = []
     for kind, k in KINDS.items():
@@ -309,6 +317,90 @@ def note_arc(state, kind, regard_change, now=None):
         arc["regard"] = -1                         # when they return, warier, but they do return
 
 
+def might(kind, a=None):
+    """How much a being can make another give way (for who prevails between them)."""
+    c = beings.CHARACTERS.get(kind, {})
+    m = 1 + c.get("danger", 0) + (2 if "vast" in traits(kind) else 0) + (1 if "territorial" in traits(kind) else 0)
+    m += {"legendary": 2, "rare": 1}.get(KINDS[kind]["rarity"], 0)
+    return m * ((a or {}).get("variant") or {}).get("size", 1)
+
+
+def stance(k1, k2, relations, rng):
+    """How the first treats the second, from their traits and their kinds' history."""
+    t1, t2 = set(traits(k1)), set(traits(k2))
+    n1, n2 = KINDS[k1]["nature"], KINDS[k2]["nature"]
+    past = relations.get("|".join(sorted([k1, k2])), 0)
+    options = ["ignore", "size up", "uneasy truce"]
+    if n1 == "hostile" and n2 == "hostile":
+        options += ["team up", "rival", "squabble"] + (["team up"] * 2 if past > 0 else ["rival"] * 2 if past < 0 else [])
+    if t1 & {"territorial", "proud"}:
+        options += ["chase off", "rival"]
+    if t2 & {"territorial", "vast"} and t1 & {"skittish", "shy", "gentle"}:
+        options += ["flee", "avoid", "avoid"]
+    if t1 & {"thieving", "greedy"}:
+        options += ["steal from", "compete"]
+    if "light-hungry" in t1 and k2 in ("lanternheads", "warden"):
+        options += ["follow", "follow"]
+    if t1 & {"curious"}:
+        options += ["follow", "size up"]
+    if past < 0:
+        options += ["rival", "chase off"]
+    elif past > 0:
+        options += ["uneasy truce", "ignore", "team up" if n1 == n2 == "hostile" else "follow"]
+    return rng.choice(options)
+
+
+def companion(state, a, sched, step, rng, keep=None):
+    """A second being about at the same time as a, or None."""
+    k = KINDS[a["kind"]]
+    start, end = _parse(a["start"]), _parse(a["end"])
+    choices = []
+    for kind, kk in KINDS.items():
+        if kind == a["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or a.get("chain"):
+            continue
+        if kk["rarity"] == "legendary" and k["rarity"] == "legendary":
+            continue
+        if kk["nature"] == "hostile" and k["nature"] != "hostile":
+            continue                               # two hostile only together: still one dangerous event
+        until = _parse(state["cooldowns"].get(kind))
+        if until and until > start:
+            continue
+        if not _possible(kind, start, sched):
+            continue
+        choices.append((kind, RARITY_WEIGHT[kk["rarity"]] * ecology(kind, state, start, keep)))
+    if not choices:
+        return None
+    kind = rng.choices([c for c, _ in choices], [w for _, w in choices])[0]
+    t = start + dt.timedelta(minutes=rng.randint(0, 15))
+    b = _appearance(kind, dt.date.fromisoformat(a["day"]), t - dt.timedelta(minutes=0), rng, state)
+    b["start"] = _iso(t)
+    b["end"] = _iso(min(end, t + dt.timedelta(minutes=rng.randint(*KINDS[kind]["minutes"]) or 30)))
+    b["companion"] = True
+    rel = state.setdefault("relations", {})
+    a["with"], b["with"] = b["id"], a["id"]
+    a["with_kind"], b["with_kind"] = kind, a["kind"]
+    a["stance"], b["stance"] = stance(a["kind"], kind, rel, rng), stance(kind, a["kind"], rel, rng)
+    if {a["stance"], b["stance"]} & {"chase off", "rival", "compete", "squabble", "steal from"}:
+        ma, mb = might(a["kind"], a), might(kind, b)
+        a["prevails"] = a["id"] if rng.random() < ma / (ma + mb) else b["id"]   # fair: the mightier usually
+        b["prevails"] = a["prevails"]
+        loser = b if a["prevails"] == a["id"] else a
+        loser["end"] = _iso(min(_parse(loser["end"]), _parse(loser["start"]) + dt.timedelta(minutes=25)))
+    if a["stance"] == "flee" or b["stance"] == "flee":
+        runner = a if a["stance"] == "flee" else b
+        runner["end"] = _iso(min(_parse(runner["end"]), _parse(runner["start"]) + dt.timedelta(minutes=15)))
+    return b
+
+
+def note_relation(state, k1, k2, stance1, stance2=""):
+    """Their kinds remember: allies after a team-up, a grudge after a fight, so the world grows its own politics."""
+    key = "|".join(sorted([k1, k2]))
+    rel = state.setdefault("relations", {})
+    s = {stance1, stance2}
+    delta = 1 if s & {"team up", "uneasy truce", "follow"} else -1 if s & {"rival", "chase off", "steal from", "squabble", "compete"} else 0
+    rel[key] = max(-3, min(3, rel.get(key, 0) + delta))
+
+
 def update(world: Path, sched=None, now=None, keep=None):
     """Plan today and tomorrow (once each), credit what it has witnessed, and save."""
     now = now or _now()
@@ -324,6 +416,12 @@ def update(world: Path, sched=None, now=None, keep=None):
             continue
         state["planned"] = (state["planned"] + [key])[-10:]
         a = follow_up(state, day, sched) or plan_day(state, day, sched, best["step"], keep=keep)
+        if a and not a.get("chain"):                # now and then, another being is about at the same time
+            mrng = random.Random(day.toordinal() * 13 + 5)
+            b = companion(state, a, sched, best["step"], mrng, keep) if mrng.random() < MEET_CHANCE else None
+            if b:
+                state["appearances"].append(b)
+                state["cooldowns"][b["kind"]] = _iso(_parse(b["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[b["kind"]]["rarity"]]))
         if a:
             state["appearances"].append(a)
             k = KINDS[a["kind"]]
@@ -384,7 +482,8 @@ def export(world: Path, now=None):
         return None
     now = now or _now()
     state, best = load(world), load_bestiary(world)
-    shown = [{**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last") if k in a},
+    shown = [{**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
+                                   "stance", "prevails") if k in a},
               "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": KINDS[a["kind"]]["nature"]}
              for a in current(state, now, ahead_minutes=120) if a["kind"] in KINDS]
     traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]

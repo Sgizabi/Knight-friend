@@ -82,6 +82,12 @@ def _who(a):
         lines.append(f"You are {'an old' if mark == 'old' else 'a young' if mark == 'young' else 'a scarred'} one of your kind.")
     if c.get("likes"):
         lines.append(f"You care for: {', '.join(encounters.likes_of(a))}.")
+    if a.get("with_kind"):
+        o = beings.CHARACTERS.get(a["with_kind"], {})
+        lines.append(f"Another being is here too: {o.get('looks', 'something else')}. Toward it you mean to: "
+                     f"{a.get('stance', 'size up')}" + (" (and fair rules say "
+                     + ("you prevail" if a.get("prevails") == a.get("id") else "it prevails") + " between you)"
+                     if a.get("prevails") else "") + ".")
     if c.get("voice"):
         lines.append("You can talk, in your own manner; you need not.")
     else:

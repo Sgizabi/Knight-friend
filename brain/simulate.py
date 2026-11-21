@@ -104,6 +104,9 @@ def run(years, policy, seed=1, detail=False):
                 start = creatures._parse(a["start"])
                 if a.get("met") or a.get("slept") or a.get("cancelled") or start > now:
                     continue
+                if a.get("companion"):                         # met with the being it came with
+                    a["met"], changed = {"outcome": "with"}, True
+                    continue
                 changed = True
                 kind = a["kind"]
                 nature = creatures.KINDS[kind]["nature"]

@@ -284,6 +284,15 @@ what they left behind.
   (the Wanderer stays a hatted traveller until he can see it bloom), have a cap of 60,000
   tokens a day (about 1,000 to 1,500 a meeting in tests), and fall quiet, leaving the rules'
   own words, if anything fails or Rooken ever has to move onto their model.
+- **Meetings (session 6b):** on about one notable day in eight, a second being is about at
+  the same time (never two legendary ones; two hostile ones only together, counted as one
+  dangerous event). How each treats the other (team up, rival, squabble, ignore, avoid, flee,
+  chase off, follow, compete, steal from, uneasy truce, size up) comes from their traits and
+  what has passed between their kinds before, which the world remembers (allies after a
+  team-up, a grudge after a fight). Fair rules say who prevails (the mightier, usually), and the
+  loser leaves early. Rooken sees what is going on between them and can use it: a squabble
+  makes things easier for him, a team-up harder. Each being's mind knows its stance and acts
+  on it (the stance itself is chosen by the rules, which costs nothing).
 - **Ecology:** the timid stay away for a couple of days after something big; light-eaters
   follow lanterns; fire-lovers like the forge; scavengers come after a meteor or a landing;
   the wyrm stirs after the hill.
@@ -544,7 +553,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep (**done**, switched off until wave 1) | behind the scenes |
 | 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary; traits and drives; ecology; story arcs (**done**, switched off until wave 1) | behind the scenes |
 | 6a | Minds: behaviour minds and voices, real-model tests, budget caps, the watch list updated (**done**, switched off until wave 1) | behind the scenes |
-| 6b | Meetings and stances between beings | behind the scenes |
+| 6b | Meetings and stances between beings (**done**, switched off until wave 1) | behind the scenes |
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping | **yes, creatures arrive** |
 | 8 | The companion | yes |
 | 9 | Visitor help and names | yes |

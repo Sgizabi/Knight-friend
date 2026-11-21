@@ -84,6 +84,17 @@ SAYS = {   # what happened, in plain words; "+" adds how this being answers (bei
     ("leave", "neutral"): "You carry on, aware of it the whole time.",
     ("leave", "bad"): "You carry on, and it takes its chance. +",
 }
+STANCE_SAYS = {   # how the first being treats the second, as he would see it
+    "team up": "The two of them seem to be working together.", "rival": "They are plainly rivals; each keeps the other in view.",
+    "squabble": "The two of them are squabbling, snapping and circling.", "ignore": "Neither pays the other any mind.",
+    "avoid": "It keeps well clear of the other.", "flee": "It is trying to get away from the other.",
+    "chase off": "It is set on driving the other away.", "follow": "It follows the other, keeping close.",
+    "compete": "They seem to be after the same thing.", "steal from": "It keeps edging toward whatever the other has.",
+    "uneasy truce": "They keep an uneasy peace between them.", "size up": "They are sizing each other up.",
+}
+DISTRACTED = {"rival", "squabble", "compete", "chase off", "steal from"}   # busy with each other: a chance for him
+TOGETHER = {"team up"}                                                     # hunting together: harder for him
+
 WEAKNESS_SAYS = "It stops short: whatever you did, it works on it. +"
 
 
@@ -195,8 +206,8 @@ def due(world: Path, asleep=False, now=None):
     now = now or _now()
     state = creatures.load(world)
     for a in creatures.current(state, now, ahead_minutes=NOTICE_BEFORE):
-        if a.get("met") or a.get("slept") or a["kind"] not in creatures.KINDS:
-            continue
+        if a.get("met") or a.get("slept") or a["kind"] not in creatures.KINDS or a.get("companion"):
+            continue                                   # (a companion is met with the one it came with)
         if _parse(a["end"]) - now < dt.timedelta(minutes=5):
             continue                                   # all but gone
         if asleep:
@@ -263,6 +274,9 @@ def scene(a, entry, seeing, ph, history):
             lines.append("They come closer than before, as if they remember you.")
         if c.get("voice"):
             lines.append("It looks as if it could talk.")
+        if a.get("with_kind"):
+            o = character(a["with_kind"])
+            lines.append(f"And it is not alone: {o.get('looks', 'something else')}. {STANCE_SAYS.get(a.get('stance'), '')}")
     else:
         lines.append("Whatever it is hasn't come into sight yet.")
     return " ".join(lines)
@@ -410,6 +424,10 @@ def resolve(a, choice, how, ctx, rng=None):
     good += .07 * regard
     bad -= .04 * regard
     needs = ctx["needs"]
+    if a.get("stance") in DISTRACTED:              # he can use their squabble
+        good += .12
+    elif a.get("stance") in TOGETHER:
+        good, bad = good - .05, bad + .1
     if needs["rest"] < 25:
         bad += .08
     if needs["warmth"] < 25:
