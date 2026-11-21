@@ -1,22 +1,36 @@
 {
   "current": {
-    "id": "a202611192101",
-    "time": "2026-11-19T21:01:40+00:00",
-    "text": "Which wood burns longest?",
+    "id": "a202611210101",
+    "time": "2026-11-21T01:01:31+00:00",
+    "text": "Which sealant works best for roof gaps?",
     "options": [
-      "Oak",
-      "Pine",
-      "Birch"
+      "linseed oil",
+      "clay mix",
+      "pitch"
     ],
-    "tally": {
-      "2": 1,
-      "0": 1
-    },
-    "said": [],
-    "response": {
-      "text": "Birch burns steady, but it splinters. Good for a quick flare.",
-      "time": "2026-11-19T23:01:36+00:00"
-    }
+    "tally": {},
+    "said": []
   },
-  "past": []
+  "past": [
+    {
+      "id": "a202611192101",
+      "time": "2026-11-19T21:01:40+00:00",
+      "text": "Which wood burns longest?",
+      "options": [
+        "Oak",
+        "Pine",
+        "Birch"
+      ],
+      "tally": {
+        "2": 1,
+        "0": 1
+      },
+      "said": [],
+      "response": {
+        "text": "Oak burns long, good choice.",
+        "time": "2026-11-21T01:01:31+00:00"
+      },
+      "closed": "2026-11-21T01:01:31+00:00"
+    }
+  ]
 }

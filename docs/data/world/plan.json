@@ -1,15 +1,16 @@
 {
-  "start": "2026-11-20T23:01:39+00:00",
+  "start": "2026-11-21T01:01:31+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "zzz",
-      "note": "warm up before night work",
+      "emote": "sigh",
+      "note": "warmth",
       "thoughts": [
-        "The heat feels like a steady coworker"
+        "The wood crackles just enough.",
+        "I wonder if the roof will hold through night."
       ]
     },
     {
@@ -17,19 +18,21 @@
       "action": "work",
       "minutes": 20,
       "emote": "question",
-      "note": "secure the next board",
+      "note": "add board",
       "thoughts": [
-        "Hope this board doesn’t warp like the last one"
+        "Need a tighter fit.",
+        "Mortar smells of lime."
       ]
     },
     {
-      "place": "workbench",
+      "place": "desk",
       "action": "write",
       "minutes": 20,
       "emote": "dots",
-      "note": "update inventory list",
+      "note": "catalog board",
       "thoughts": [
-        "Need to note the cracked stone"
+        "List the pieces used.",
+        "Maybe note the crack."
       ]
     },
     {
@@ -37,9 +40,10 @@
       "action": "sleep",
       "minutes": 20,
       "emote": "zzz",
-      "note": "catch some rest",
+      "note": "short rest",
       "thoughts": [
-        "Sleep will reset the tired meter"
+        "Cold draft still sneaks.",
+        "Dream of finished wall."
       ]
     }
   ]

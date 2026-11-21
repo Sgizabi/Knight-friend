@@ -5,7 +5,7 @@
     "window": 2,
     "stair": 3,
     "wall": 3,
-    "roof": 2
+    "roof": 3
   },
   "objects": [
     {
