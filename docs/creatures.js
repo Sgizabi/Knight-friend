@@ -2713,7 +2713,7 @@ export function spawn(key, api, appearance = {}) {
   const tick = def.build(root);
   A.onTick.push(tick);
   return {
-    tick,
+    tick, root,
     remove() {
       def.exit?.();
       const i = A.onTick.indexOf(tick); if (i >= 0) A.onTick.splice(i, 1);

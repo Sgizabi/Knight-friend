@@ -559,7 +559,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary; traits and drives; ecology; story arcs (**done**, switched off until wave 1) | behind the scenes |
 | 6a | Minds: behaviour minds and voices, real-model tests, budget caps, the watch list updated (**done**, switched off until wave 1) | behind the scenes |
 | 6b | Meetings and stances between beings (**done**, switched off until wave 1) | behind the scenes |
-| 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping | **yes, creatures arrive** |
+| 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping, his instant reactions, live captions (**done**: switched on when the keeper sets `KNIGHT_CREATURES` to `on`) | **yes, creatures arrive** |
 | 8 | The companion | yes |
 | 9 | Visitor help and names | yes |
 | 10+ | The rest of the bestiary in waves of about 7 to 9 | yes, gradually |

@@ -1457,6 +1457,7 @@ class Knight:
                             "result": out["result"], **{k: out[k] for k in ("injury", "loss", "gift") if out[k]},
                             **({"damage": out.get("damage_text")} if out.get("damage") else {})})
             print(f"  encounter {step}: {choice}: {how[:80]} -> {out['result']}: {out['text'][:100]}")
+            self.publish_caption(state, a, out)                    # visitors see it as it happens
             if out["ends"]:
                 break
             if ENCOUNTER_PAUSE:
@@ -1510,6 +1511,24 @@ class Knight:
             save("plan.json", plan)
         self.memory["last_encounter"] = iso()
         return history
+
+    def publish_caption(self, state, a, out):
+        """A line for the keep page about what the being just did. Anything a mind wrote is screened
+        first, like everything public; if it is held back, the rules' own plain words stand in."""
+        text = re.sub(r"\s+", " ", out["text"]).strip()
+        if a.get("mind"):
+            ok, why = self.check("caption", a["kind"], text)
+            if not ok:
+                print(f"  [caption held back: {why}]")
+                text = out.get("said") or ""
+        if not text:
+            return
+        for x in state["appearances"]:
+            if x.get("id") == a["id"]:
+                x["caption"], x["caption_at"] = text[:240], iso()
+        (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+        life.export_state(WORLD, DOCS)
+        checkpoint(f"{self.identity.get('name', 'The knight')} and something at the keep")
 
     def glance(self):
         """A light check-in between wake-ups: one passing thought, and a chance to change the

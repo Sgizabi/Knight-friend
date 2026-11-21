@@ -36,6 +36,7 @@
   #caption { position:fixed; left:50%; bottom:14px; transform:translateX(-50%); padding:4px 16px; text-align:center;
              font-size:21px; max-width:min(92vw, 720px); }
   #caption em { display:block; color:var(--dim); font-style:normal; font-size:17px; }
+  #caption .being { display:block; color:#e8c78f; font-size:16px; max-width:min(560px, 86vw); margin:2px auto 0; }
   .bubble { position:fixed; transform:translate(-50%, -100%); background:#f6efe2; color:#1a120c; border:2px solid #1a120c;
             border-radius:8px; padding:0 8px; font-size:24px; line-height:1.2; pointer-events:none; white-space:nowrap; transition:opacity .25s; }
   .bubble::after { content:''; position:absolute; left:50%; bottom:-8px; margin-left:-6px; border:6px solid transparent;
@@ -1174,9 +1175,18 @@ function showCandles() {
 // next wake-up). Knock: it turns toward the door. Candle: it appears in the window. Gift: it waits
 // just outside the door until Rooken wakes and brings it in to the pile.
 const DOOR = new THREE.Vector3(-5.3, 1.25, 1.0);
-let hearUntil = -10, hearGlyph = '?';
+let hearUntil = -10, hearGlyph = '?', hearGuard = false;
+const hearAt = DOOR.clone();
+// something has come (a being at the keep): it looks toward it, and if it looks dangerous, its hand
+// goes to its sword. Asleep, it stirs. Scripted, instant: its mind decides what to do about it.
+function notice(at, glyph, guard, seconds) {
+  if (clock.elapsedTime < hearUntil && hearGuard && !guard) return;   // danger first
+  hearAt.copy(at); hearUntil = clock.elapsedTime + seconds; hearGuard = guard;
+  hearGlyph = glyph && lie > .5 ? 'z…' + glyph : glyph;
+}
 function react(kind, item, someoneElse) {
   if (kind === 'knock') {
+    hearAt.copy(DOOR); hearGuard = false;
     hearUntil = clock.elapsedTime + 3.4; hearGlyph = lie > .5 ? 'z…?' : (Math.random() < .6 ? '?' : '!');
     toast(someoneElse ? '🚪 Someone knocked at the gate' : '🚪 Knock knock!');
   } else if (kind === 'candle' && (candleTime() || DEMO)) {
@@ -2171,12 +2181,13 @@ function tick(nowMs) {
   }
   // a knock at the gate: it looks toward the door, turning a little if it's standing (asleep, it stirs)
   if (t < hearUntil && !(t < reactUntil) && !moving && lie < .3) {
-    const local = K.root.worldToLocal(DOOR.clone());
+    const local = K.root.worldToLocal(hearAt.clone());
     const head = pose.joints.head || [0, 0, 0];
     pose = { ...pose, joints: { ...pose.joints, head: [Math.min(head[0], .05), THREE.MathUtils.clamp(Math.atan2(local.x, local.z), -1.2, 1.2), 0] } };
     if (!seated) {
-      const toDoor = Math.atan2(DOOR.x - pos.x, DOOR.z - pos.z);
-      yaw += Math.atan2(Math.sin(toDoor - yaw), Math.cos(toDoor - yaw)) * Math.min(1, dt * 1.5);
+      const toIt = Math.atan2(hearAt.x - pos.x, hearAt.z - pos.z);
+      yaw += Math.atan2(Math.sin(toIt - yaw), Math.cos(toIt - yaw)) * Math.min(1, dt * 1.5);
+      if (hearGuard && !pose.tool && !pose.book) pose = { ...pose, ik: { ...(pose.ik || {}), R: [.17, 1.0, .13] } };   // a hand to the hilt
     }
   }
   setSword(!!pose.sword && !moving);
@@ -2280,10 +2291,10 @@ function tick(nowMs) {
   if (!goal.awake) show = !moving && nowMs < bubbleUntil;
   const greeting = t < reactUntil, hearing = !greeting && t < hearUntil;
   if (greeting) { show = true; bubble.textContent = reactGlyph; bubbleIsThought = false; }
-  if (hearing) { show = true; bubble.textContent = hearGlyph; bubbleIsThought = false; }
+  if (hearing && hearGlyph) { show = true; bubble.textContent = hearGlyph; bubbleIsThought = false; }
   bubble.style.opacity = show && headScreen.z < 1 ? 1 : 0;
   bubble.className = 'bubble ' + (greeting ? (reactGlyph === '♥' ? 'heart' : reactGlyph === '♪' ? 'music' : '')
-                                 : hearing ? (hearGlyph === '!' ? 'exclaim' : hearGlyph === '?' ? 'question' : 'zzz')
+                                 : hearing && hearGlyph ? (hearGlyph === '!' ? 'exclaim' : hearGlyph === '?' ? 'question' : hearGlyph === '♥' ? 'heart' : 'zzz')
                                            : bubbleIsThought ? 'thought' : (goal.emote || ''));
 
   // caption and badge
@@ -2298,8 +2309,10 @@ function tick(nowMs) {
   const first = (state?.identity?.name || 'The knight').split(' ')[0];
   const doing = moving && goal.action !== 'pace' ? `walking ${(spot.label || '').replace(/^\w+ the /, 'to the ')}`
               : goal.place.startsWith('repair:') ? spot.label : `${DOING[goal.action] || goal.action} ${spot.label || ''}`;
-  const caption = state?.identity?.name || DEMO ? `${first} is ${doing.trim()}.${goal.note ? `<em>${esc(goal.note)}</em>` : ''}`
-                                                : `A knight sleeps in the ruined keep.<em>${esc(goal.note)}</em>`;
+  const beingLine = beingCaption(now);
+  const caption = (state?.identity?.name || DEMO ? `${first} is ${doing.trim()}.${goal.note ? `<em>${esc(goal.note)}</em>` : ''}`
+                                                 : `A knight sleeps in the ruined keep.<em>${esc(goal.note)}</em>`)
+                  + (beingLine ? `<span class="being">${esc(beingLine)}</span>` : '');
   if (caption !== lastCaption) { $('caption').innerHTML = caption; lastCaption = caption; }
   const unwell = !goal.awake && seemsUnwell();
   $('badge').className = goal.awake ? 'awake' : unwell ? 'unwell' : '';
@@ -2383,7 +2396,33 @@ async function showBeings() {
   if (!creatureMod) return;
   const here = list.filter(a => Date.parse(a.start) <= now && now < Date.parse(a.end));
   for (const [id, b] of beings) if (!here.some(a => a.id === id)) { b?.remove(); beings.delete(id); }
-  for (const a of here) if (!beings.has(a.id)) beings.set(a.id, creatureMod.spawn(a.render || a.kind, creatureApi(), a));
+  for (const a of here) if (!beings.has(a.id)) {
+    const b = creatureMod.spawn(a.render || a.kind, creatureApi(), a);
+    beings.set(a.id, b);
+    if (b?.root && now - Date.parse(a.start) < 3 * 60000) setTimeout(() => noticeBeing(b, a, 6), 1200);   // it has just come
+  }
+}
+// where a being is, roughly (for a glance its way)
+const beingAt = b => new THREE.Box3().setFromObject(b.root).getCenter(new THREE.Vector3());
+function noticeBeing(b, a, seconds) {
+  const n = a.nature, glyph = seconds < 4 ? '' : n === 'gentle' ? '♥' : ['hostile', 'nuisance', 'proud'].includes(n) ? '!' : '?';
+  notice(beingAt(b), glyph, n === 'hostile' || n === 'proud', seconds);
+}
+// while one is here, it keeps an eye on it: a glance its way now and then
+setInterval(() => {
+  if (CREATURE || !beings.size || clock.elapsedTime < hearUntil) return;
+  const list = (state?.creatures?.current || []).filter(a => beings.get(a.id)?.root);
+  const a = list[Math.floor(Math.random() * list.length)];
+  if (a && Math.random() < .6) noticeBeing(beings.get(a.id), a, 2.5);
+}, 17000);
+// what is going on with the beings, for the caption: the latest that happened (screened before it
+// was published), or what is going on between two of them
+function beingCaption(now) {
+  const list = (state?.creatures?.current || []).filter(a => Date.parse(a.start) <= now && now < Date.parse(a.end));
+  const told = list.filter(a => a.caption && now - Date.parse(a.caption_at) < 12 * 60000)
+                   .sort((x, y) => Date.parse(y.caption_at) - Date.parse(x.caption_at))[0];
+  if (told) return told.caption;
+  return list.find(a => a.stance_says)?.stance_says || '';
 }
 beingsReady = true; showBeings(); setInterval(showBeings, 30000);
 </script>

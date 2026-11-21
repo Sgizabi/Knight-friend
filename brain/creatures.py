@@ -508,8 +508,11 @@ def export(world: Path, now=None):
         return None
     now = now or _now()
     state, best = load(world), load_bestiary(world)
+    import encounters                              # (here, to keep the two modules from importing each other at load)
     shown = [{**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
-                                   "stance", "prevails") if k in a},
+                                   "stance", "prevails", "caption", "caption_at") if k in a},
+              **({"stance_says": encounters.STANCE_SAYS[a["stance"]]} if a.get("stance") in encounters.STANCE_SAYS
+                 and not a.get("companion") else {}),
               "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": KINDS[a["kind"]]["nature"]}
              for a in current(state, now, ahead_minutes=120) if a["kind"] in KINDS]
     traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
