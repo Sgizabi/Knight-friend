@@ -19,14 +19,17 @@ const ds = (color, metal = 0, rough = .9) => A.mat(color, metal, rough, { side: 
 // a procession along a path across the courtyard (the lantern folk): make(group, i) builds one
 // walker and returns { legs, arms, flicker(t), lightY }
 function procession(root, make, n = 7) {
-  const pts = [[-17.8, -2.8], [-15, -1.2], [-12.5, .5], [-10.2, 2.0], [-8.3, 3.4], [-7.4, 5.6]].map(([x, z]) => V(x, 0, z));
+  // the old road, where it skirts the keep outside the west and south walls (never through stone)
+  const pts = [[-30, .5], [-22, .15], [-19.3, 2.6], [-15.2, 6.3], [-10, 7.9], [-3, 8.4], [6, 8.6], [15, 8.2]].map(([x, z]) => V(x, 0, z));
   const curve = new T.CatmullRomCurve3(pts), len = curve.getLength();
+  const halo = new T.SpriteMaterial({ map: puff(), color: '#ffc77a', transparent: true, opacity: .55, depthWrite: false,
+                                      blending: T.AdditiveBlending, fog: false });
   const folk = [];
   for (let i = 0; i < n; i++) {
-    const w = G(root); w.scale.setScalar(.9 + (i % 3) * .07);
+    const w = G(root); w.scale.setScalar(.88 + ((i * 37) % 5) * .05);
     const parts = make(w, i);
-    if (i === 0 || i === 4) { const l = new T.PointLight('#ffcf8a', 3, 5, 1.5); l.position.y = parts.lightY; w.add(l); }
-    folk.push({ w, i, ...parts });
+    const h = new T.Sprite(halo.clone()); h.position.y = parts.lightY; h.scale.setScalar(1.1); w.add(h);   // its light, without a light
+    folk.push({ w, i, h, ...parts });
   }
   const steps = [], stepM = new T.MeshBasicMaterial({ color: '#ffe2a0', transparent: true, depthWrite: false });
   for (let k = 0; k < 40; k++) { const m = new T.Mesh(new T.CircleGeometry(.06, 6), stepM.clone()); m.rotation.x = -Math.PI / 2; m.visible = false; root.add(m); steps.push({ m, born: -9 }); }
@@ -34,15 +37,17 @@ function procession(root, make, n = 7) {
   const at = V(), ahead = V();
   return (t) => {
     for (const f of folk) {
-      const u = (((t * .4 - f.i * 1.4 + len * .75) % (len + 9)) + len + 9) % (len + 9) / len;   // starts mid-courtyard; a pause between processions
+      const u = (((t * .4 - f.i * 1.5 + len * .45) % (len + 9)) + len + 9) % (len + 9) / len;   // a pause between processions
       f.w.visible = u <= 1;
       if (!f.w.visible) continue;
       curve.getPointAt(Math.min(1, u), at); curve.getPointAt(Math.min(1, u + .01), ahead);
-      f.w.position.set(at.x, Math.abs(Math.sin(t * 5 + f.i)) * .02, at.z); f.w.lookAt(ahead.x, f.w.position.y, ahead.z);
+      const y = gy(at.x, at.z);
+      f.w.position.set(at.x, y + Math.abs(Math.sin(t * 5 + f.i)) * .02, at.z); f.w.lookAt(ahead.x, f.w.position.y, ahead.z);
       f.legs.forEach((l, k) => { l.rotation.x = Math.sin(t * 5 + f.i + k * Math.PI) * .35; });
       f.arms.forEach((a, k) => { a.rotation.x = -Math.sin(t * 5 + f.i + k * Math.PI) * .25; });
       f.flicker(t);
-      if (f.i === 3 && t > nextStep) { const s = steps[si++ % steps.length]; s.m.position.set(at.x, .025, at.z); s.m.visible = true; s.born = t; nextStep = t + .45; }
+      f.h.material.opacity = .45 + Math.sin(t * 11 + f.i) * .08;
+      if (f.i === 3 && t > nextStep) { const s = steps[si++ % steps.length]; s.m.position.set(at.x, y + .025, at.z); s.m.visible = true; s.born = t; nextStep = t + .45; }
     }
     for (const s of steps) if (s.m.visible) { const k = (t - s.born) / 6; s.m.material.opacity = Math.max(0, .7 * (1 - k)); if (k > 1) s.m.visible = false; }
   };
@@ -1384,55 +1389,84 @@ const BEASTS = {
   // ================================================================ THE PALE BROOD
   brood: {
     name: 'The Pale Brood', hour: 22,
-    blurb: 'Small grey things with fingers far too long. They creep into the keep at night and steal tools and glass. More nuisance than danger, and always just out of sight.',
-    view: [[-6.2, 1.5, 4.3], [-9, .3, .2]],
+    blurb: 'Small grey things, all elbows and eyes, with fingers far too long. They creep about the courtyard at night and in through the door, and make off with tools and glass. Look straight at them and they freeze; look again and they have scattered.',
+    view: [[-3.4, 1.6, 3.4], [-7.4, .3, .4]],
     knight: { place: 'bedroll', action: 'sleep', emote: 'zzz', note: 'asleep, and missing his hammer by morning' },
     build(root) {
-      const skin = A.mat('#a7a39b', 0, .8, { emissive: '#2c2c30', emissiveIntensity: .6 }), eyeM = A.mat('#07060a', .3, .15);
-      const spots = [[-8.6, -1.5], [-8.9, 3.0], [-6.0, .4], [-7.4, -.9], [-10.6, -.7], [-9.6, 1.6], [-7.0, 2.2], [-11.8, .6]];
+      const v = root.userData.appearance?.variant || {};
+      const count = Math.max(3, Math.min(7, Math.round(5 * (v.size || 1))));
+      const skin = A.mat('#a9a59d', 0, .8, { emissive: '#2c2c30', emissiveIntensity: .6 }), skinD = A.mat('#7c7872', 0, .85, { emissive: '#1e1e22', emissiveIntensity: .5 });
+      const eyeM = A.mat('#030205', .5, .05);                          // wet black, no glint, nothing cute
+      // where they go: about the courtyard, and in through the door (always through the doorway, never the wall)
+      const OUT = [[-8.6, -1.4], [-9.4, 3.1], [-7.4, -.9], [-10.4, -.5], [-9.6, 1.5], [-7.0, 2.3], [-11.8, .5]];
+      const STEP = [-6.0, 1.0], IN = [[-4.5, 1.0], [-3.7, 1.8], [-3.9, .2], [-2.6, -2.4]];   // the doorstep, and inside the hall
       const loot = [
-        g => { P(g, A.cyl(.012, .012, .22, 5), A.M.wood, [0, 0, 0], { rot: [0, 0, 1.4] }); P(g, A.box(.05, .05, .1), A.M.iron, [-.1, 0, 0]); },
+        g => { P(g, A.cyl(.012, .012, .22, 5), A.M.wood, [0, 0, 0], { rot: [0, 0, 1.4] }); P(g, A.box(.05, .05, .1), A.M.iron, [-.1, 0, 0]); },   // his hammer
         g => P(g, new T.TetrahedronGeometry(.06), new T.MeshStandardMaterial({ color: '#c8eef5', transparent: true, opacity: .7, roughness: .05, metalness: .3 }), [0, 0, 0], { cast: false }),
-        g => P(g, A.cyl(.03, .03, .12, 6), A.mat('#e8dcc0'), [0, .04, 0]),
-        () => {}, () => {},
+        g => P(g, A.cyl(.03, .03, .12, 6), A.mat('#e8dcc0'), [0, .04, 0]),   // a candle end
+        g => P(g, A.box(.12, .02, .08), A.mat('#d9cfb4'), [0, 0, 0]),          // a page
+        () => {}, () => {}, () => {},
       ];
       const brood = [];
-      for (let n = 0; n < 5; n++) {
-        const b = G(root), body = G(b, [0, .28, 0]);
-        P(body, A.ico(.13, 1), skin, [0, 0, -.03], { scale: [1, .85, 1.3] });
-        const head = G(body, [0, .12, .14]);
-        P(head, A.ico(.11, 1), skin, [0, 0, 0], { scale: [1, .9, 1] });
-        for (const sx of [-1, 1]) { P(head, A.ico(.045, 1), eyeM, [sx * .05, .02, .08], { scale: [1, 1.2, .7] }); P(head, A.ico(.008, 0), glow('#ffffff', 2), [sx * .045, .04, .115], { cast: false }); }
+      for (let n = 0; n < count; n++) {
+        const b = G(root), body = G(b, [0, .24, 0]);
+        P(body, A.ico(.12, 1), skin, [0, 0, -.04], { scale: [1, .8, 1.35] });
+        for (let k = 0; k < 4; k++) P(body, A.ico(.022, 0), skinD, [0, .09, .05 - k * .06], { cast: false });   // knuckles of a spine
+        const head = G(body, [0, .1, .15]);
+        P(head, A.ico(.1, 1), skin, [0, 0, 0], { scale: [1.05, .85, .95] });
+        for (const sx of [-1, 1]) P(head, A.ico(.05, 1), eyeM, [sx * .052, .015, .065], { scale: [1, 1.25, .6] });   // too big, too dark
         const limbs = [];
-        for (const sx of [-1, 1]) for (const fz of [.08, -.1]) {
-          const l = G(body, [sx * .08, -.02, fz]);
-          bone(l, [0, 0, 0], [sx * .12, -.12, fz * .5], .018, .014, skin, 4); bone(l, [sx * .12, -.12, fz * .5], [sx * .14, -.26, fz * .9], .014, .01, skin, 4);
-          if (fz > 0) for (let f = 0; f < 4; f++) bone(l, [sx * .14, -.26, fz * .9], [sx * (.14 + f * .03), -.28, fz * .9 + .2 + (f % 2) * .04], .006, .003, skin, 3);
+        for (const sx of [-1, 1]) for (const fz of [.1, -.02, -.13]) {   // six limbs, all elbows
+          const l = G(body, [sx * .07, -.02, fz]);
+          const up = .16 + (fz > 0 ? .02 : 0);
+          bone(l, [0, 0, 0], [sx * .13, up * .6, fz * .4], .016, .012, skin, 4);          // up to an elbow, higher than the back
+          bone(l, [sx * .13, up * .6, fz * .4], [sx * .2, -.22, fz * .9], .012, .008, skin, 4);
+          if (fz > 0) for (let f = 0; f < 4; f++) bone(l, [sx * .2, -.22, fz * .9], [sx * (.2 + f * .03), -.24, fz * .9 + .18 + (f % 2) * .05], .006, .003, skin, 3);
           limbs.push({ l, sx, fz });
         }
-        const carry = G(body, [0, -.05, .26]); loot[n](carry);
-        const s = A.rand(n * 31 + 7);
-        const at = V(spots[n][0], 0, spots[n][1]);
+        const carry = G(body, [0, -.05, .26]); loot[n % loot.length](carry);
+        const s = A.rand(n * 31 + 7 + Math.abs(Math.round((v.hue || 0) * 1000)));
+        const at = V(...[OUT[n % OUT.length]].map(([x, z]) => [x, 0, z])[0]);
         b.position.copy(at);
-        brood.push({ b, body, head, limbs, at, from: at.clone(), to: at.clone(), go: 1, wait: s() * 3, len: 1, s });
+        brood.push({ b, body, head, limbs, node: OUT[n % OUT.length], from: at.clone(), to: at.clone(), go: 1, wait: s() * 3, len: 1, s, frozen: 0 });
       }
+      // the next place: from outside, another spot or the doorstep; from the doorstep, in or out; from inside, the doorstep
+      const isIn = p => IN.includes(p), isStep = p => p === STEP;
+      const next = (c) => {
+        const r = c.s();
+        if (isIn(c.node)) return STEP;
+        if (isStep(c.node)) return r < .55 ? IN[Math.floor(c.s() * IN.length)] : OUT[Math.floor(c.s() * OUT.length)];
+        return r < .25 ? STEP : OUT[Math.floor(c.s() * OUT.length)];
+      };
+      const hp = V(), cam = V();
       return (t, dt) => {
+        A.camera.getWorldPosition(cam);
         for (const c of brood) {
+          // looked straight at (close and in the middle of the view): it freezes; then it bolts
+          c.head.getWorldPosition(hp); const d = hp.distanceTo(cam); hp.project(A.camera);
+          const stared = Math.abs(hp.x) < .3 && Math.abs(hp.y) < .35 && hp.z < 1 && d < 9;
+          if (stared && c.frozen <= 0 && c.go < 1) c.frozen = 1.4;
+          if (c.frozen > 0) { c.frozen -= dt; if (c.frozen <= 0) c.wait = 0; continue; }
           if (c.go >= 1) {
             c.wait -= dt;
-            if (c.wait <= 0) { c.from.copy(c.b.position); const sp = spots[Math.floor(c.s() * spots.length)]; c.to.set(sp[0] + (c.s() - .5) * .6, 0, sp[1] + (c.s() - .5) * .6); c.go = 0; c.len = c.from.distanceTo(c.to) || 1; }
+            if (c.wait <= 0) {
+              c.from.copy(c.b.position); c.node = next(c);
+              const j = isIn(c.node) || isStep(c.node) ? .15 : .5;
+              c.to.set(c.node[0] + (c.s() - .5) * j, 0, c.node[1] + (c.s() - .5) * j); c.go = 0; c.len = c.from.distanceTo(c.to) || 1;
+            }
           } else {
-            c.go = Math.min(1, c.go + dt * 2.4 / c.len);
+            c.go = Math.min(1, c.go + dt * 2.6 / c.len);
             c.b.position.lerpVectors(c.from, c.to, smooth(0, 1, c.go));
+            c.b.position.y = gy(c.b.position.x, c.b.position.z) * (isIn(c.node) ? 0 : 1);
             const want = Math.atan2(c.to.x - c.from.x, c.to.z - c.from.z);
             c.b.rotation.y += Math.atan2(Math.sin(want - c.b.rotation.y), Math.cos(want - c.b.rotation.y)) * Math.min(1, dt * 10);
             if (c.go >= 1) c.wait = .8 + c.s() * 3.5;
           }
-          const moving = c.go < 1, ph = t * 16 + c.s() * 0;
-          c.body.position.y = .28 + (moving ? Math.abs(Math.sin(ph)) * .04 : 0);
+          const moving = c.go < 1, ph = t * 17;
+          c.body.position.y = .24 + (moving ? Math.abs(Math.sin(ph)) * .035 : 0);
           c.body.rotation.x = moving ? .35 : .1;
-          for (const { l, sx, fz } of c.limbs) l.rotation.x = moving ? Math.sin(ph + (sx * fz > 0 ? 0 : Math.PI)) * .6 : Math.sin(t * 6 + sx) * .05;
-          c.head.rotation.y = moving ? 0 : Math.sin(t * 1.7 + c.at.x) * .7;
+          for (const { l, sx, fz } of c.limbs) l.rotation.x = moving ? Math.sin(ph + (sx * fz > 0 ? 0 : Math.PI) + fz * 9) * .6 : Math.sin(t * 6 + sx + fz) * .05;
+          c.head.rotation.y = moving ? 0 : Math.sin(t * 1.7 + c.from.x) * .7;
         }
       };
     },
@@ -1582,12 +1616,14 @@ const BEASTS = {
   // ================================================================ THE LANTERN FOLK (three styles to compare)
   lanternheads: {
     name: 'The Lantern Folk', hour: 22,
-    blurb: 'Slender figures of dark wood and iron whose heads are glass lanterns, a small living flame where a face would be. They cross the courtyard on certain nights, going somewhere.',
-    view: [[-8.9, 1.9, 5.6], [-11.4, 1.0, .9]],
+    blurb: 'Slender figures of dark wood and iron whose heads are glass lanterns with a small living flame inside, hooded and wrapped for the road. On certain nights a procession of them passes along the old road beyond the walls, going somewhere, their lights bobbing over the stones.',
+    view: [[-13.2, 2.2, 3.2], [-13, 1.2, 9]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'heart', note: 'watching them go by, very quietly' },
     build(root) {
       const wood = A.mat('#3a2a1e', 0, .85), woodL = A.mat('#5a4330', 0, .8), iron = A.M.iron, wrap = ds('#4a3a34', 0, .95);
       const pane = new T.MeshStandardMaterial({ color: '#ffe7b8', transparent: true, opacity: .28, roughness: .05, metalness: .1, depthWrite: false });
+      const ap = root.userData.appearance || {};
+      const count = Math.max(5, Math.min(9, Math.round(7 * ((ap.variant || {}).size || 1))));
       return procession(root, (w, i) => {
         const legs = [-1, 1].map(sx => { const l = G(w, [sx * .08, .82, 0]); bone(l, [0, 0, 0], [0, -.82, .02], .04, .03, wood, 5); return l; });
         P(w, A.cyl(.15, .11, .62, 7), wood, [0, 1.12, 0], { scale: [1, 1, .7] });
@@ -1601,8 +1637,13 @@ const BEASTS = {
         const ring = new T.Mesh(new T.TorusGeometry(.04, .01, 4, 8), iron); ring.position.y = .3; head.add(ring);
         P(head, A.box(.2, .28, .2), pane, [0, 0, 0], { cast: false, jitter: 0 });
         const flame = new T.Mesh(new T.ConeGeometry(.045, .13, 6), glow('#ffb347', 3)); flame.position.y = -.05; head.add(flame);
-        return { legs, arms, flicker: t => { flame.scale.set(1, .85 + Math.sin(t * 11 + i) * .2, 1); }, lightY: 1.72 };
-      });
+        // what each carries: a hood, a staff, a bundle; no two alike
+        const hood = sheet(w, [[-.19, 1.58, -.05], [.19, 1.58, -.05], [.16, 1.86, -.16], [0, 1.95, -.2], [-.16, 1.86, -.16]], [[0, 1, 2], [0, 2, 3], [0, 3, 4]], wrap);
+        hood.visible = i % 3 !== 1;
+        if (i % 2 === 0) { const st = G(arms[1], [.04, -.55, .05]); bone(st, [0, -.75, 0], [0, .6, 0], .018, .018, woodL, 5); }
+        if (i % 3 === 2) P(w, A.box(.26, .22, .16), wrap, [0, 1.2, -.2], { jitter: .02 });
+        return { legs, arms, flicker: t => { flame.scale.set(1, .85 + Math.sin(t * 11 + i) * .2, 1); flame.rotation.y = t * 2; }, lightY: 1.72 };
+      }, count);
     },
   },
   // ================================================================ THE CARTOGRAPHER MOTH
