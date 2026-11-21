@@ -90,12 +90,12 @@
     }
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-21T02:00:30+00:00",
+    "awake": true,
+    "since": "2026-11-21T02:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": "",
+    "note": "stirring by the fire",
     "thought": ""
   },
   "needs": {
@@ -105,12 +105,12 @@
     "spirit": 87.5
   },
   "needs_prev": {
-    "rest": 38.5,
-    "warmth": 88.4,
+    "rest": 36.9,
+    "warmth": 82.4,
     "inspiration": 67.2,
-    "spirit": 88.5
+    "spirit": 87.5
   },
-  "needs_at": "2026-11-21T02:00:30+00:00",
+  "needs_at": "2026-11-21T02:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -705,5 +705,103 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-21T02:00:30+00:00"
+  "weather": {
+    "periods": [
+      {
+        "start": "2026-11-21T00:30:24+00:00",
+        "end": "2026-11-21T08:16:58+00:00",
+        "kind": "cloudy",
+        "intensity": 0.68
+      },
+      {
+        "start": "2026-11-21T08:16:58+00:00",
+        "end": "2026-11-21T16:19:39+00:00",
+        "kind": "cloudy",
+        "intensity": 0.61
+      },
+      {
+        "start": "2026-11-21T16:19:39+00:00",
+        "end": "2026-11-21T23:04:20+00:00",
+        "kind": "rain",
+        "intensity": 0.88
+      },
+      {
+        "start": "2026-11-21T23:04:20+00:00",
+        "end": "2026-11-22T03:48:18+00:00",
+        "kind": "rain",
+        "intensity": 0.67
+      },
+      {
+        "start": "2026-11-22T03:48:18+00:00",
+        "end": "2026-11-22T08:26:41+00:00",
+        "kind": "rain",
+        "intensity": 0.99
+      },
+      {
+        "start": "2026-11-22T08:26:41+00:00",
+        "end": "2026-11-22T16:34:46+00:00",
+        "kind": "clear",
+        "intensity": 0.33
+      }
+    ],
+    "effects": {
+      "clear": {
+        "spirit": 0.004
+      },
+      "cloudy": {},
+      "rain": {
+        "warmth": -0.09,
+        "spirit": -0.002
+      },
+      "storm": {
+        "warmth": -0.14,
+        "rest": -0.02,
+        "spirit": -0.003
+      },
+      "fog": {
+        "warmth": -0.03
+      },
+      "wind": {
+        "warmth": -0.06
+      },
+      "snow": {
+        "warmth": -0.16
+      },
+      "ash": {
+        "warmth": -0.02,
+        "spirit": -0.004
+      },
+      "starfall": {
+        "inspiration": 0.04,
+        "spirit": 0.004
+      },
+      "aurora": {
+        "inspiration": 0.03,
+        "spirit": 0.006
+      },
+      "upward_rain": {
+        "inspiration": 0.03,
+        "warmth": -0.04
+      },
+      "glass_hail": {
+        "warmth": -0.06,
+        "rest": -0.02
+      },
+      "still": {
+        "spirit": -0.004
+      }
+    },
+    "sleep_effects": {
+      "storm": {
+        "rest": -0.08
+      },
+      "glass_hail": {
+        "rest": -0.04
+      },
+      "wind": {
+        "rest": -0.02
+      }
+    }
+  },
+  "exported": "2026-11-21T02:30:24+00:00"
 }
