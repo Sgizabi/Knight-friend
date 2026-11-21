@@ -91,18 +91,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T02:30:24+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-21T02:30:26+00:00",
+    "place": "repair:roof",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "seal the crack in the stone and reinforce the roof board",
+    "thought": "The fire's hum is steady. I notice the thin crack in the stone near the roof board. I should seal it before it widens."
   },
   "needs": {
-    "rest": 36.9,
-    "warmth": 82.4,
-    "inspiration": 67.2,
-    "spirit": 87.5
+    "rest": 44.3,
+    "warmth": 81.4,
+    "inspiration": 68.4,
+    "spirit": 88.5
   },
   "needs_prev": {
     "rest": 36.9,
@@ -110,7 +110,7 @@
     "inspiration": 67.2,
     "spirit": 87.5
   },
-  "needs_at": "2026-11-21T02:30:24+00:00",
+  "needs_at": "2026-11-21T02:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -803,5 +803,5 @@
       }
     }
   },
-  "exported": "2026-11-21T02:30:24+00:00"
+  "exported": "2026-11-21T02:30:26+00:00"
 }
