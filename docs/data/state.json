@@ -93,11 +93,16 @@
           "Will add the glasshouse note tomorrow."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-21T03:30:23+00:00",
+    "live_thought": {
+      "text": "The stone feels cool against my back.",
+      "time": "2026-11-21T03:30:23+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-21T02:40:38+00:00",
+    "since": "2026-11-21T03:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -105,18 +110,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 25.7,
+    "warmth": 88.9,
+    "inspiration": 71.2,
+    "spirit": 96.5
+  },
+  "needs_prev": {
     "rest": 8.3,
     "warmth": 91.4,
     "inspiration": 68.4,
     "spirit": 98.7
   },
-  "needs_prev": {
-    "rest": 36.9,
-    "warmth": 82.4,
-    "inspiration": 67.2,
-    "spirit": 87.5
-  },
-  "needs_at": "2026-11-21T02:40:38+00:00",
+  "needs_at": "2026-11-21T03:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -710,7 +715,7 @@
   "visits": {
     "candles_tonight": 2,
     "knocks_today": 1,
-    "updated": "2026-11-21T02:40:38+00:00",
+    "updated": "2026-11-21T03:30:23+00:00",
     "seen_until": "2026-11-21T02:25:25+00:00"
   },
   "gifts": [],
@@ -821,5 +826,5 @@
       }
     }
   },
-  "exported": "2026-11-21T02:40:38+00:00"
+  "exported": "2026-11-21T03:30:24+00:00"
 }
