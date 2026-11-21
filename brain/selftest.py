@@ -154,8 +154,7 @@ _apps = _st["appearances"]
 _days = [a["day"] for a in _apps if not a.get("companion")]   # (a companion comes with the day's being)
 assert len(_days) == len(set(_days))                                     # at most one notable being a day
 assert 25 <= len(_apps) <= 60, len(_apps)                                # an encounter every few days (60 kept)
-_host = sorted(creatures._parse(a["start"]) for a in _apps          # (a slow presence's return visits are one event)
-               if creatures.KINDS[a["kind"]]["nature"] == "hostile" and a.get("chain", 1) == 1)
+_host = sorted(creatures._parse(a["start"]) for a in _apps if creatures.counts_as_danger(a))   # (returns and pairs: one event)
 assert all(b - a >= _dt.timedelta(days=creatures.HOSTILE_QUIET_DAYS) for a, b in zip(_host, _host[1:]))   # quiet after danger
 for _a in _apps:
     _k = creatures.KINDS[_a["kind"]]
@@ -177,7 +176,8 @@ assert 1 <= len(_pairs) <= len(_apps) // 4, len(_pairs)
 for _b, _a in _pairs:
     assert _a is None or (_a["with"] == _b["id"] and _a["stance"] in creatures.STANCES and _b["stance"] in creatures.STANCES)
     assert not (creatures.KINDS[_b["kind"]]["rarity"] == "legendary" and _a and creatures.KINDS[_a["kind"]]["rarity"] == "legendary")
-    assert creatures.KINDS[_b["kind"]]["nature"] != "hostile" or (_a and creatures.KINDS[_a["kind"]]["nature"] == "hostile")
+    assert creatures.KINDS[_b["kind"]]["nature"] != "hostile" or _b.get("counts") or (_a and creatures.KINDS[_a["kind"]]["nature"] == "hostile")
+    assert not _b.get("counts") or __import__("encounters").leads(_b, _ids)   # a hostile one alongside a gentler one leads
 _rel = {}
 creatures.note_relation({"relations": _rel}, "fog", "ashwolves", "rival")
 assert _rel == {"ashwolves|fog": -1}                                     # their kinds remember

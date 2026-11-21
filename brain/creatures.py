@@ -88,6 +88,7 @@ TRACE_DAYS = {"meteor": 4, "ship": 3}
 # dangerous event). How they treat each other (their stance) comes from who they are and what
 # has passed between their kinds before; fair rules say who prevails.
 MEET_CHANCE = .125
+AGELESS = {"seam", "stitched", "moon2", "hill", "clockhead", "ninefold"}   # no young or old of these
 STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off", "follow", "compete",
            "steal from", "uneasy truce", "size up"]
 
@@ -213,18 +214,29 @@ def arc_open(state, kind, start):
     return k["stage"] == arc.get("stage", 1) and not (rest and rest > start)
 
 
+def counts_as_danger(a):
+    """A hostile visit that counts toward the quiet spell and the weekly limit: not a slow
+    presence's return, and not a hostile being that came along with another hostile one."""
+    return (KINDS.get(a["kind"], {}).get("nature") == "hostile" and a.get("chain", 1) == 1
+            and (not a.get("companion") or a.get("counts")))
+
+
+def hostile_allowed(state, start):
+    """Whether a hostile being may come at this time: a quiet spell after the last, and a weekly limit."""
+    recent = [a for a in state["appearances"] if _parse(a["start"]) and start - dt.timedelta(days=7) < _parse(a["start"]) <= start]
+    last = max((_parse(a["start"]) for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"), default=None)
+    week_start = start - dt.timedelta(days=weather.keeper_time(start).weekday())
+    this_week = sum(1 for a in recent if counts_as_danger(a) and _parse(a["start"]) >= week_start)
+    return (last is None or start - last >= dt.timedelta(days=HOSTILE_QUIET_DAYS)) and this_week < HOSTILE_PER_WEEK
+
+
 def plan_day(state, day, sched, step, rng=None, keep=None):
     """Decide whether a notable being comes on this keeper's day, which, and when."""
     rng = rng or random.Random(day.toordinal())
     if rng.random() >= DAY_CHANCE[week_mode(day)]:
         return None
     start = _day_start(day)
-    recent = [a for a in state["appearances"] if _parse(a["start"]) and _parse(a["start"]) > start - dt.timedelta(days=7)]
-    last_hostile = max((_parse(a["start"]) for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"), default=None)
-    week_start = start - dt.timedelta(days=weather.keeper_time(start).weekday())
-    hostile_this_week = sum(1 for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"
-                            and _parse(a["start"]) >= week_start and a.get("chain", 1) == 1 and not a.get("companion"))
-    hostile_ok = (last_hostile is None or start - last_hostile >= dt.timedelta(days=HOSTILE_QUIET_DAYS)) and hostile_this_week < HOSTILE_PER_WEEK
+    hostile_ok = hostile_allowed(state, start)
     choices = []
     for kind, k in KINDS.items():
         if k["step"] > step or not arc_open(state, kind, start):
@@ -263,7 +275,8 @@ def _appearance(kind, day, t, rng, state, chain=None):
     begin = t + dt.timedelta(minutes=rng.randint(0, 50))
     end = begin + dt.timedelta(minutes=rng.randint(*k["minutes"]))
     variant = {"size": round(rng.uniform(.88, 1.15), 2), "hue": round(rng.uniform(-.06, .06), 3),
-               "mark": rng.choice(["", "", "", "scarred", "old", "young"])}
+               "mark": rng.choice(["", "", "", "", "", "scarred"]),
+               "age": "" if kind in AGELESS else rng.choices(["young", "", "old"], [15, 70, 15])[0]}
     drives = beings.CHARACTERS.get(kind, {}).get("drives") or [""]
     a = {"id": f"{kind}-{begin.strftime('%Y%m%d%H%M')}", "kind": kind, "day": day.isoformat(),   # its evening, even past midnight
          "start": _iso(begin), "end": _iso(end), "variant": variant,
@@ -360,14 +373,15 @@ def companion(state, a, sched, step, rng, keep=None):
             continue
         if kk["rarity"] == "legendary" and k["rarity"] == "legendary":
             continue
-        if kk["nature"] == "hostile" and k["nature"] != "hostile":
-            continue                               # two hostile only together: still one dangerous event
+        if kk["nature"] == "hostile" and k["nature"] != "hostile" and not hostile_allowed(state, start):
+            continue                               # a hostile one alongside a gentler one: still within the safeguards
         until = _parse(state["cooldowns"].get(kind))
         if until and until > start:
             continue
         if not _possible(kind, start, sched):
             continue
-        choices.append((kind, RARITY_WEIGHT[kk["rarity"]] * ecology(kind, state, start, keep)))
+        hunt = 3 if kk["nature"] == "hostile" and k["nature"] != "hostile" else 1   # predators follow where life is
+        choices.append((kind, RARITY_WEIGHT[kk["rarity"]] * hunt * ecology(kind, state, start, keep)))
     if not choices:
         return None
     kind = rng.choices([c for c, _ in choices], [w for _, w in choices])[0]
@@ -376,6 +390,8 @@ def companion(state, a, sched, step, rng, keep=None):
     b["start"] = _iso(t)
     b["end"] = _iso(min(end, t + dt.timedelta(minutes=rng.randint(*KINDS[kind]["minutes"]) or 30)))
     b["companion"] = True
+    if KINDS[kind]["nature"] == "hostile" and k["nature"] != "hostile":
+        b["counts"] = True                         # it is the danger in this meeting: it leads, and it counts
     rel = state.setdefault("relations", {})
     a["with"], b["with"] = b["id"], a["id"]
     a["with_kind"], b["with_kind"] = kind, a["kind"]

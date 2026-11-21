@@ -285,8 +285,13 @@ what they left behind.
   tokens a day (about 1,000 to 1,500 a meeting in tests), and fall quiet, leaving the rules'
   own words, if anything fails or Rooken ever has to move onto their model.
 - **Meetings (session 6b):** on about one notable day in eight, a second being is about at
-  the same time (never two legendary ones; two hostile ones only together, counted as one
-  dangerous event). How each treats the other (team up, rival, squabble, ignore, avoid, flee,
+  the same time (never two legendary ones; two hostile ones together count as one dangerous
+  event; a hostile one may come alongside a gentle or neutral one, 3 to 6 times a year, within
+  the quiet spell and weekly limit, and then it is the one he faces, perhaps chasing the other).
+  **Age:** about 15% of visits are young and 15% old (ageless beings excepted). The young are
+  small and quick, impulsive, know little of his tricks and forget fast; the old are bigger and
+  slower, carry more of their kind's history, remember twice as long and more readily come
+  ready for him. Their looks follow in each being's final art. How each treats the other (team up, rival, squabble, ignore, avoid, flee,
   chase off, follow, compete, steal from, uneasy truce, size up) comes from their traits and
   what has passed between their kinds before, which the world remembers (allies after a
   team-up, a grudge after a fight). Fair rules say who prevails (the mightier, usually), and the

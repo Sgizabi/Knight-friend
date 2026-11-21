@@ -104,7 +104,7 @@ def run(years, policy, seed=1, detail=False):
                 start = creatures._parse(a["start"])
                 if a.get("met") or a.get("slept") or a.get("cancelled") or start > now:
                     continue
-                if a.get("companion"):                         # met with the being it came with
+                if not encounters.leads(a, {x["id"]: x for x in state["appearances"]}):   # met with the one that leads
                     a["met"], changed = {"outcome": "with"}, True
                     continue
                 changed = True

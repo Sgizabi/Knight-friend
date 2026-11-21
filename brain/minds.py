@@ -54,10 +54,13 @@ def _ago(t, now):
         else f"about {int(days / 30)} months ago"
 
 
-def history(world, kind, now):
+AGE_HISTORY = {"young": 1, "old": 6}   # how much of its kind's past with him a being carries
+
+
+def history(world, kind, now, n=HISTORY):
     """This kind's last few meetings with him, from its side."""
     out = []
-    for e in [e for e in encounters._lines(world / "encounters.jsonl") if e.get("kind") == kind][-HISTORY:]:
+    for e in [e for e in encounters._lines(world / "encounters.jsonl") if e.get("kind") == kind][-n:]:
         t = encounters._parse(e.get("time"))
         steps = "; then ".join(f"he chose to {s.get('choice', '').replace('_', ' ')} ({s.get('how', '')[:90]}), "
                               f"and it went {'his way' if s.get('result') == 'good' else 'your way' if s.get('result') == 'bad' else 'nowhere much'}"
@@ -77,9 +80,14 @@ def _who(a):
         lines = [f"You are {k['name']}: {c.get('looks_seeing') or c['looks']}."]
     lines += [f"Your nature: {k['nature']}. Your traits: {', '.join(c['traits'])}.",
              f"This time you came for: {a.get('drive', '')}."]
-    mark = (a.get("variant") or {}).get("mark")
-    if mark:
-        lines.append(f"You are {'an old' if mark == 'old' else 'a young' if mark == 'young' else 'a scarred'} one of your kind.")
+    age, mark = encounters.age_of(a), (a.get("variant") or {}).get("mark")
+    if age == "young":
+        lines.append("You are young: small, quick, impulsive and easily startled; you know little of this knight "
+                     "beyond what you have heard.")
+    elif age == "old":
+        lines.append("You are old: big, worn and slow, patient and hard to fool; you remember a great deal.")
+    if mark == "scarred":
+        lines.append("You carry an old scar.")
     if c.get("likes"):
         lines.append(f"You care for: {', '.join(encounters.likes_of(a))}.")
     if a.get("with_kind"):
@@ -111,7 +119,7 @@ def _ask(brain, task, prompt, max_tokens):
 def arrive(brain, a, world, setting, now=None):
     """Its first thought on arriving. Returns {why, approach, doing, says} or None (the rules carry on)."""
     now = now or dt.datetime.now(dt.timezone.utc)
-    past = history(world, a["kind"], now)
+    past = history(world, a["kind"], now, AGE_HISTORY.get(encounters.age_of(a), HISTORY))
     prompt = (f"{_who(a)}\n\n{setting}\n\n" +
               ("Your past meetings with the knight (your kind remembers):\n" + "\n".join(past) + "\n\n" if past else
                "You have never met this knight.\n\n") +
@@ -141,7 +149,9 @@ def settle_in(a, m, entry):
     a["mind"] = m
     a["temper"] = TEMPER.get(m["approach"], a.get("temper", "calm"))
     wise = (entry or {}).get("wise") or {}
-    if m["approach"] == "cunning" and beings.LEARNS.get(a["kind"], 0) >= CUNNING_LEARNS and wise:
+    age = encounters.age_of(a)                     # the young aren't ready for him; the old more readily are
+    learner = beings.LEARNS.get(a["kind"], 0) >= (CUNNING_LEARNS / 2 if age == "old" else CUNNING_LEARNS)
+    if m["approach"] == "cunning" and learner and age != "young" and wise:
         a["avoid"] = max(wise, key=lambda k: wise[k].get("at", ""))
 
 

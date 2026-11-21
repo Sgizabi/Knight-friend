@@ -36,6 +36,7 @@ DEEP_AFTER = 5              # meetings with a kind before its deep weakness can 
 HALF_LIFE_DAYS = 90         # a being's wariness of a trick halves each month he leaves it alone
 WISE_MOST = .85             # however used to a trick it gets, it never works less than this well... (1 - this)
 MARK_WISDOM = {"young": .3, "old": 1.25, "scarred": 1.25}   # the young don't know his tricks; the old and scarred do
+AGE_MEMORY = {"young": .5, "old": 2.0}     # and the old hold on to what they know twice as long
 CUNNING_CUT = .6            # a quick learner that comes ready for his last answer blunts it this much
 TOOL_BONUS = .08            # using something he made for the keep
 LIKES_SHARE = .6            # each individual cares for about this share of what its kind likes
@@ -205,14 +206,15 @@ def due(world: Path, asleep=False, now=None):
         return None
     now = now or _now()
     state = creatures.load(world)
+    by_id = {x["id"]: x for x in state["appearances"]}
     for a in creatures.current(state, now, ahead_minutes=NOTICE_BEFORE):
-        if a.get("met") or a.get("slept") or a["kind"] not in creatures.KINDS or a.get("companion"):
-            continue                                   # (a companion is met with the one it came with)
+        if a.get("met") or a.get("slept") or a["kind"] not in creatures.KINDS or not leads(a, by_id):
+            continue                                   # (the other one in a meeting is met with it)
         if _parse(a["end"]) - now < dt.timedelta(minutes=5):
             continue                                   # all but gone
         if asleep:
             wakes = sum(1 for e in recent(world, now=now) if e.get("woke"))
-            if not is_loud(a["kind"]) or wakes >= NIGHT_WAKES_PER_WEEK:
+            if not (is_loud(a["kind"]) or is_loud(a.get("with_kind", ""))) or wakes >= NIGHT_WAKES_PER_WEEK:
                 continue
         return a
     return None
@@ -260,10 +262,11 @@ def scene(a, entry, seeing, ph, history):
     if ph == "here":
         looks = c.get("looks_seeing") if seeing >= 2 and c.get("looks_seeing") else c.get("looks", "something strange")
         lines.append(f"Then you see it: {looks}.")
-        mark = (a.get("variant") or {}).get("mark")
-        if mark and entry and entry.get("count"):
-            lines.append({"scarred": "This one has an old scar.", "old": "This one looks old.",
-                          "young": "This one looks young."}[mark])
+        age, mark = age_of(a), (a.get("variant") or {}).get("mark")
+        if age:
+            lines.append({"old": "This one is old: bigger, worn, slower.", "young": "This one is young: small and quick."}[age])
+        if mark == "scarred" and entry and entry.get("count"):
+            lines.append("This one has an old scar.")
         if a.get("chain"):
             n = a["chain"]
             lines.append("They are at the wall now." if a.get("last") else
@@ -341,13 +344,29 @@ def active(a, entry):
     return keys
 
 
-def wariness(entry, key, now):
-    """How used the kind has got to this trick, faded by the time since he last used it."""
+def age_of(a):
+    """young, old, or "" (grown; or ageless)."""
+    v = a.get("variant") or {}
+    return v.get("age") or (v.get("mark") if v.get("mark") in ("old", "young") else "")
+
+
+def wariness(entry, key, now, memory=1.0):
+    """How used the kind has got to this trick, faded by the time since he last used it.
+    memory: how long this individual holds on to it (the old twice as long, the young half)."""
     w = ((entry or {}).get("wise") or {}).get(key)
     if not w or not _parse(w.get("at")):
         return 0.0
     days = max(0.0, (now - _parse(w["at"])).total_seconds() / 86400)
-    return w.get("level", 0) * .5 ** (days / HALF_LIFE_DAYS)
+    return w.get("level", 0) * .5 ** (days / (HALF_LIFE_DAYS * memory))
+
+
+def leads(a, by_id):
+    """Whether this appearance leads its meeting (the one he meets; the other comes with it). A
+    hostile being that came alongside a gentler one leads: it is the danger."""
+    if a.get("companion"):
+        return bool(a.get("counts"))
+    partner = by_id.get(a.get("with"))
+    return not (partner and partner.get("counts"))
 
 
 def weakness_used(a, choice, how, entry, now, sky=""):
@@ -355,7 +374,9 @@ def weakness_used(a, choice, how, entry, now, sky=""):
     why: "" it works, "worn" it's getting used to it, "weather" the weather blunts it, "other"
     this one doesn't answer to it."""
     best, on = None, active(a, entry)
-    mark = (a.get("variant") or {}).get("mark", "")
+    mark, age = (a.get("variant") or {}).get("mark", ""), age_of(a)
+    knows = MARK_WISDOM.get(age, 1) * (MARK_WISDOM["scarred"] if mark == "scarred" else 1)
+    memory = AGE_MEMORY.get(age, 1)
     for key, w in weaknesses(a["kind"]):
         if not (choice in w.get("verbs", []) or _says(how, w.get("words", []))):
             continue
@@ -366,7 +387,7 @@ def weakness_used(a, choice, how, entry, now, sky=""):
         elif sky in w.get("fails_in", []):
             found = (key, .25, "weather")
         else:
-            wise = min(WISE_MOST, wariness(entry, key, now) * MARK_WISDOM.get(mark, 1))
+            wise = min(WISE_MOST, wariness(entry, key, now, memory) * knows)
             found = (key, 1 - wise, "worn" if wise > .35 else "")
             if key == a.get("avoid"):              # it came ready for this (its mind chose to)
                 found = (key, found[1] * CUNNING_CUT, "ready")
