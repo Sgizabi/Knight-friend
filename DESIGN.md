@@ -278,6 +278,27 @@ pastimes, building, letters and quiet days stay the core.
 - **Watched and tuned.** His needs history and diary are reviewed after wave 1 goes live, and
   the rhythm adjusted if creatures crowd out the rest of his life, or leave it too quiet.
 
+**No being is favoured:**
+- **A cooldown per kind:** after a visit, that kind sits out for a while, so the same being
+  doesn't keep coming back.
+- **A spread of natures:** each week's mix covers gentle, neutral, nuisance and hostile, never
+  all wonder or all dread.
+- **Lures are capped:** visitors can tip the odds toward a being only a little, and only so
+  often per kind each week, so popular creatures don't crowd out the rest.
+
+**Variety, not a timetable:** within the safeguards, an occasional **strange week** (more
+stirring than usual, the fog three nights running) and an occasional **quiet week** (almost
+nothing but his own life), so the rhythm never feels mechanical.
+
+**His attention stays his own.** The balance comes from the world being well paced, never
+from managing him. If he becomes fascinated with one being, that is his choice. His needs
+already pull him toward varied days, and his existing habit of simply *noticing* when he has
+spent most of his recent time on one thing stays a fact he can make of what he likes, never
+advice. After wave 1 we measure how much of his diary and waking time creatures take (aiming
+for roughly a third or less) and, if needed, change how often they come, never his choices.
+
+All the numbers here are **starting dials**, tuned by watching real weeks.
+
 ---
 
 ## 6. Minds and the free allowance
