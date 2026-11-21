@@ -875,7 +875,7 @@ const BEASTS = {
     knight: { place: 'raise:3', action: 'stand', emote: 'exclaim', note: 'hand on his rusty dagger' },
     build(root) {
       const g = G(root, [-20.3, 0, -.3], [0, Math.PI / 2, 0]);
-      const iron = A.mat('#4a423b', .55, .65), rust = A.mat('#6b4632', .3, .8), dark = A.mat('#2a2724', .5, .7);
+      const iron = A.mat('#4a423b', .55, .65, { emissive: '#1b2b28', emissiveIntensity: .55 }), rust = A.mat('#6b4632', .3, .8, { emissive: '#1d1a14', emissiveIntensity: .4 }), dark = A.mat('#2a2724', .5, .7);   // a faint, cold sheen
       const cloth = ds('#1f1b19', 0, 1), bonec = A.mat('#cfc6ad', 0, .7), eyeMat = glow('#9ff0dc', 3, { fog: false });
       const mound = G(root, [-21.6, 0, -.3]);
       P(mound, A.ico(1, 1), A.mat('#38422a', 0, 1), [0, -.25, 0], { scale: [3.3, 1.15, 2.8], jitter: .1 });
@@ -908,7 +908,16 @@ const BEASTS = {
       for (let i = 0; i < 7; i++) P(head, new T.ConeGeometry(.04, .18 + (i % 3) * .1, 4), bonec, [0, .4 + (i % 3) * .02, -.24 + i * .08], { rot: [(i - 3) * .12, 0, 0] });
       for (const sx of [-1, 1]) P(head, A.box(.15, .028, .02), eyeMat, [sx * .1, .04, .255], { cast: false });
       P(head, A.box(.035, .22, .02), A.mat('#0c0a09'), [0, -.1, .255], { cast: false });
-      const ghost = new T.PointLight('#8fe8d4', 1.4, 4, 2); ghost.position.set(0, 0, .6); head.add(ghost);
+      const visorGlow = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8fe8d4', transparent: true, opacity: .4, depthWrite: false,
+                                                           blending: T.AdditiveBlending, fog: false }));
+      visorGlow.position.set(0, .04, .3); visorGlow.scale.setScalar(.7); head.add(visorGlow);   // no light of its own: a glow behind the visor
+      // long years in the mound: moss and lichen on the shoulders, the helm, the knees
+      const moss = A.mat('#3f5a2c', 0, 1), lichen = A.mat('#8d9a6a', 0, 1);
+      const rm = A.rand(401);
+      for (let i = 0; i < 16; i++) { const sx = i % 2 ? 1 : -1;
+        P(chest, A.ico(.07 + rm() * .07, 0), rm() < .7 ? moss : lichen, [sx * (.5 + rm() * .25), .42 + rm() * .12, (rm() - .5) * .4], { scale: [1, .45, 1], cast: false }); }
+      for (let i = 0; i < 6; i++) P(head, A.ico(.05 + rm() * .04, 0), moss, [(rm() - .5) * .34, .2 + rm() * .1, (rm() - .5) * .34], { scale: [1, .5, 1], cast: false });
+      for (const sx of [-1, 1]) P(g, A.ico(.1, 0), moss, [sx * .27, 1.08, .14], { scale: [1, .5, 1], cast: false });
       // cloak strips, tattered
       const cloak = [];
       for (let i = 0; i < 6; i++) {
@@ -939,6 +948,7 @@ const BEASTS = {
         head.rotation.y = Math.sin(t * .2) * .35; head.rotation.x = .08 + Math.sin(t * .17) * .05;
         cloak.forEach((c, i) => { c.rotation.x = -.12 - Math.sin(t * .9 + i) * .08; c.rotation.z = Math.sin(t * .6 + i * .7) * .04; });
         eyeMat.emissiveIntensity = 2.6 + Math.sin(t * 7) * .4 + (Math.sin(t * 23) > .95 ? -2 : 0);
+        visorGlow.material.opacity = .3 + Math.sin(t * 7) * .06;
         for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.ph) * .8, .35 + Math.sin(t * .3 + u.ph) * .1, u.z + Math.cos(t * .08 + u.ph) * .6); m.scale.setScalar(3 + Math.sin(t * .2 + u.ph)); }
       };
     },
