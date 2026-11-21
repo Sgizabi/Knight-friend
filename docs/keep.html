@@ -2362,9 +2362,12 @@ refreshVisits(); setInterval(refreshVisits, 150000);   // ~24 times an hour at m
 resize();
 requestAnimationFrame(tick);
 window.__keep = { K, camera, controls, goodView, greet, tossLog,
-  bench(frames = 120) {   // for testing: milliseconds per frame, rendered back to back (works even in a hidden tab)
-    const gl = renderer.getContext(), t0 = performance.now();
-    for (let i = 0; i < frames; i++) { weatherTick(clock.elapsedTime + i / 60, 1 / 60); renderer.render(scene, camera); }
+  bench(frames = 120) {   // for testing: milliseconds per frame, rendered back to back (works even in a hidden tab);
+    const gl = renderer.getContext(), t0 = performance.now();   // the beings' own animation runs too, and time moves on
+    for (let i = 0; i < frames; i++) {
+      benchT += 1 / 60; const t = clock.elapsedTime + benchT;
+      weatherTick(t, 1 / 60); for (const f of onTick) f(t, 1 / 60); renderer.render(scene, camera);
+    }
     gl.finish(); return +((performance.now() - t0) / frames).toFixed(2);
   }, get quality() { return qLevel; }, setQuality: applyQuality,
   view(p, at) {   // free camera at p, looking at `at` (for testing)
@@ -2379,6 +2382,7 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog,
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
   get logsInFlight() { return logs.map(l => l.mesh.position.toArray().map(v => +v.toFixed(2))); },
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
+let benchT = 0;
 const creatureApi = () => ({
   THREE, scene, camera, M, BM, mat, part, facet, hash, rand, cyl, box, ico, onTick, K, fireLight, updateSky, toast, ground: landHeight,
   view: window.__keep.view, setHour(h) { skyHour = h; updateSky(); }, get hour() { return skyHour ?? (new Date().getHours() + new Date().getMinutes() / 60); },

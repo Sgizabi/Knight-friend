@@ -2139,27 +2139,81 @@ const BEASTS = {
   // ================================================================ THE THIN CROWD
   thincrowd: {
     name: 'The Thin Crowd', hour: 18,
-    blurb: 'Tall, thin shapes standing in a line on the rise south of the keep at dusk. Each evening there is one more of them, and the line is a step closer. Nothing happens... until they reach the wall. (Sped up here: one more every few seconds.)',
-    view: [[.4, 1.9, 1.2], [1.2, 2.6, 13]],
+    blurb: 'Tall, thin, grey shapes standing in a loose crowd on the rise south of the keep at dusk, with no faces at all. Each evening there is one more of them, and they are a little closer. They never move while watched; look away and back, and they stand a little differently. Nothing happens... until they reach the wall. (Sped up here: one more every few seconds.)',
+    view: [[-2.2, 2.4, 4.2], [-.6, 2.4, 13]],
     knight: { place: 'fire', action: 'stand', emote: 'dots', note: 'counting them again' },
     build(root) {
-      const dark = A.mat('#151416', 0, .9), face = A.mat('#cfc9bf', 0, .6);
-      const r = A.rand(77), figs = [];
-      for (let i = 0; i < 10; i++) {
-        const f = G(root, [-7 + i * 1.7 + (r() - .5) * .5, 0, 0], [0, Math.PI + (r() - .5) * .3, 0]);
-        const parts = thinFigure(f, 4.0 + r() * 1.3, dark, face);
-        parts.head.rotation.z = (r() - .5) * .5;
-        f.visible = false; figs.push({ f, parts, ph: r() * 9 });
-      }
+      const ap = root.userData.appearance || {};
+      const live = !!ap.id, chainN = ap.chain || 1;
+      const grey = A.mat('#3c3c43', 0, .95), skin = A.mat('#5d5f69', 0, .45, { emissive: '#1d1f27', emissiveIntensity: .6 });   // smooth, dark, blank
+      const cloth = ds('#4d4b55', 0, 1);
+      const r = A.rand(77 + (ap.id ? ap.id.length : 0));
+      // one figure: gaunt, too long in the limbs, wrapped in hanging grey strips, a head with nothing on it
+      const figure = h => {
+        const g = G(root), k = h / 4.2;
+        const body = G(g, [0, 0, 0]); body.scale.setScalar(k);
+        for (const sx of [-1, 1]) {
+          bone(body, [sx * .1, 2.35, 0], [sx * .13, 1.2, .03], .05, .036, grey);
+          bone(body, [sx * .13, 1.2, .03], [sx * .11, .04, 0], .036, .03, grey);
+        }
+        P(body, A.cyl(.17, .11, 1.1, 7), grey, [0, 2.85, 0], { scale: [1, 1, .62] });               // a narrow, hollow chest
+        P(body, A.ico(.12, 1), grey, [0, 2.28, 0], { scale: [1, .6, .7] });
+        bone(body, [-.22, 3.33, .02], [.22, 3.33, .02], .045, .045, grey);                            // sloped, hunched shoulders
+        const arms = [];
+        for (const sx of [-1, 1]) {                                                                  // arms that hang past the knees
+          const sh = G(body, [sx * .22, 3.38, 0]);
+          bone(sh, [0, 0, 0], [sx * .03, -1.15, .03], .034, .028, grey);
+          const el = G(sh, [sx * .03, -1.15, .03]);
+          bone(el, [0, 0, 0], [0, -1.15, .04], .028, .022, grey);
+          const hand = G(el, [0, -1.2, .04]);
+          for (let f = 0; f < 4; f++) bone(hand, [(f - 1.5) * .012, 0, 0], [(f - 1.5) * .018, -.2, .01], .008, .005, skin, 4);
+          arms.push({ sh, el });
+        }
+        bone(body, [0, 3.36, 0], [0, 3.72, .12], .032, .028, grey);                                   // the neck, craned forward
+        const head = G(body, [0, 3.9, .16]);
+        P(head, A.ico(.13, 2), skin, [0, 0, 0], { scale: [.78, 1.35, .86], jitter: .004 });           // smooth: nothing on it at all
+        // hanging strips of cloth from the shoulders and waist
+        const strips = [];
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2, y = i % 2 ? 3.3 : 2.4, len = .9 + r() * 1.2;
+          const st = G(body, [Math.sin(a) * .17, y, Math.cos(a) * .12], [0, a, 0]);
+          sheet(st, [[-.09, 0, 0], [.09, 0, 0], [.05, -len, .02], [-.07, -len * .9, 0]], [[0, 1, 2], [0, 2, 3]], cloth);
+          strips.push(st);
+        }
+        return { g, head, arms, strips, ph: r() * 9 };
+      };
+      const MAX = 7, figs = Array.from({ length: MAX }, () => figure(3.4 + r() * 1.2));
+      // a loose crowd, not a line: where each stands, and the postures it can be found in
+      const spots = figs.map((_, i) => [(i % 2 ? 1 : -1) * Math.ceil(i / 2) * 1.25 + (r() - .5) * .5, (r() - .5) * 1.6]);
+      const poses = [() => [0, 0, 0, 0], () => [.25, -.1, .12, 0], () => [-.3, 0, -.08, .25], () => [.1, .2, .3, -.15], () => [-.15, -.25, 0, .2]];
+      figs.forEach(f => { f.pose = Math.floor(r() * poses.length); });
       const mist = Array.from({ length: 12 }, (_, i) => {
-        const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8c8697', transparent: true, opacity: .26, depthWrite: false }));
-        sp.userData = { x: -9 + (i % 6) * 3.6, z: 10 + Math.floor(i / 6) * 4 }; root.add(sp); return sp;
+        const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8c8697', transparent: true, opacity: .24, depthWrite: false }));
+        sp.userData = { x: -9 + (i % 6) * 3.6, z: 8 + Math.floor(i / 6) * 5 }; root.add(sp); return sp;
       });
-      const order = [4, 6, 2, 8, 0, 5, 3, 9, 1, 7];
+      const cam = V(), hp = V();
+      let seen = true;
       return (t) => {
-        const k = t % 72, n = Math.min(10, 3 + Math.floor(k / 6));
-        const z = 16 - (n - 3) * .75;
-        figs.forEach((g, i) => { g.f.visible = order.indexOf(i) < n; g.f.position.z = z + Math.sin(i * 2.1) * .4; g.parts.head.rotation.y = Math.sin(t * .1 + g.ph) * .15; });
+        // how many, and how near: in the keep, from which evening this is; in the preview, sped up
+        const n = live ? Math.min(MAX, chainN + 2) : Math.min(MAX, 3 + Math.floor((t % 50) / 6));
+        const near = live ? (ap.last ? 1 : (chainN - 1) / 4) : (n - 3) / 4;
+        const z0 = 15 - near * 8.6;                                    // from the rise to the foot of the wall
+        // look away and back: they stand differently, and perhaps a little closer
+        figs[0].head.getWorldPosition(hp); hp.project(A.camera);
+        const onScreen = Math.abs(hp.x) < 1.05 && Math.abs(hp.y) < 1.05 && hp.z < 1;
+        if (seen && !onScreen) figs.forEach(f => { f.pose = (f.pose + 1 + Math.floor(r() * 3)) % poses.length; });
+        seen = onScreen;
+        const together = pulse(t, 23, 4);                              // now and then, every head tilts the same way at once
+        figs.forEach((f, i) => {
+          f.g.visible = i < n;
+          const [sx, sz] = spots[i];
+          f.g.position.set(-.6 + sx, gy(-.6 + sx, z0 + sz), z0 + sz);
+          f.g.rotation.y = Math.PI + Math.atan2(-.6 + sx - (-1), 6) * .3;   // all facing the keep
+          const [a0, a1, tilt, turn] = poses[f.pose]();
+          f.arms[0].sh.rotation.x = a0; f.arms[1].sh.rotation.x = a1;
+          f.head.rotation.z = tilt * (1 - together) + .45 * together; f.head.rotation.y = turn * (1 - together);
+          f.strips.forEach((s, k) => { s.rotation.x = Math.sin(t * .6 + k + f.ph) * .05; s.rotation.z = Math.sin(t * .4 + k * 1.3) * .03; });
+        });
         for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.z) * .8, .4, u.z); m.scale.setScalar(4.5); }
       };
     },
