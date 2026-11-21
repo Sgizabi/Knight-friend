@@ -401,73 +401,94 @@ const BEASTS = {
   // ================================================================ BASILISK
   basilisk: {
     name: 'The basilisk', hour: 13,
-    blurb: 'Rare and dangerous. A six-legged serpent whose gaze turns living things to stone. A crow and a fox in the courtyard did not look away in time.',
-    view: [[-8.3, 2.7, 3.9], [-10.7, .4, -.4]],
+    blurb: 'Rare and dangerous. A long, low, six-legged reptile with a ridge of grey plates, basking on the warm stones, its eyes half-lidded. Before its gaze lands, the lids lift, slowly; where it looks, the grass goes grey and stiff. A crow and a fox in the courtyard did not look away in time.',
+    view: [[-8.0, 2.6, 3.4], [-11.6, .4, .1]],
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'very carefully not meeting its eyes' },
     build(root) {
-      const g = G(root, [-10.4, 0, .05], [0, Math.PI / 2, 0]);
-      const hide = A.mat('#5a6a46', 0, .7), hideD = A.mat('#3b4631', 0, .75), belly = A.mat('#a39f6c', 0, .8);
-      const crestB = A.mat('#c9bfa0', 0, .6), crestM = ds('#7a2e2a'), claw = A.mat('#1a1712', .2, .5);
-      const stone = A.M.stoneL, stoneD = A.M.stone;
-      const N = 10, segs = [];
-      for (let i = 0; i < N; i++) {
-        const r = i < 3 ? .5 + i * .03 : .56 * (1 - (i - 2) / (N - 1)) + .07;
-        const s = G(g, [0, r * .95, -i * .5]);
-        P(s, A.ico(r, 1), i % 2 ? hide : hideD, [0, 0, 0], { scale: [1.05, .82, 1.15], jitter: .03 });
-        P(s, A.ico(r * .8, 1), belly, [0, -r * .3, 0], { scale: [.95, .5, 1.1] });
-        P(s, new T.ConeGeometry(r * .3, r * .7, 4), crestB, [0, r * .78, 0], { rot: [-.35, 0, 0] });
-        segs.push({ s, r });
+      const v = root.userData.appearance?.variant || {};
+      const size = (v.size || 1) * (v.age === 'young' ? .6 : v.age === 'old' ? 1.1 : 1);
+      // it lies along the lane, head toward the doorway, and shifts a little forward and back (it never needs to turn)
+      const g = G(root, [-10.0, 0, .1], [0, Math.PI / 2, 0]); const lizard = G(g); lizard.scale.setScalar(size);
+      const hide = A.mat('#56664a', 0, .7), hideD = A.mat('#3a4632', 0, .75), belly = A.mat('#9c9a70', 0, .8);
+      const plate = A.mat('#8e9088', .1, .6), frill = ds('#6a2c26', 0, .8), claw = A.mat('#1a1712', .2, .5);
+      const lidM = A.mat('#46543a', 0, .7);
+      const N = 12, segs = [];
+      let parent = lizard;
+      for (let i = 0; i < N; i++) {                                   // overlapping, so it reads as one long body
+        const r = i < 4 ? .42 + i * .02 : .5 * (1 - (i - 3) / (N - 1)) + .06;
+        const s = G(parent, [0, i ? 0 : .42, i ? -.42 : 0]);
+        P(s, A.ico(1, 2), i % 3 ? hide : hideD, [0, 0, 0], { scale: [r * 1.15, r * .72, r * 1.25], jitter: .015 });
+        P(s, A.ico(1, 1), belly, [0, -r * .32, 0], { scale: [r * 1.05, r * .42, r * 1.15] });
+        P(s, A.box(r * .55, r * .12, r * .7), plate, [0, r * .7, 0], { rot: [-.25, 0, 0], jitter: .02 });   // a grey plate on the ridge
+        segs.push({ s, r }); parent = s;
       }
       const legs = [];
-      for (const i of [1, 3, 5]) for (const sx of [-1, 1]) {
-        const { s, r } = segs[i], hip = G(s, [sx * r * .8, -r * .1, 0]);
-        bone(hip, [0, 0, 0], [sx * .45, -.05, .1], .13, .1, hide);
-        bone(hip, [sx * .45, -.05, .1], [sx * .55, -r * .95 + .05, .15], .1, .07, hideD);
-        for (const a of [-.4, 0, .4]) P(hip, new T.ConeGeometry(.03, .16, 4), claw, [sx * .55 + Math.sin(a) * .1, -r * .95 + .03, .22 + Math.cos(a) * .05], { rot: [1.6, a, 0] });
+      for (const i of [0, 2, 4]) for (const sx of [-1, 1]) {
+        const { s, r } = segs[i], hip = G(s, [sx * r * 1.0, -r * .15, 0]);
+        bone(hip, [0, 0, 0], [sx * .38, .1, .08], .11, .085, hide);
+        bone(hip, [sx * .38, .1, .08], [sx * .5, -.32, .14], .085, .06, hideD);
+        for (const a of [-.45, 0, .45]) P(hip, new T.ConeGeometry(.028, .15, 4), claw, [sx * .5 + Math.sin(a) * .09, -.37, .22 + Math.cos(a) * .05], { rot: [1.6, a, 0] });
         legs.push({ hip, sx, ph: i * .9 + (sx > 0 ? Math.PI : 0) });
       }
-      const head = G(segs[0].s, [0, .05, .55]);
-      P(head, A.box(.6, .34, .75), hide, [0, .02, .25], { jitter: .05 });
-      P(head, A.box(.46, .22, .4), hideD, [0, -.02, .7], { jitter: .04 });
-      const jaw = G(head, [0, -.16, .05]);
-      P(jaw, A.box(.52, .1, .85), belly, [0, -.03, .38], { jitter: .03 });
-      const eyeMat = glow('#d8ff5a', 2.2);
+      // the head: low and wedge-shaped, heavy brows, half-lidded eyes
+      const head = G(segs[0].s, [0, .04, .5]);
+      P(head, A.ico(1, 2), hide, [0, 0, .2], { scale: [.3, .16, .42], jitter: .01 });
+      P(head, A.ico(1, 1), hideD, [0, -.02, .5], { scale: [.2, .1, .22] });
+      const jaw = G(head, [0, -.09, .05]); P(jaw, A.ico(1, 1), belly, [0, -.02, .32], { scale: [.25, .06, .38] });
+      const eyeMat = glow('#d8ff5a', 1.6);
+      const lids = [];
       for (const sx of [-1, 1]) {
-        P(head, A.ico(.07, 0), eyeMat, [sx * .25, .14, .48], { cast: false });
-        P(head, A.box(.18, .06, .22), hideD, [sx * .24, .21, .46], { rot: [0, 0, sx * -.3] });
+        const e = G(head, [sx * .2, .1, .3]);
+        P(e, A.ico(.055, 1), eyeMat, [0, 0, 0], { cast: false });
+        P(e, A.box(.012, .07, .02), A.mat('#0a0a06'), [0, 0, .05], { cast: false });   // a slit pupil
+        const lid = G(e, [0, 0, 0]); P(lid, new T.SphereGeometry(.065, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2), lidM, [0, 0, 0], { cast: false, jitter: 0 });
+        lids.push(lid);
+        P(head, A.box(.16, .05, .14), plate, [sx * .19, .16, .3], { rot: [.15, 0, sx * -.3] });   // the brow
       }
-      // the crest: a fan of bony spines with skin between
-      const crest = G(head, [0, .2, 0]);
+      const crest = G(head, [0, .12, .02]);                             // a frill of bony spines with dull red skin between
       const tips = [];
-      for (let i = 0; i < 5; i++) {
-        const a = -.9 + i * .45, tip = [Math.sin(a) * .55, .45 + Math.cos(a) * .55 - .25 * Math.abs(Math.sin(a)), -.25 - Math.cos(a) * .2];
-        bone(crest, [0, 0, 0], tip, .05, .012, crestB, 5); tips.push(tip);
-      }
-      sheet(crest, [[0, 0, 0], ...tips], [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5]], crestM);
-      const tongue = G(head, [0, -.08, .85]);
-      for (const sx of [-1, 1]) P(tongue, A.box(.025, .012, .22), A.mat('#8a2a3a'), [sx * .03, 0, .12], { rot: [0, sx * .25, 0], cast: false });
-      const gazeMat = new T.MeshBasicMaterial({ color: '#d8ff5a', transparent: true, opacity: .05, depthWrite: false, blending: T.AdditiveBlending });
-      const gaze = new T.Mesh(new T.ConeGeometry(.9, 4, 12, 1, true), gazeMat); gaze.rotation.x = -Math.PI / 2; gaze.position.set(0, .14, 2.5); head.add(gaze);
-      // what it looked at
+      for (let i = 0; i < 5; i++) { const a = -.9 + i * .45, tip = [Math.sin(a) * .42, .32 + Math.cos(a) * .4 - .2 * Math.abs(Math.sin(a)), -.25 - Math.cos(a) * .15]; bone(crest, [0, 0, 0], tip, .035, .01, plate, 5); tips.push(tip); }
+      sheet(crest, [[0, 0, 0], ...tips], [[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 5]], frill);
+      const tongue = G(head, [0, -.04, .7]);
+      for (const sx of [-1, 1]) P(tongue, A.box(.02, .01, .2), A.mat('#8a2a3a'), [sx * .025, 0, .1], { rot: [0, sx * .25, 0], cast: false });
+      const gazeMat = new T.MeshBasicMaterial({ color: '#d8ff5a', transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending });
+      const gaze = new T.Mesh(new T.ConeGeometry(.9, 4, 12, 1, true), gazeMat); gaze.rotation.x = -Math.PI / 2; gaze.position.set(0, .1, 2.4); head.add(gaze);
+      segs.forEach(({ s }) => merge(s)); merge(head);
+      // what it has looked at: a crow, a fox, patches of grass gone grey
+      const stone = A.M.stoneL, stoneD = A.M.stone;
       const crow = G(root, [-8.7, 0, 1.25], [0, .6, 0]);
-      P(crow, A.ico(.13, 0), stone, [0, .16, 0], { scale: [1, .9, 1.4] });
-      P(crow, A.ico(.08, 0), stone, [0, .28, .13]);
+      P(crow, A.ico(.13, 0), stone, [0, .16, 0], { scale: [1, .9, 1.4] }); P(crow, A.ico(.08, 0), stone, [0, .28, .13]);
       P(crow, new T.ConeGeometry(.03, .1, 4), stoneD, [0, .27, .24], { rot: [Math.PI / 2, 0, 0] });
-      P(crow, A.box(.12, .02, .16), stoneD, [0, .17, -.18], { rot: [.4, 0, 0] });
       for (const sx of [-1, 1]) P(crow, A.box(.02, .16, .2), stone, [sx * .11, .2, 0], { rot: [0, 0, sx * -.9] });
-      const fox = G(root, [-13.7, 0, 1.5], [0, 1.0, 0]);
-      P(fox, A.ico(.2, 1), stone, [0, .38, 0], { scale: [.85, .85, 1.7] });
-      P(fox, A.ico(.13, 1), stone, [0, .52, .38]);
+      const fox = G(root, [-15.6, 0, .8], [0, 1.0, 0]);
+      P(fox, A.ico(.2, 1), stone, [0, .38, 0], { scale: [.85, .85, 1.7] }); P(fox, A.ico(.13, 1), stone, [0, .52, .38]);
       P(fox, new T.ConeGeometry(.07, .2, 4), stoneD, [0, .5, .55], { rot: [Math.PI / 2, 0, 0] });
       for (const sx of [-1, 1]) P(fox, new T.ConeGeometry(.04, .12, 4), stoneD, [sx * .07, .66, .36]);
       for (const [x, z, a] of [[-.1, .22, -.4], [.1, .25, .3], [-.1, -.22, .2], [.1, -.24, -.3]]) bone(fox, [x, .32, z], [x, .02, z + a * .2], .045, .035, stone);
       bone(fox, [0, .4, -.32], [0, .3, -.7], .07, .03, stone);
+      merge(crow); merge(fox);
+      const grey = A.mat('#8d8f88', 0, 1);
+      const patches = Array.from({ length: 6 }, () => { const m = new T.Mesh(new T.CircleGeometry(.35, 8), grey); m.rotation.x = -Math.PI / 2; m.visible = false; root.add(m); return m; });
+      let pi = 0, lastLook = -99;
+      const hp = V(), dir = V();
       return (t) => {
-        for (let i = 0; i < N; i++) { segs[i].s.position.x = Math.sin(t * 1.1 - i * .55) * .22 * smooth(0, 3, i); segs[i].s.rotation.y = Math.cos(t * 1.1 - i * .55) * .2 * smooth(0, 3, i); }
-        head.rotation.y = Math.sin(t * .35) * .45; head.rotation.x = -.05 + Math.sin(t * .23) * .06;
-        for (const l of legs) l.hip.rotation.x = Math.sin(t * 1.1 + l.ph) * .35;
-        const flick = pulse(t, 3.2, .45); tongue.scale.z = .2 + flick * 1.8; jaw.rotation.x = flick * .12;
-        eyeMat.emissiveIntensity = 1.8 + Math.sin(t * 2.3) * .6; gazeMat.opacity = .035 + Math.sin(t * 2.3) * .015;
+        const shift = Math.sin(t * .05) * .9;                          // creeps forward and back along the lane
+        g.position.x = -10.0 + shift;
+        const crawl = Math.abs(Math.cos(t * .05)) > .3;
+        for (let i = 1; i < N; i++) segs[i].s.rotation.y = Math.sin(t * .8 - i * .5) * .05 * (crawl ? 1 : .3);
+        for (const l of legs) l.hip.rotation.x = crawl ? Math.sin(t * 1.6 + l.ph) * .3 : 0;
+        head.rotation.y = Math.sin(t * .2) * .35; head.rotation.x = Math.sin(t * .23) * .05;
+        // its tell: the lids lift, slowly, and only then does the gaze go out
+        const look = smooth(0, 3, (t % 20) - 12) * (1 - smooth(5, 6.5, (t % 20) - 12));
+        lids.forEach(l => { l.rotation.x = -.2 - look * 1.2; });
+        gazeMat.opacity = look * (.05 + Math.sin(t * 2.3) * .015);
+        eyeMat.emissiveIntensity = 1 + look * 1.4;
+        if (look > .9 && t - lastLook > 4) {                           // where it looks, the grass goes grey
+          lastLook = t; head.getWorldPosition(hp); dir.set(0, 0, 1).applyQuaternion(head.getWorldQuaternion(new T.Quaternion()));
+          const m = patches[pi++ % patches.length]; const d = 1.5 + (pi % 3) * .6;
+          m.position.set(hp.x + dir.x * d, gy(hp.x + dir.x * d, hp.z + dir.z * d) + .03, hp.z + dir.z * d); m.visible = true;
+        }
+        const flick = pulse(t, 3.2, .45); tongue.scale.z = .2 + flick * 1.8; jaw.rotation.x = flick * .1;
       };
     },
   },
@@ -766,18 +787,19 @@ const BEASTS = {
   wyrm: {
     name: 'The deep wyrm', hour: 13,
     blurb: 'Rare. Something long and eyeless burrows beneath the keep. Where it surfaces, the courtyard falls in.',
-    view: [[-6.2, 3.0, 5.6], [-12.6, 2.4, .9]],
+    view: [[-4.2, 3.0, 6.0], [-9.7, 2.6, -.1]],
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'backing toward the doorway' },
     build(root) {
-      const hx = -14, hz = 1.7;
+      const hx = -9.7, hz = -.1;                                       // open ground: clear of the buildings, the tree, the well and him
+      const v = root.userData.appearance?.variant || {}, big = (v.size || 1) * (v.age === 'young' ? .7 : v.age === 'old' ? 1.12 : 1);
       const hide = A.mat('#7c6c55', 0, .8), band = A.mat('#4d4235', 0, .85), bone_ = A.mat('#e0d6bd', 0, .6), dark = A.mat('#0b0806', 0, 1);
-      const hole = new T.Mesh(new T.CircleGeometry(1.5, 14), dark); hole.rotation.x = -Math.PI / 2; hole.position.set(hx, .035, hz); root.add(hole);
+      const hole = new T.Mesh(new T.CircleGeometry(1.25, 14), dark); hole.rotation.x = -Math.PI / 2; hole.position.set(hx, .035, hz); root.add(hole);
       const r = A.rand(5);
       for (let i = 0; i < 16; i++) {
-        const a = i / 16 * 6.28, d = 1.45 + r() * .35;
+        const a = i / 16 * 6.28, d = 1.2 + r() * .25;
         P(root, A.box(.45 + r() * .3, .2 + r() * .25, .35 + r() * .3), i % 3 ? A.M.dirt : A.M.stone, [hx + Math.cos(a) * d, .08, hz + Math.sin(a) * d], { rot: [r() - .5, a, (r() - .5) * .9], jitter: .06 });
       }
-      const base = G(root, [hx, -.6, hz], [0, -.63, 0]);
+      const base = G(root, [hx, -.6, hz], [0, -.63 + Math.PI, 0]); base.scale.setScalar(big);   // rearing up, leaning out over the lane, away from him
       const segs = chain(base, 9, .58, .95, .78, hide, { sides: 9, jitter: .04, each: (i, j, ra) => {
         P(j, A.cyl(ra * 1.07, ra * 1.07, .14, 9), band, [0, .05, 0], { jitter: .02 });
         for (let k = 0; k < 6; k++) { const a = k / 6 * 6.28; P(j, A.box(.18, .3, .1), band, [Math.cos(a) * ra * 1.02, .3, Math.sin(a) * ra * 1.02], { rot: [0, -a, 0] }); }
@@ -809,7 +831,7 @@ const BEASTS = {
       return (t) => {
         const sway = Math.sin(t * .4);
         base.position.y = -.75 + .25 * (.5 + .5 * Math.sin(t * .23));
-        segs.forEach((j, i) => { j.rotation.z = (i === 0 ? .1 : -.16) + sway * .025; j.rotation.x = Math.sin(t * .5 - i * .4) * .035; });
+        segs.forEach((j, i) => { j.rotation.z = (i === 0 ? .05 : -.07) + sway * .025; j.rotation.x = Math.sin(t * .5 - i * .4) * .035; });
         rings.forEach((rg, i) => { rg.rotation.y = t * (i % 2 ? -.4 : .3); });
         throat.emissiveIntensity = 1 + Math.sin(t * 1.6) * .5;
         segs[5].getWorldPosition(tip);
