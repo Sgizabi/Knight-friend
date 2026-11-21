@@ -91,18 +91,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T02:33:28+00:00",
+    "since": "2026-11-21T02:36:30+00:00",
     "place": "raise:2",
     "action": "work",
     "emote": "dots",
-    "note": "start building the glasshouse in the courtyard",
-    "thought": "The fire crackles while I picture a glasshouse holding seedlings."
+    "note": "add more panes and a simple frame to the potting bench area",
+    "thought": "The roof is sealed, the fire is steady. Time to get the glasshouse up a bit more."
   },
   "needs": {
-    "rest": 35.3,
-    "warmth": 84.7,
+    "rest": 26.3,
+    "warmth": 87.4,
     "inspiration": 68.4,
-    "spirit": 95.7
+    "spirit": 96.7
   },
   "needs_prev": {
     "rest": 36.9,
@@ -110,7 +110,7 @@
     "inspiration": 67.2,
     "spirit": 87.5
   },
-  "needs_at": "2026-11-21T02:33:28+00:00",
+  "needs_at": "2026-11-21T02:36:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -660,6 +660,18 @@
         "kind": null,
         "look": null,
         "finished": "2026-11-20T21:00:30+00:00"
+      },
+      {
+        "key": "glasshouse",
+        "name": "the glasshouse",
+        "about": "salvaged panes over a potting bench, warm even in winter",
+        "place": "glasshouse",
+        "plot": 2,
+        "done": 1,
+        "needed": 4,
+        "kind": null,
+        "look": null,
+        "finished": null
       }
     ],
     "plots": 4
@@ -803,5 +815,5 @@
       }
     }
   },
-  "exported": "2026-11-21T02:33:28+00:00"
+  "exported": "2026-11-21T02:36:30+00:00"
 }
