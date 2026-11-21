@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-20T23:30:22+00:00",
+    "applied_until": "2026-11-21T00:00:32+00:00",
     "live_thought": {
-      "text": "The board fits, but that crack nags me.",
-      "time": "2026-11-20T23:30:22+00:00"
+      "text": "The fire flickers, stone stays still, ink waits.",
+      "time": "2026-11-21T00:00:32+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-20T23:30:23+00:00",
+    "since": "2026-11-21T00:00:33+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 38.6,
+    "warmth": 85.7,
+    "inspiration": 66.0,
+    "spirit": 85.6
+  },
+  "needs_prev": {
     "rest": 40.2,
     "warmth": 91.8,
     "inspiration": 66.0,
     "spirit": 86.6
   },
-  "needs_prev": {
-    "rest": 39.8,
-    "warmth": 91.5,
-    "inspiration": 66.0,
-    "spirit": 87.6
-  },
-  "needs_at": "2026-11-20T23:30:23+00:00",
+  "needs_at": "2026-11-21T00:00:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -686,9 +686,9 @@
     "craft"
   ],
   "visits": {
-    "candles_tonight": 0,
-    "knocks_today": 0,
-    "updated": "2026-11-20T23:30:22+00:00",
+    "candles_tonight": 1,
+    "knocks_today": 1,
+    "updated": "2026-11-21T00:00:32+00:00",
     "seen_until": "2026-11-20T22:55:34+00:00"
   },
   "gifts": [],
@@ -701,5 +701,5 @@
   "health": {
     "unwell": false
   },
-  "exported": "2026-11-20T23:30:23+00:00"
+  "exported": "2026-11-21T00:00:33+00:00"
 }
