@@ -273,81 +273,100 @@ const BEASTS = {
   // ================================================================ GLASSBEAK
   glassbeak: {
     name: 'The Glassbeak', hour: 13,
-    blurb: 'Rare. A bird the size of a cart, with a beak of clear glass. It hunts for anything shiny, and Rooken\'s pocket of glass shards is very shiny.',
-    view: [[-7.2, 1.5, 5.0], [-8.6, 3.6, -2.0]],
+    blurb: 'Rare. A long-legged bird as tall as a man, like a heron, with a long beak of clear glass and bits of anything shiny worked into its feathers. It stalks the courtyard one slow step at a time, bobs its head, and darts. Rooken\'s glass is very shiny.',
+    view: [[-6.9, 1.9, 4.6], [-10.6, 1.5, -.2]],
     knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'keeping his glass shards out of sight' },
     build(root) {
-      const g = G(root, [-8.8, 2.3, -2.2], [0, .36, 0]);
-      const plume = A.mat('#3d475c', 0, .85), plumeL = A.mat('#8b93a6', 0, .8), plumeD = A.mat('#232a38', 0, .9);
-      const leg = A.mat('#6f6a5a', 0, .7), talon = A.mat('#16130f', .2, .5);
-      const glass = new T.MeshStandardMaterial({ color: '#c8eef5', transparent: true, opacity: .55, roughness: .04, metalness: .15,
-                                                 emissive: '#3aa0b8', emissiveIntensity: .25, flatShading: true });
+      const v = root.userData.appearance?.variant || {};
+      const age = v.age || '', size = (v.size || 1) * (age === 'young' ? .7 : age === 'old' ? 1.08 : 1);
+      const g = G(root, [-10.4, 0, .2]);
+      const bird = G(g, [0, 0, 0]); bird.scale.setScalar(size);
+      const plume = A.mat(age === 'young' ? '#7d8597' : '#465068', 0, .85), plumeL = A.mat(age === 'young' ? '#a7adbb' : '#9aa2b4', 0, .8);
+      const plumeD = A.mat('#262d3c', 0, .9), leg = A.mat('#8a7f5e', 0, .65), talon = A.mat('#16130f', .2, .5);
+      const glass = new T.MeshStandardMaterial({ color: '#d6f3f8', transparent: true, opacity: .5, roughness: .02, metalness: .2,
+                                                 emissive: '#58b6cc', emissiveIntensity: .3, flatShading: true });
+      const rnd = A.rand(11 + Math.abs(Math.round((v.hue || 0) * 1000)));
+      // stilt legs: a feathered thigh, a long shin, the backward-bending ankle, long toes
+      const legs = [];
       for (const sx of [-1, 1]) {
-        bone(g, [sx * .35, 1.05, -.15], [sx * .42, .5, .12], .17, .1, plume);
-        bone(g, [sx * .42, .5, .12], [sx * .38, .08, .22], .09, .07, leg);
-        for (const a of [-.45, 0, .45]) {
-          const toe = G(g, [sx * .38, .05, .22], [0, a, 0]);
-          bone(toe, [0, 0, 0], [0, 0, .32], .05, .035, leg);
-          P(toe, new T.ConeGeometry(.035, .16, 4), talon, [0, -.05, .36], { rot: [2.4, 0, 0] });
-        }
-        bone(g, [sx * .38, .05, .22], [sx * .38, .02, -.1], .045, .03, leg);
+        const hip = G(bird, [sx * .16, 1.55, 0]);
+        bone(hip, [0, 0, 0], [0, -.3, .06], .1, .07, plume);
+        const knee = G(hip, [0, -.3, .06]);
+        bone(knee, [0, 0, 0], [0, -.62, -.08], .035, .03, leg);
+        const ankle = G(knee, [0, -.62, -.08]); P(ankle, A.ico(.04, 0), leg, [0, 0, 0]);
+        bone(ankle, [0, 0, 0], [0, -.58, .06], .03, .026, leg);
+        const foot = G(ankle, [0, -.6, .06]);
+        for (const a of [-.5, 0, .5]) { const toe = G(foot, [0, 0, 0], [0, a, 0]); bone(toe, [0, 0, 0], [0, -.02, .26], .022, .014, leg, 4); P(toe, new T.ConeGeometry(.016, .08, 4), talon, [0, -.03, .29], { rot: [2.2, 0, 0] }); }
+        bone(foot, [0, 0, 0], [0, -.02, -.14], .02, .012, leg, 4);
+        legs.push({ hip, knee, ankle, foot, sx });
       }
-      const body = G(g, [0, 1.55, -.1], [-.32, 0, 0]);
-      P(body, A.ico(1, 1), plume, [0, 0, 0], { scale: [.85, 1.12, .95], jitter: .05 });
-      P(body, A.ico(.75, 1), plumeL, [0, .25, .42], { jitter: .04 });
-      // tail fan, hanging back over the tower edge
-      for (let i = 0; i < 7; i++) P(g, A.box(.2, .03, 1.6), i % 2 ? plumeD : plume, [(i - 3) * .12, .7, -1.35], { rot: [-.7, (i - 3) * .09, 0] });
-      // folded wings, with long primaries
+      // body: slim, tilted, with wings folded long past the tail
+      const body = G(bird, [0, 1.62, 0], [-.35, 0, 0]);
+      P(body, A.ico(1, 2), plume, [0, 0, 0], { scale: [.24, .26, .6], jitter: .02 });
+      P(body, A.ico(1, 1), plumeL, [0, -.09, .16], { scale: [.19, .19, .38], jitter: .02 });
       const wings = [];
       for (const sx of [-1, 1]) {
-        const w = G(g, [sx * .72, 2.05, .05]);
-        P(w, A.ico(.5, 1), plume, [0, -.35, -.25], { scale: [.45, 1.25, 1.1], jitter: .04 });
+        const w = G(body, [sx * .2, .07, .1]);
+        P(w, A.ico(1, 1), plume, [0, 0, -.15], { scale: [.08, .22, .5], jitter: .02 });
         const prim = [];
-        for (let i = 0; i < 6; i++) {
-          const f = G(w, [0, -.7, -.45 - i * .05], [-.5 - i * .05, 0, 0]);
-          P(f, A.box(.04, .2, 1.35), i % 2 ? plumeD : plume, [sx * i * .02, 0, -.62]);
-          prim.push(f);
-        }
+        for (let i = 0; i < 6; i++) { const f = G(w, [0, -.02 - i * .02, -.45], [.06 * i, sx * .02 * i, 0]); P(f, A.box(.025, .08, .7), i % 2 ? plumeD : plume, [0, 0, -.3]); prim.push(f); }
         wings.push({ w, sx, prim });
       }
-      // neck ruff and head
-      P(g, A.ico(.5, 1), plume, [0, 2.45, .25], { scale: [.85, 1, .85] });
-      for (let i = 0; i < 12; i++) {
-        const a = i / 12 * Math.PI * 2;
-        P(g, new T.ConeGeometry(.08, .45, 4), plumeD, [Math.cos(a) * .42, 2.25, .25 + Math.sin(a) * .42], { rot: [Math.sin(a) * .9, 0, -Math.cos(a) * .9] });
-      }
-      const neckJ = G(g, [0, 2.75, .32]), head = G(neckJ, [0, .2, .05]); head.scale.setScalar(1.3);
-      P(head, A.ico(.36, 1), plume, [0, 0, 0], { scale: [.85, .9, 1.1] });
-      for (const sx of [-1, 1]) {
-        P(head, A.ico(.065, 0), glow('#ffc832', 2.2), [sx * .22, .07, .16], { cast: false });
-        P(head, A.box(.16, .05, .22), plumeD, [sx * .19, .16, .14], { rot: [.25, 0, sx * .3] });
-      }
-      P(head, A.box(.26, .2, .26), glass, [0, -.02, .35], { cast: false });
-      P(head, new T.ConeGeometry(.13, .6, 5), glass, [0, -.06, .66], { rot: [Math.PI / 2 + .35, 0, 0], cast: false });
-      P(head, new T.ConeGeometry(.06, .22, 4), glass, [0, -.24, .9], { rot: [Math.PI, 0, 0], cast: false });
-      P(head, new T.ConeGeometry(.09, .38, 5), glass, [0, -.16, .5], { rot: [Math.PI / 2 + .2, 0, 0], cast: false });
-      // a shard in its beak, and many more worked into its feathers
+      for (let i = 0; i < 5; i++) P(body, A.box(.07, .02, .5), i % 2 ? plumeD : plume, [(i - 2) * .05, .02, -.75], { rot: [.1, (i - 2) * .07, 0] });
+      // the neck: an S of segments, folded when resting, flung out to strike
+      const neckBase = G(bird, [0, 1.84, .22]);
+      const neck = chain(neckBase, 6, .16, .075, .05, plume, { sides: 6, jitter: .006 });
+      const head = G(neck[5], [0, .16, 0]);
+      P(head, A.ico(.1, 1), plume, [0, 0, 0], { scale: [.85, .9, 1.25] });
+      P(head, A.ico(.07, 1), plumeL, [0, -.04, .04], { scale: [.8, .7, 1.2] });
+      for (const sx of [-1, 1]) { P(head, A.ico(.022, 0), glow('#ffcc33', 1.8), [sx * .07, .03, .05], { cast: false }); P(head, A.ico(.009, 0), A.mat('#050505'), [sx * .085, .032, .06], { cast: false }); }
+      for (let i = 0; i < (age === 'young' ? 2 : 5); i++)                    // a crest of long plumes
+        P(head, A.box(.012, .02, .32 + i * .04), plumeD, [(i - 2) * .012, .07, -.2 - i * .03], { rot: [.35 + i * .06, 0, 0] });
+      const blen = age === 'young' ? .3 : .55;
+      const beakUp = G(head, [0, .01, .08]), beakLo = G(head, [0, -.03, .08]);
+      P(beakUp, new T.ConeGeometry(.045, blen, 5), glass, [0, 0, blen / 2], { rot: [Math.PI / 2, 0, 0], scale: [1, 1, .7], cast: false });
+      P(beakLo, new T.ConeGeometry(.035, blen * .92, 5), glass, [0, 0, blen * .46], { rot: [Math.PI / 2, 0, 0], scale: [1, 1, .6], cast: false });
+      // its collection, worked into its feathers; the old carry far more
       const sparkle = [0, 1, 2].map(() => new T.MeshStandardMaterial({ color: '#e6f0f4', metalness: 1, roughness: .08, emissive: '#ffffff', emissiveIntensity: 0, flatShading: true }));
       const tints = ['#d9a441', '#6fc28a', '#7fb6e8'].map(c => new T.MeshStandardMaterial({ color: c, transparent: true, opacity: .75, roughness: .05, metalness: .3, emissive: c, emissiveIntensity: .15, flatShading: true }));
-      P(head, new T.TetrahedronGeometry(.09), sparkle[0], [0, -.2, .82], { cast: false });
-      const rnd = A.rand(11);
-      for (let i = 0; i < 46; i++) {
-        const a = rnd() * Math.PI * 1.1 - .55 + Math.PI / 2, y = 1.25 + rnd() * 1.3, r = (y > 2.15 ? .5 : y > 1.9 ? .95 : 1.02);
-        const m = i % 4 === 3 ? tints[i % 3] : sparkle[i % 3];
-        P(g, new T.TetrahedronGeometry(.05 + rnd() * .06), m, [Math.cos(a) * r * .8, y, .15 + Math.sin(a) * r], { rot: [rnd() * 3, rnd() * 3, 0], cast: false });
+      const bits = age === 'old' ? 40 : age === 'young' ? 6 : 22;
+      for (let i = 0; i < bits; i++) {
+        const a = rnd() * Math.PI * 2, z = (rnd() - .5) * 1.0;
+        P(body, new T.TetrahedronGeometry(.03 + rnd() * .03), i % 4 === 3 ? tints[i % 3] : sparkle[i % 3],
+          [Math.cos(a) * .23, Math.sin(a) * .24 + .03, z], { rot: [rnd() * 3, rnd() * 3, 0], cast: false });
       }
-      let lookAt = 0, tiltAt = 0, nextLook = 0, look = 0, tilt = 0;
+      const held = P(beakUp, new T.TetrahedronGeometry(.05), sparkle[0], [0, -.03, blen * .8], { cast: false });
+      // how it moves: slow, deliberate steps; a pause; a bob of the head (its tell); a dart
+      const pathAt = t => { const a = t * .03; return [-10.4 + Math.sin(a) * 1.4, .2 + Math.sin(a * 1.7) * 1.3]; };
+      let yaw = 0, last = pathAt(0), stride = 0;
       return (t, dt) => {
-        body.scale.set(1, 1 + .02 * Math.sin(t * 1.4), 1);
-        if (t > nextLook) { lookAt = (A.rand(Math.floor(t * 7))() - .5) * 1.3; tiltAt = (A.rand(Math.floor(t * 13))() - .5) * .8; nextLook = t + .8 + (t * 3.7 % 1.4); }
-        const k = 1 - Math.exp(-dt * 18); look += (lookAt - look) * k; tilt += (tiltAt - tilt) * k;
-        head.rotation.set(.1, look, tilt); neckJ.rotation.y = look * .3;
-        const open = pulse(t + 6, 13, 3.5);
-        for (const { w, sx, prim } of wings) {
-          w.rotation.z = sx * open * 1.05; w.rotation.x = -open * .25;
-          prim.forEach((f, i) => { f.rotation.y = sx * open * (i * .14); });
-        }
+        const cycle = t % 14, stalking = cycle < 9;                          // walk a while, then stop to hunt
+        const tt = stalking ? t : t - (cycle - 9);
+        const [x, z] = pathAt(t - Math.max(0, cycle - 9) - Math.floor(t / 14) * 5);
+        const dx = x - last[0], dz = z - last[1]; last = [x, z];
+        if (Math.hypot(dx, dz) > 1e-5) { let d = Math.atan2(dx, dz) - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * Math.min(1, dt * 2); }
+        g.position.set(x, gy(x, z), z); g.rotation.y = yaw;
+        if (stalking) stride += dt * 1.2;
+        legs.forEach(({ hip, knee, ankle }, i) => {
+          const s = stalking ? Math.sin(stride * Math.PI + i * Math.PI) : 0, up = Math.max(0, s);
+          hip.rotation.x = -s * .3; knee.rotation.x = up * .4; ankle.rotation.x = -up * .9;
+        });
+        bird.position.y = stalking ? Math.abs(Math.sin(stride * Math.PI)) * .03 : 0;
+        // the neck: resting S; the bob; the dart
+        const hunt = stalking ? 0 : cycle - 9;
+        const bob = hunt > .4 && hunt < 2.4 ? Math.sin((hunt - .4) * Math.PI * 3) * .5 + .5 : 0;
+        const dart = hunt > 2.6 ? pulse(hunt - 2.6, 999, .7) : 0;            // one quick strike, then it straightens
+        neck.forEach((j, i) => {
+          const rest = [.3, .3, -.5, -.5, .3, .1][i];                            // the S, head carried level
+          j.rotation.x = rest * (1 - dart) + (i < 3 ? .6 : .1) * dart + (i === 4 ? bob * .25 : 0);
+          j.rotation.y = Math.sin(t * .5 + i) * .03;
+        });
+        head.rotation.x = .5 * dart - bob * .15;
+        beakLo.rotation.x = hunt > 2.9 ? pulse(hunt - 2.9, 999, .4) * .25 : 0;  // snaps
+        held.visible = !stalking && hunt > 3.2;                                // and comes up holding something
+        for (const { w, sx, prim } of wings) { w.rotation.z = sx * pulse(t + 4, 31, 2.5) * .9; prim.forEach((f, i) => { f.rotation.y = sx * pulse(t + 4, 31, 2.5) * i * .12; }); }
         sparkle.forEach((m, i) => { m.emissiveIntensity = Math.pow(Math.max(0, Math.sin(t * (1.3 + i * .7) + i * 2)), 12) * 2.5; });
+        glass.emissiveIntensity = .25 + Math.pow(Math.max(0, Math.sin(t * .9)), 20) * 1.2;   // the beak catches the light
       };
     },
   },
@@ -1765,57 +1784,102 @@ const BEASTS = {
   // ================================================================ THE BELL-CRAB
   bellcrab: {
     name: 'The Bell-Crab', hour: 13,
-    blurb: 'An enormous crab that wears an old watchtower bell for a shell, green with age and cracked down one side. It rings as it walks. Harmless, unless you try to take its bell.',
-    view: [[-10.2, 2.4, 2.2], [-11, 1.5, 9.6]],
+    blurb: 'A hermit crab the size of a cart that has taken an old watchtower bell for its shell, green with age and cracked down one side. It carries it tipped on its back and scuttles sideways, and the bell rings as it goes. Harmless, unless you try to take its bell. (The young make do with a hand bell.)',
+    view: [[-6.8, 2.6, 6.2], [-11, 1.0, 9.6]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'music', note: 'listening to the bell go by' },
     build(root) {
+      const v = root.userData.appearance?.variant || {};
+      const age = v.age || '', size = (v.size || 1) * (age === 'young' ? .5 : age === 'old' ? 1.1 : 1);
       const g = G(root, [-11, 0, 9.6], [0, Math.PI, 0]);
-      const bronze = A.mat('#8a6a3a', .75, .45, { side: T.DoubleSide }), verd = A.mat('#4f8a7a', .2, .8), shell = A.mat('#7a3b2a', .1, .6), shellL = A.mat('#a35a3c', .1, .6), dark = A.mat('#140e0c');
-      const bell = G(g, [0, .75, 0]);
-      const prof = [[0, 2.35], [.42, 2.35], [.55, 2.25], [.6, 1.95], [.66, 1.5], [.78, 1.0], [.98, .55], [1.25, .18], [1.38, 0], [1.3, -.04]].map(([x, y]) => new T.Vector2(x, y));
-      const bm = new T.Mesh(A.facet(new T.LatheGeometry(prof, 14), .03, 2), bronze); bm.castShadow = true; bell.add(bm);
-      const loop = new T.Mesh(new T.TorusGeometry(.22, .07, 5, 10), bronze); loop.position.y = 2.5; bell.add(loop);
-      const r = A.rand(33);
-      for (let i = 0; i < 9; i++) { const a = r() * 6.28, y = .2 + r() * 1.8, rad = y < .6 ? 1.15 : y < 1.2 ? .82 : .64; P(bell, A.ico(.16 + r() * .12, 0), verd, [Math.cos(a) * rad, y, Math.sin(a) * rad], { scale: [1, .5, 1], cast: false }); }
-      P(bell, A.box(.03, 1.1, .04), dark, [.7, .9, .55], { rot: [0, -.65, .35], cast: false });   // the crack
-      const clapper = G(bell, [0, 2.1, 0]); bone(clapper, [0, 0, 0], [0, -1.6, 0], .03, .03, A.M.iron, 5); P(clapper, A.ico(.16, 0), A.M.iron, [0, -1.65, 0]);
-      const body = G(g, [0, .55, 0]);
-      P(body, A.ico(1, 1), shell, [0, 0, 0], { scale: [1.15, .42, .9] });
+      const crab = G(g, [0, 0, 0]); crab.scale.setScalar(size);
+      const bronze = A.mat('#8c6a38', .7, .42, { side: T.DoubleSide }), bronzeD = A.mat('#5e4523', .7, .5, { side: T.DoubleSide });
+      const verd = A.mat('#4f8a78', .15, .85), verdL = A.mat('#6fa592', .1, .85), barn = A.mat('#cfc6b0', 0, .9);
+      const shell = A.mat('#8a3f2b', .05, .55), shellL = A.mat('#b0623f', .05, .55), shellD = A.mat('#5a2618', .05, .6);
+      const dark = A.mat('#120c0a', .2, .3), soft = A.mat('#c98f78', 0, .7);
+      // the bell, tipped on its back, mouth forward, the crab living in it
+      const bell = G(crab, [0, .88, -.12], [-1.15, 0, 0]);
+      const big = age !== 'young';
+      const prof = (big ? [[0, 2.35], [.42, 2.35], [.55, 2.25], [.6, 1.95], [.66, 1.5], [.78, 1.0], [.98, .55], [1.25, .18], [1.38, 0], [1.32, -.05]]
+                        : [[0, 2.0], [.5, 2.0], [.55, 1.6], [.62, 1.1], [.8, .5], [1.05, .1], [1.12, 0], [1.08, -.04]]).map(([x, y]) => new T.Vector2(x, y));
+      const bm = new T.Mesh(A.facet(new T.LatheGeometry(prof, 16), .025, 2), bronze); bm.castShadow = true; bell.add(bm);
+      const inner = new T.Mesh(new T.LatheGeometry(prof.map(p => new T.Vector2(p.x * .9, p.y * .97)), 16), bronzeD); inner.material.side = T.BackSide; bell.add(inner);
+      for (const [y, rr] of (big ? [[.08, 1.33], [.5, 1.02], [1.85, .63]] : [[.06, 1.08], [1.5, .6]]))           // cast bands
+        { const band = new T.Mesh(new T.TorusGeometry(rr, .035, 4, 18), bronzeD); band.rotation.x = Math.PI / 2; band.position.y = y; bell.add(band); }
+      if (big) { const loop = new T.Mesh(new T.TorusGeometry(.22, .07, 5, 10), bronzeD); loop.position.y = 2.5; bell.add(loop); }
+      else { bone(bell, [0, 2.0, 0], [0, 2.55, 0], .07, .06, A.mat('#5b3b22', 0, .8), 6); }   // a hand bell's wooden handle
+      const r = A.rand(33 + Math.abs(Math.round((v.hue || 0) * 1000)));
+      const patches = big ? (age === 'old' ? 16 : 10) : 4;
+      for (let i = 0; i < patches; i++) {                                    // verdigris, thickest where rain runs
+        const a = r() * 6.28, y = .15 + r() * (big ? 1.9 : 1.5), rad = (y < .6 ? 1.16 : y < 1.2 ? .84 : .64) * (big ? 1 : .82);
+        const pg = G(bell, [Math.cos(a) * rad * .97, y, Math.sin(a) * rad * .97], [0, -a, 0]);   // lying on the surface
+        P(pg, A.ico(.12 + r() * .14, 1), r() < .5 ? verd : verdL, [0, 0, 0], { scale: [.22, .8 + r() * .7, 1], cast: false, jitter: .01 });
+      }
+      if (age === 'old') for (let i = 0; i < 9; i++) { const a = r() * 6.28, y = .1 + r() * .6;
+        P(bell, new T.ConeGeometry(.07, .12, 5), barn, [Math.cos(a) * 1.2, y, Math.sin(a) * 1.2], { rot: [Math.cos(a) * 1.4, 0, -Math.sin(a) * 1.4], cast: false }); }
+      if (big) P(bell, A.box(.035, 1.15, .045), dark, [.72, .9, .55], { rot: [0, -.65, .35], cast: false });   // the crack
+      const clapper = G(bell, [0, big ? 2.1 : 1.8, 0]); bone(clapper, [0, 0, 0], [0, big ? -1.6 : -1.3, 0], .03, .03, A.M.iron, 5); P(clapper, A.ico(big ? .16 : .12, 0), A.M.iron, [0, big ? -1.65 : -1.35, 0]);
+      // the crab's front half, out of the bell's mouth
+      const body = G(crab, [0, .62, .55]);
+      P(body, A.ico(1, 1), shell, [0, 0, 0], { scale: [.85, .38, .62], jitter: .02 });
+      P(body, A.ico(1, 1), shellL, [0, .12, .1], { scale: [.7, .22, .48], jitter: .02 });
+      for (let i = 0; i < 7; i++) P(body, A.ico(.05, 0), shellD, [(r() - .5) * 1.2, .3, (r() - .2) * .7], { cast: false });   // mottling
+      const eyes = [];
       for (const sx of [-1, 1]) {
-        const stalk = G(body, [sx * .25, .3, .75]); bone(stalk, [0, 0, 0], [sx * .05, .3, .05], .03, .025, shellL, 5); P(stalk, A.ico(.06, 1), dark, [sx * .05, .33, .05]);
+        const stalk = G(body, [sx * .18, .22, .55]);
+        bone(stalk, [0, 0, 0], [sx * .05, .42, .04], .035, .028, shellL, 5);
+        const e = G(stalk, [sx * .05, .45, .04]); P(e, A.ico(.07, 1), dark, [0, 0, 0], { jitter: 0 }); P(e, A.ico(.02, 0), glow('#ffffff', .4), [0, .03, .05], { cast: false, jitter: 0 });
+        eyes.push({ stalk, sx });
       }
-      const legs = [];
-      for (const sx of [-1, 1]) for (let k = 0; k < 4; k++) {
-        const z = .5 - k * .38, hip = G(body, [sx * 1.0, 0, z]);
-        const knee = [sx * .8, .55, (k - 1.5) * .08], foot = [sx * 1.35, -.55, (k - 1.5) * .18];
-        bone(hip, [0, 0, 0], knee, .09, .07, k % 2 ? shell : shellL, 6); bone(hip, knee, foot, .07, .02, k % 2 ? shellL : shell, 6);
-        legs.push({ hip, sx, ph: k * 1.6 + (sx > 0 ? Math.PI : 0) });
+      const feelers = [];
+      for (const sx of [-1, 1]) {
+        const base = G(body, [sx * .1, .15, .6], [-1.0, sx * -.3, 0]);
+        feelers.push(chain(base, 6, .22, .015, .006, shellD, { sides: 4, jitter: .001 }));
       }
+      const mouth = []; for (const sx of [-1, 1]) { const m = G(body, [sx * .07, -.02, .6]); P(m, A.box(.06, .12, .05), soft, [0, -.04, 0], { cast: false }); mouth.push(m); }
+      // claws: the right one much bigger, as a hermit crab's is
       const claws = [];
       for (const sx of [-1, 1]) {
-        const arm = G(body, [sx * .7, .05, .8]);
-        bone(arm, [0, 0, 0], [sx * .35, .35, .55], .12, .1, shell); bone(arm, [sx * .35, .35, .55], [sx * .2, .2, 1.1], .1, .09, shellL);
-        const claw = G(arm, [sx * .2, .2, 1.15]);
-        P(claw, A.box(.32, .28, .55), shellL, [0, .05, .2], { jitter: .04 });
-        const jaw = G(claw, [0, -.08, 0]); P(jaw, A.box(.22, .14, .5), shell, [0, -.06, .25], { jitter: .03 });
-        P(claw, new T.ConeGeometry(.08, .25, 4), dark, [0, .08, .55], { rot: [Math.PI / 2, 0, 0] });
-        claws.push(jaw);
+        const k = sx > 0 ? 1.35 : .8;
+        const arm = G(body, [sx * .55, -.05, .4]);
+        bone(arm, [0, 0, 0], [sx * .35 * k, .2, .4 * k], .12 * k, .1 * k, shell); P(arm, A.ico(.11 * k, 1), shellD, [sx * .35 * k, .2, .4 * k]);
+        const fore = G(arm, [sx * .35 * k, .2, .4 * k]);
+        bone(fore, [0, 0, 0], [-sx * .1 * k, .05, .45 * k], .1 * k, .11 * k, shellL);
+        const claw = G(fore, [-sx * .1 * k, .05, .5 * k]);
+        P(claw, A.ico(1, 1), shell, [0, .03, .15 * k], { scale: [.2 * k, .18 * k, .32 * k], jitter: .02 });
+        for (let s = 0; s < 4; s++) P(claw, A.ico(.025 * k, 0), shellD, [(r() - .5) * .2 * k, .17 * k, (.05 + r() * .3) * k], { cast: false });
+        P(claw, new T.ConeGeometry(.06 * k, .3 * k, 4), shellD, [.02 * sx, .06 * k, .45 * k], { rot: [Math.PI / 2, 0, 0] });
+        const jaw = G(claw, [0, -.07 * k, .05 * k]); P(jaw, new T.ConeGeometry(.07 * k, .42 * k, 4), shellL, [0, 0, .22 * k], { rot: [Math.PI / 2, 0, 0], scale: [1, 1, .6] });
+        claws.push({ arm, jaw, sx });
       }
-      const rings = [0, 1].map(() => { const m = new T.Mesh(new T.TorusGeometry(1, .03, 4, 32), new T.MeshBasicMaterial({ color: '#ffe9b0', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = Math.PI / 2; root.add(m); return { m, born: -9 }; });
+      // walking legs: three jointed pairs, spiky at the joints
+      const legs = [];
+      for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) {
+        const hip = G(body, [sx * .62, -.05, .25 - k * .32]);
+        const knee = [sx * .55, .42, (k - 1) * .1], ank = [sx * 1.05, .05, (k - 1) * .2], foot = [sx * 1.25, -.62, (k - 1) * .28];
+        bone(hip, [0, 0, 0], knee, .085, .07, k % 2 ? shell : shellL, 6); P(hip, A.ico(.075, 0), shellD, knee);
+        bone(hip, knee, ank, .07, .055, k % 2 ? shellL : shell, 6); P(hip, A.ico(.06, 0), shellD, ank);
+        bone(hip, ank, foot, .055, .012, shellD, 5);
+        legs.push({ hip, sx, ph: k * 2.1 + (sx > 0 ? Math.PI : 0) });
+      }
+      const rings = [0, 1, 2].map(() => { const m = new T.Mesh(new T.TorusGeometry(1, .03, 4, 32), new T.MeshBasicMaterial({ color: '#ffe9b0', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = Math.PI / 2; root.add(m); return { m, born: -9 }; });
       let lastPeak = 0, ri = 0;
+      const bp = V();
       return (t) => {
         const x = -11 + Math.sin(t * .07) * 4, moving = Math.abs(Math.cos(t * .07)) > .1;
-        g.position.x = x;
-        const ph = t * 3;
-        for (const { hip, sx, ph: p } of legs) { hip.rotation.z = moving ? Math.max(0, Math.sin(ph + p)) * .25 * sx : 0; hip.rotation.y = moving ? Math.sin(ph + p) * .12 : 0; }
-        body.position.y = .55 + (moving ? Math.abs(Math.sin(ph)) * .04 : 0);
-        const sway = Math.sin(t * 1.5) * (moving ? .1 : .03);
-        bell.rotation.z = sway; clapper.rotation.z = -sway * 2.2;
-        claws.forEach((j, i) => { j.rotation.x = pulse(t + i * 2, 5, .8) * .5; });
-        if (moving && Math.abs(sway) > .095 && t - lastPeak > .9) {   // it rings
-          const rg = rings[ri++ % 2]; rg.born = t; rg.m.position.set(x, 2.6, 9.6); lastPeak = t;
+        g.position.set(x, gy(x, 9.6), 9.6);
+        const ph = t * 3.4;
+        for (const { hip, sx, ph: p } of legs) { hip.rotation.z = moving ? Math.max(0, Math.sin(ph + p)) * .22 * sx : 0; hip.rotation.y = moving ? Math.sin(ph + p) * .14 : 0; }
+        body.position.y = .62 + (moving ? Math.abs(Math.sin(ph)) * .035 : 0);
+        const sway = Math.sin(t * 1.5) * (moving ? .09 : .025);
+        bell.rotation.z = sway; clapper.rotation.z = -sway * 2.4;
+        claws.forEach(({ jaw, arm, sx }, i) => { jaw.rotation.x = pulse(t + i * 2.3, 5, .7) * .45; arm.rotation.y = Math.sin(t * .6 + i) * .08 * sx; });
+        eyes.forEach(({ stalk, sx }, i) => { stalk.rotation.z = Math.sin(t * .8 + i * 2) * .18; stalk.rotation.x = pulse(t + i, 6.5, .4) * -.6; });
+        feelers.forEach((f, i) => f.forEach((j, k) => { j.rotation.x = Math.sin(t * 2.2 + i * 1.7 + k * .7) * .18; j.rotation.z = Math.sin(t * 1.3 + i + k) * .12; }));
+        mouth.forEach((m, i) => { m.rotation.x = Math.sin(t * 9 + i * Math.PI) * .25; });
+        if (moving && Math.abs(sway) > .085 && t - lastPeak > .9) {          // it rings as it goes
+          const rg = rings[ri++ % 3]; rg.born = t; bell.getWorldPosition(bp); rg.m.position.copy(bp); lastPeak = t;
         }
-        for (const rg of rings) { const k = (t - rg.born) / 2.2; rg.m.visible = k < 1; if (k < 1) { rg.m.scale.setScalar(.5 + k * 5); rg.m.material.opacity = .6 * (1 - k); } }
+        for (const rg of rings) { const k = (t - rg.born) / 2.2; rg.m.visible = k < 1; if (k < 1) { rg.m.scale.setScalar((.5 + k * 5) * size); rg.m.material.opacity = .55 * (1 - k); } }
       };
     },
   },
