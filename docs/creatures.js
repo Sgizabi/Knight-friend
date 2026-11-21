@@ -894,42 +894,106 @@ const BEASTS = {
   // ================================================================ FOG WITH EYES
   fog: {
     name: 'The fog with eyes', hour: 22,
-    blurb: 'Common, on some nights. Fog rolls into the courtyard, and things look out of it. Nothing happens if you stay by the fire.',
-    view: [[-2.3, 1.6, 1.0], [-11, 1.3, .6]],
+    blurb: 'Common, on some nights. A low fog rolls in from the west and fills the courtyard, and things look out of it: some alone, some in pairs, some far too big. It edges toward the light, and pulls back from the fire.',
+    view: [[-6.4, 2.6, 5.4], [-13, 1.0, .5]],
     knight: { place: 'fire', action: 'sit', emote: 'dots', note: 'staying by the fire' },
     build(root) {
-      const sprites = Array.from({ length: 56 }, (_, i) => {
-        const r = A.rand(i * 13 + 1);
-        const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#5f687b', transparent: true, opacity: .24 + r() * .14, depthWrite: false }));
-        sp.userData = { x: -26 + r() * 20.5, y: .3 + r() * 1.6, z: -9 + r() * 18, s: 3 + r() * 4, sp: .15 + r() * .2 };
+      const v = root.userData.appearance?.variant || {};
+      const size = v.size || 1, age = v.age || '';
+      const rnd = A.rand(7 + Math.abs(Math.round((v.hue || 0) * 1000)));
+      // the bank: low, heavy, ground-hugging layers and a thinner layer above, rolling in from the west
+      const FRONT0 = -34, FRONT1 = -4.6 - (size - 1) * 4;          // where its leading edge starts and stops (the doorway)
+      const sprites = [];
+      const layer = (n, y0, y1, w0, w1, op, col) => {
+        for (let i = 0; i < n; i++) {
+          const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: col, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+          sp.userData = { x: -30 + rnd() * 26, y: y0 + rnd() * (y1 - y0), z: -10 + rnd() * 20, w: w0 + rnd() * (w1 - w0),
+                          op: op * (.7 + rnd() * .6), sp: .06 + rnd() * .12, ph: rnd() * 9 };
+          root.add(sp); sprites.push(sp);
+        }
+      };
+      layer(Math.round(30 * size), .05, .8, 4.5, 8, .5, '#444c5a');       // the heavy floor of it
+      layer(Math.round(16 * size), .8, 2.6, 3.5, 6, .28, '#4a5261');      // thinner above
+      // tendrils creeping ahead along the ground, toward the light
+      const tendrils = Array.from({ length: 6 }, (_, i) => {
+        const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#444c5a', transparent: true, opacity: 0, depthWrite: false, fog: false }));
+        sp.userData = { z: -3.2 + i * 1.3 + rnd() * .5, lag: 1 + rnd() * 2.5, ph: rnd() * 9 };
         root.add(sp); return sp;
       });
-      const eyeMats = [glow('#f6e7a0', 3, { fog: false }), glow('#c8f07a', 3, { fog: false })];
-      const pairs = [];
-      const r = A.rand(42);
-      const spots = [[-9.5, .6, -1.8], [-11, 1.4, 2.6], [-13.5, .9, -.5], [-15.5, 1.8, 2.0], [-12.2, .45, .8], [-16.5, 1.1, -2.8],
-                     [-8.6, 1.9, 3.4], [-14.2, 2.4, -3.2], [-19, 1.3, 1.0], [-18, .7, -1.2], [-10.5, 2.6, -3.5]];
-      for (const [x, y, z] of spots) {
-        const pr = G(root, [x, y, z]), gap = .12 + r() * .12, sz = .03 + r() * .03;
-        for (const sx of [-1, 1]) P(pr, A.ico(sz, 0), eyeMats[pairs.length % 3 === 2 ? 1 : 0], [sx * gap, 0, 0], { scale: [1, .7, 1], cast: false, jitter: 0 });
-        pairs.push({ pr, ph: r() * 20, every: 4 + r() * 6 });
+      // the eyes: wet, pale, slow to blink; most of them watch whoever is watching
+      const sclera = A.mat('#8e9184', 0, .2, { emissive: '#3c3f38', emissiveIntensity: .5, fog: false });   // wet, grey, not white
+      const iris = [glow('#b8b06a', .55, { fog: false }), glow('#8fae63', .5, { fog: false }), glow('#b98d55', .5, { fog: false })];
+      const pupil = A.mat('#030304', 0, .2, { fog: false });
+      const lidMat = A.mat('#4b5260', 0, 1, { fog: false });
+      const eyes = [];
+      const makeEye = (parent, r, irisMat, slit) => {
+        const e = G(parent);
+        P(e, new T.SphereGeometry(r, 14, 10), sclera, [0, 0, 0], { jitter: 0, cast: false });
+        P(e, new T.CircleGeometry(r * .5, 14), irisMat, [0, 0, r * 1.002], { jitter: 0, cast: false });
+        const pu = P(e, new T.CircleGeometry(r * .3, 12), pupil, [0, 0, r * 1.006], { jitter: 0, cast: false });
+        if (slit) pu.scale.set(.22, 1.5, 1);
+        // lids: two shells of fog-dark that close over it
+        const lids = [1, -1].map(s => {
+          const l = P(e, new T.SphereGeometry(r * 1.08, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), lidMat, [0, 0, 0], { jitter: 0, cast: false });
+          l.rotation.x = s > 0 ? -.15 : Math.PI + .15; return l;
+        });
+        return { e, lids, pu };
+      };
+      const n = Math.round((age === 'young' ? 8 : age === 'old' ? 15 : 11) * size);
+      for (let i = 0; i < n; i++) {
+        const kind = rnd();                                             // a pair, a single, or a cluster
+        const r = (i === 0 ? .2 : .035 + rnd() * .05) * (age === 'old' ? 1.2 : 1);
+        const holder = G(root, [-9 - rnd() * 13, .35 + rnd() * 2.1, -4.5 + rnd() * 9]);
+        const im = iris[i % 3], slit = rnd() < .75;
+        const parts = kind < .55 ? [[-1.25, 0], [1.25, 0]] : kind < .85 ? [[0, 0]] : [[-1.1, 0], [1.1, .1], [0, 1.1]];
+        const set = parts.map(([dx, dy]) => { const m = makeEye(holder, r, im, slit); m.e.position.set(dx * r * 1.9, dy * r * 1.9, 0); return m; });
+        eyes.push({ holder, set, home: holder.position.clone(), ph: rnd() * 30, every: 5 + rnd() * 9, open: 0,
+                    drift: .2 + rnd() * .4, look: rnd() < .8 });
       }
-      const huge = G(root, [-22, 3.4, .6]);
-      for (const sx of [-1, 1]) P(huge, A.ico(.22, 0), eyeMats[0], [sx * .65, 0, 0], { scale: [1, .6, 1], cast: false, jitter: 0 });
-      pairs.push({ pr: huge, ph: 3, every: 11 });
-      const cam = new T.Vector3();
+      const cam = V(), fire = V(0, .6, -1.35), tmp = V(), q = new T.Quaternion(), m4 = new T.Matrix4();
+      let t0 = null;
       return (t) => {
-        A.scene.fog.color.set('#141821'); A.scene.fog.density = .075;
+        if (t0 === null) t0 = t;
+        const age_t = t - t0;
+        const roll = smooth(0, 70, age_t);                              // it rolls in over a minute or so
+        const front = FRONT0 + (FRONT1 - FRONT0) * roll;
+        A.scene.fog.color.set('#151a23'); A.scene.fog.density = .02 + .025 * roll;
         for (const sp of sprites) {
-          const u = sp.userData; let x = u.x + t * u.sp;
-          x = -26 + ((x + 26) % 20.5);
-          sp.position.set(x, u.y + Math.sin(t * .3 + u.z) * .15, u.z); sp.scale.setScalar(u.s);
+          const u = sp.userData;
+          const x = u.x + Math.sin(t * .05 * u.sp * 6 + u.ph) * 1.6 + (front - FRONT1);   // the bank as a whole advances
+          const z = u.z + Math.cos(t * .04 + u.ph) * .8;
+          const edge = smooth(front + 1, front - 3, x);                 // thin at its leading edge
+          const heat = smooth(2.2, 5.5, Math.hypot(x - fire.x, z - fire.z));   // pulls back from the fire
+          sp.position.set(x, u.y + Math.sin(t * .2 + u.ph) * .08, z);
+          sp.scale.set(u.w * (1 + Math.sin(t * .1 + u.ph) * .08), u.w * .42, 1);
+          sp.material.opacity = u.op * edge * heat * roll;
         }
+        tendrils.forEach((sp, i) => {
+          const u = sp.userData, reach = front + 2.4 - u.lag + Math.sin(t * .25 + u.ph) * .7;
+          const heat = smooth(2.5, 5, Math.hypot(reach, u.z + 1.35));
+          sp.position.set(reach, .12, u.z + Math.sin(t * .17 + u.ph) * .3);
+          sp.scale.set(3.4, .5, 1); sp.material.opacity = .3 * roll * heat;
+        });
         A.camera.getWorldPosition(cam);
-        for (const p of pairs) {
-          const k = (t + p.ph) % p.every;
-          const lid = k < .18 ? .1 : 1, fade = smooth(0, 1.2, k) * (1 - smooth(p.every - 1.2, p.every, k));
-          p.pr.scale.set(fade, fade * lid, fade); p.pr.lookAt(cam);
+        for (const ey of eyes) {
+          const inside = ey.home.x < front - 1.5;                       // only where the fog already is
+          const k = (t + ey.ph) % ey.every;
+          const want = inside ? 1 : 0;
+          ey.open += (want - ey.open) * .02;
+          const blink = k < .22 ? 1 - Math.sin(k / .22 * Math.PI) : 1;  // a slow, heavy blink
+          const near = smooth(16, 6, ey.holder.position.distanceTo(cam));   // heavy-lidded, until you come closer
+          const lid = Math.min(ey.open, blink) * (.42 + .58 * near);
+          ey.holder.position.set(ey.home.x + Math.sin(t * .09 * ey.drift + ey.ph) * .6, ey.home.y + Math.sin(t * .13 + ey.ph) * .12,
+                                 ey.home.z + Math.cos(t * .07 * ey.drift + ey.ph) * .5);
+          // turn (slowly) toward the watcher, or toward the light
+          tmp.copy(ey.look ? cam : fire);
+          m4.lookAt(tmp, ey.holder.position, V(0, 1, 0)); q.setFromRotationMatrix(m4);
+          ey.holder.quaternion.slerp(q, .03);
+          for (const { e, lids, pu } of ey.set) {
+            e.visible = ey.open > .03;
+            lids[0].rotation.x = -Math.PI / 2 * lid; lids[1].rotation.x = Math.PI + Math.PI / 2 * lid;   // 0 shut, 1 tucked behind
+            pu.scale.x = pu.scale.y > 1 ? .22 + near * .3 : 1 + near * .3;   // and the pupils widen
+          }
         }
       };
     },
@@ -1827,58 +1891,128 @@ const BEASTS = {
   // ================================================================ THE GIANT AXOLOTL
   axolotl: {
     name: 'The giant axolotl', hour: 13,
-    blurb: 'Gentle. After heavy rain, when the courtyard floods into shallow pools, something pale and pink wades out of the mist: bigger than the knight, with glowing feathery gills and a permanent small smile. It likes the warmth of the fire. It leaves when the water drains.',
-    view: [[-8.4, 1.8, 4.4], [-12.6, .7, 1.2]],
+    blurb: 'Gentle. After heavy rain, when the courtyard floods into shallow pools, something pale and pink wades in: longer than the knight is tall, with a broad flat head, feathery glowing gills and a wide, permanent smile. It likes the warmth of the fire, and noses toward the doorway now and then. It leaves when the water drains.',
+    view: [[-7.2, 2.1, 5.0], [-11.6, .6, 1.0]],
     knight: { place: 'courtyard', action: 'stand', emote: 'heart', note: 'being looked at, very kindly, by something enormous' },
     build(root) {
-      const water = new T.MeshStandardMaterial({ color: '#6f8f9a', roughness: .08, metalness: .3, transparent: true, opacity: .75 });
+      const v = root.userData.appearance?.variant || {};
+      const age = v.age || '', hue = v.hue || 0;
+      const scale = (v.size || 1) * (age === 'young' ? .55 : age === 'old' ? 1.15 : 1);
+      // the rain pools it wades between, each with a ring of ripples
+      const water = new T.MeshStandardMaterial({ color: '#6d8d99', roughness: .06, metalness: .35, transparent: true, opacity: .72 });
+      const rippleM = new T.MeshBasicMaterial({ color: '#cfe3ea', transparent: true, opacity: .0, depthWrite: false });
       const r = A.rand(8);
-      for (const [x, z, s] of [[-12.8, 1.4, 2.4], [-10.4, .2, 1.3], [-14.9, -.6, 1.5], [-9.8, 2.6, .9], [-13.6, 3.2, 1.1], [-11.6, -1.0, .8]]) {
-        const pool = new T.Mesh(new T.CircleGeometry(s, 12), water); pool.rotation.x = -Math.PI / 2; pool.position.set(x, .035, z); pool.scale.set(1, .6 + r() * .4, 1); root.add(pool);
+      const pools = [[-12.8, 1.4, 2.4], [-10.4, .2, 1.3], [-14.9, -.6, 1.5], [-9.8, 2.6, .9], [-13.6, 3.2, 1.1], [-11.6, -1.0, .8]];
+      for (const [x, z, s] of pools) {
+        const pool = new T.Mesh(new T.CircleGeometry(s, 16), water); pool.rotation.x = -Math.PI / 2;
+        pool.position.set(x, gy(x, z) + .035, z); pool.scale.set(1, .6 + r() * .4, 1); root.add(pool);
       }
-      const skin = A.mat('#f2b8c6', 0, .45), skinL = A.mat('#f8d3dc', 0, .4), dark = A.mat('#1a1012', .2, .2), gillM = glow('#ff7fa8', .9);
-      const g = G(root, [-12.9, 0, 1.3], [0, 1.2, 0]);
-      const body = G(g, [0, .55, 0]);
-      P(body, A.ico(1, 2), skin, [0, 0, 0], { scale: [.62, .5, 1.25], jitter: .01 });
-      P(body, A.ico(.8, 1), skinL, [0, -.2, .1], { scale: [.7, .4, 1.3], jitter: .01 });
-      const head = G(body, [0, .1, 1.25]);
-      P(head, A.ico(.6, 2), skin, [0, 0, .2], { scale: [1.25, .62, 1], jitter: .01 });
-      const smile = new T.Mesh(new T.TorusGeometry(.42, .015, 3, 16, 1.6), dark); smile.rotation.set(Math.PI / 2 + .1, 0, Math.PI + .78); smile.position.set(0, -.12, .45); head.add(smile);
+      const ripples = Array.from({ length: 4 }, () => {
+        const m = new T.Mesh(new T.RingGeometry(.3, .36, 24), rippleM.clone()); m.rotation.x = -Math.PI / 2; root.add(m); return { m, t: 0 };
+      });
+      // colour: pale pink by default; a warmer or a duskier one now and then
+      const base = new T.Color('#f3bcc8').offsetHSL(hue * 1.5, 0, 0), belly = base.clone().offsetHSL(0, -.1, .08);
+      const skin = A.mat(base, 0, .42), skinL = A.mat(belly, 0, .38), freck = A.mat(base.clone().offsetHSL(0, .05, -.18), 0, .5);
+      const eyeM = A.mat('#120a0c', .3, .15), glint = glow('#ffffff', .6), mouthM = A.mat('#8c4f5e', 0, .6);
+      const gillM = glow(new T.Color('#ff6f9c').offsetHSL(hue * 1.5, 0, 0), .85), finM = ds(base.clone().offsetHSL(0, -.05, .06), 0, .45);
+      const g = G(root, [-12.6, 0, 1.3]);
+      const body = G(g, [0, .5 * scale, 0]); body.scale.setScalar(scale);
+      // the trunk: a few soft, flattened segments in a gentle S that the walk bends
+      const segs = [];
+      const radii = [[.5, .36, .7], [.55, .4, .74], [.47, .35, .66]];
+      let at = body;
+      radii.forEach(([rx, ry, rz], i) => {
+        const s = G(at, [0, 0, i ? -.5 : .35]);
+        P(s, A.ico(1, 2), skin, [0, 0, 0], { scale: [rx, ry, rz], jitter: .006, seed: i });
+        P(s, A.ico(1, 2), skinL, [0, -ry * .38, 0], { scale: [rx * .82, ry * .55, rz * .92], jitter: .004, seed: i + 9 });
+        for (let f = 0; f < 3; f++) P(s, A.ico(.035, 0), freck, [(r() - .5) * rx * 1.3, ry * .93, (r() - .5) * rz], { cast: false, jitter: 0 });
+        segs.push(s); at = s;
+      });
+      // the head: broad, flat, wide-mouthed
+      const neck = G(segs[0], [0, .04, .5]);
+      const head = G(neck, [0, .02, .38]);
+      P(head, A.ico(1, 2), skin, [0, 0, 0], { scale: [.66, .3, .5], jitter: .006 });
+      P(head, A.ico(1, 2), skinL, [0, -.1, .04], { scale: [.6, .17, .46], jitter: .004 });
+      const mouth = new T.Mesh(new T.TorusGeometry(.5, .014, 3, 20, 1.9), mouthM);
+      mouth.rotation.set(Math.PI / 2 + .06, 0, Math.PI + .62); mouth.position.set(0, -.07, .02); mouth.scale.set(1, 1, .55); head.add(mouth);
       const eyes = [];
-      for (const sx of [-1, 1]) { const e = G(head, [sx * .42, .16, .4]); P(e, A.ico(.065, 1), dark, [0, 0, 0], { jitter: 0 }); eyes.push(e); }
+      for (const sx of [-1, 1]) {
+        const e = G(head, [sx * .5, .1, .27]);                         // small, dark, set wide on the sides of the face
+        P(e, A.ico(.07, 1), eyeM, [0, 0, 0], { jitter: 0 });
+        P(e, A.ico(.02, 0), glint, [sx * .02, .035, .05], { cast: false, jitter: 0 });
+        eyes.push(e);
+      }
+      // gills: three feathery fronds each side, swept back, glowing
       const gills = [];
       for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) {
-        const base = G(head, [sx * .62, .12 + (1 - k) * .14, -.05], [-.2 + (k - 1) * .5, 0, sx * -(1.0 + (k - 1) * .25)]);
-        const c = chain(base, 3, .22, .06, .03, gillM, { sides: 5, jitter: .004, each: (i, j) => { for (const s of [-1, 1]) P(j, new T.ConeGeometry(.02, .14, 3), gillM, [s * .05, .12, 0], { rot: [0, 0, s * 1.1], cast: false }); } });
-        gills.push({ c, ph: k + sx });
+        const stalk = G(head, [sx * .5, .1 + (1 - k) * .07, -.22], [-.55 + (k - 1) * .5, sx * -.35, sx * -(1.05 + (k - 1) * .3)]);
+        const ragged = age === 'old' ? .7 : 1;
+        const c = chain(stalk, 4, .16, .026, .011, gillM, { sides: 4, jitter: .002, each: (i, j) => {
+          for (const s of [-1, 1]) for (let q = 0; q < 3; q++) {      // fine filaments, swept back like a feather
+            if (r() > ragged) continue;
+            P(j, new T.ConeGeometry(.008, .11 - i * .015, 3), gillM, [s * .012, .03 + q * .045, 0], { rot: [-.55, 0, s * .6], cast: false, jitter: 0 });
+          }
+        } });
+        gills.push({ c, ph: k * 1.7 + sx });
       }
+      // splayed salamander legs, front ones on the first segment, back ones on the third
       const legs = [];
-      for (const [x, z] of [[-.5, .65], [.5, .65], [-.5, -.6], [.5, -.6]]) {
-        const l = G(body, [x * .9, -.15, z]);
-        bone(l, [0, 0, 0], [x * .5, -.3, .1], .1, .07, skin); bone(l, [x * .5, -.3, .1], [x * .6, -.52, .2], .07, .05, skin);
-        for (let f = 0; f < 4; f++) bone(l, [x * .6, -.52, .2], [x * .6 + (f - 1.5) * .06, -.55, .32], .02, .012, skinL, 4);
-        legs.push({ l, ph: (x > 0 ? 0 : Math.PI) + (z > 0 ? 0 : Math.PI) });
+      for (const [seg, z, sx, toes] of [[0, .15, -1, 4], [0, .15, 1, 4], [2, -.05, -1, 5], [2, -.05, 1, 5]]) {
+        const hip = G(segs[seg], [sx * .42, -.08, z]);
+        const upper = G(hip, [0, 0, 0]);
+        bone(upper, [0, 0, 0], [sx * .27, -.08, .05], .13, .095, skin);
+        const knee = G(upper, [sx * .27, -.08, .05]);
+        bone(knee, [0, 0, 0], [sx * .07, -.24, .1], .095, .07, skin);
+        for (let f = 0; f < toes; f++) bone(knee, [sx * .07, -.24, .1], [sx * .07 + (f - (toes - 1) / 2) * .06, -.27, .22], .024, .013, skinL, 4);
+        legs.push({ upper, knee, sx, ph: (sx > 0 ? 0 : Math.PI) + (seg ? Math.PI : 0) });   // diagonal pairs move together
       }
-      const tailBase = G(body, [0, .05, -1.15], [-Math.PI / 2 - .1, 0, 0]);
-      const tail = chain(tailBase, 6, .32, .38, .06, skin, { sides: 7, jitter: .005, each: (i, j, ra) => sheet(j, [[0, 0, -ra], [0, .34, -ra], [0, .34, -ra - .25 + i * .03], [0, 0, -ra - .28 + i * .03]], [[0, 1, 2], [0, 2, 3]], ds('#f6c3cf', 0, .5)) });
-      tail.forEach(j => { j.scale.x = .6; });
-      const glowLight = new T.PointLight('#ff9fbf', 1.5, 4, 1.6); glowLight.position.set(0, .3, 1.4); body.add(glowLight);
-      const cam = V(), hp = V();
-      let tilt = 0;
+      // the tail: long and flattened side to side, finned above and below
+      const tail = [];
+      let tj = G(segs[2], [0, .02, -.5]);
+      for (let i = 0; i < 7; i++) {
+        const j = G(tj, [0, 0, i ? -.3 : 0]), ra = .3 * (1 - i / 7.5) + .03, rb = .3 * (1 - (i + 1) / 7.5) + .03;
+        P(j, A.cyl(rb, ra, .36, 8), skin, [0, 0, -.15], { rot: [Math.PI / 2, 0, 0], scale: [.42, 1, 1], jitter: .003, seed: i });
+        sheet(j, [[0, ra * .8, .02], [0, ra * .8 + .2 - i * .015, -.02], [0, rb * .8 + .2 - (i + 1) * .015, -.32], [0, rb * .8, -.32]], [[0, 1, 2], [0, 2, 3]], finM);
+        sheet(j, [[0, -ra * .8, .02], [0, -ra * .8 - .1 + i * .008, -.02], [0, -rb * .8 - .1 + (i + 1) * .008, -.32], [0, -rb * .8, -.32]], [[0, 1, 2], [0, 2, 3]], finM);
+        tail.push(j); tj = j;
+      }
+      sheet(segs[1], [[0, .38, .3], [0, .46, 0], [0, .5, -.4], [0, .38, -.62], [0, .3, -.62], [0, .3, .3]], [[0, 1, 5], [1, 4, 5], [1, 2, 4], [2, 3, 4]], finM);
+
+      // where it goes: wading between the pools, now and then nosing toward the warm doorway
+      const path = t => {
+        const a = t * .045, toFire = pulse(t, 70, 26);              // every so often it heads for the warmth
+        const x = -12.6 + Math.sin(a) * 1.4 + toFire * 2.4, z = .5 + Math.sin(a * 2) * .5 + toFire * .5;   // never into the doorway, him, or a wall
+        return [x, z];
+      };
+      const cam = V(); let tilt = 0, yaw = 0, last = path(0), step = 0;
       return (t, dt) => {
-        const a = t * .06;
-        g.position.set(-12.6 + Math.sin(a) * 1.4, 0, 1.3 + Math.sin(a * 2) * .6);
-        g.rotation.y = 1.2 + Math.cos(a) * .5;
-        const ph = t * 1.6;
-        legs.forEach(({ l, ph: p }) => { l.rotation.x = Math.sin(ph + p) * .3; });
-        body.position.y = .55 + Math.sin(ph * 2) * .015; body.rotation.y = Math.sin(ph) * .05;
-        tail.forEach((j, i) => { j.rotation.z = Math.sin(t * 1.4 - i * .6) * .22; });
-        gills.forEach(({ c, ph: p }) => c.forEach((j, i) => { j.rotation.x = Math.sin(t * 2 + p + i) * .12; }));
-        gillM.emissiveIntensity = .8 + Math.sin(t * 1.5) * .3;
-        // every so often it notices you and tilts its head
-        const want = pulse(t + 2, 9, 3) * .45; tilt += (want - tilt) * Math.min(1, dt * 3);
-        head.rotation.z = tilt; head.rotation.y = Math.sin(t * .3) * .25;
-        eyes.forEach(e => { e.scale.y = 1 - pulse(t, 4.3, .18) * .9; });
+        const [x, z] = path(t), dx = x - last[0], dz = z - last[1], speed = Math.hypot(dx, dz) / Math.max(dt, 1e-3);
+        const want = Math.atan2(dx, dz);
+        if (Math.hypot(dx, dz) > 1e-4) { let d = want - yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); yaw += d * Math.min(1, dt * 1.5); }
+        last = [x, z];
+        g.position.set(x, gy(x, z), z); g.rotation.y = yaw;
+        step += dt * (1 + speed * 5);
+        const sw = Math.sin(step * 1.6);
+        segs.forEach((s, i) => { if (i) s.rotation.y = sw * .08 * (i % 2 ? 1 : -1); });   // the S of the walk
+        segs[0].rotation.y = -sw * .06;
+        legs.forEach(({ upper, knee, sx, ph }) => {
+          const c = Math.sin(step * 1.6 + ph);
+          upper.rotation.y = c * .45 * sx; upper.rotation.z = Math.max(0, -c) * .35 * sx; knee.rotation.x = Math.max(0, c) * .2;
+        });
+        body.position.y = (.5 + Math.abs(sw) * .02) * scale;
+        tail.forEach((j, i) => { j.rotation.y = Math.sin(step * 1.6 - i * .55) * .16 + Math.sin(t * .4) * .04; });
+        gills.forEach(({ c, ph }) => c.forEach((j, i) => { j.rotation.x = (i ? .28 : 0) + Math.sin(t * 1.8 + ph + i * .7) * .12; }));   // curling fronds
+        gillM.emissiveIntensity = .75 + Math.sin(t * 1.2) * .2 + pulse(t + 3, 9, 3) * .3;   // flushes when it is happy
+        // every so often it notices whoever is watching and tilts its head, smiling
+        A.camera.getWorldPosition(cam);
+        const look = pulse(t + 2, 9, 3); tilt += (look * .35 - tilt) * Math.min(1, dt * 3);
+        head.rotation.z = tilt; neck.rotation.y = Math.sin(t * .3) * .2 * (1 - look);
+        eyes.forEach(e => { e.scale.y = 1 - pulse(t, 5.3, .16) * .9; });
+        // ripples where it treads
+        ripples.forEach((rp, i) => {
+          rp.t += dt; if (rp.t > 2.4) { rp.t = 0; rp.m.position.set(x + Math.sin(i * 2.1) * .7 * scale, gy(x, z) + .045, z + Math.cos(i * 2.1) * .7 * scale); }
+          rp.m.scale.setScalar((.6 + rp.t * .9) * scale); rp.m.material.opacity = .35 * (1 - rp.t / 2.4) * Math.min(1, speed * 3 + .2);
+        });
       };
     },
   },
