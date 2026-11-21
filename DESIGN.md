@@ -181,6 +181,35 @@ Tide in the Sky, the Hum, the Star-Gardener, the Lamplighter, the Collector, the
 Clock-Peddler), and the hostile ideas (the Borrowed Man, the Hollow Hunter, the Unmaker, the
 Stilt-Strider, the Grey Swarm, the Lattice). No more floating-eye or ringed beings.
 
+### Otherworldly beings (abnormal)
+
+Truly from elsewhere: space, another dimension, or a place where the rules don't hold. Mostly
+curious or neutral (wonder and dread, not threat), rare, and seen only once he has seen enough.
+
+| Being | Nature | Rarity | Step | Notes |
+|---|---|---|---|---|
+| The Night-Grown | neutral | rare | 2 | thin, stooped figures of dark glass with constellations moving inside them, small smooth heads split by one seam of light; they gather on the plain at starfall and reach upward, as if listening to the sky |
+| The clock-headed figure | neutral | rare | 3 | very tall and thin, an old clock face where its head should be, its hands spinning wrong; time stutters around it (frozen mid-step, then further along, sometimes walking backward), rain falls upward near it, the fire flickers backward (it absorbs the Backward Visitor idea) |
+| The Lander's crew | neutral | rare | 2 | slender beings of glassy light who step out of a landed craft, take samples, measure the keep with light, and leave; one always lingers a moment, looking at him |
+
+**Arrival events.** Some beings don't simply appear: they *arrive*, and leave a trace.
+- **A meteor:** a streak across the night sky, a flash and a thud on the plain, a smoking
+  crater that stays for days, and sometimes something climbing out of it (the Night-Grown, the
+  Starfallen Larva).
+- **A ship:** a smooth, seed-like craft settles on the hills with no fire and no sound, opens,
+  lets its crew out, and lifts away again; a scorched ring stays where it stood.
+
+The spawner learns arrival events (an entrance, then a being, then a lingering trace), and
+encounters let him react to the event itself: notice the flash, go to look, or stay well
+away. Starfall nights raise the odds of meteors and of what they bring.
+
+**Otherworldly candidates not yet chosen:** the Signal (a light on the far mountains that
+answers his lantern), the Breach Swimmers (air-eels slipping between worlds), the Other Keep
+(a ghostly other version of here, overlapping for a few minutes), the Folded Thing
+(impossible geometry), the Weightless Hour (loose things float near a knot of stones and
+starlight), and the Strider Between Stars (a vast thin-legged being walking across the far
+mountains).
+
 **Fixes noted for the final versions:** the Long Crawl walks with its head toward the keep
 (the mockup slides backward); the Doorway Figure fits inside the frame (head below the lintel,
 hands on the jambs, nothing through stone).

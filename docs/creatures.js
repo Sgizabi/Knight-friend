@@ -83,6 +83,40 @@ function voidFace(head, specks, scale = [.78, 1.25, .85], r = .17) {
     geo.attributes.position.needsUpdate = true; mat.opacity = .55 + Math.sin(t * .7) * .2;
   };
 }
+// the ground's height out on the land (flat 0 in the courtyard)
+const gy = (x, z) => (A.ground ? A.ground(x, z) : 0);
+// one of the Night-Grown: thin, stooped, dark glass with stars drifting over it, a seam of light for a face
+function nightGrown(parent, pos, s = 1) {
+  const glass = new T.MeshStandardMaterial({ color: '#1c2438', metalness: .45, roughness: .15, emissive: '#1a2848', emissiveIntensity: 1.1, flatShading: true });
+  const seam = glow('#bfe2ff', 2.6, { fog: false });
+  const g = G(parent, pos); g.scale.setScalar(s);
+  for (const sx of [-1, 1]) { bone(g, [sx * .09, 1.05, 0], [sx * .12, .55, .1], .045, .035, glass); bone(g, [sx * .12, .55, .1], [sx * .1, 0, 0], .035, .03, glass); }
+  const torso = G(g, [0, 1.05, 0], [.38, 0, 0]);
+  P(torso, A.ico(.2, 1), glass, [0, .45, 0], { scale: [1, 2.2, .75] });
+  bone(torso, [0, .85, 0], [0, 1.05, .08], .035, .03, glass);
+  const head = G(torso, [0, 1.15, .1]);
+  P(head, A.ico(.1, 1), glass, [0, 0, 0], { scale: [.85, 1.15, .95] });
+  P(head, A.box(.012, .17, .01), seam, [0, 0, .097], { cast: false, jitter: 0 });
+  const arms = [-1, 1].map(sx => {
+    const a = G(torso, [sx * .2, .8, 0]);
+    bone(a, [0, 0, 0], [sx * .05, -.6, .05], .03, .025, glass); bone(a, [sx * .05, -.6, .05], [sx * .03, -1.15, .1], .025, .02, glass);
+    for (let f = 0; f < 3; f++) bone(a, [sx * .03, -1.15, .1], [sx * (.01 + f * .025), -1.38, .12 + f * .01], .008, .004, glass, 4);
+    return a;
+  });
+  const N = 40, sp = new Float32Array(N * 3), r = A.rand(Math.floor(pos[0] * 100));
+  for (let i = 0; i < N; i++) { const u = r() * 6.28, v = Math.acos(2 * r() - 1); sp.set([Math.sin(v) * Math.cos(u) * .205, .45 + Math.cos(v) * .45, Math.sin(v) * Math.sin(u) * .155], i * 3); }
+  const sg = new T.BufferGeometry(); sg.setAttribute('position', new T.BufferAttribute(sp, 3));
+  const stars = new T.Points(sg, new T.PointsMaterial({ color: '#e4ecff', size: .03, transparent: true, opacity: .9, fog: false })); torso.add(stars);
+  return {
+    g, tick(t, ph) {
+      const reach = smooth(0, 1, pulse(t + ph, 9, 4.5) * 1.6);   // now and then they reach for the sky
+      arms.forEach((a, i) => { a.rotation.x = -reach * (2.5 + i * .15) + Math.sin(t * .7 + ph + i) * .05; });
+      head.rotation.x = -reach * .55; torso.rotation.x = .38 - reach * .3;
+      g.rotation.z = Math.sin(t * .5 + ph) * .04;
+      stars.rotation.y = t * .08 + ph; seam.emissiveIntensity = 2.2 + Math.sin(t * 1.3 + ph) * .7;
+    },
+  };
+}
 // an eye: white, a glowing iris and a pupil, looking along +z
 function eyeball(parent, r, iris, pos) {
   const e = G(parent, pos);
@@ -2197,6 +2231,173 @@ const BEASTS = {
         for (const { fingers } of arms) fingers.forEach((c, f) => c.forEach((j, i) => { j.rotation.x = pulse(t + f * 1.3, 7 + f, .25) * .4 * (i + 1) / 3; }));
         panels.forEach((pn, i) => { pn.rotation.x = Math.sin(t * .7 + i) * .04 + (i === 0 ? -.03 : 0); pn.rotation.z = Math.sin(t * .5 + i * 1.3) * .02; });
         for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.ph) * .9, u.y, u.z + Math.cos(t * .07 + u.ph) * .5); m.scale.setScalar(3.5 + Math.sin(t * .2 + u.ph)); }
+      };
+    },
+  },
+  // ================================================================ THE NIGHT-GROWN
+  nightgrown: {
+    name: 'The Night-Grown', hour: 22,
+    blurb: 'Otherworldly. Thin, stooped figures of dark glass with constellations drifting inside them, their small smooth heads split by one seam of light. They gather on the plain when stars fall, and reach upward, as if listening to the sky.',
+    view: [[2.4, 2.1, 8.6], [5.2, 1.9, 15.6]],
+    knight: { place: 'fire', action: 'stand', emote: 'question', note: 'watching the figures on the plain' },
+    build(root) {
+      const r = A.rand(31), figs = [];
+      for (let i = 0; i < 5; i++) {
+        const x = 1.5 + i * 1.7 + (r() - .5) * .8, z = 14 + r() * 3.2;
+        const f = nightGrown(root, [x, gy(x, z), z], .9 + r() * .3);
+        f.g.rotation.y = Math.atan2(-x, -z) + (r() - .5) * .5;
+        figs.push({ ...f, ph: r() * 9 });
+      }
+      const sheen = new T.PointLight('#8fa8ff', 5, 12, 1.4); sheen.position.set(5, gy(5, 15.5) + 4, 13.5); root.add(sheen);   // starlight on dark glass
+      return (t) => figs.forEach(f => f.tick(t, f.ph));
+    },
+  },
+
+  // ================================================================ THE CLOCK-HEADED FIGURE
+  clockhead: {
+    name: 'The clock-headed figure', hour: 22,
+    blurb: 'Otherworldly. Very tall and thin, with an old clock face where its head should be, its hands spinning wrong. Time stutters around it: it freezes mid-step, then is suddenly further along, sometimes walks backward; rain falls upward near it, and the fire flickers the wrong way.',
+    view: [[-6.6, 1.8, 4.6], [-12.2, 2.2, .8]],
+    knight: { place: 'repair:doorway', action: 'stand', emote: 'question', note: 'not sure what time it is any more' },
+    build(root) {
+      const coat = ds('#17151a', 0, .9), skin = A.mat('#2a2622', 0, .7), brass = A.mat('#9a7a3a', .8, .35);
+      const g = G(root, [-12, 0, 1.4], [0, Math.PI / 2, 0]), body = G(g);
+      const legs = [-1, 1].map(sx => { const l = G(body, [sx * .12, 1.35, 0]); bone(l, [0, 0, 0], [0, -1.35, .02], .05, .04, skin); return l; });
+      const coatM = new T.Mesh(A.facet(new T.CylinderGeometry(.2, .44, 1.7, 9, 2, true), .05, 4), coat); coatM.position.y = 1.55; coatM.castShadow = true; body.add(coatM);
+      P(body, A.cyl(.24, .2, .8, 8), coat, [0, 2.6, 0], { scale: [1, 1, .7] });
+      bone(body, [0, 2.95, 0], [0, 3.25, 0], .045, .04, skin);
+      const arms = [-1, 1].map(sx => { const a = G(body, [sx * .27, 2.9, 0]); bone(a, [0, 0, 0], [sx * .08, -.75, .05], .04, .035, skin); bone(a, [sx * .08, -.75, .05], [sx * .05, -1.5, .1], .035, .03, skin); return a; });
+      // the head: an old clock face, brass-rimmed, its hands not keeping any time we know
+      const head = G(body, [0, 3.55, 0]);
+      const face = canvasTex(256, 256, (c, w) => {
+        c.fillStyle = '#e6dcc2'; c.beginPath(); c.arc(w / 2, w / 2, w / 2, 0, 6.3); c.fill();
+        c.strokeStyle = '#3a2f22'; c.fillStyle = '#3a2f22';
+        for (let k = 0; k < 60; k++) {
+          const a = k / 60 * 6.283, big = k % 5 === 0, r0 = w / 2 - 10, r1 = r0 - (big ? 22 : 9);
+          c.lineWidth = big ? 5 : 2; c.beginPath(); c.moveTo(w / 2 + Math.cos(a) * r0, w / 2 + Math.sin(a) * r0); c.lineTo(w / 2 + Math.cos(a) * r1, w / 2 + Math.sin(a) * r1); c.stroke();
+        }
+        c.globalAlpha = .25; c.beginPath(); c.arc(w * .62, w * .35, 40, 0, 6.3); c.fill();   // an old stain
+      });
+      P(head, A.cyl(.42, .42, .1, 24), brass, [0, 0, 0], { rot: [Math.PI / 2, 0, 0], jitter: 0 });
+      P(head, new T.CircleGeometry(.38, 32), new T.MeshStandardMaterial({ map: face, roughness: .6, emissive: '#3a3020', emissiveIntensity: .35 }), [0, 0, .051], { jitter: 0, cast: false });
+      const hour = G(head, [0, 0, .06]), minute = G(head, [0, 0, .065]);
+      P(hour, A.box(.03, .2, .012), A.mat('#120e0a'), [0, .09, 0], { jitter: 0, cast: false });
+      P(minute, A.box(.02, .3, .012), A.mat('#120e0a'), [0, .14, 0], { jitter: 0, cast: false });
+      P(head, A.ico(.03, 0), brass, [0, 0, .075], { jitter: 0, cast: false });
+      // rain falling upward, only around it
+      const N = 70, rp = new Float32Array(N * 3), rg = new T.BufferGeometry(); rg.setAttribute('position', new T.BufferAttribute(rp, 3));
+      for (let i = 0; i < N; i++) rp.set([(Math.random() - .5) * 3, Math.random() * 4, (Math.random() - .5) * 3], i * 3);
+      g.add(new T.Points(rg, new T.PointsMaterial({ color: '#b9d2e8', size: .05, transparent: true, opacity: .8, depthWrite: false })));
+      let mode = 'freeze', until = 0, x = -12, dir = 1, handH = 0, handM = 0;
+      const pose = () => { arms.forEach(a => { a.rotation.set((Math.random() - .5) * 1.6, 0, (Math.random() - .5) * .8); }); legs.forEach(l => { l.rotation.x = (Math.random() - .5) * .9; }); head.rotation.z = (Math.random() - .5) * .9; };
+      return (t, dt) => {
+        if (t > until) {   // time does something different every few seconds
+          mode = ['freeze', 'skip', 'skip', 'backward', 'race'][Math.floor(Math.random() * 5)]; until = t + 1.2 + Math.random() * 2.5;
+          if (mode === 'skip') { x += dir * (.5 + Math.random() * .8); pose(); }
+          if (x > -10.2 || x < -14.6) { dir = -dir; x = Math.max(-14.6, Math.min(-10.2, x)); }
+        }
+        if (mode === 'backward') { x -= dir * dt * .5; const ph = t * 4; legs.forEach((l, i) => { l.rotation.x = -Math.sin(ph + i * Math.PI) * .4; }); arms.forEach((a, i) => { a.rotation.x = Math.sin(ph + i * Math.PI) * .3; }); }
+        if (mode === 'race') { body.position.x = (Math.random() - .5) * .03; body.position.z = (Math.random() - .5) * .03; }
+        g.position.set(x, 0, 1.4); g.rotation.y = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+        const speed = { freeze: 0, skip: 0, backward: -9, race: 40 }[mode];
+        handM += speed * dt; handH += speed * dt / 12;
+        minute.rotation.z = -handM; hour.rotation.z = -handH;
+        for (let i = 0; i < N; i++) { rp[i * 3 + 1] += dt * 3; if (rp[i * 3 + 1] > 4.5) rp[i * 3 + 1] = 0; }
+        rg.attributes.position.needsUpdate = true;
+        A.setFireDim(mode === 'backward' ? .7 + .3 * Math.sin(t * 13) : 1);
+      };
+    },
+    exit() { A.setFireDim(1); },
+  },
+
+  // ================================================================ A METEOR FALLS (an arrival)
+  meteor: {
+    name: 'A meteor falls', hour: 22,
+    blurb: 'An arrival event. A streak across the night sky, a flash and a thud on the plain, a smoking crater that stays for days, and sometimes something climbing out of it. (Plays out every half minute here.)',
+    view: [[-1.2, 3.0, 5.2], [8.5, 1.8, 18.5]],
+    knight: { place: 'fire', action: 'stand', emote: 'exclaim', note: 'the sky just lit up' },
+    build(root) {
+      const px = 9.5, pz = 19, py = gy(px, pz), P0 = V(px, py, pz), S = V(px + 14, py + 16, pz + 10);
+      const head = new T.Mesh(A.ico(.55, 1), new T.MeshBasicMaterial({ color: '#fff2c8', fog: false })); root.add(head);
+      const trail = Array.from({ length: 16 }, (_, i) => { const s = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: i < 5 ? '#ffe0a0' : '#ff8a3a', transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, fog: false })); root.add(s); return s; });
+      const flash = new T.PointLight('#ffb070', 0, 60, 1.2); flash.position.copy(P0).add(V(0, 2, 0)); root.add(flash);
+      const crater = G(root, [px, py, pz]);
+      const hole = new T.Mesh(new T.CircleGeometry(2.4, 16), A.mat('#120d0a', 0, 1)); hole.rotation.x = -Math.PI / 2; hole.position.y = .05; crater.add(hole);
+      const r = A.rand(8), embers = glow('#ff7a2a', 2.5);
+      for (let i = 0; i < 18; i++) { const a = i / 18 * 6.28, d = 2.3 + r() * .5; P(crater, A.box(.5 + r() * .4, .3 + r() * .3, .4), A.M.stone, [Math.cos(a) * d, .12, Math.sin(a) * d], { rot: [r() - .5, a, (r() - .5) * .9] }); }
+      for (let i = 0; i < 10; i++) P(crater, A.ico(.08 + r() * .1, 0), embers, [(r() - .5) * 2.6, .08, (r() - .5) * 2.6], { cast: false });
+      const rock = P(crater, A.ico(.55, 0), A.mat('#2a2622', .4, .5, { emissive: '#ff5a1a', emissiveIntensity: .6 }), [0, .2, 0]);
+      const ring = new T.Mesh(new T.RingGeometry(.93, 1, 48), new T.MeshBasicMaterial({ color: '#ffd8a0', transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.copy(P0).add(V(0, .3, 0)); root.add(ring);
+      const debris = Array.from({ length: 22 }, () => { const m = P(root, A.ico(.12 + Math.random() * .12, 0), A.M.stoneD, [0, 0, 0], { cast: false }); return { m, v: V((Math.random() - .5) * 10, 6 + Math.random() * 8, (Math.random() - .5) * 10) }; });
+      const smoke = Array.from({ length: 12 }, (_, i) => { const s = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#4a4440', transparent: true, opacity: 0, depthWrite: false })); root.add(s); return { s, ph: i / 12 }; });
+      const thing = nightGrown(root, [px, py - 2.6, pz], 1.05); thing.g.rotation.y = Math.atan2(-px, -pz);
+      const T_HIT = 2.6, CYCLE = 32;
+      return (t, dt) => {
+        const k = t % CYCLE, falling = k < T_HIT, after = k >= T_HIT;
+        const u = Math.min(1, k / T_HIT), pos = S.clone().lerp(P0, u * u);
+        head.visible = falling; head.position.copy(pos);
+        trail.forEach((s, i) => { s.position.copy(S.clone().lerp(P0, Math.max(0, u - i * .012) ** 2)); s.scale.setScalar(2.4 - i * .1); s.material.opacity = falling ? .9 - i * .05 : 0; });
+        const since = k - T_HIT;
+        flash.intensity = after ? 90 * Math.exp(-since * 2.2) : falling ? 6 * u : 0;
+        crater.visible = after;
+        ring.material.opacity = after && since < .9 ? .7 * (1 - since / .9) : 0; ring.scale.setScalar(1 + since * 14);
+        debris.forEach(d => { d.m.visible = after && since < 2.4; if (d.m.visible) { d.m.position.copy(P0).addScaledVector(d.v, since); d.m.position.y = py + d.v.y * since - 9.8 * since * since / 2; } });
+        smoke.forEach(sm => { const q = (t * .12 + sm.ph) % 1; sm.s.position.set(px + Math.sin(sm.ph * 30) * .8 * q, py + .5 + q * 7, pz + Math.cos(sm.ph * 20) * .8 * q); sm.s.scale.setScalar(1 + q * 4); sm.s.material.opacity = after ? .4 * (1 - q) : 0; });
+        embers.emissiveIntensity = 2 + Math.sin(t * 6) * .6;
+        const rise = Math.min(1, Math.max(0, (k - 10) / 4));   // something climbs out
+        thing.g.position.y = py - 2.6 + rise * 2.6; thing.g.visible = rise > 0;
+        thing.tick(t, 2);
+      };
+    },
+  },
+
+  // ================================================================ A SHIP LANDS (an arrival)
+  lander: {
+    name: 'A ship lands', hour: 22,
+    blurb: 'An arrival event. A smooth, seed-like craft settles on the plain with no fire and no sound, opens, and one of its crew steps out to look around: slender, made of glassy light. Then it leaves, and a scorched ring stays where it stood. (Plays out every minute here.)',
+    view: [[-2.2, 2.6, 12.5], [-6.3, 1.7, 21]],
+    knight: { place: 'fire', action: 'stand', emote: 'question', note: 'watching the lights on the plain' },
+    build(root) {
+      const lx = -7, lz = 22, ly = gy(lx, lz);
+      const hull = A.mat('#d4d9e0', .6, .25), seam = A.mat('#8a929e', .6, .3), lightM = glow('#7ff0e6', 2.4, { fog: false });
+      const ship = G(root, [lx, ly + 40, lz]);
+      P(ship, new T.SphereGeometry(1.7, 18, 10, 0, 6.283, Math.PI / 2, Math.PI / 2), hull, [0, 0, 0], { scale: [1, .55, 1], jitter: .01 });   // the lower hull
+      const lid = G(ship, [-1.6, 0, 0]);   // the upper shell, hinged at one side
+      P(lid, new T.SphereGeometry(1.7, 18, 10, 0, 6.283, 0, Math.PI / 2), hull, [1.6, 0, 0], { scale: [1, .75, 1], jitter: .01 });
+      for (const y of [-.25, -.5]) { const s = new T.Mesh(new T.TorusGeometry(1.65 - (y < -.3 ? .3 : .05), .03, 4, 36), seam); s.rotation.x = Math.PI / 2; s.position.y = y; ship.add(s); }
+      const under = new T.Mesh(new T.TorusGeometry(.9, .07, 6, 32), lightM); under.rotation.x = Math.PI / 2; under.position.y = -.85; ship.add(under);
+      const inner = new T.PointLight('#9ff6ee', 0, 8, 1.5); inner.position.y = .4; ship.add(inner);
+      const beam = new T.Mesh(new T.ConeGeometry(2.2, 12, 20, 1, true), new T.MeshBasicMaterial({ color: '#9ff6ee', transparent: true, opacity: .12, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false }));
+      beam.position.y = -6.8; ship.add(beam);
+      const scorch = new T.Mesh(new T.RingGeometry(1.2, 2.3, 24), new T.MeshBasicMaterial({ color: '#16120e', transparent: true, opacity: .85 })); scorch.rotation.x = -Math.PI / 2; scorch.position.set(lx, ly + .05, lz); root.add(scorch);
+      // one of its crew: tall, slender, made of glassy light, on long stilting legs
+      const glassL = new T.MeshStandardMaterial({ color: '#cfe9ff', transparent: true, opacity: .55, emissive: '#6fbfe0', emissiveIntensity: 1.1, roughness: .1, flatShading: true, depthWrite: false });
+      const crew = G(root, [lx, ly, lz]), cbody = G(crew, [0, 1.9, 0]);
+      P(cbody, A.ico(.22, 1), glassL, [0, 0, 0], { scale: [.8, 1.6, .6], cast: false });
+      const chead = G(cbody, [0, .5, .02]); P(chead, A.ico(.12, 1), glassL, [0, 0, 0], { scale: [.8, 1.2, 1.1], cast: false }); P(chead, A.ico(.03, 0), glow('#ffffff', 3), [0, .02, .1], { cast: false });
+      const clegs = [-1, 1].map(sx => { const l = G(crew, [sx * .1, 1.65, 0]); bone(l, [0, 0, 0], [sx * .05, -.85, .15], .03, .022, glassL); bone(l, [sx * .05, -.85, .15], [0, -1.65, 0], .022, .012, glassL); return l; });
+      [-1, 1].forEach(sx => bone(cbody, [sx * .14, .25, 0], [sx * .3, -.7, .2], .02, .01, glassL));
+      const cl = new T.PointLight('#bfefff', 2, 5, 1.6); cl.position.y = 2; crew.add(cl);
+      const CYCLE = 60, out = V(lx + 2.6, 0, lz - 3.4);
+      return (t) => {
+        const k = t % CYCLE;
+        const down = smooth(0, 9, k), up = smooth(40, 50, k);
+        ship.position.y = ly + 1.0 + (1 - down) * 40 + up * 45; ship.rotation.y = t * .2;
+        beam.material.opacity = (k < 11 || (k > 39 && k < 50)) ? .12 + .05 * Math.sin(t * 8) : 0;
+        const open = smooth(11, 13, k) * (1 - smooth(34, 36, k));
+        lid.rotation.z = open * 1.2; inner.intensity = open * 6;
+        under.material.emissiveIntensity = 2 + Math.sin(t * 3) * .6;
+        scorch.visible = k > 9;
+        // the crew member steps out, walks, looks, bends to take a sample, and goes back in
+        const walk = smooth(13, 18, k) * (1 - smooth(28, 33, k));
+        crew.visible = k > 12.5 && k < 34;
+        crew.position.lerpVectors(V(lx, ly, lz), V(out.x, gy(out.x, out.z), out.z), walk);
+        crew.rotation.y = k < 28 ? Math.atan2(out.x - lx, out.z - lz) : Math.atan2(lx - out.x, lz - out.z);
+        const stepping = (k > 13 && k < 18) || (k > 28 && k < 33);
+        clegs.forEach((l, i) => { l.rotation.x = stepping ? Math.sin(t * 5 + i * Math.PI) * .35 : 0; });
+        const bend = smooth(19, 21, k) * (1 - smooth(23, 25, k));
+        cbody.rotation.x = bend * .9; cbody.position.y = 1.9 - bend * .4;
+        chead.rotation.y = Math.sin(t * .8) * .4 * smooth(25, 26, k); chead.rotation.z = smooth(25.5, 26.5, k) * (1 - smooth(27, 28, k)) * .4;
       };
     },
   },
