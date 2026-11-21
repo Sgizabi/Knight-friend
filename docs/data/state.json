@@ -54,18 +54,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-21T13:00:24+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-21T13:00:27+00:00",
+    "place": "raise:2",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "install the last pane and secure the frame",
+    "thought": "The glass panes are almost in place, just need a final seal."
   },
   "needs": {
     "rest": 100.0,
-    "warmth": 63.7,
-    "inspiration": 89.1,
-    "spirit": 78.8
+    "warmth": 62.2,
+    "inspiration": 89.7,
+    "spirit": 78.1
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +73,7 @@
     "inspiration": 89.1,
     "spirit": 78.8
   },
-  "needs_at": "2026-11-21T13:00:24+00:00",
+  "needs_at": "2026-11-21T13:00:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -785,5 +785,5 @@
       }
     }
   },
-  "exported": "2026-11-21T13:00:24+00:00"
+  "exported": "2026-11-21T13:00:27+00:00"
 }
