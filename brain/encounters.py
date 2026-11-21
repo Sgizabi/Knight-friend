@@ -36,6 +36,7 @@ DEEP_AFTER = 5              # meetings with a kind before its deep weakness can 
 HALF_LIFE_DAYS = 90         # a being's wariness of a trick halves each month he leaves it alone
 WISE_MOST = .85             # however used to a trick it gets, it never works less than this well... (1 - this)
 MARK_WISDOM = {"young": .3, "old": 1.25, "scarred": 1.25}   # the young don't know his tricks; the old and scarred do
+CUNNING_CUT = .6            # a quick learner that comes ready for his last answer blunts it this much
 TOOL_BONUS = .08            # using something he made for the keep
 LIKES_SHARE = .6            # each individual cares for about this share of what its kind likes
 
@@ -353,6 +354,8 @@ def weakness_used(a, choice, how, entry, now, sky=""):
         else:
             wise = min(WISE_MOST, wariness(entry, key, now) * MARK_WISDOM.get(mark, 1))
             found = (key, 1 - wise, "worn" if wise > .35 else "")
+            if key == a.get("avoid"):              # it came ready for this (its mind chose to)
+                found = (key, found[1] * CUNNING_CUT, "ready")
         if best is None or found[1] > best[1]:
             best = found
     return best
@@ -436,6 +439,7 @@ def resolve(a, choice, how, ctx, rng=None):
     elif used and result != "good":                # fair warning that a known answer isn't working
         text.append({"worn": "It hesitates, but not for long: it seems to be getting used to that.",
                      "weather": "In this weather it doesn't work the way it should.",
+                     "ready": "It seems to have come ready for that.",
                      "other": "It doesn't react the way you expected; this one seems different."}.get(used[2], ""))
     if result == "good":
         if choice in ("watch", "approach") and c.get("tell") and c["tell"] not in (ctx.get("entry") or {}).get("tells", []):
@@ -509,6 +513,8 @@ def resolve(a, choice, how, ctx, rng=None):
     if out["ends"] and result == "neutral":
         text.append("In its own time, it goes.")
     out["text"] = " ".join(text)
+    out["said"] = said.replace("+", "").strip()    # (the parts, so a being's own mind can tell its part instead)
+    out["extra"] = text[1:]
     return out
 
 

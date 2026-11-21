@@ -86,6 +86,7 @@ jobs:
           MODE: ${{ steps.due.outputs.mode }}
           KNIGHT_MODEL: ${{ vars.KNIGHT_MODEL }}              # optional repo variables; empty = built-in list
           KNIGHT_CHECK_MODEL: ${{ vars.KNIGHT_CHECK_MODEL }}
+          KNIGHT_BEINGS_MODEL: ${{ vars.KNIGHT_BEINGS_MODEL }}      # the beings' minds (empty = built-in list)
           KNIGHT_DAILY_BUDGET: ${{ vars.KNIGHT_DAILY_BUDGET }}
           KNIGHT_CREATURES: ${{ vars.KNIGHT_CREATURES }}      # "on" from wave 1: beings come to the keep
         run: |

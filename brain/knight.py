@@ -32,6 +32,7 @@ import visitors as visits  # noqa: E402
 import weather  # noqa: E402
 import creatures  # noqa: E402
 import encounters  # noqa: E402
+import minds  # noqa: E402
 from llm import (Brain, DailyLimit, FakeBrain, LLMError, chosen_models, parse_json, read_meta,  # noqa: E402
                  TPM_LIMIT, tests_today, write_meta)
 
@@ -332,7 +333,8 @@ def spent_today(usage):
     After Groq has said "no more today", the day counts as spent."""
     if usage.get("limit_reached"):
         return 10 ** 9
-    return usage.get("tokens", 0) + tests_today(WORLD, set(chosen_models(WORLD).values()))
+    models = chosen_models(WORLD)
+    return usage.get("tokens", 0) + tests_today(WORLD, {models["main"], models["check"]})
 
 
 def learn_limit(err, usage):
@@ -1398,11 +1400,21 @@ class Knight:
         doing = ("asleep on your bedroll, until it woke you" if woke else
                  f"{DOING.get(current['action'], current['action'])} at the {current['place']}" if current else
                  "dozing by the fire")
-        history, prepared = [], False
+        history, prepared, shown = [], False, False
+        a["seeing"] = best["step"]                                # (its mind describes only what he can see)
+        if minds.can_think(self.brain, today_usage(), WORLD):   # the being's own mind: why it came, how it goes about it
+            m = minds.arrive(self.brain, a, WORLD, f"It is {part_of_day()}. {weather.describe(self.sky)} "
+                             f"The knight is {'asleep' if woke else doing}.")
+            if m:
+                minds.settle_in(a, m, entry)
+                print(f"  its mind: {m['approach']}: {m['why']}")
         for step in range(1, encounters.STEPS_MOST + 1):
             ph = encounters.phase(a)
             opts = encounters.options(ph)
             sc = encounters.scene(a, entry, best["step"], ph, history)
+            if ph == "here" and a.get("mind") and not shown:     # what it does first, once it is in sight
+                sc += " " + minds.told(a["mind"]["doing"], a["mind"]["says"])
+                shown = True
             so_far = "\n".join(f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}"
                                 for h in history)
             prompt = (
@@ -1433,6 +1445,10 @@ class Knight:
                 "step": step, "week": encounters.recent(WORLD), "now": now(), "said": [h["happened"] for h in history],
                 "sky": (weather.at(self.sky, now()) or {}).get("kind", "")})
             encounters.apply(out, a, self.needs, self.body, self.keep, entry, how)
+            if a.get("mind") and minds.can_think(self.brain, today_usage(), WORLD):   # its answer, within the outcome
+                t = minds.turn(self.brain, a, choice, how, out)
+                if t:
+                    out["text"] = " ".join([out["said"], minds.told(t["does"], t["says"])] + out["extra"]).strip()
             if out["turned_back"]:
                 creatures.turn_back(state, kind)
             creatures.note_arc(state, kind, out["regard"])
@@ -1468,12 +1484,15 @@ class Knight:
             if x.get("id") == a["id"]:
                 x["met"] = {"outcome": final, "steps": len(history), "time": iso()}
                 x["seen"] = True
+                if a.get("mind"):
+                    x["mind"] = a["mind"]
         (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
         (WORLD / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
         encounters.record(WORLD, {"time": iso(start), "id": a["id"], "kind": kind, "woke": woke, "steps": history,
                                   "injury": any(h.get("injury") for h in history),
                                   "damage": any(h.get("damage") for h in history),
-                                  "loss": any(h.get("loss") for h in history), "note": note})
+                                  "loss": any(h.get("loss") for h in history), "note": note,
+                                  "why": (a.get("mind") or {}).get("why", a.get("drive", ""))})
         told = " ".join(f"You chose to {h['choice'].replace('_', ' ')} ({h['how']}). {h['happened']}" for h in history)
         self.memory["beings_since"].append({"time": iso(start), "kind": kind, "text": (
             ("It woke you in the night. " if woke else "") + encounters.scene(a, entry, best["step"], "here", [])
@@ -1924,8 +1943,10 @@ def encounter_once(brain, usage):
         else:
             knight.set_status(False)          # back to its plan; saves needs, body and what the keep reads
         save("memory.json", knight.memory)
-        usage["tokens"] += brain.tokens_used
-        usage["encounter_tokens"] = usage.get("encounter_tokens", 0) + brain.tokens_used
+        beings_used = brain.tokens_by_role.get("beings", 0)    # the beings' minds: their own model and cap
+        usage["tokens"] += brain.tokens_used - beings_used
+        usage["encounter_tokens"] = usage.get("encounter_tokens", 0) + brain.tokens_used - beings_used
+        usage["mind_tokens"] = usage.get("mind_tokens", 0) + beings_used
         usage["encounters"] = usage.get("encounters", 0) + 1
         usage["by_model"] = {**usage.get("by_model", {}), **{
             m: usage.get("by_model", {}).get(m, 0) + n for m, n in brain.tokens_by_model.items()}}

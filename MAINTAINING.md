@@ -31,7 +31,10 @@ Look at these, roughly in this order:
      it, and what has and hasn't worked.
    - `encounters.jsonl` (once creatures are on): each meeting, step by step: what he chose,
      in his words, and what came of it. `body.json`: injuries, each with when it heals.
-     `usage.json` gains `encounter_tokens` (meetings have their own cap, 25,000 a day).
+     `usage.json` gains `encounter_tokens` (meetings have their own cap, 25,000 a day) and
+     `mind_tokens` (the beings' own minds, on their own model, `qwen/qwen3.8-27b` unless the
+     optional repo variable `KNIGHT_BEINGS_MODEL` names another; capped at 60,000 a day and
+     never counted against Rooken's allowance). The minds live in `brain/minds.py`.
      In `keep.json`, `damage` is harm a being did (mended with ordinary repair work), `lost`
      is what was taken (it can come back), `finds` is what beings left him.
 

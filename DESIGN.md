@@ -275,6 +275,15 @@ what they left behind.
   known answers keep working about half to four fifths of the time, year after year; every
   year some go stale and new ones are found; no being becomes hopeless, and the simple ones
   stay the more dependable; injuries stay at a few a year and the weekly limits hold.
+- **Minds (session 6a):** when a being arrives, its own mind (on the second model, never
+  Rooken's) decides why it came this time, how it means to go about it (careful, bold, curious,
+  cunning, distant or friendly) and what it does first, remembering its kind's last meetings
+  with him; each time he acts, it says what it does within the outcome the rules already
+  settled, and beings with a voice speak. A quick learner that comes "cunning" is ready for the
+  answer that last worked on it, which blunts it fairly. Minds describe only what he can see
+  (the Wanderer stays a hatted traveller until he can see it bloom), have a cap of 60,000
+  tokens a day (about 1,000 to 1,500 a meeting in tests), and fall quiet, leaving the rules'
+  own words, if anything fails or Rooken ever has to move onto their model.
 - **Ecology:** the timid stay away for a couple of days after something big; light-eaters
   follow lanterns; fire-lovers like the forge; scavengers come after a meteor or a landing;
   the wyrm stirs after the hill.
@@ -534,7 +543,8 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 3 | Weather: rules, visuals, effects on his needs (**done**) | yes |
 | 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep (**done**, switched off until wave 1) | behind the scenes |
 | 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary; traits and drives; ecology; story arcs (**done**, switched off until wave 1) | behind the scenes |
-| 6 | Minds: behaviour minds and voices, meetings and stances between beings, real-model tests, budget caps, the watch list updated | behind the scenes |
+| 6a | Minds: behaviour minds and voices, real-model tests, budget caps, the watch list updated (**done**, switched off until wave 1) | behind the scenes |
+| 6b | Meetings and stances between beings | behind the scenes |
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping | **yes, creatures arrive** |
 | 8 | The companion | yes |
 | 9 | Visitor help and names | yes |

@@ -261,6 +261,30 @@ assert not encounters.weakness_used(_on, "hide", "I turn my back on it", {"count
 assert encounters.weakness_used(_on, "hide", "I turn my back on it", {"count": encounters.DEEP_AFTER}, _t1)[0] == "deep0"
 assert all(k in beings.LEARNS for k in beings.MORE_WEAKNESSES) and all(
     beings.CHARACTERS[k].get("weakness") for k in beings.MORE_WEAKNESSES)
+# the beings' minds: their own model and cap, quiet when they must be, fair in what they change
+import minds  # noqa: E402
+assert "beings" in llm.LADDER and llm.chosen_models(_w)["beings"] not in (llm.chosen_models(_w)["main"],)
+assert llm.LADDER["main"][0] not in llm.LADDER["beings"]               # never on Rooken's own model
+
+
+class _Quiet:
+    tokens_by_role = {}
+
+    def chat(self, *a, **k):
+        raise llm.LLMError("no answer")
+
+
+__import__("os").environ["KNIGHT_CREATURES"] = "on"
+assert minds.arrive(_Quiet(), {"id": "x", "kind": "dragon", "drive": "rest"}, _w, "dusk") is None   # rules stand in
+assert minds.turn(_Quiet(), {"kind": "dragon"}, "speak", "hello", {"result": "good", "said": "", "extra": []}) is None
+assert not minds.can_think(None, {}, _w) and not minds.can_think(_Quiet(), {"mind_tokens": minds.MIND_BUDGET}, _w)
+assert minds._clean("It bares its teeth, blood on them", 200) == "" and minds._clean("It waits.", 200) == "It waits."
+_ca = {"kind": "glassbeak"}
+minds.settle_in(_ca, {"approach": "cunning", "why": "", "doing": "x", "says": ""}, {"wise": {"main": {"level": .3, "at": "2026-01-01"}}})
+assert _ca["avoid"] == "main" and _ca["temper"] == "wary"
+_cw2 = {"kind": "wyrm"}                                                  # slow learners can't come ready for him
+minds.settle_in(_cw2, {"approach": "cunning", "why": "", "doing": "x", "says": ""}, {"wise": {"main": {"level": .3, "at": "2026-01-01"}}})
+assert "avoid" not in _cw2
 # beings that came while it slept are found in the morning; by day, glimpsed
 __import__("os").environ["KNIGHT_CREATURES"] = "on"
 _sw = Path(tempfile.mkdtemp())

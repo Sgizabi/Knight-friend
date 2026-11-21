@@ -21,10 +21,13 @@ MODELS_URL = "https://api.groq.com/openai/v1/models"
 LADDER = {
     "main": ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"],
     "check": ["openai/gpt-oss-20b", "qwen/qwen3.8-27b", "openai/gpt-oss-safeguard-20b"],  # safeguard: only ~2k a minute
+    # the beings' minds (once creatures are on): never Rooken's own model, so they never spend his allowance
+    "beings": ["qwen/qwen3.8-27b", "openai/gpt-oss-20b"],
 }
 # The keeper can name a model outright (GitHub repo variables KNIGHT_MODEL / KNIGHT_CHECK_MODEL);
 # an empty value means "use the list above".
-OVERRIDE = {"main": os.environ.get("KNIGHT_MODEL") or "", "check": os.environ.get("KNIGHT_CHECK_MODEL") or ""}
+OVERRIDE = {"main": os.environ.get("KNIGHT_MODEL") or "", "check": os.environ.get("KNIGHT_CHECK_MODEL") or "",
+            "beings": os.environ.get("KNIGHT_BEINGS_MODEL") or ""}
 MAIN_MODEL = OVERRIDE["main"] or LADDER["main"][0]
 CHECK_MODEL = OVERRIDE["check"] or LADDER["check"][0]
 TPM_LIMIT = int(os.environ.get("KNIGHT_TPM") or "7400")   # until the model's own limit is known
@@ -132,6 +135,7 @@ class Brain:
         self.tpm = {}               # model -> its per-minute limit, learned from Groq's replies
         self.windows = {}  # model -> [(timestamp, tokens)]
         self.tokens_by_model = {}
+        self.tokens_by_role = {}    # "main", "check", "beings" (or a model's own name)
         self.last_finish = None  # "length" when the last reply was cut off by max_tokens
 
     @property
@@ -153,6 +157,8 @@ class Brain:
         self.gone.add(model)
         listed = available_models(self.key)
         other = self.models.get("check" if role == "main" else "main")
+        if role == "beings":                         # never onto Rooken's own model
+            self.gone.add(self.models.get("main"))
         options = [m for m in LADDER[role] if m not in self.gone and (listed is None or m in listed)]
         options.sort(key=lambda m: m == other)       # keep the two jobs on different models if it can
         if not options:
@@ -239,6 +245,7 @@ class Brain:
             used = (data.get("usage") or {}).get("total_tokens", estimate)
             self.windows[name].append((time.time(), used))
             self.tokens_by_model[name] = self.tokens_by_model.get(name, 0) + used
+            self.tokens_by_role[role or name] = self.tokens_by_role.get(role or name, 0) + used
             self.last_finish = data["choices"][0].get("finish_reason")
             text = data["choices"][0]["message"].get("content") or ""
             return re.sub(r"<think>[\s\S]*?</think>\s*", "", text)
@@ -357,6 +364,16 @@ class FakeBrain(Brain):
             return json.dumps({"thought": "What on earth is that?", "choice": random.choice(options),
                                "how": random.choice(["I keep very still and watch it.", "I wave a torch and shout at it.",
                                                      "I offer it a bright glass bead.", "I bar the door and sit by the fire."])})
+        if task == "being_arrive":
+            self.tokens_by_role["beings"] = self.tokens_by_role.get("beings", 0) + 300
+            return json.dumps({"why": "it came for the warmth, and to see if he is still here",
+                               "approach": random.choice(["careful", "bold", "curious", "cunning", "distant"]),
+                               "doing": "It circles the courtyard slowly, keeping to the shadows.",
+                               "says": "Still here, little knight?" if "can talk" in prompt else ""})
+        if task == "being_turn":
+            self.tokens_by_role["beings"] = self.tokens_by_role.get("beings", 0) + 300
+            return json.dumps({"does": "It pauses, weighing him up, then does as the outcome says.",
+                               "says": "We will see." if "can talk" in prompt else ""})
         if task == "encounter_after":
             return json.dumps({"thought": "Well. That happened.", "name": "the odd visitor",
                                "note": "It came, it looked about, it went. I kept still."})
