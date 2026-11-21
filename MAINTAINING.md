@@ -22,6 +22,9 @@ Look at these, roughly in this order:
    - `meta.json`: `models` (only there if it moved to a backup model), `model_log` (when and
      why it moved) and `daily_limits` (limits Groq has told it about).
    - `test_usage.json`: tokens your own tests spent today (see below).
+   - `weather.json`: the sky over the keep, about a day either side. The world chooses it by
+     simple rules (no AI, no tokens); it nudges his warmth and rest, and very heavy weather
+     keeps courtyard work from being possible until it passes.
 
 If something checks on Rooken for you (such as Claude Duet), point it at
 [WATCHLIST.md](WATCHLIST.md): what to check, what's normal, when to tell you, and what it must

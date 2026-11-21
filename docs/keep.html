@@ -25,6 +25,7 @@
   #top button, #top select { font:inherit; font-size:18px; color:var(--ink); background:var(--panel); border:1px solid var(--line);
                              border-radius:99px; padding:1px 12px; cursor:pointer; }
   #top button.on { color:#ffd27a; border-color:#b8742c; }
+  #wx { font-size:18px; padding:1px 10px; border-radius:99px; background:var(--panel); border:1px solid var(--line); color:var(--dim); white-space:nowrap; }
   #badge { font-size:18px; padding:1px 12px; border-radius:99px; background:var(--panel); border:1px solid var(--line); color:var(--dim); }
   #badge.awake { color:#ffd27a; border-color:#b8742c; box-shadow:0 0 12px rgba(240,160,75,.45); }
   #badge.awake::before { content:'● '; animation:pulse 1.4s infinite; }
@@ -51,7 +52,7 @@
   #toast { position:fixed; top:52px; right:10px; color:var(--ember); font-size:17px; opacity:0; transition:opacity .4s; pointer-events:none; }
   @media (max-width: 560px) {
     #who { transform:scale(.85); transform-origin:top left; }
-    #top { top:auto; bottom:84px; right:8px; }
+    #top { top:auto; bottom:84px; right:8px; flex-wrap:wrap; justify-content:flex-end; }
     #help { top:auto; bottom:120px; }
   }
 </style>
@@ -65,6 +66,7 @@
 <div id="view"></div>
 <div id="who" class="panel"><h1 id="name"></h1><small id="epithet"></small><div id="needs"></div></div>
 <div id="top">
+  <span id="wx"></span>
   <span id="badge"></span>
   <button id="cam" title="Follow the knight or roam freely (F)"></button>
   <select id="quality" title="Graphics quality">
@@ -486,7 +488,7 @@ function buildLand() {
   }
   geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); geo.computeVertexNormals();
   const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .95, flatShading: true }));
-  ground.receiveShadow = true; land.add(ground);
+  ground.receiveShadow = true; land.add(ground); landGround = ground;
   // the lake, with reeds along its edge
   const water = new THREE.Mesh(new THREE.CircleGeometry(11.6, 28), new THREE.MeshStandardMaterial({ color: '#4c6c7a', roughness: .08, metalness: .35, transparent: true, opacity: .88 }));
   water.rotation.x = -Math.PI / 2; water.scale.set(1, .8, 1); water.position.set(LAKE[0], LAKE_LEVEL, LAKE[1]); land.add(water);
@@ -553,6 +555,194 @@ function buildLand() {
 function setLandHaze(night, dusk) {   // the far mountains take the colours of the sky
   const look = night ? ['#141a28', '#0e121c'] : dusk ? ['#6b5873', '#56465f'] : ['#9eb1c5', '#8496ab'];
   for (const { m, near } of landHaze) m.color.set(look[near]);
+}
+
+// =====================================================================================
+// Weather: chosen by the world (state.weather, a schedule a day either side), drawn here.
+// Preview any kind with ?demo&weather=rain&wi=.9
+// =====================================================================================
+const WX_WORDS = { clear: ['clear', 'clear', 'clear and bright'], cloudy: ['a few clouds', 'overcast', 'heavy grey sky'],
+  rain: ['light rain', 'steady rain', 'heavy rain'], storm: ['thunderstorm', 'thunderstorm', 'violent storm'],
+  fog: ['mist', 'fog', 'thick fog'], wind: ['a breeze', 'strong wind', 'a gale'], snow: ['light snow', 'snow', 'heavy snow'],
+  ash: ['ash falling'], starfall: ['stars falling'], aurora: ['an aurora'], upward_rain: ['rain falling upward'],
+  glass_hail: ['glass hail'], still: ['utter stillness'] };
+const WX_ICON = { clear: '☀', cloudy: '☁', rain: '☂', storm: '⚡', fog: '≋', wind: '≈', snow: '❄', ash: '⁘', starfall: '✦',
+  aurora: '≀', upward_rain: '☂', glass_hail: '✧', still: '·' };
+const HALL_PLACES = ['fire', 'window', 'bookshelf', 'desk', 'easel', 'workbench', 'bedroll'];
+function weatherAt(t) {
+  if (DEMO && params.has('weather')) return { kind: params.get('weather'), intensity: +(params.get('wi') ?? .8) };
+  for (const p of state?.weather?.periods || []) if (Date.parse(p.start) <= t && t < Date.parse(p.end)) return p;
+  return null;
+}
+const wxNow = () => weatherAt(Date.now()) || { kind: 'clear', intensity: .5 };
+function wxWords(w) { const a = WX_WORDS[w.kind] || WX_WORDS.clear; return a[Math.min(a.length - 1, w.intensity < .5 ? 0 : w.intensity < .8 ? 1 : 2)]; }
+
+let landGround = null, wxCalm = 1, wxKind = '', rainInit = false, flakeInit = false;
+const wxBaseBg = new THREE.Color();
+// rain (and rain falling upward) as short streaks; snow, ash, hail and leaves as points
+const RAIN_MAX = 1400, FLAKE_MAX = 900;
+const rainPos = new Float32Array(RAIN_MAX * 6), rainGeo = new THREE.BufferGeometry();
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+const rainLines = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({ color: '#aebccc', transparent: true, opacity: .45, depthWrite: false }));
+rainLines.frustumCulled = false; rainLines.visible = false;
+const flakePos = new Float32Array(FLAKE_MAX * 3), flakeGeo = new THREE.BufferGeometry();
+flakeGeo.setAttribute('position', new THREE.BufferAttribute(flakePos, 3));
+const flakes = new THREE.Points(flakeGeo, new THREE.PointsMaterial({ color: '#ffffff', size: .07, transparent: true, opacity: .85, depthWrite: false }));
+flakes.frustumCulled = false; flakes.visible = false;
+const flakePhase = Float32Array.from({ length: FLAKE_MAX }, (_, i) => hash(i, 3, 9) * 6.28);
+// falling stars: short bright streaks high up
+const STREAKS = 10, streakPos = new Float32Array(STREAKS * 6), streakGeo = new THREE.BufferGeometry(), streakLife = new Float32Array(STREAKS).fill(9);
+streakGeo.setAttribute('position', new THREE.BufferAttribute(streakPos, 3));
+const streaks = new THREE.LineSegments(streakGeo, new THREE.LineBasicMaterial({ color: '#fff6d8', transparent: true, opacity: .9, fog: false }));
+streaks.frustumCulled = false; streaks.visible = false;
+const streakDir = Array.from({ length: STREAKS }, () => new THREE.Vector3());
+// clouds
+const cloudTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  for (let k = 0; k < 6; k++) {
+    const x = 30 + hash(k, 1, 2) * 68, y = 50 + hash(k, 2, 3) * 30, r = 22 + hash(k, 3, 4) * 26;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(255,255,255,.85)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const clouds = Array.from({ length: 22 }, (_, i) => {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, fog: false }));
+  s.userData = { x: (hash(i, 7, 1) - .5) * 260, z: (hash(i, 8, 2) - .5) * 260, y: 42 + hash(i, 9, 3) * 22, s: 40 + hash(i, 4, 4) * 40 };
+  s.scale.set(s.userData.s, s.userData.s * .45, 1); return s;
+});
+// the aurora: slow curtains of light in the northern sky
+const auroraTex = (() => {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 128; const g = c.getContext('2d');
+  const gr = g.createLinearGradient(0, 0, 0, 128);
+  gr.addColorStop(0, 'rgba(160,90,255,0)'); gr.addColorStop(.35, 'rgba(150,110,255,.5)'); gr.addColorStop(.7, 'rgba(90,255,170,.8)'); gr.addColorStop(1, 'rgba(90,255,170,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 128);
+  g.globalCompositeOperation = 'destination-in';   // fade out at both ends, so the curtains have no edges
+  const side = g.createLinearGradient(0, 0, 64, 0);
+  side.addColorStop(0, 'rgba(0,0,0,0)'); side.addColorStop(.25, 'rgba(0,0,0,1)'); side.addColorStop(.75, 'rgba(0,0,0,1)'); side.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = side; g.fillRect(0, 0, 64, 128);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const aurora = Array.from({ length: 3 }, (_, i) => {
+  const geo = new THREE.PlaneGeometry(150, 34, 40, 1);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: auroraTex, transparent: true, opacity: 0, depthWrite: false, fog: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+  m.position.set(-10 + (i - 1) * 30, 44 + i * 6, -110 - i * 12); m.userData.base = Float32Array.from(geo.attributes.position.array); m.visible = false;
+  return m;
+});
+const lightning = new THREE.DirectionalLight('#dfe8ff', 0); lightning.position.set(5, 30, -10);
+let flashUntil = 0, nextFlash = 0;
+function addWeather() {
+  scene.add(rainLines, flakes, streaks, lightning, ...clouds, ...aurora);
+}
+
+// how the sky looks in this weather (after updateSky's time-of-day look)
+function weatherLook(night, dusk) {
+  const w = wxNow(), k = w.kind, i = w.intensity;
+  const cover = { clear: .08, cloudy: .3 + .5 * i, rain: .75, storm: .92, snow: .7, wind: .35, fog: 0, ash: .7, glass_hail: .6, upward_rain: .5 }[k] ?? .15;
+  const grey = { cloudy: .3 * i, rain: .55 * Math.max(.5, i), storm: .8, snow: .45, fog: .35, ash: .5, glass_hail: .45, upward_rain: .35, wind: .12 }[k] || 0;
+  const tint = new THREE.Color(k === 'ash' ? (night ? '#1a1410' : '#8a7868') : night ? '#0e1118' : dusk ? '#4a4450' : k === 'snow' || k === 'fog' ? '#a9b2bc' : '#6f7884');
+  scene.background.lerp(tint, grey); scene.fog.color.lerp(tint, grey);
+  if (k === 'fog') scene.fog.density *= 1 + 2.6 * i;
+  if (k === 'rain' || k === 'storm' || k === 'snow' || k === 'glass_hail') scene.fog.density *= 1.5 + i;
+  if (k === 'still') { scene.fog.color.lerp(new THREE.Color(night ? '#121008' : '#a59c7a'), .25); }
+  sky.intensity *= 1 - grey * .65; hemi.intensity *= 1 - grey * .3;
+  wxBaseBg.copy(scene.background);
+  const cloudCol = new THREE.Color(night ? '#2a2f3c' : dusk ? '#8a7480' : k === 'storm' ? '#7d8590' : k === 'ash' ? '#9a8a7a' : '#f2f4f7');
+  clouds.forEach((c, n) => { c.material.color.copy(cloudCol); c.material.opacity = Math.max(0, Math.min(.85, cover * (.6 + hash(n, 5, 5) * .5))); c.visible = cover > .05; });
+  aurora.forEach(a => { a.visible = k === 'aurora' && night; });
+  if (landGround) {
+    const wet = k === 'rain' || k === 'storm' || k === 'upward_rain' ? .55 : .95;
+    landGround.material.roughness = wet;
+    landGround.material.emissive.set(k === 'snow' ? (night ? '#2a3040' : '#cfd6de') : '#000000');
+    landGround.material.emissiveIntensity = k === 'snow' ? .22 * i : 0;
+  }
+  wxCalm = k === 'still' ? .12 : 1;
+  wxKind = k;
+  const tag = $('wx'); if (tag) { tag.textContent = `${WX_ICON[k] || ''} ${wxWords(w)}`; tag.title = 'The weather over the keep'; }
+}
+
+const _wp = new THREE.Vector3();
+function weatherTick(t, dt) {
+  const w = wxNow(), k = w.kind, i = w.intensity;
+  const qf = qLevel === 'high' ? 1 : qLevel === 'medium' ? .5 : .2;
+  camera.getWorldPosition(_wp);
+  const cx = _wp.x, cy = _wp.y, cz = _wp.z;
+  // rain, or rain going up
+  const raining = k === 'rain' || k === 'storm' || k === 'upward_rain';
+  rainLines.visible = raining;
+  if (raining) {
+    const n = Math.floor(RAIN_MAX * qf * (.3 + .7 * i)), up = k === 'upward_rain' ? -1 : 1;
+    const speed = (k === 'storm' ? 22 : 16) * up, len = k === 'storm' ? .6 : .38, slant = k === 'storm' ? .25 : .06;
+    if (!rainInit) { for (let d = 0; d < RAIN_MAX; d++) rainPos.set([cx + (Math.random() - .5) * 34, cy - 6 + Math.random() * 20, cz + (Math.random() - .5) * 34], d * 6); rainInit = true; }
+    for (let d = 0; d < n; d++) {
+      const o = d * 6;
+      let y = rainPos[o + 1] - speed * dt;
+      if (y < cy - 6 || y > cy + 16 || Math.abs(rainPos[o] - cx) > 18 || Math.abs(rainPos[o + 2] - cz) > 18) {
+        rainPos[o] = cx + (Math.random() - .5) * 34; rainPos[o + 2] = cz + (Math.random() - .5) * 34;
+        y = up > 0 ? cy + 14 - Math.random() * 3 : cy - 5 + Math.random() * 3;
+      }
+      rainPos[o + 1] = y; rainPos[o + 3] = rainPos[o] + slant; rainPos[o + 4] = y + len * up; rainPos[o + 5] = rainPos[o + 2];
+    }
+    rainGeo.setDrawRange(0, n * 2); rainGeo.attributes.position.needsUpdate = true;
+    rainLines.material.opacity = k === 'upward_rain' ? .55 : .35 + .2 * i;
+  }
+  // snow, ash, glass hail, or leaves on the wind
+  const flaky = k === 'snow' || k === 'ash' || k === 'glass_hail' || k === 'wind';
+  flakes.visible = flaky;
+  if (flaky) {
+    const n = Math.floor(FLAKE_MAX * qf * (k === 'wind' ? .15 : .35 + .65 * i));
+    const fall = { snow: 1.1, ash: .7, glass_hail: 11, wind: .8 }[k], drift = k === 'wind' ? 7 * i : k === 'snow' ? .4 : .2;
+    flakes.material.color.set({ snow: '#ffffff', ash: '#4e4945', glass_hail: '#e2f4ff', wind: '#8a6a3a' }[k]);
+    flakes.material.size = { snow: .07, ash: .1, glass_hail: .05, wind: .11 }[k];
+    if (!flakeInit) { for (let d = 0; d < FLAKE_MAX; d++) flakePos.set([cx + (Math.random() - .5) * 30, cy - 6 + Math.random() * 20, cz + (Math.random() - .5) * 30], d * 3); flakeInit = true; }
+    for (let d = 0; d < n; d++) {
+      const o = d * 3, ph = flakePhase[d];
+      let x = flakePos[o] + (k === 'wind' ? drift : Math.sin(t * .8 + ph) * drift) * dt, y = flakePos[o + 1] - fall * dt, z = flakePos[o + 2];
+      if (y < cy - 6 || Math.abs(x - cx) > 16 || Math.abs(z - cz) > 16) {
+        x = cx + (Math.random() - .5) * (k === 'wind' ? 6 : 30) - (k === 'wind' ? 14 : 0); z = cz + (Math.random() - .5) * 30;
+        y = cy + 12 + Math.random() * 3;
+      }
+      flakePos[o] = x; flakePos[o + 1] = y; flakePos[o + 2] = z;
+    }
+    flakeGeo.setDrawRange(0, n); flakeGeo.attributes.position.needsUpdate = true;
+  }
+  // falling stars
+  streaks.visible = k === 'starfall';
+  if (streaks.visible) {
+    for (let s = 0; s < STREAKS; s++) {
+      streakLife[s] += dt;
+      if (streakLife[s] > 1.2 + hash(s, Math.floor(t), 1) * 2) {
+        streakLife[s] = 0; const a = Math.random() * 6.28, rr = 40 + Math.random() * 50;
+        streakPos.set([cx + Math.cos(a) * rr, 30 + Math.random() * 35, cz + Math.sin(a) * rr], s * 6);
+        streakDir[s].set((Math.random() - .5) * 2, -.6 - Math.random() * .4, (Math.random() - .5) * 2).normalize().multiplyScalar(45);
+      }
+      const o = s * 6;
+      for (let c = 0; c < 3; c++) streakPos[o + c] += streakDir[s].getComponent(c) * dt;
+      for (let c = 0; c < 3; c++) streakPos[o + 3 + c] = streakPos[o + c] - streakDir[s].getComponent(c) * .09;
+    }
+    streakGeo.attributes.position.needsUpdate = true;
+  }
+  // clouds drift with the wind
+  const windSpeed = k === 'wind' ? 4 + 6 * i : k === 'storm' ? 5 : 1;
+  for (const c of clouds) {
+    if (!c.visible) continue;
+    const u = c.userData; u.x += windSpeed * dt * .5; if (u.x > 140) u.x -= 280;
+    c.position.set(u.x, u.y, u.z);
+  }
+  // the aurora's slow waving
+  for (const a of aurora) {
+    if (!a.visible) continue;
+    const pa = a.geometry.attributes.position, b = a.userData.base;
+    for (let v = 0; v < pa.count; v++) pa.setZ(v, Math.sin(b[v * 3] * .05 + t * .3) * 8 + Math.sin(b[v * 3] * .13 + t * .5) * 3);
+    pa.needsUpdate = true; a.material.opacity = .35 + .25 * Math.sin(t * .4 + a.position.x);
+  }
+  // lightning
+  if (k === 'storm') {
+    if (t > nextFlash) { flashUntil = t + .12 + Math.random() * .2; nextFlash = t + 4 + Math.random() * 10 / Math.max(.4, i); }
+    const on = t < flashUntil && Math.sin(t * 60) > -.3;
+    lightning.intensity = on ? 4 : 0;
+    scene.background.copy(wxBaseBg); if (on) scene.background.lerp(new THREE.Color('#c9d2e6'), .55);
+  } else if (lightning.intensity) { lightning.intensity = 0; scene.background.copy(wxBaseBg); }
 }
 
 const PLOTS = [[-11.9, -2.5, 0], [-11.9, 2.7, Math.PI], [-15.2, -2.5, 0], [-15.2, 2.7, Math.PI]];   // x, z, turn (door to the path)
@@ -1144,6 +1334,7 @@ function updateSky() {   // follows the viewer's own clock
   stars.visible = moon.visible = night;
   BM.lamp.emissiveIntensity = night ? 2.2 : dusk ? 1.3 : .35;
   setLandHaze(night, dusk);
+  weatherLook(night, dusk);
 }
 
 // =====================================================================================
@@ -1498,14 +1689,23 @@ function liveNeeds(now) {
   const from = Number.isFinite(applied) ? Math.max(start, applied) : start;
   const overlap = (a, b) => Math.max(0, (Math.min(b, now) - Math.max(a, from)) / 60000);
   let t0 = start;
+  const inside = m.place_rates || {}, wx = state?.weather;
+  const exposure = place => place === 'fire' || inside[place] ? 0 : HALL_PLACES.includes(place) ? (mended('roof') ? 0 : .5) : 1;
   for (const s of plan.steps || []) {
-    const t1 = t0 + (s.minutes || 20) * 60000, mins = overlap(t0, t1);
+    const ts = t0, t1 = t0 + (s.minutes || 20) * 60000, mins = overlap(t0, t1);
     t0 = t1;
     if (mins <= 0) continue;
     let r;
     if (s.action === 'sleep') r = { ...m.rates.sleep };
     else if (s.place === 'fire') r = { ...m.rates.fire };
+    else if (inside[s.place]) r = { ...inside[s.place] };
     else r = { ...m.rates[mended('roof') ? 'away_roofed' : 'away'] };
+    const w = wx && weatherAt(ts);   // the weather when this step began (as the knight's own reckoning)
+    if (w) {
+      const ex = exposure(s.place), i = w.intensity;
+      for (const [k, v] of Object.entries(wx.effects?.[w.kind] || {})) if (v * ex) r[k] = (r[k] || 0) + v * i * ex;
+      if (s.action === 'sleep') for (const [k, v] of Object.entries(wx.sleep_effects?.[w.kind] || {})) r[k] = (r[k] || 0) + v * i;
+    }
     const extras = [];
     if (s.action === 'work') extras.push(m.rates.work);
     if (s.action === 'gaze' || s.action === 'read') extras.push(m.rates.gaze);
@@ -1549,6 +1749,7 @@ function applyState(next, fetched = false) {
   }
   showDoorstep();   // gifts it brought in at its last wake-up are no longer waiting outside
   showCandles();
+  updateSky();      // the weather may have changed with the new state
 }
 
 // =====================================================================================
@@ -2029,7 +2230,7 @@ function tick(nowMs) {
     for (const f of candleFlames) f.scale.y = 1 + Math.sin(t * 15 + f.userData.phase) * .22;
   } else windowGlow.intensity = 0;
   for (let i = 0; i < EMBERS; i++) {
-    emberLife[i] += dt * (.25 + (i % 5) * .05) * flare; if (emberLife[i] > 1) emberLife[i] = 0;
+    emberLife[i] += dt * (.25 + (i % 5) * .05) * flare * wxCalm; if (emberLife[i] > 1) emberLife[i] = 0;
     const L = emberLife[i], a = i * 2.39;
     emberPos[i * 3] = Math.cos(a) * .12 + Math.sin(t + i) * .1 * L;
     emberPos[i * 3 + 1] = .25 + L * 1.3;
@@ -2113,6 +2314,7 @@ function tick(nowMs) {
   if (fireLight.castShadow && (shadowsDirty || (hz && nowMs - lastShadow > 1000 / hz))) {
     renderer.shadowMap.needsUpdate = true; lastShadow = nowMs; shadowsDirty = false;
   }
+  weatherTick(t, dt);
   for (const f of onTick) f(t, dt);
   renderer.render(scene, camera);
   watchSpeed(nowMs);
@@ -2130,6 +2332,7 @@ async function refresh() {
   } catch { /* the knight is between pages; try again later */ }
 }
 scene.add(buildLand());
+addWeather();
 updateSky(); setInterval(updateSky, 60000);
 applyQuality(qLevel);
 setCam('follow');
@@ -2139,7 +2342,12 @@ refresh(); setInterval(refresh, 60000);
 refreshVisits(); setInterval(refreshVisits, 150000);   // ~24 times an hour at most, well within GitHub's limit
 resize();
 requestAnimationFrame(tick);
-window.__keep = { K, camera, controls, goodView, greet, tossLog, get quality() { return qLevel; }, setQuality: applyQuality,
+window.__keep = { K, camera, controls, goodView, greet, tossLog,
+  bench(frames = 120) {   // for testing: milliseconds per frame, rendered back to back (works even in a hidden tab)
+    const gl = renderer.getContext(), t0 = performance.now();
+    for (let i = 0; i < frames; i++) { weatherTick(clock.elapsedTime + i / 60, 1 / 60); renderer.render(scene, camera); }
+    gl.finish(); return +((performance.now() - t0) / frames).toFixed(2);
+  }, get quality() { return qLevel; }, setQuality: applyQuality,
   view(p, at) {   // free camera at p, looking at `at` (for testing)
     if (camMode !== 'free') setCam('free');
     camera.position.set(...p); camera.lookAt(...at);

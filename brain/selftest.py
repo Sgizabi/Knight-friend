@@ -114,4 +114,30 @@ assert _d["kind"] == "restful" and _d["look"]["walls"] == "stone" and _d["look"]
 assert _d["look"]["feature"] in life.LOOK["feature"] and life.validate_building({"name": "x"}) is None
 _b = life.start_building(_k, life.OWN, _d)
 assert _b["place"] == "map-room" and _b["plot"] == 1 and _b["place"] not in life.places(_k)
+
+# weather: chosen by the world, a day ahead, the same however often it's asked
+import datetime as _dt  # noqa: E402
+import weather  # noqa: E402
+_ww = Path(tempfile.mkdtemp())
+_t = _dt.datetime(2026, 11, 21, 15, tzinfo=_dt.timezone.utc)
+_s1 = weather.update(_ww, _t)
+_s2 = weather.update(_ww, _t)
+assert _s1 == _s2 and weather.at(_s1, _t) and weather.at(_s1, _t + _dt.timedelta(hours=29))
+_ps = _s1["periods"]
+assert all(_ps[i]["end"] == _ps[i + 1]["start"] for i in range(len(_ps) - 1))   # no gaps
+assert all(p["kind"] in weather.NORMAL + weather.ABNORMAL and .3 <= p["intensity"] <= 1 for p in _ps)
+_jul, _jan = Path(tempfile.mkdtemp()), Path(tempfile.mkdtemp())
+_kinds = lambda w, t: [p["kind"] for k in range(40) for p in weather.update(w, t + _dt.timedelta(days=k))["periods"]]
+assert "snow" not in _kinds(_jul, _dt.datetime(2026, 7, 1, tzinfo=_dt.timezone.utc))
+assert "snow" in _kinds(_jan, _dt.datetime(2027, 1, 5, tzinfo=_dt.timezone.utc))
+_rain = {"kind": "rain", "intensity": 1.0}
+assert weather.deltas(_rain, 1)["warmth"] < 0 and weather.deltas(_rain, 0) == {}
+assert weather.deltas({"kind": "storm", "intensity": 1}, 0, sleeping=True)["rest"] < 0
+assert weather.blocks_courtyard({"kind": "storm", "intensity": .4}) and not weather.blocks_courtyard({"kind": "rain", "intensity": .4})
+_k2 = life.load_keep(Path(tempfile.mkdtemp()))
+_out = life.step_rates({"place": "courtyard", "action": "work"}, _k2, _rain)
+assert _out["warmth"] < life.step_rates({"place": "courtyard", "action": "work"}, _k2)["warmth"]   # rain chills it outside
+assert life.step_rates({"place": "fire", "action": "sit"}, _k2, _rain) == life.step_rates({"place": "fire", "action": "sit"}, _k2)
+assert life.exposure({"place": "desk"}, _k2) == .5 and life.exposure({"place": "tower"}, _k2) == 1
+assert weather.describe(_s1, _t).startswith("The weather: ")
 print("all checks passed")

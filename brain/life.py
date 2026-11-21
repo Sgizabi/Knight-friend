@@ -13,6 +13,8 @@ import math
 import re
 from pathlib import Path
 
+import weather
+
 NEEDS = ["rest", "warmth", "inspiration", "spirit"]
 
 REPAIRS = {
@@ -422,8 +424,19 @@ def drift(needs, minutes):
     needs["spirit"] = round(SPIRIT_HOME + gap * (1 - SPIRIT_SETTLE_PER_HOUR) ** hours, 1)
 
 
-def step_rates(step, keep):
-    """The per-minute effect of one step of its plan."""
+def exposure(step, keep):
+    """How much of the weather reaches it: none by the fire, in its buildings or under a mended
+    roof; half in the hall while the roof is open; all of it out in the courtyard or on the tower."""
+    place = step.get("place") or ""
+    if place == "fire" or place in place_rates(keep):
+        return 0.0
+    if place in BASE_PLACES:
+        return 0.0 if repaired(keep, "roof") else .5
+    return 1.0
+
+
+def step_rates(step, keep, period=None):
+    """The per-minute effect of one step of its plan (in the weather of that time)."""
     action, place = step.get("action"), step.get("place")
     base, inside = rates_for(keep), place_rates(keep)
     if action == "sleep":
@@ -442,6 +455,8 @@ def step_rates(step, keep):
     for extra in extras:
         for name, value in extra.items():
             rates[name] = rates.get(name, 0) + value
+    for name, value in weather.deltas(period, exposure(step, keep), action == "sleep").items():
+        rates[name] = rates.get(name, 0) + value
     return rates
 
 
@@ -449,7 +464,7 @@ def _overlap_minutes(a0, a1, b0, b1):
     return max(0.0, (min(a1, b1) - max(a0, b0)).total_seconds() / 60)
 
 
-def live_out_plan(needs, plan, keep):
+def live_out_plan(needs, plan, keep, sky=None):
     """Apply the effects of the plan it has played out since it last woke.
 
     Only the stretch not yet counted: a light check-in or a night's sleep in between
@@ -469,7 +484,7 @@ def live_out_plan(needs, plan, keep):
         end = t + dt.timedelta(minutes=step.get("minutes", 20))
         m = _overlap_minutes(t, end, counted_from, now)
         if m > 0:
-            change(needs, {k: v * m for k, v in step_rates(step, keep).items()}, keep)
+            change(needs, {k: v * m for k, v in step_rates(step, keep, weather.at(sky, t)).items()}, keep)
         t = end
     m = _overlap_minutes(t, now, counted_from, now)   # dozed by the fire after the plan ran out
     if m > 0:
@@ -540,6 +555,8 @@ def export_state(world: Path, docs: Path):
         "gate": _load(world / "gate.json", [])[-1:],
         # several failed check-ins in a row (a broken model, key or network): the pages say so
         "health": {k: v for k, v in _load(world / "health.json", {}).items() if k in ("unwell", "failing_since")},
+        # the sky over the keep, a day either side, and how it moves the bars
+        "weather": weather.export(world),
         "exported": _now().replace(microsecond=0).isoformat(),
     }
     _save(docs / "data" / "state.json", state)

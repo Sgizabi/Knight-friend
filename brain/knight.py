@@ -29,6 +29,7 @@ import life  # noqa: E402
 import letterbox  # noqa: E402
 import site_builder  # noqa: E402
 import visitors as visits  # noqa: E402
+import weather  # noqa: E402
 from llm import (Brain, DailyLimit, FakeBrain, LLMError, chosen_models, parse_json, read_meta,  # noqa: E402
                  TPM_LIMIT, tests_today, write_meta)
 
@@ -238,7 +239,7 @@ def projected_rest():
     """How rested it is right now, worked out without changing anything (no AI, no writes)."""
     needs = life.load_needs(WORLD)
     life.drift(needs, minutes_since(needs.get("updated")) or 0)
-    life.live_out_plan(needs, load("plan.json", {}), life.load_keep(WORLD))
+    life.live_out_plan(needs, load("plan.json", {}), life.load_keep(WORLD), weather.load(WORLD))
     return needs["rest"]
 
 
@@ -380,6 +381,7 @@ class Knight:
         self.diary = read_lines("diary.jsonl")
         self.keep = life.load_keep(WORLD)
         self.needs = life.load_needs(WORLD)
+        self.sky = weather.update(WORLD)   # the weather a day either side (chosen by the world, no AI)
         # how long since its needs were last saved (for the slow drift of time), and where they
         # stood, so the page can show what changed this wake-up
         self.needs_idle_minutes = minutes_since(self.needs.get("updated")) or 0
@@ -445,7 +447,8 @@ class Knight:
         return [e.get("activity") for e in self.diary[-count:] if e.get("activity")]
 
     def context(self, encounter, letter):
-        parts = [f"It is {part_of_day()}.", life.describe_needs(self.needs), life.describe_keep(self.keep)]
+        parts = [f"It is {part_of_day()}. {weather.describe(self.sky)}", life.describe_needs(self.needs),
+                 life.describe_keep(self.keep)]
         if self.needs["rest"] < EXHAUSTED:
             parts.append(f"You are exhausted (rest {round(self.needs['rest'])}/100). Your body won't keep "
                          "going much longer without proper sleep.")
@@ -589,6 +592,8 @@ class Knight:
             extra += "\n" + life.describe_building_options(self.keep)
         else:
             activities.remove("raise")           # no courtyard yet, or no room left in it
+        if "raise" in activities and weather.blocks_courtyard(weather.at(self.sky, now())):
+            activities.remove("raise")           # too wild out for courtyard work just now
         if self.needs["rest"] <= SPENT:          # its body sets a limit its will can't push past
             activities = [a for a in activities if a not in HEAVY_WORK]
             extra += ("\n\nYou are utterly spent. Heavy work (repairing, building, crafting, raising) is "
@@ -1029,7 +1034,7 @@ class Knight:
             "annoyed with it.\"\n"
             "Then give your mood, which few topics are on your mind now, and plan the next two "
             "hours or so: 3-6 steps of where you'll be in the keep and what you'll be doing "
-            f"there (the keeper sees this play out). It is {part_of_day()}; let the plan fit the "
+            f"there (the keeper sees this play out). It is {part_of_day()}. {weather.describe(self.sky)} Let the plan fit the "
             "time of day. Mind how you feel: sleeping restores rest, the fire restores warmth."
             f"{sleep_part}\n"
             "For each step, give one or two passing thoughts: what goes through your head while "
@@ -1235,7 +1240,7 @@ class Knight:
         before = {n: self.needs[n] for n in life.NEEDS}
         life.drift(self.needs, self.needs_idle_minutes)
         last_plan = load("plan.json", {})
-        life.live_out_plan(self.needs, last_plan, self.keep)
+        life.live_out_plan(self.needs, last_plan, self.keep, self.sky)
         if last_plan.get("steps"):
             append_line("evidence.jsonl", {
                 "time": iso(), "kind": "lived", "plan": [[s["place"], s["action"], s["minutes"]] for s in last_plan["steps"]],
@@ -1277,7 +1282,7 @@ class Knight:
                   f"Your voice: {sheet.get('voice', '')}\nWrite like yourself: plain and specific; no "
                   "narrator, no fantasy flourishes, no objects acting like people.")
         prompt = (
-            f"TASK: glance\n\nIt is {part_of_day()}. Right now you're {doing}. Still to come: {coming}.\n"
+            f"TASK: glance\n\nIt is {part_of_day()}. {weather.describe(self.sky)} Right now you're {doing}. Still to come: {coming}.\n"
             f"{life.describe_needs(self.needs)}\nYour mood: {plan.get('mood', '')}.\n"
             f"The last thing you wrote in your diary: {(self.diary[-1]['text'] if self.diary else '')[:300]}\n"
             + (f"Thoughts you've had lately (don't repeat them): {'; '.join(lately)}\n" if lately else "")

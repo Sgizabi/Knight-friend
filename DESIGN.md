@@ -5,7 +5,7 @@ weather, creatures with minds of their own, a companion, and visitors who can st
 something dangerous comes. It gathers everything the keeper has decided so far, in one place,
 so it can be approved before anything real is built.
 
-**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2).
+**Status:** being built, session by session (section 9). Live so far: **the bigger world** (section 2) and **weather** (section 3).
 The creature mockups can be seen at
 `https://sgizabi.github.io/Knight-friend/keep.html?demo&creature=dragon` (use ◀ ▶ to step through).
 Anything marked **open question** is still the keeper's call.
@@ -360,13 +360,36 @@ silent first.
 
 ---
 
+## 8b. Performance rules
+
+The thinking (minds, encounters, weather, the spawner) happens on GitHub's side; the page only
+draws. These rules keep the drawing smooth once everything is built, phones included.
+
+- **Lights are shared and capped.** Every extra light makes everything on screen dearer, and
+  adding or removing one causes a brief stutter. Creatures borrow from a small fixed set of
+  lights instead of bringing their own, only a few are active at once, and on low quality
+  glowing materials stand in for real lights.
+- **Transparency is budgeted.** Fog, mist, smoke, rain and snow are see-through layers that
+  are hard on phones when stacked. Particle counts scale with the quality setting, and weather
+  and creature effects share one budget.
+- **Creatures are prepared before they appear.** A being's materials are readied quietly while
+  its warning signs play out, so its arrival never stutters.
+- **Small files, loaded when needed.** Each creature lives in its own small file, fetched only
+  when that being is on its way.
+- **Little on screen at once.** One big being at a time, plus small life.
+- **Measured every session.** A budget checked before every push: the plain keep's frame rate
+  held, a steady frame rate on a mid-range phone at medium quality, and no new stutters. The
+  keeper's own phone is the real-world check at each wave.
+
+---
+
 ## 9. Building it: the sessions
 
 | # | Session | Live for Rooken? |
 |---|---|---|
 | 1 | This design, approved by the keeper | — |
 | 2 | The bigger world: landscape, wider camera, room for plots beyond the walls (**done**) | yes (scenery) |
-| 3 | Weather: rules, visuals, effects on his needs | yes |
+| 3 | Weather: rules, visuals, effects on his needs (**done**) | yes |
 | 4 | Creature foundations: shared world state, the spawner (rarity, conditions, seeing), creatures shown in the live keep | behind the scenes |
 | 5 | Encounters: awake stretches, his options, outcome rules, injuries and repairs, his bestiary | behind the scenes |
 | 6 | Minds: behaviour minds and voices, real-model tests, budget caps, the watch list updated | behind the scenes |
