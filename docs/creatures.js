@@ -2093,7 +2093,7 @@ const BEASTS = {
   // ================================================================ THE LONG CRAWL
   crawl: {
     name: 'The Long Crawl', hour: 18,
-    blurb: 'Hostile, and endlessly patient. A vast, slow, shelled thing that creeps toward the keep across the plain, a little closer every day. It never arrives: when it nears the wall, the knight\'s companion sends it back to the horizon, and it starts again. (Sped up here: in his world one crossing takes days.)',
+    blurb: 'Hostile, and endlessly patient. A vast, slow, shelled thing with a spiral of stone and stars on its back that creeps toward the keep across the plain, a little closer every other day, leaving a glittering trail. Bright fire turns it back: it pulls into its shell and slides away to the horizon, and some day it starts again. (Sped up here: in his world one crossing takes days.)',
     view: [[-6, 3.2, 20], [8, 1.2, 12]],
     knight: { place: 'fire', action: 'stand', emote: 'dots', note: 'checking how far it has come today' },
     build(root) {
@@ -2124,24 +2124,19 @@ const BEASTS = {
       // its glittering trail
       const trailM = new T.MeshBasicMaterial({ color: '#b8c8ff', transparent: true, opacity: .35, depthWrite: false });
       const trail = new T.Mesh(new T.PlaneGeometry(1.6, 1), trailM); trail.rotation.x = -Math.PI / 2; trail.position.y = .02; root.add(trail);
-      // a stand-in companion: a hound by the south wall that barks it back
-      const dog = G(root, [3.5, 0, 6.6], [0, .6, 0]), furM = A.mat('#6a4a32', 0, .9), furD = A.mat('#4a3424', 0, .9);
-      P(dog, A.ico(.2, 1), furM, [0, .42, 0], { scale: [.8, .8, 1.6] });
-      const dHead = G(dog, [0, .58, .32]);
-      P(dHead, A.ico(.12, 1), furM, [0, 0, 0]); P(dHead, new T.ConeGeometry(.06, .16, 5), furD, [0, -.03, .14], { rot: [Math.PI / 2, 0, 0] });
-      for (const sx of [-1, 1]) P(dHead, new T.ConeGeometry(.04, .1, 4), furD, [sx * .07, .1, -.02], { rot: [0, 0, sx * -.4] });
-      for (const [x, z] of [[-.08, .2], [.08, .2], [-.08, -.2], [.08, -.2]]) bone(dog, [x, .35, z], [x, 0, z], .035, .025, furD, 5);
-      const dTail = G(dog, [0, .5, -.3], [-.8, 0, 0]); bone(dTail, [0, 0, 0], [0, .25, 0], .025, .01, furM, 4);
-      const rings = [0, 1, 2].map(() => { const m = new T.Mesh(new T.TorusGeometry(1, .02, 3, 24), new T.MeshBasicMaterial({ color: '#fff2c8', transparent: true, opacity: 0, depthWrite: false })); root.add(m); return { m, born: -9 }; });
-      let ri = 0, lastBark = -9;
+      merge(body); merge(shell);                                         // fewer draws, same look
+      const ap = root.userData.appearance || {}, live = !!ap.id;
+      const seen = live ? Date.now() - Date.parse(ap.start) : 0;
       const from = V(13, 0, 20), to = V(5.0, 0, 9.0), dir = to.clone().sub(from).normalize();
-      g.rotation.y = Math.atan2(-dir.x, -dir.z);   // its head end faces the keep
+      g.rotation.y = Math.atan2(dir.x, dir.z);     // its head end faces the keep, the way it goes
       const CYCLE = 60;
       return (t) => {
         const k = t % CYCLE;
         let u, hide = 0;
-        if (k < 44) u = k / 44;                                     // creeping in
-        else if (k < 50) { u = 1; hide = smooth(44, 46, k); }       // the hound barks; it pulls into its shell
+        if (live) {                                                  // in the keep: as far as it has come on this day of its approach
+          u = Math.min(1, (ap.last ? 1 : ((ap.chain || 1) - 1) / 3 * .85) + Math.min(.06, (seen / 1000 + t) / 3600 * .06));
+        } else if (k < 44) u = k / 44;                               // creeping in
+        else if (k < 50) { u = 1; hide = smooth(44, 46, k); }        // fire turns it: it pulls into its shell
         else { u = 1 - smooth(50, 60, k); hide = 1 - smooth(57, 60, k); }   // and slides back to the horizon
         g.position.lerpVectors(from, to, u);
         body.scale.set(1, 1, 1 - hide * .35); stalks.forEach(s => s.scale.setScalar(1 - hide * .9));
@@ -2150,11 +2145,6 @@ const BEASTS = {
         stalks.forEach((s, i) => { s.rotation.z = (i ? -.3 : .3) + Math.sin(t * .8 + i) * .15; });
         const mid = g.position.clone().lerp(from, .5); trail.position.set(mid.x, .02, mid.z); trail.scale.set(1, g.position.distanceTo(from) + .01, 1);
         trail.rotation.z = Math.atan2(dir.x, dir.z); trailM.opacity = .25 + Math.sin(t * 2) * .05;
-        const barking = k > 44 && k < 49;
-        if (barking && t - lastBark > .7) { const rg = rings[ri++ % 3]; rg.born = t; rg.m.position.set(dog.position.x, .7, dog.position.z); rg.m.rotation.x = Math.PI / 2; lastBark = t; }
-        dHead.rotation.x = barking ? -.3 + Math.abs(Math.sin(t * 9)) * -.25 : Math.sin(t * .5) * .1;
-        dTail.rotation.z = Math.sin(t * (barking ? 14 : 4)) * .5;
-        for (const rg of rings) { const q = (t - rg.born) / 1.6; rg.m.visible = q < 1; if (q < 1) { rg.m.scale.setScalar(.3 + q * 4); rg.m.material.opacity = .7 * (1 - q); } }
       };
     },
   },
