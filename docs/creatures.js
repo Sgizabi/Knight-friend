@@ -2289,36 +2289,75 @@ const BEASTS = {
   // ================================================================ THE DOORWAY FIGURE
   doorway: {
     name: 'The Doorway Figure', hour: 22,
-    blurb: 'Someone standing in the courtyard door at night, backlit, too tall for the frame and bent to fit. It never steps in uninvited. Shut the door and it is gone by morning. Leave it open...',
-    view: [[-.8, 1.5, 1.0], [-5.6, 1.5, 1.0]],
+    blurb: 'Someone standing in the courtyard door at night, backlit by pale mist: far too tall for the frame, folded down so its head comes just under the lintel, long pale fingers curled round the door posts. No face. It never steps over the threshold uninvited. Shut the door and it is gone by morning. Leave it open...',
+    view: [[-.6, 1.55, 1.3], [-5.6, 1.7, 1.0]],
     knight: { place: 'fire', action: 'sit', emote: 'exclaim', note: 'not inviting anyone in' },
     build(root) {
-      const dark = A.mat('#0e0d10', 0, .9), pale = A.mat('#cfc8bd', 0, .6);
-      const g = G(root, [-6.15, 0, 1.0], [0, Math.PI / 2, 0]);
-      for (const sx of [-1, 1]) { bone(g, [sx * .14, 1.45, -.1], [sx * .17, .72, .05], .06, .05, dark); bone(g, [sx * .17, .72, .05], [sx * .14, 0, -.05], .05, .04, dark); }
-      const spine = G(g, [0, 1.45, -.1], [.85, 0, 0]);   // bent forward to fit under the lintel
-      P(spine, A.cyl(.2, .14, 1.2, 6), dark, [0, .6, 0], { scale: [1, 1, .6] });
-      const neck = G(spine, [0, 1.25, 0], [.5, 0, .55]);
-      bone(neck, [0, 0, 0], [0, .35, 0], .045, .04, dark);
-      const head = G(neck, [0, .48, 0]);
-      P(head, A.ico(.14, 1), dark, [0, 0, 0], { scale: [.85, 1.2, .9] });
-      for (const sx of [-1, 1]) P(head, A.ico(.016, 0), glow('#e8f0ff', 2.2), [sx * .04, .02, .12], { cast: false });
-      for (const [sx, zz] of [[-1, -.62], [1, .62]]) {   // long arms reaching to grip the door frame
-        const sh = G(spine, [sx * .22, 1.12, 0]);
-        bone(sh, [0, 0, 0], [sx * .35, -.25, .45], .045, .035, dark);
-        const hand = G(g, [zz, 1.55, .5]);
-        bone(hand, [0, 0, 0], [0, .1, 0], .03, .02, pale, 4);
-        for (let f = 0; f < 4; f++) bone(hand, [0, .1, 0], [-sx * .03, .15 + f * .07, .16], .009, .005, pale, 4);
+      const v = root.userData.appearance?.variant || {};
+      const age = v.age || '';
+      const dark = A.mat('#0c0b0e', 0, .9), darkL = A.mat('#16141a', 0, .9);
+      const pale = A.mat('#b9b2a8', 0, .6, { emissive: '#2c2a28', emissiveIntensity: .4 });
+      // the doorway: the hall's west wall at x -5.3 (its outer face at about -5.65), the opening from
+      // z .35 to 1.65, the lintel at 2.4. It stands outside, and nothing of it passes through stone.
+      const OUT = -5.66, Z0 = .38, Z1 = 1.62, LINTEL = 2.4;
+      const g = G(root, [-6.55, 0, 1.0], [0, Math.PI / 2, 0]);           // facing the hall (+x)
+      const tall = age === 'old' ? 1.08 : age === 'young' ? .92 : 1;
+      for (const sx of [-1, 1]) {                                        // long legs, knees a little bent
+        bone(g, [sx * .15, 1.75 * tall, -.1], [sx * .17, .9 * tall, .12], .065, .05, dark);
+        bone(g, [sx * .17, .9 * tall, .12], [sx * .14, 0, -.02], .05, .04, dark);
       }
-      const back = new T.PointLight('#a9c0ff', 6, 7, 1.4); back.position.set(-7.8, 1.8, 1.0); root.add(back);
-      const mist = Array.from({ length: 8 }, (_, i) => {
-        const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#7a8296', transparent: true, opacity: .25, depthWrite: false }));
-        sp.position.set(-7 - (i % 4) * 1.4, .4 + Math.floor(i / 4) * .6, -.5 + (i % 3)); sp.scale.setScalar(3); root.add(sp); return sp;
+      // the body folds forward over the lintel's height, staying outside the wall
+      const spine = G(g, [0, 1.75 * tall, -.1], [1.25, 0, 0]);   // folded down to come in under the lintel
+      P(spine, A.cyl(.2, .14, 1.05, 7), dark, [0, .52, 0], { scale: [1, 1, .62] });
+      for (let i = 0; i < 6; i++) P(spine, A.ico(.035, 0), darkL, [0, .15 + i * .15, -.1], { cast: false });   // a spine you can count
+      const neck = G(spine, [0, 1.08, .02], [.5, 0, 0]);
+      bone(neck, [0, 0, 0], [0, .32, 0], .045, .04, dark);
+      const head = G(neck, [0, .44, .02]);
+      P(head, A.ico(.15, 2), darkL, [0, 0, 0], { scale: [.8, 1.25, .88], jitter: .004 });   // nothing on it
+      // arms: up and out to the door posts, fingers curled round the stone
+      const hands = [];
+      for (const sx of [-1, 1]) {
+        const sh = G(spine, [sx * .22, .98, 0]);
+        const zJamb = sx < 0 ? Z0 : Z1;
+        const handAt = new T.Vector3(OUT - .02, 1.95, zJamb - sx * .03);
+        hands.push({ sh, sx, handAt });
+      }
+      // the arms are placed in world space each frame from shoulder to the hand on the post
+      const armMeshes = hands.map(() => [P(root, A.cyl(.032, .045, 1, 6), dark), P(root, A.cyl(.025, .032, 1, 6), dark)]);
+      const fingerSets = hands.map(({ sx, handAt }) => {
+        const hg = G(root, handAt.toArray());
+        P(hg, A.box(.05, .14, .07), pale, [0, 0, 0]);
+        const fs = [];
+        for (let f = 0; f < 4; f++) {                                   // over the edge of the post, into the opening
+          const fb = G(hg, [.02, .05 - f * .045, 0]);
+          const c = chain(fb, 3, .07, .011, .006, pale, { sides: 4, jitter: .001 });
+          fb.rotation.set(0, 0, -Math.PI / 2); fb.rotation.y = sx * .9;
+          fs.push(c);
+        }
+        return { hg, fs };
       });
+      // pale mist behind it (no light of its own: its outline is enough)
+      const mist = Array.from({ length: 10 }, (_, i) => {
+        const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#9aa4bb', transparent: true, opacity: .32, depthWrite: false, fog: false }));
+        sp.position.set(-7.4 - (i % 4) * 1.2, .5 + Math.floor(i / 4) * .7, .2 + (i % 3) * .8); sp.scale.setScalar(3.2); root.add(sp); return sp;
+      });
+      const a = V(), b = V(), mid = V(), q = new T.Quaternion(), up = V(0, 1, 0);
+      const place = (m, from, to) => { mid.copy(from).add(to).multiplyScalar(.5); m.position.copy(mid);
+        const d = to.clone().sub(from); m.scale.set(1, d.length(), 1); q.setFromUnitVectors(up, d.normalize()); m.quaternion.copy(q); };
       return (t) => {
-        neck.rotation.z = .55 + Math.sin(t * .2) * .08;
-        spine.rotation.x = .85 + Math.sin(t * .6) * .015;
+        spine.rotation.x = 1.25 + Math.sin(t * .5) * .01;               // breathing, barely
+        neck.rotation.z = Math.sin(t * .13) * .18;                       // the head tilts, slowly, one way then the other
+        head.rotation.y = Math.sin(t * .09) * .12;
+        hands.forEach(({ sh }, i) => {
+          sh.getWorldPosition(a); const h = hands[i].handAt;
+          const elbow = a.clone().lerp(h, .5).add(V(.05, .25, 0));
+          place(armMeshes[i][0], a, elbow); place(armMeshes[i][1], elbow, h);
+        });
+        fingerSets.forEach(({ fs }, i) => fs.forEach((c, f) => c.forEach((j, k) => {
+          j.rotation.z = .5 + pulse(t + f * .35 + i * 3, 7, .5) * .35;   // now and then, one after another, they tap
+        })));
         mist.forEach((m, i) => { m.position.x += Math.sin(t * .3 + i) * .002; });
+        void b; void LINTEL;
       };
     },
   },
