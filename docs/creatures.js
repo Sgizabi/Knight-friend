@@ -1944,33 +1944,6 @@ const BEASTS = {
     },
   },
 
-  // ================================================================ THE EXTRA SHADOW
-  shadow2: {
-    name: 'The Extra Shadow', hour: 22,
-    blurb: 'By the fire, there is one shadow too many on the wall: tall, thin, standing. Turn around and no one is there. Each night it stands a little nearer to where the knight sits. It lives only in shadow, so a bright room keeps it away.',
-    view: [[.6, 1.6, 2.4], [-1.2, 1.7, -4]],
-    knight: { place: 'fire', action: 'sit', emote: 'dots', note: 'not turning round' },
-    build(root) {
-      const tex = canvasTex(256, 512, (c, w, h) => {
-        c.clearRect(0, 0, w, h); c.filter = 'blur(6px)'; c.fillStyle = 'rgba(0,0,0,.95)';
-        c.beginPath(); c.ellipse(w / 2, 70, 26, 34, 0, 0, 6.3); c.fill();
-        c.beginPath(); c.moveTo(w / 2 - 40, 115); c.lineTo(w / 2 + 40, 115); c.lineTo(w / 2 + 30, 330); c.lineTo(w / 2 + 24, 500); c.lineTo(w / 2 + 6, 500);
-        c.lineTo(w / 2, 340); c.lineTo(w / 2 - 6, 500); c.lineTo(w / 2 - 24, 500); c.lineTo(w / 2 - 30, 330); c.closePath(); c.fill();
-        c.lineWidth = 12; c.strokeStyle = 'rgba(0,0,0,.95)'; c.lineCap = 'round';
-        c.beginPath(); c.moveTo(w / 2 - 38, 120); c.lineTo(w / 2 - 54, 260); c.lineTo(w / 2 - 50, 380); c.stroke();
-        c.beginPath(); c.moveTo(w / 2 + 38, 120); c.lineTo(w / 2 + 58, 250); c.lineTo(w / 2 + 70, 360); c.stroke();
-      });
-      const m = new T.Mesh(new T.PlaneGeometry(1.3, 2.6), new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: .8 }));
-      m.position.set(-.9, 1.35, -3.95); root.add(m);
-      return (t) => {
-        const k = (t * .03) % 1;
-        m.position.x = -.8 - k * .9;
-        m.material.opacity = .82 + .14 * Math.sin(t * 9) * Math.sin(t * 5.3);
-        m.rotation.z = Math.sin(t * .4) * .03; m.scale.x = 1 + Math.sin(t * 7) * .03;
-      };
-    },
-  },
-
   // ================================================================ THE DOORWAY FIGURE
   doorway: {
     name: 'The Doorway Figure', hour: 22,
@@ -2155,7 +2128,7 @@ const BEASTS = {
 
   // ================================================================ THE LONG MAN, FINAL LOOK (art pass)
   longman2: {
-    name: 'The Long Man (final look, void)', hour: 18,
+    name: 'The Long Man (final look)', hour: 18, specks: true,
     blurb: 'Art pass: how the Long Man would look in the finished version. It only moves when no one is watching, and each time it is a little closer, standing a little differently. (Try looking away.)',
     view: [[-7.6, 1.7, 1.4], [-24, 3.4, -1.6]],
     knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'not looking at it. Not looking at it.' },
@@ -2228,8 +2201,6 @@ const BEASTS = {
     },
   },
 };
-BEASTS.longman3 = { ...BEASTS.longman2, name: 'The Long Man (final look, void with specks)', specks: true,
-  blurb: 'The same final look, but with a few faint specks deep in the void of its face, as if it goes much further back than its head does. (Try looking away.)' };
 const ORDER = Object.keys(BEASTS);
 const TIMES = [['day', 13], ['dusk', 18], ['night', 22]];
 
