@@ -1,44 +1,46 @@
 {
-  "start": "2026-11-21T21:02:38+00:00",
+  "start": "2026-11-21T23:02:38+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "workbench",
-      "action": "work",
+      "place": "fire",
+      "action": "sit",
       "minutes": 20,
-      "emote": "question",
-      "note": "check shim placement",
+      "emote": "heart",
+      "note": "let the fire warm me while I rest",
       "thoughts": [
-        "Does this shim feel too thick?",
-        "Rain sounds like a hammer."
+        "The stone still feels cold under the hearth."
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "update inventory of glass shards",
+      "thoughts": [
+        "Need to count the shards before they roll away."
       ]
     },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "dots",
-      "note": "heat some metal for future tools",
+      "emote": "question",
+      "note": "check bellows for rust and oil the hinges",
       "thoughts": [
-        "Cold iron needs a warm welcome.",
-        "Hope the fire stays cooperative."
+        "The rain makes the metal sigh."
       ]
     },
     {
-      "place": "glasshouse",
-      "action": "gaze",
+      "place": "bedroll",
+      "action": "sleep",
       "minutes": 20,
-      "emote": "heart",
-      "note": "watch seedlings sway",
+      "emote": "zzz",
+      "note": "short nap to restore rest",
       "thoughts": [
-        "Green against stone is oddly satisfying.",
-        "Maybe I’ll add a support beam later."
+        "Hope the roof holds through the night."
       ]
     }
-  ],
-  "applied_until": "2026-11-21T22:00:25+00:00",
-  "live_thought": {
-    "text": "Rain drums, stone watches; I’ll watch the seedlings sway.",
-    "time": "2026-11-21T22:00:25+00:00"
-  }
+  ]
 }

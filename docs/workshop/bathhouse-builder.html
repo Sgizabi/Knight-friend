@@ -2,7 +2,7 @@
 <html lang="en">
 <head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; media-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'"><meta name="referrer" content="no-referrer">
 <meta charset="UTF-8">
-<title>Bathhouse Builder – Updated</title>
+<title>Bathhouse Builder – Updated with Final Verification</title>
 <style>
   body{font-family:sans-serif;background:#f0f0f0;margin:0;padding:1em}
   #grid{display:grid;grid-template-columns:repeat(10,30px);gap:2px;margin-bottom:1em}
@@ -13,6 +13,7 @@
   .unstable{outline:3px solid red;outline-offset:-3px}
   #tools button{margin-right:.5em}
   #flow{margin-top:1em;font-size:0.9em}
+  #result{margin-top:.5em;font-weight:bold}
 </style>
 </head>
 <body>
@@ -23,18 +24,19 @@
   <button data-mode="clear">Clear</button>
   <button id="addShim">Add Shim</button>
   <button id="test">Test Stability</button>
+  <button id="verify">Final Verify</button>
 </div>
 <div id="grid"></div>
 <div id="flow"></div>
+<div id="result"></div>
 
 <script>
 const rows=10, cols=10;
 let mode='wall';
-document.querySelectorAll('#tools button[data-mode]').forEach(b=>{
-  b.onclick=()=>{mode=b.dataset.mode};
-});
+document.querySelectorAll('#tools button[data-mode]').forEach(b=>b.onclick=()=>mode=b.dataset.mode);
 document.getElementById('addShim').onclick=addShim;
 document.getElementById('test').onclick=testStability;
+document.getElementById('verify').onclick=finalVerify;
 
 const grid=document.getElementById('grid');
 for(let i=0;i<rows*cols;i++){
@@ -62,7 +64,6 @@ function toggle(cell){
 }
 
 function addShim(){
-  // find first empty floor cell (non‑wall) and mark as shim
   for(const c of grid.children){
     if(c.dataset.state==='empty'){
       c.className='cell shim';
@@ -73,11 +74,7 @@ function addShim(){
 }
 
 function testStability(){
-  // any wall cell not supported by a floor (wall or shim) beneath is unstable
-  // simple rule: if a wall has empty below it, mark unstable
-  for(const c of grid.children){
-    c.classList.remove('unstable');
-  }
+  clearMarks();
   for(let i=0;i<grid.children.length;i++){
     const cell=grid.children[i];
     if(cell.dataset.state!=='wall') continue;
@@ -90,10 +87,28 @@ function testStability(){
     }
   }
   drawFlow();
+  document.getElementById('result').textContent=''; // clear old result
+}
+
+function finalVerify(){
+  // Run stability test then decide pass/fail
+  testStability();
+  const unstable=document.querySelectorAll('.unstable').length;
+  const res=document.getElementById('result');
+  if(unstable===0){
+    res.textContent='Structure PASS: no unstable walls.';
+    res.style.color='green';
+  }else{
+    res.textContent=`Structure FAIL: ${unstable} unstable wall${unstable>1?'s':''}.`;
+    res.style.color='red';
+  }
+}
+
+function clearMarks(){
+  for(const c of grid.children) c.classList.remove('unstable');
 }
 
 function drawFlow(){
-  // basic flow diagram: list water cells and where they could go (downward if empty)
   const lines=[];
   for(let i=0;i<grid.children.length;i++){
     const cell=grid.children[i];
@@ -102,7 +117,7 @@ function drawFlow(){
     if(belowIdx<grid.children.length){
       const below=grid.children[belowIdx];
       if(below.dataset.state==='empty'){
-        lines.push(`Water at (${i%cols},${Math.floor(i/cols)}) → (${belowIdx%cols},${Math.floor(belowIdx/cols)})`);
+        lines.push(`Water (${i%cols},${Math.floor(i/cols)})→(${belowIdx%cols},${Math.floor(belowIdx/cols)})`);
       }
     }
   }

@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-21T23:00:29+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-21T23:02:39+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "add final stability verification step and record pass/fail result",
-  "thought": "The rain hammers the roof but the bathhouse floor feels solid. I could tighten the last beam or just watch the fire while it burns down a log."
+  "note": "",
+  "thought": ""
 }
