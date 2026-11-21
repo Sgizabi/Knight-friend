@@ -59,7 +59,7 @@ KINDS = {
     "doorway":      dict(name="the Doorway Figure", nature="hostile", rarity="rare", step=1, when="night", minutes=(30, 60)),
 }
 
-RARITY_WEIGHT = {"common": 10, "uncommon": 5, "rare": 2, "legendary": .4}
+RARITY_WEIGHT = {"common": 10, "uncommon": 5, "rare": 2, "legendary": .9}   # legendary: about 3-5 a year
 COOLDOWN_DAYS = {"common": 4, "uncommon": 7, "rare": 20, "legendary": 60}
 WITNESS_POINTS = {"common": 1, "uncommon": 2, "rare": 4, "legendary": 8}
 STEPS = [0, 10, 45, 150, 320]     # witness points for each step of seeing: about a week, a month, four months, eight
