@@ -520,7 +520,9 @@ const BEASTS = {
       const scorch = new T.Mesh(new T.CircleGeometry(1.6, 12), A.mat('#1a1411', 0, 1)); scorch.rotation.x = -Math.PI / 2; scorch.position.y = .03; g.add(scorch);
       const er = A.rand(71);
       for (let i = 0; i < 12; i++) { const a = er() * 6.28, d = .6 + er() * .9; P(g, A.box(.05, .02, .12), seam, [Math.cos(a) * d, .04, Math.sin(a) * d], { rot: [0, a, 0], cast: false }); }
-      const heat = new T.PointLight('#ff7a2a', 2.5, 4, 1.6); heat.position.set(0, .4, .6); g.add(heat);
+      const halo = (parent, pos, sc, col) => { const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: col, transparent: true, opacity: .5,
+        depthWrite: false, blending: T.AdditiveBlending, fog: false })); sp.position.set(...pos); sp.scale.setScalar(sc); parent.add(sp); return sp; };
+      const heat = halo(g, [0, .4, .6], 2.2, '#ff7a2a');              // the heat of it, without a light of its own
       const EN = 36, ep = new Float32Array(EN * 3), eLife = Float32Array.from({ length: EN }, (_, i) => i / EN);
       const eFrom = Array.from({ length: EN }, (_, i) => [[-.47, .99], [.47, .99], [-.47, 1.76], [.47, 1.76], [-.47, .25], [.47, .25]][i % 6]);
       const eg = new T.BufferGeometry(); eg.setAttribute('position', new T.BufferAttribute(ep, 3));
@@ -535,7 +537,7 @@ const BEASTS = {
       P(torso, A.box(.05, .55, .02), seam, [-.1, .85, .49], { rot: [0, 0, .3], cast: false });
       P(torso, A.box(.05, .35, .02), seam, [.12, .62, .43], { rot: [0, 0, -.5], cast: false });
       P(torso, A.ico(.16, 0), seam, [0, .9, .43], { cast: false });
-      const core = new T.PointLight('#ff9a3a', 2, 3.5, 2); core.position.set(0, .9, .8); torso.add(core);
+      const core = halo(torso, [0, .9, .8], 1.6, '#ff9a3a');
       for (const sx of [-1, 1]) {
         P(torso, A.box(.6, .1, .5), moss, [sx * .55, 1.6, 0], { jitter: .04 });
         for (let i = 0; i < 4; i++) P(torso, new T.ConeGeometry(.04, .25, 4), mossL, [sx * (.4 + i * .1), 1.75, (i % 2) * .2 - .1]);
@@ -580,8 +582,8 @@ const BEASTS = {
           f.m.position.set(handPos.x + Math.cos(a) * f.rad, .2 + k * (handPos.y - .2) + Math.sin(t * 2 + f.a) * .08, handPos.z + Math.sin(a) * f.rad);
           f.m.rotation.set(t * f.sp, t * .7, 0);
         }
-        seam.emissiveIntensity = eyes.emissiveIntensity = 2.2 + Math.sin(t * 1.3) * .8; core.intensity = 1.6 + Math.sin(t * 1.3) * .6;
-        heat.intensity = 2.2 + Math.sin(t * 1.3) * .6 + Math.sin(t * 7) * .2;
+        seam.emissiveIntensity = eyes.emissiveIntensity = 2.2 + Math.sin(t * 1.3) * .8; core.material.opacity = .4 + Math.sin(t * 1.3) * .15;
+        heat.material.opacity = .42 + Math.sin(t * 1.3) * .12 + Math.sin(t * 7) * .04;
         for (let i = 0; i < EN; i++) {
           eLife[i] += .006 + (i % 4) * .0015; if (eLife[i] > 1) eLife[i] = 0;
           const k = eLife[i], [x, y] = eFrom[i];
@@ -601,10 +603,13 @@ const BEASTS = {
     knight: { place: 'repair:doorway', action: 'stand', emote: 'exclaim', note: 'watching the well from the doorway' },
     build(root) {
       const g = G(root, [-8.2, 0, 2.4]);
-      const skin = A.mat('#4a3358', .1, .35), skinD = A.mat('#33233f', .1, .4), sucker = A.mat('#d8b2c4', 0, .45);
+      const skin = A.mat('#4a3358', .1, .3, { emissive: '#1e1428', emissiveIntensity: .7 }), skinD = A.mat('#33233f', .1, .35, { emissive: '#170f1f', emissiveIntensity: .7 });   // wet, faintly sheened
+      const sucker = A.mat('#d8b2c4', 0, .45, { emissive: '#3a2a32', emissiveIntensity: .5 });
       const water = glow('#2fd3c0', .9);
       const disc = new T.Mesh(new T.CircleGeometry(.44, 12), water); disc.rotation.x = -Math.PI / 2; disc.position.y = .55; g.add(disc);
-      const lamp = new T.PointLight('#3fe0c8', 4, 7, 1.6); lamp.position.set(.3, .95, .5); g.add(lamp);
+      const lamp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#3fe0c8', transparent: true, opacity: .45, depthWrite: false,
+                                                      blending: T.AdditiveBlending, fog: false }));
+      lamp.position.set(0, .8, 0); lamp.scale.setScalar(2.4); g.add(lamp);      // the water's glow, without a light of its own
       const specs = [   // where it rises, how it curls
         { at: [-.15, .2], yaw: 2.3, n: 14, len: .3, r: .2, base: .05, curl: .14, amp: .1 },     // tall, question-mark
         { at: [.2, .1], yaw: -.95, n: 13, len: .28, r: .18, base: .9, curl: -.05, amp: .06, bend: [.35, .35, .3, .1] },   // over the rim, onto the grass
@@ -619,9 +624,9 @@ const BEASTS = {
         return { j, sp, ph: k * 1.7 };
       });
       const eye = G(g, [.14, .62, .17]);
-      P(eye, new T.SphereGeometry(.3, 12, 9), A.mat('#d8d2b0', 0, .35), [0, 0, 0], { jitter: 0 });
-      P(eye, new T.CircleGeometry(.15, 12), glow('#f0a020', 1.6), [0, 0, .301], { jitter: 0, cast: false });
-      P(eye, A.box(.035, .22, .01), A.mat('#050405'), [0, 0, .31], { jitter: 0, cast: false });
+      P(eye, new T.SphereGeometry(.3, 16, 12), A.mat('#cfc8b6', 0, .2, { emissive: '#3a3730', emissiveIntensity: .45 }), [0, 0, 0], { jitter: 0 });   // pale and wet
+      const iris = new T.Mesh(new T.SphereGeometry(.302, 16, 8, 0, Math.PI * 2, 0, .42), glow('#c98a2a', .7)); iris.rotation.x = Math.PI / 2; eye.add(iris);
+      P(eye, A.box(.018, .2, .01), A.mat('#050405'), [0, 0, .3], { jitter: 0, cast: false });                       // a thin slit
       const camPos = new T.Vector3(), eyePos = new T.Vector3();
       return (t) => {
         for (const { j, sp, ph } of arms) j.forEach((jt, i) => {
@@ -633,7 +638,7 @@ const BEASTS = {
         eye.position.y = .5 + rise * .48;
         A.camera.getWorldPosition(camPos); eye.getWorldPosition(eyePos);
         eye.lookAt(camPos); eye.scale.y = 1 - pulse(t, 5.5, .25) * .9;
-        water.emissiveIntensity = .7 + Math.sin(t * 1.7) * .25; lamp.intensity = 3.6 + Math.sin(t * 1.7) * 1;
+        water.emissiveIntensity = .7 + Math.sin(t * 1.7) * .25; lamp.material.opacity = .38 + Math.sin(t * 1.7) * .1;
       };
     },
   },
