@@ -177,6 +177,8 @@ for _kind, _ts in _by.items():                                           # no ki
     assert all(b - a >= _cd - _dt.timedelta(days=1) for a, b in zip(_ts, _ts[1:])), _kind
 assert 1 <= _be["step"] <= 3 and _be["points"] >= 10                     # seeing grows as it witnesses, slowly
 assert all(creatures.KINDS[k]["step"] <= _be["step"] for k in _by)
+assert all(not (a.get("variant") or {}).get("age") or a["kind"] in creatures.AGED for a in _apps)   # ages only where they mean something
+assert any((a.get("variant") or {}).get("age") for a in _apps)
 _ids = {a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
 _pairs = [(a, _ids.get(a["with"])) for a in _apps if a.get("companion")]
 assert 1 <= len(_pairs) <= len(_apps) // 4, len(_pairs)

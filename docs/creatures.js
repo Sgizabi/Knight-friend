@@ -826,8 +826,12 @@ const BEASTS = {
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'backing toward the doorway' },
     build(root) {
       const hx = -9.7, hz = -.1;                                       // open ground: clear of the buildings, the tree, the well and him
-      const v = root.userData.appearance?.variant || {}, big = (v.size || 1) * (v.age === 'young' ? .7 : v.age === 'old' ? 1.12 : 1);
-      const hide = A.mat('#7c6c55', 0, .8), band = A.mat('#4d4235', 0, .85), bone_ = A.mat('#e0d6bd', 0, .6), dark = A.mat('#0b0806', 0, 1);
+      const v = root.userData.appearance?.variant || {}, young = v.age === 'young', old = v.age === 'old';
+      // the young: pale and soft-looking, one ring of small teeth. The old: dark and scarred, stones
+      // lodged in its hide from long years underground, more rings of teeth, some broken.
+      const big = (v.size || 1) * (young ? .6 : old ? 1.15 : 1);
+      const hide = A.mat(young ? '#b8a68e' : old ? '#5a4c3c' : '#7c6c55', 0, .8), band = A.mat(young ? '#8a7a64' : old ? '#352c22' : '#4d4235', 0, .85);
+      const bone_ = A.mat(old ? '#c9b994' : '#e0d6bd', 0, .6), dark = A.mat('#0b0806', 0, 1);
       const hole = new T.Mesh(new T.CircleGeometry(1.25, 14), dark); hole.rotation.x = -Math.PI / 2; hole.position.set(hx, .035, hz); root.add(hole);
       const r = A.rand(5);
       for (let i = 0; i < 16; i++) {
@@ -838,6 +842,8 @@ const BEASTS = {
       const segs = chain(base, 9, .58, .95, .78, hide, { sides: 9, jitter: .04, each: (i, j, ra) => {
         P(j, A.cyl(ra * 1.07, ra * 1.07, .14, 9), band, [0, .05, 0], { jitter: .02 });
         for (let k = 0; k < 6; k++) { const a = k / 6 * 6.28; P(j, A.box(.18, .3, .1), band, [Math.cos(a) * ra * 1.02, .3, Math.sin(a) * ra * 1.02], { rot: [0, -a, 0] }); }
+        if (old && i % 2 === 1 && i < 8) { const a = i * 2.1; P(j, A.ico(.16, 0), A.M.stone, [Math.cos(a) * ra * .95, .35, Math.sin(a) * ra * .95], { cast: false }); }   // stones lodged in its hide
+        if (old && i === 3) P(j, A.box(.04, .5, .03), A.mat('#2a2018'), [ra * .98, .3, 0], { rot: [0, 0, .5], cast: false });   // a long scar
       } });
       // the last segment is a hollow ring (its cap and joint ball would close the mouth)
       segs[8].remove(segs[8].children[1]); segs[8].remove(segs[8].children[0]); segs[7].remove(segs[7].children[1]);
@@ -850,10 +856,11 @@ const BEASTS = {
       const throat = glow('#ff3a18', 1.2);
       const tc = new T.Mesh(new T.CircleGeometry(.13, 8), throat); tc.rotation.x = -Math.PI / 2; tc.position.y = -.63; mouth.add(tc);
       const rings = [];
-      for (let ring = 0; ring < 3; ring++) {
+      for (let ring = 0; ring < (young ? 1 : old ? 4 : 3); ring++) {
         const rg = G(mouth, [0, .1 - ring * .08, 0]); rings.push(rg);
         const n = 12 - ring * 2, rad = .78 - ring * .18;
-        for (let k = 0; k < n; k++) { const a = k / n * 6.28; P(rg, new T.ConeGeometry(.06 - ring * .01, .3 - ring * .08, 4), bone_, [Math.cos(a) * rad, .1, Math.sin(a) * rad], { rot: [Math.sin(a) * -.35, 0, Math.cos(a) * .35] }); }
+        for (let k = 0; k < n; k++) { const a = k / n * 6.28; if (old && (k * 7 + ring) % 5 === 0) continue;   // a few broken out
+          P(rg, new T.ConeGeometry(Math.max(.02, .06 - ring * .01) * (young ? .7 : 1), Math.max(.1, .3 - ring * .08) * (young ? .6 : 1), 4), bone_, [Math.cos(a) * rad, .1, Math.sin(a) * rad], { rot: [Math.sin(a) * -.35, 0, Math.cos(a) * .35] }); }
       }
       for (let k = 0; k < 14; k++) { const a = k / 14 * 6.28; P(mouth, new T.ConeGeometry(.02, .35, 3), band, [Math.cos(a) * .98, .2, Math.sin(a) * .98], { rot: [Math.sin(a) * .5, 0, -Math.cos(a) * .5], cast: false }); }
       // another coil, breaking the ground outside the north wall
@@ -1216,21 +1223,27 @@ const BEASTS = {
   // ================================================================ THE STARFALLEN LARVA
   larva: {
     name: 'The Starfallen Larva', hour: 22,
-    blurb: 'One of the things that fell. A pale grub the size of a cart, lit from inside with starlight, curled in a crater in the courtyard. It seems harmless. It is a little bigger every time it comes back.',
-    view: [[-8.6, 2.4, 4.8], [-13.3, .5, 1.1]],
+    blurb: 'One of the things that fell. A pale grub the size of a cart, lit from inside with starlight, curled in a crater just beyond the courtyard wall, where it fell. It seems harmless. It is a little bigger every time it comes back.',
+    view: [[-8.0, 3.0, 2.4], [-10.2, .6, 7.6]],
     knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'wondering whether it is warm, or cold, or anything at all' },
     build(root) {
-      const cx = -13.6, cz = 1.4;
-      const pit = new T.Mesh(new T.CircleGeometry(1.9, 14), A.mat('#14100d', 0, 1)); pit.rotation.x = -Math.PI / 2; pit.position.set(cx, .03, cz); root.add(pit);
+      const v = root.userData.appearance?.variant || {}, young = v.age === 'young', old = v.age === 'old';
+      // the young: a small, see-through grub, a few stars in it. The old: bigger, hard plates along its
+      // back, folded wing-buds, its light far brighter, as if close to becoming something else.
+      const k = (v.size || 1) * (young ? .5 : old ? 1.15 : .85);
+      const cx = -10.2, cz = 7.6;                                        // where it fell: just beyond the south wall, by the road
+      const pit = new T.Mesh(new T.CircleGeometry(1.9 * k, 14), A.mat('#14100d', 0, 1)); pit.userData.ground = true; pit.rotation.x = -Math.PI / 2; pit.position.set(cx, gy(cx, cz) + .03, cz); root.add(pit);
       const r = A.rand(17), shardM = glow('#cfe2ff', 1.6);
       for (let i = 0; i < 14; i++) {
-        const a = i / 14 * 6.28, d = 1.8 + r() * .4;
-        P(root, A.box(.4 + r() * .3, .18 + r() * .2, .35), i % 3 ? A.M.dirt : A.M.stone, [cx + Math.cos(a) * d, .08, cz + Math.sin(a) * d], { rot: [r() - .5, a, (r() - .5) * .8] });
-        if (i % 2) P(root, new T.TetrahedronGeometry(.05 + r() * .05), shardM, [cx + Math.cos(a + .2) * (d - .5), .06, cz + Math.sin(a + .2) * (d - .5)], { cast: false });
+        const a = i / 14 * 6.28, d = (1.8 + r() * .4) * k;
+        P(root, A.box(.4 + r() * .3, .18 + r() * .2, .35), i % 3 ? A.M.dirt : A.M.stone, [cx + Math.cos(a) * d, gy(cx + Math.cos(a) * d, cz + Math.sin(a) * d) + .08, cz + Math.sin(a) * d], { rot: [r() - .5, a, (r() - .5) * .8] });
+        if (i % 2) P(root, new T.TetrahedronGeometry(.05 + r() * .05), shardM, [cx + Math.cos(a + .2) * (d - .5), gy(cx, cz) + .06, cz + Math.sin(a + .2) * (d - .5)], { cast: false });
       }
-      const skin = new T.MeshStandardMaterial({ color: '#e6e1f2', transparent: true, opacity: .7, roughness: .35, emissive: '#7f8ad8', emissiveIntensity: .75, flatShading: true, depthWrite: false });
+      const skin = new T.MeshStandardMaterial({ color: '#e6e1f2', transparent: true, opacity: young ? .5 : .7, roughness: .35, emissive: '#7f8ad8', emissiveIntensity: old ? 1.3 : .75, flatShading: true, depthWrite: false });
+      const plateM = A.mat('#6a6488', .2, .4, { emissive: '#2a2648', emissiveIntensity: .6 });
+      const budM = new T.MeshStandardMaterial({ color: '#cfe0ff', transparent: true, opacity: .45, emissive: '#8fa8ff', emissiveIntensity: .8, side: T.DoubleSide, depthWrite: false });
       const band = A.mat('#cfc8e0', 0, .5), dark = A.mat('#1b1626');
-      const g = G(root, [cx, 0, cz], [0, .6, 0]);
+      const g = G(root, [cx, gy(cx, cz), cz], [0, .6, 0]); g.scale.setScalar(k);
       const N = 11, segs = [];
       for (let i = 0; i < N; i++) {
         const rad = .5 * Math.pow(Math.sin(Math.PI * (i + .6) / (N + .4)), .6) + .14;
@@ -1238,19 +1251,22 @@ const BEASTS = {
         P(s, A.ico(rad, 1), skin, [0, 0, 0], { scale: [1, .9, .8], jitter: .02 });
         P(s, A.cyl(rad * 1.0, rad * 1.0, rad * .08, 9), band, [0, 0, 0], { rot: [Math.PI / 2, 0, 0], jitter: .01 });
         const sp = [], n = 14;
-        for (let k = 0; k < n; k++) { const v = V(r() - .5, r() - .5, r() - .5).normalize().multiplyScalar(r() * rad * .7); sp.push(v.x, v.y, v.z); }
+        for (let q = 0; q < (young ? 4 : old ? 24 : n); q++) { const w = V(r() - .5, r() - .5, r() - .5).normalize().multiplyScalar(r() * rad * .7); sp.push(w.x, w.y, w.z); }
         const pg = new T.BufferGeometry(); pg.setAttribute('position', new T.Float32BufferAttribute(sp, 3));
         s.add(new T.Points(pg, new T.PointsMaterial({ color: '#ffffff', size: .07, transparent: true, depthWrite: false })));
         if (i > 1 && i < N - 1) for (const sx of [-1, 1]) P(s, new T.ConeGeometry(.03, .18, 4), band, [sx * rad * .5, -rad * .8, 0], { rot: [0, 0, Math.PI + sx * .4] });
+        if (old && i > 2 && i < N - 2) P(s, A.ico(rad * .9, 1), plateM, [0, rad * .35, 0], { scale: [1, .45, .6], jitter: .02 });   // hard plates along its back
+        if (old && (i === 5 || i === 6)) for (const sx of [-1, 1])                                                                      // wing-buds, folded
+          sheet(s, [[0, rad * .7, 0], [sx * rad * 1.6, rad * 1.1, -.1], [sx * rad * 1.3, rad * .6, -.5]], [[0, 1, 2]], budM);
         segs.push({ s, rad, i });
       }
       const head = segs[N - 1].s;
       P(head, new T.CircleGeometry(.1, 10), dark, [0, 0, .17], { cast: false, jitter: 0 });
       for (const sx of [-1, 1]) bone(head, [sx * .06, .08, .1], [sx * .16, .26, .25], .015, .006, band, 4);
-      const lamp = softLight('#9fb4ff', 2.5, 3.2); lamp.position.set(cx, .8, cz); root.add(lamp);
+      const lamp = softLight('#9fb4ff', old ? 4.5 : young ? 1.5 : 2.5, 3.2 * k); lamp.position.set(cx, gy(cx, cz) + .8, cz); root.add(lamp);
       const p = V(), q = V();
       return (t) => {
-        const R = 1.5 + Math.sin(t * .35) * .08;
+        const R = 1.35 + Math.sin(t * .35) * .08;
         for (const { s, rad, i } of segs) {
           const a = -2.0 + i / (N - 1) * 3.6 + Math.sin(t * .5 - i * .4) * .05;
           const lift = i === N - 1 ? .25 + Math.sin(t * .6) * .15 : 0;
@@ -1260,7 +1276,7 @@ const BEASTS = {
           s.lookAt(p.copy(q).applyMatrix4(g.matrixWorld));
         }
         head.rotation.y += Math.sin(t * .4) * .3;
-        lamp.intensity = 2.2 + Math.sin(t * 1.3) * .5;
+        lamp.intensity = (old ? 4 : young ? 1.3 : 2.2) + Math.sin(t * 1.3) * .5;
       };
     },
   },
