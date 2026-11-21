@@ -1,66 +1,14 @@
 {
-  "start": "2026-11-21T02:40:38+00:00",
+  "start": "2026-11-21T05:00:23+00:00",
   "mood": "sleepy",
+  "applied_until": "2026-11-21T05:00:23+00:00",
   "steps": [
     {
       "place": "bedroll",
       "action": "sleep",
-      "minutes": 70,
+      "minutes": 120,
       "emote": "zzz",
-      "note": "rest",
-      "thoughts": [
-        "Cold stone still bites.",
-        "Need to let the fire keep the night."
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "sigh",
-      "note": "warm up",
-      "thoughts": [
-        "The flames are finally quiet.",
-        "Maybe I should thank the fire for overtime."
-      ]
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "check lantern oil",
-      "thoughts": [
-        "Oil level is worrying.",
-        "Should I craft a refill bottle later?"
-      ]
-    },
-    {
-      "place": "courtyard",
-      "action": "gaze",
-      "minutes": 20,
-      "emote": "cloud",
-      "note": "inspect glasshouse",
-      "thoughts": [
-        "One pane missing, still holds heat.",
-        "Stone looks less stubborn today."
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "log day's work",
-      "thoughts": [
-        "Ink is half‑full, good enough.",
-        "Will add the glasshouse note tomorrow."
-      ]
+      "note": "asleep for the night"
     }
-  ],
-  "applied_until": "2026-11-21T04:30:22+00:00",
-  "live_thought": {
-    "text": "Lantern oil's low, but the stone's still warm.",
-    "time": "2026-11-21T04:30:22+00:00"
-  }
+  ]
 }
