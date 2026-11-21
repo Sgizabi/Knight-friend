@@ -564,7 +564,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 9 | Visitor help and names | yes |
 | 10+ | The rest of the bestiary in waves of about 7 to 9 | yes, gradually |
 
-**Proposed starter set for wave 1** (open question: the keeper's pick): the fog with eyes
+**Starter set for wave 1** (chosen by the keeper; all seven now at final quality, and only these can come to the real keep until the next wave): the fog with eyes
 (common, mildly hostile), the giant axolotl (gentle), the Bell-Crab (neutral), the Glassbeak
 (nuisance), the Ashwolf pack (hostile), the dragon (legendary, final look already done), and
 the Long Man (step 1, final look already done).
@@ -581,7 +581,7 @@ works, verified live, his allowance tracked, MAINTAINING.md and WATCHLIST.md kep
    half an hour; one line to change.)*
 2. **Fighting:** can he fight, with real risk (recommended), or only defend and drive off?
    *(Built for now: he can, with real but capped risk; one line to change.)*
-3. **Wave 1:** the starter set above, or a different pick?
+3. **Wave 1:** the starter set above, or a different pick? *(Answered: the proposed seven.)*
 4. **The candidates** in section 4: mock any of them up later?
 5. **The companion:** which strays might turn up (hound, crow, cat, the Patchwork Hound)?
 6. **His bestiary on the home page:** show visitors the entries he writes? (A new idea.)

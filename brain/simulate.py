@@ -26,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 os.environ["KNIGHT_CREATURES"] = "on"
+os.environ.setdefault("KNIGHT_ALL_BEINGS", "on")   # the whole world, as it will be (KNIGHT_ALL_BEINGS=off: wave 1 only)
 import beings  # noqa: E402
 import creatures  # noqa: E402
 import encounters  # noqa: E402

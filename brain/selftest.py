@@ -143,6 +143,13 @@ assert weather.describe(_s1, _t).startswith("The weather: ")
 
 # creatures: a simulated season of planning, checked against the balance rules
 import creatures  # noqa: E402
+_wave = Path(tempfile.mkdtemp())                                         # only released beings come to the real keep
+for _d in range(30):
+    _n = _dt.datetime(2026, 11, 21, 17, tzinfo=_dt.timezone.utc) + _dt.timedelta(days=_d)
+    creatures.update(_wave, weather.update(_wave, _n), _n)
+assert {a["kind"] for a in creatures.load(_wave)["appearances"]} <= creatures.RELEASED
+assert creatures.RELEASED <= set(creatures.KINDS)
+__import__("os").environ["KNIGHT_ALL_BEINGS"] = "on"                    # the rest: the whole world, as it will be
 _cw = Path(tempfile.mkdtemp())
 _t0 = _dt.datetime(2026, 11, 21, 17, tzinfo=_dt.timezone.utc)
 for _d in range(120):

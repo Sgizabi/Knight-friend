@@ -92,6 +92,16 @@ AGELESS = {"seam", "stitched", "moon2", "hill", "clockhead", "ninefold"}   # no 
 STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off", "follow", "compete",
            "steal from", "uneasy truce", "size up"]
 
+# Beings that can come to the real keep: the waves released so far, each with its final art.
+# The rest are fully built behind the scenes and come as their waves are released (tests, the
+# simulator and the preview can use all of them: KNIGHT_ALL_BEINGS=on).
+RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "longman"}   # wave 1
+
+
+def released(kind):
+    return kind in RELEASED or os.environ.get("KNIGHT_ALL_BEINGS", "").strip().lower() == "on"
+
+
 RARITY_WEIGHT = {"common": 10, "uncommon": 5, "rare": 2, "legendary": .9}   # legendary: about 3-5 a year
 COOLDOWN_DAYS = {"common": 4, "uncommon": 7, "rare": 20, "legendary": 60}
 WITNESS_POINTS = {"common": 1, "uncommon": 2, "rare": 4, "legendary": 8}
@@ -217,7 +227,7 @@ def arc_open(state, kind, start):
 def counts_as_danger(a):
     """A hostile visit that counts toward the quiet spell and the weekly limit: not a slow
     presence's return, and not a hostile being that came along with another hostile one."""
-    return (KINDS.get(a["kind"], {}).get("nature") == "hostile" and a.get("chain", 1) == 1
+    return bool(KINDS.get(a["kind"], {}).get("nature") == "hostile" and a.get("chain", 1) == 1
             and (not a.get("companion") or a.get("counts")))
 
 
@@ -239,7 +249,7 @@ def plan_day(state, day, sched, step, rng=None, keep=None):
     hostile_ok = hostile_allowed(state, start)
     choices = []
     for kind, k in KINDS.items():
-        if k["step"] > step or not arc_open(state, kind, start):
+        if k["step"] > step or not arc_open(state, kind, start) or not released(kind):
             continue
         if kind in state.get("chains", {}):
             continue                               # already on its way
@@ -369,7 +379,7 @@ def companion(state, a, sched, step, rng, keep=None):
     start, end = _parse(a["start"]), _parse(a["end"])
     choices = []
     for kind, kk in KINDS.items():
-        if kind == a["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or a.get("chain"):
+        if kind == a["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or a.get("chain") or not released(kind):
             continue
         if kk["rarity"] == "legendary" and k["rarity"] == "legendary":
             continue
