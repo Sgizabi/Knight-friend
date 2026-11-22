@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-22T15:29:12+00:00",
+    "applied_until": "2026-11-22T16:00:24+00:00",
     "live_thought": {
-      "text": "The iron heats, waiting for my hammer.",
-      "time": "2026-11-22T15:29:12+00:00"
+      "text": "Stone is cold, fire warm, I’ll write a few lines.",
+      "time": "2026-11-22T16:00:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T15:29:12+00:00",
+    "since": "2026-11-22T16:00:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 76.5,
+    "warmth": 79.0,
+    "inspiration": 48.2,
+    "spirit": 72.6
+  },
+  "needs_prev": {
     "rest": 78.2,
     "warmth": 79.4,
     "inspiration": 48.2,
     "spirit": 73.2
   },
-  "needs_prev": {
-    "rest": 79.7,
-    "warmth": 79.3,
-    "inspiration": 46.5,
-    "spirit": 73.7
-  },
-  "needs_at": "2026-11-22T15:29:12+00:00",
+  "needs_at": "2026-11-22T16:00:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -734,7 +734,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T15:29:12+00:00",
+    "updated": "2026-11-22T16:00:24+00:00",
     "seen_until": "2026-11-22T14:55:28+00:00"
   },
   "gifts": [],
@@ -880,5 +880,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T15:29:12+00:00"
+  "exported": "2026-11-22T16:00:24+00:00"
 }
