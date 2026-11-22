@@ -78,11 +78,16 @@
           "Rest will bring the rest back."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-22T01:30:21+00:00",
+    "live_thought": {
+      "text": "Rain drums, wood smells, I’ll keep working.",
+      "time": "2026-11-22T01:30:21+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T01:02:33+00:00",
+    "since": "2026-11-22T01:30:22+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 46.3,
+    "warmth": 89.4,
+    "inspiration": 31.5,
+    "spirit": 86.9
+  },
+  "needs_prev": {
     "rest": 45.8,
     "warmth": 87.9,
     "inspiration": 31.5,
     "spirit": 87.8
   },
-  "needs_prev": {
-    "rest": 51.6,
-    "warmth": 87.5,
-    "inspiration": 47.5,
-    "spirit": 85.6
-  },
-  "needs_at": "2026-11-22T01:02:34+00:00",
+  "needs_at": "2026-11-22T01:30:22+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -725,7 +730,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T01:02:33+00:00",
+    "updated": "2026-11-22T01:30:21+00:00",
     "seen_until": "2026-11-22T00:55:26+00:00"
   },
   "gifts": [],
@@ -787,6 +792,12 @@
         "end": "2026-11-23T07:26:59+00:00",
         "kind": "clear",
         "intensity": 0.72
+      },
+      {
+        "start": "2026-11-23T07:26:59+00:00",
+        "end": "2026-11-23T11:30:45+00:00",
+        "kind": "fog",
+        "intensity": 0.63
       }
     ],
     "effects": {
@@ -853,5 +864,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T01:02:34+00:00"
+  "exported": "2026-11-22T01:30:22+00:00"
 }
