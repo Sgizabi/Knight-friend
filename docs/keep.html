@@ -2096,7 +2096,7 @@ function setSword(planted) {
 setSword(false);
 
 function tick(nowMs) {
-  const dt = Math.min(clock.getDelta(), .25), t = clock.elapsedTime, now = Date.now();
+  const dt = Math.min(clock.getDelta(), .25), t = clock.elapsedTime + benchT, now = Date.now();   // (benchT: time skipped ahead by the test hooks, 0 otherwise)
   const k = 1 - Math.exp(-dt * 7);
   const goal = current(now);
   const spot0 = SPOTS[goal.place] || SPOTS.fire;

@@ -220,10 +220,33 @@ const puff = () => puffTex ??= canvasTex(128, 128, (g, w) => {
   r.addColorStop(0, 'rgba(255,255,255,.9)'); r.addColorStop(.45, 'rgba(255,255,255,.35)'); r.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = r; g.fillRect(0, 0, w, w);
 });
+// a cheap steady 'random' from a number (the same every time, so a being's moods can be replayed)
+const nz = i => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
+// Sprung joints: say where each joint wants to be, and it swings there on a spring of its own
+// (w: how quick, zeta: 1 settles cleanly, lower overshoots and settles). Heavy parts lag, light
+// parts follow through: real weight, which is what makes it look wrong in a world that has none.
+function rig() {
+  const J = {};
+  return {
+    J,
+    add(name, obj, w, zeta = 1) { const r = obj.rotation; J[name] = { obj, w, zeta, cur: [r.x, r.y, r.z], vel: [0, 0, 0], want: [r.x, r.y, r.z] }; return obj; },
+    want(name, x = 0, y = 0, z = 0) { const w = J[name].want; w[0] = x; w[1] = y; w[2] = z; },
+    rate(name, w) { J[name].w = w; },
+    step(dt) {
+      dt = Math.min(dt, .1); const n = Math.max(1, Math.ceil(dt * 120)), h = dt / n;
+      for (const name in J) {
+        const j = J[name], w2 = j.w * j.w, c = 2 * j.zeta * j.w;
+        for (let k = 0; k < n; k++) for (let i = 0; i < 3; i++) { j.vel[i] += (w2 * (j.want[i] - j.cur[i]) - c * j.vel[i]) * h; j.cur[i] += j.vel[i] * h; }
+        j.obj.rotation.set(j.cur[0], j.cur[1], j.cur[2]);
+      }
+    },
+  };
+}
 const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
 const pulse = (t, every, len) => { const p = t % every; return p < len ? Math.sin(p / len * Math.PI) : 0; };
 
 // ------------------------------------------------------------------ the creatures
+const DEPTHS = [['', 'shallow (slipped through)'], ['deep', 'deep (from a rift)']];   // the abyssals: how deep they came from
 const BEASTS = {
   // ================================================================ DRAGON
   dragon: {
@@ -3435,55 +3458,737 @@ const BEASTS = {
     },
   },
 
+  // ================================================================ THE STRANGER IN THE TREES
+  stranger: {
+    name: 'The stranger in the trees', hour: 18,
+    blurb: 'Not of this world, and nobody knows what it wants. Tree-tall, it peers out from the forest edge. Most times it comes out in a disguise, never the same one twice, and it moves wrongly in each. Now and then it comes out without one, a smiling mask on a far too tall body, until something notices it. Then it realises, and goes back into the trees.',
+    view: [[-24, 2.6, 10], [-35, 3.4, 8]],
+    variants: [['', 'as it comes'], ['cape', 'hooded cape'], ['woodsman', 'woodsman'], ['bark', 'bark and branches'], ['traveller', 'traveller'], ['bare', 'no disguise']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'that tree was not there yesterday' },
+    build(root) {
+      const v = root.userData.appearance?.variant || {}, only = v.kind || '', k = v.size || 1;
+      // a real tree at the forest edge to hide behind, with open ground between it and the keep
+      const trees = []; let trunks = null;
+      A.scene.traverse(o => { if (!trunks && o.isInstancedMesh && o.material === A.M.woodD) trunks = o; });
+      if (trunks) { const m = new T.Matrix4(); for (let i = 0; i < trunks.count; i++) { trunks.getMatrixAt(i, m); const e = m.elements; trees.push([e[12], e[14], Math.hypot(e[0], e[1], e[2])]); } }
+      let room = 1;   // how much room it wants round other trees (eased off if no tree has that much)
+      const clearOf = (x0, z0, x1, z1, skip) => trees.every(([x, z, s], i) => { if (i === skip) return true; const dx = x1 - x0, dz = z1 - z0, u = Math.max(0, Math.min(1, ((x - x0) * dx + (z - z0) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - x0 - dx * u, z - z0 - dz * u) > (.5 + s * .8) * room; });
+      // its tree: on the keep side of a stand of trees, with open ground beyond it. It hides behind the
+      // tree (as seen from the preview's camera, off to one side), leans out to look, then steps out
+      // round it and walks east into the open, across the camera's view, toward the keep.
+      const route = (x, z, side) => { const H = [x, z - side * 1.3], S = [x + 2.3, z - side * 1.3];
+        return { HIDE: H, SIDE: S, OUT: [x + 8.5, z - side * 1.0], OUTB: [x + 6.6, z - side * 1.1], side }; };
+      // the camera must see the whole walk with no tree crown in the way (crowns are wide: a generous margin)
+      const sight = (cx, cz, px, pz, skip) => trees.every(([x, z, s], i) => { if (i === skip) return true; const dx = px - cx, dz = pz - cz, u = Math.max(0, Math.min(1, ((x - cx) * dx + (z - cz) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - cx - dx * u, z - cz - dz * u) > .4 + s * 1.05; });
+      const behind = ([x, z]) => trees.reduce((n, [X, Z]) => n + (X < x + .5 && Math.hypot(X - x, Z - z) < 9 ? 1 : 0), 0);
+      const cands = trees.map((t, i) => [t, i, behind(t)]).filter(([[x, z, s]]) => x < -32 && x > -75 && z > -25 && z < 30 && s > .8 && s < 1.5).sort((a, b) => b[2] - a[2]);
+      let best = null;
+      for (room of [1, .8, .6]) {
+        for (const [[x, z], i] of cands) for (const side of [1, -1]) {
+          const r = route(x, z, side);
+          if (!clearOf(...r.HIDE, ...r.SIDE, i) || !clearOf(...r.SIDE, ...r.OUT, i)) continue;
+          for (const [cx, cd] of [[4, 11], [5, 9], [3, 13], [6, 8], [4, 15]]) {
+            const C = [x + cx, z + side * cd];
+            if (trees.every(([X, Z]) => Math.hypot(X - C[0], Z - C[1]) > 2.5) && [r.SIDE, [x + 4.5, z - side * 1.2], r.OUTB, r.OUT].every(q => sight(...C, ...q, i))) { r.CAM = C; best = [x, z, i, side, C]; break; }
+          }
+          if (best) break;
+          if (best) break;
+        }
+        if (best) break;
+      }
+      const [tx, tz, pick, side, CAM] = best || [-36, 8, -1, 1, [-32, 19]];
+      const { HIDE, SIDE, OUT, OUTB } = route(tx, tz, side);
+      const PEER = Math.atan2(CAM[0] - HIDE[0], CAM[1] - HIDE[1]), LS = -Math.sign(Math.cos(PEER)) || 1;   // it peers toward the open, leaning out east
+      this.view = [[CAM[0], gy(...CAM) + 2.4, CAM[1]], [tx + 4, gy(tx + 4, tz - side) + 3.0, tz - side]];
+
+      // ---- the body. It is not made the way everything else here is made: smooth where the world is
+      // faceted, untouched by the mist, lit faintly from a direction where there is no light (a matcap:
+      // its light ignores the fire and the sky). Its disguises are borrowed from this world, so they are
+      // made like this world; the body underneath is not.
+      const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+      const matcap = (base, key, rim) => {
+        const S = 128, cv = document.createElement('canvas'); cv.width = cv.height = S; const cx = cv.getContext('2d'), im = cx.createImageData(S, S);
+        const B = rgb(base), K = rgb(key), Rm = rgb(rim), L = [-.55, .62, .56], ll = Math.hypot(...L);
+        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+          const nx = (x + .5) / S * 2 - 1, ny = 1 - (y + .5) / S * 2, r2 = Math.min(1, nx * nx + ny * ny), nzv = Math.sqrt(1 - r2), o = (y * S + x) * 4;
+          const d = Math.max(0, (nx * L[0] + ny * L[1] + nzv * L[2]) / ll), rr = Math.sqrt(r2) || 1;
+          const rim2 = Math.pow(1 - nzv, 2.4) * Math.max(0, (-nx * .75 + ny * .66) / rr * .5 + .5);   // a cold edge-light, always from the same side
+          for (let c = 0; c < 3; c++) im.data[o + c] = Math.min(255, B[c] + (K[c] - B[c]) * d * .8 + Rm[c] * rim2);
+          im.data[o + 3] = 255;
+        }
+        cx.putImageData(im, 0, 0); const tx_ = new T.CanvasTexture(cv); tx_.colorSpace = T.SRGBColorSpace; return tx_;
+      };
+      const skin = new T.MeshMatcapMaterial({ matcap: matcap('#111014', '#36343d', '#7b91b6'), fog: false });
+      const handM = new T.MeshMatcapMaterial({ matcap: matcap('#18161b', '#46434e', '#8ea2c4'), fog: false });
+      const sm = (parent, geo, mat, pos = [0, 0, 0], o = {}) => { const m = new T.Mesh(geo, mat); m.position.set(...pos); if (o.rot) m.rotation.set(...o.rot); if (o.scale) m.scale.set(...o.scale); m.castShadow = true; parent.add(m); return m; };
+      const limb = (parent, a, b, r0, r1, mat, seg = 12) => {           // a smooth limb, with a rounded joint where it starts
+        const from = V(...a), to = V(...b), d = to.clone().sub(from), len = d.length();
+        const m = sm(parent, new T.CylinderGeometry(r1, r0, len, seg, 1), mat); m.position.copy(from).add(to).multiplyScalar(.5); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize());
+        sm(parent, new T.SphereGeometry(r0, seg, Math.max(6, seg >> 1)), mat, a); return m;
+      };
+      // very tall and thin, arms that reach its knees, long fingers
+      const g = G(root), LEG = 2.8 * k;
+      const R = rig();
+      const hips = R.add('pelvis', G(g, [0, LEG, 0]), 9);
+      sm(hips, new T.SphereGeometry(.15 * k, 16, 12), skin, [0, .02 * k, 0], { scale: [1.15, .7, .7] });
+      const spine = R.add('spine', G(hips), 6, .8);
+      limb(spine, [0, 0, 0], [0, .8 * k, 0], .1 * k, .08 * k, skin);
+      const chest = R.add('chest', G(spine, [0, .8 * k, 0]), 5.5, .8);
+      const rib = sm(chest, new T.LatheGeometry([[.07, -.02], [.12, .12], [.18, .38], [.25, .62], [.29, .8], [.24, .9], [.1, .96]].map(([r, y]) => new T.Vector2(r * k, y * k)), 18), skin, [0, 0, 0], { scale: [1, 1, .5] });   // a narrow ribcage over a waist far too thin
+      for (const sx of [-1, 1]) limb(chest, [0, .9 * k, 0], [sx * .37 * k, .8 * k, 0], .055 * k, .045 * k, skin);   // sloping shoulders
+      const neck = R.add('neck', G(chest, [0, .85 * k, 0]), 5, .75);
+      limb(neck, [0, 0, 0], [0, .42 * k, .04 * k], .05 * k, .04 * k, skin);
+      const head = R.add('head', G(neck, [0, .44 * k, .05 * k]), 4.2, .62);
+      sm(head, new T.SphereGeometry(.27 * k, 24, 18), skin, [0, .24 * k, 0], { scale: [.85, 1.18, .9] });
+      const arm = sx => {
+        const sd = sx < 0 ? 'L' : 'R';
+        const sh = R.add('sh' + sd, G(chest, [sx * .36 * k, .8 * k, 0]), 6, .7);
+        limb(sh, [0, 0, 0], [0, -1.2 * k, 0], .06 * k, .048 * k, skin);
+        const el = R.add('el' + sd, G(sh, [0, -1.2 * k, 0]), 6, .6);
+        limb(el, [0, 0, 0], [0, -1.25 * k, 0], .048 * k, .036 * k, skin);
+        const wr = R.add('wr' + sd, G(el, [0, -1.25 * k, 0]), 6, .5);
+        sm(wr, new T.SphereGeometry(.036 * k, 10, 8), handM);
+        sm(wr, new T.SphereGeometry(.09 * k, 14, 10), handM, [0, -.1 * k, 0], { scale: [.75, 1.1, .3] });
+        const fingers = [];
+        for (let f = 0; f < 4; f++) {                                      // each finger on its own springs: they trail, and keep moving after the hand stops
+          const f1 = R.add(`f${sd}${f}a`, G(wr, [(f - 1.5) * .035 * k, -.18 * k, 0]), 8 + f * .7, .35); limb(f1, [0, 0, 0], [(f - 1.5) * .01 * k, -.24 * k, 0], .014 * k, .011 * k, handM, 7);
+          const f2 = R.add(`f${sd}${f}b`, G(f1, [(f - 1.5) * .01 * k, -.24 * k, 0]), 9 + f * .7, .35); limb(f2, [0, 0, 0], [0, -.22 * k, 0], .011 * k, .006 * k, handM, 7);
+          fingers.push(f1, f2);
+        }
+        limb(wr, [-sx * .06 * k, -.06 * k, 0], [-sx * .12 * k, -.3 * k, .02 * k], .012 * k, .007 * k, handM, 7);   // thumb
+        return { sh, el, wr, fingers, sd };
+      };
+      const legJ = sx => {
+        const sd = sx < 0 ? 'L' : 'R';
+        const hp = R.add('hp' + sd, G(hips, [sx * .13 * k, 0, 0]), 16);
+        limb(hp, [0, 0, 0], [0, -1.45 * k, 0], .085 * k, .06 * k, skin);
+        const kn = R.add('kn' + sd, G(hp, [0, -1.45 * k, 0]), 16);
+        limb(kn, [0, 0, 0], [0, -1.33 * k, 0], .06 * k, .04 * k, skin);
+        const an = R.add('an' + sd, G(kn, [0, -1.33 * k, 0]), 14, .9);
+        sm(an, new T.SphereGeometry(.04 * k, 10, 8), handM);
+        sm(an, new T.SphereGeometry(.1 * k, 14, 10), handM, [0, -.01 * k, .1 * k], { scale: [.45, .3, 1.7] });
+        return { hp, kn, an };
+      };
+      const arms = { L: arm(-1), R: arm(1) }, legs = { L: legJ(-1), R: legJ(1) };
+
+      // ---- the mask (only ever seen without a disguise): smooth and pale, a little too small for its
+      // head, a thin carved smile far too wide, two hollow eyes with a cold pinprick far down in each
+      const maskTex = canvasTex(256, 256, (c, w) => {
+        const gr = c.createRadialGradient(w * .46, w * .36, 8, w / 2, w / 2, w * .56); gr.addColorStop(0, '#eeeae1'); gr.addColorStop(.7, '#d6cfc2'); gr.addColorStop(1, '#a89f90');
+        c.fillStyle = gr; c.beginPath(); c.ellipse(w / 2, w * .5, w * .34, w * .48, 0, 0, 6.3); c.fill();   // longer than it is wide, and smaller than the face behind it
+        c.strokeStyle = 'rgba(30,26,24,.95)'; c.lineWidth = 3.2; c.lineCap = 'round';                  // the smile: one thin line, almost flat, far too wide, curling up at the ends
+        c.beginPath(); c.moveTo(w * .2, w * .67); c.bezierCurveTo(w * .38, w * .735, w * .62, w * .735, w * .8, w * .67); c.stroke();
+        c.lineWidth = 2.4; c.beginPath(); c.moveTo(w * .2, w * .67); c.quadraticCurveTo(w * .175, w * .655, w * .185, w * .615); c.moveTo(w * .8, w * .67); c.quadraticCurveTo(w * .825, w * .655, w * .815, w * .615); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,.3)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(w * .22, w * .685); c.bezierCurveTo(w * .38, w * .75, w * .62, w * .75, w * .78, w * .685); c.stroke();
+        c.strokeStyle = 'rgba(90,80,70,.45)'; c.lineWidth = 1; c.beginPath(); c.moveTo(w * .62, w * .04); c.lineTo(w * .585, w * .17); c.lineTo(w * .61, w * .28); c.stroke();   // a hairline crack
+        c.fillStyle = 'rgba(80,70,62,.18)'; for (const ex of [.37, .63]) { c.beginPath(); c.ellipse(w * ex, w * .41, w * .085, w * .05, 0, 0, 6.3); c.fill(); }   // faint hollows round the eyes
+        c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000';                 // the eyes are holes: thin, calm crescents, curved up like closed smiling eyes
+        for (const ex of [.37, .63]) { const x = w * ex, y = w * .42; c.beginPath(); c.moveTo(x - w * .075, y + w * .018); c.quadraticCurveTo(x, y - w * .085, x + w * .075, y + w * .018); c.quadraticCurveTo(x, y - w * .012, x - w * .075, y + w * .018); c.fill(); }
+      });
+      const mask = G(head, [0, .24 * k, 0]), PH0 = Math.PI / 2 - .7, PHL = 1.4, TH0 = Math.PI / 2 - .78, THL = 1.5, MR = .27 * k * 1.06;
+      const maskMesh = new T.Mesh(new T.SphereGeometry(MR, 24, 16, PH0, PHL, TH0, THL), new T.MeshMatcapMaterial({ matcap: matcap('#a29b90', '#f6f2ea', '#c4d4ee'), map: maskTex, alphaTest: .5, side: T.DoubleSide, fog: false }));
+      maskMesh.scale.set(.85, 1.18, .9); mask.add(maskMesh);
+      for (const ex of [.37, .63]) {                                                         // the pinpricks, deep in the holes
+        const ph = PH0 + ex * PHL, th = TH0 + .4 * THL, r = MR * .92;
+        P(mask, A.ico(.008 * k, 0), glow('#e8f0ff', 2.4, { fog: false }), [-Math.cos(ph) * Math.sin(th) * r * .85, Math.cos(th) * r * 1.18, Math.sin(ph) * Math.sin(th) * r * .9], { cast: false });
+      }
+
+      // ---- its disguises: always different, each a try at passing for something that belongs here
+      const D = {};
+      const cloth = (c, r = .9) => ds(c, 0, r);
+      const hood = (parent, m, sz, peak) => {
+        const pts = [[0, .5], [.13, .47], [.25, .36], [.33, .16], [.36, -.06], [.4, -.28], [.52, -.46], [.62, -.56]].map(([r, y]) => new T.Vector2(r * sz, y * sz));
+        const h = new T.Mesh(A.facet(new T.LatheGeometry(pts, 14, .75, Math.PI * 2 - 1.5), .012 * sz, 21), m); h.castShadow = true; parent.add(h);
+        if (peak) P(parent, new T.ConeGeometry(.11 * sz, .42 * sz, 6), m, [0, .42 * sz, -.2 * sz], { rot: [-1.0, 0, 0] });
+        const dark = new T.Mesh(new T.SphereGeometry(.3 * sz, 12, 10), new T.MeshBasicMaterial({ color: '#000000' })); dark.scale.set(.85, 1.1, .75); dark.position.z = .02 * sz; parent.add(dark);   // no face in there: only dark
+        return h;
+      };
+      { // a long hooded cape, face lost in the hood
+        const d = D.cape = { parts: [] }, m = cloth('#1d1b18');
+        const cl = G(chest, [0, .82 * k, 0]); d.cloak = cl;
+        P(cl, A.facet(new T.CylinderGeometry(.34 * k, 1.0 * k, 3.95 * k, 12, 3, true), .05 * k, 11), m, [0, -1.95 * k, -.04 * k]);
+        const hd = G(head, [0, .24 * k, -.02 * k]);
+        hood(hd, m, 1.0 * k, true);
+        d.parts.push(cl, hd);
+      }
+      { // a woodsman: a long coat, a wide hat, a scarf to the eyes, a bundle of sticks on its back
+        const d = D.woodsman = { parts: [] }, coat = cloth('#4b3b29'), hatM = A.mat('#2a221a', 0, .9), scarf = cloth('#6b3a2e');
+        const co = G(chest, [0, .8 * k, 0]); d.cloak = co;
+        P(co, A.facet(new T.CylinderGeometry(.33 * k, .6 * k, 2.7 * k, 10, 2, true), .04 * k, 12), coat, [0, -1.35 * k, 0]);
+        const hat = G(head, [0, .44 * k, 0]);
+        P(hat, A.cyl(.7 * k, .7 * k, .04 * k, 14), hatM, [0, 0, 0], { rot: [-.08, 0, 0] });
+        P(hat, A.cyl(.24 * k, .28 * k, .36 * k, 10), hatM, [0, .16 * k, 0]);
+        const sc = P(head, new T.CylinderGeometry(.28 * k, .3 * k, .34 * k, 12, 1, true), scarf, [0, .1 * k, .01 * k], { scale: [1, 1, 1.05] });
+        const bundle = G(chest, [0, .2 * k, -.22 * k], [.15, 0, .25]);
+        for (let i = 0; i < 7; i++) bone(bundle, [(i - 3) * .045 * k, 0, (i % 2) * .04 * k], [(i - 3) * .05 * k, 1.5 * k, (i % 2) * .05 * k], .03 * k, .025 * k, A.M.woodD);
+        P(bundle, A.cyl(.2 * k, .2 * k, .06 * k, 10), A.mat('#7a6a48', 0, .9), [0, .9 * k, .02 * k], { scale: [1, 1, .45] });
+        d.parts.push(co, hat, bundle, sc);
+      }
+      { // bark and branches: wrapped in strips of bark, arms held up as boughs, a crown of leaves like the trees
+        const d = D.bark = { parts: [] }, bk = A.mat('#3b2e22', 0, .95), bk2 = A.mat('#56432f', 0, .95);
+        const leaf = new T.MeshStandardMaterial({ color: new T.Color().setHSL(.29, .36, .19), roughness: .95, flatShading: true });
+        for (const [par, y0, y1, r] of [[spine, 0, .8, .14], [chest, .05, .85, .24]]) {
+          const w = G(par); d.parts.push(w);
+          for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; P(w, A.box(.07 * k, (y1 - y0) * k * (.8 + nz(i) * .3), .025 * k), i % 2 ? bk : bk2, [Math.cos(a) * r * k, (y0 + y1) / 2 * k, Math.sin(a) * r * k * .7], { rot: [0, -a + Math.PI / 2, (nz(i + 3) - .5) * .3] }); }
+        }
+        for (const sx of ['L', 'R']) {
+          for (const [j, len] of [[arms[sx].sh, 1.2], [arms[sx].el, 1.25]]) {
+            const w = G(j); d.parts.push(w);
+            for (let i = 0; i < 4; i++) { const a = i / 4 * 6.28; P(w, A.box(.05 * k, len * .9 * k, .022 * k), i % 2 ? bk : bk2, [Math.cos(a) * .065 * k, -len / 2 * k, Math.sin(a) * .065 * k], { rot: [0, -a, 0] }); }
+          }
+          const tw = G(arms[sx].el, [0, -.7 * k, 0]); d.parts.push(tw);                     // twigs off the forearms, with leaves
+          for (let i = 0; i < 3; i++) { const a = i * 2.1 + (sx === 'L' ? 0 : 1); const e = [Math.cos(a) * .45 * k, -(.1 + i * .25) * k, Math.sin(a) * .45 * k]; bone(tw, [0, -i * .25 * k, 0], e, .025 * k, .01 * k, bk); P(tw, A.ico(.17 * k, 0), leaf, e, { scale: [1, .7, 1] }); }
+          for (const lg of [legs[sx].hp, legs[sx].kn]) { const w = G(lg); d.parts.push(w); for (let i = 0; i < 4; i++) { const a = i / 4 * 6.28 + .4; P(w, A.box(.06 * k, 1.25 * k, .025 * k), i % 2 ? bk : bk2, [Math.cos(a) * .08 * k, -.68 * k, Math.sin(a) * .08 * k], { rot: [0, -a, 0] }); } }
+        }
+        const crown = G(head, [0, .14 * k, 0]); d.parts.push(crown);
+        P(crown, A.ico(.32 * k, 1), bk, [0, .1 * k, 0], { scale: [.9, 1.2, .95] });
+        P(crown, A.facet(new T.ConeGeometry(.85 * k, 2.1 * k, 6), .06 * k, 13), leaf, [0, 1.25 * k, 0]);
+        P(crown, A.facet(new T.ConeGeometry(.6 * k, 1.5 * k, 6), .05 * k, 14), leaf, [0, 2.05 * k, 0]);
+      }
+      { // a traveller: a patched cloak, a deep cowl and a wrapped face, a pack, a long staff
+        const d = D.traveller = { parts: [] };
+        const patch = canvasTex(128, 128, (c, w) => { c.fillStyle = '#5b4a39'; c.fillRect(0, 0, w, w); const r = A.rand(5);
+          for (let i = 0; i < 9; i++) { c.fillStyle = ['#6e5a42', '#4a3c2e', '#735040', '#556048'][i % 4]; const x = r() * w, y = r() * w, s = 14 + r() * 22; c.fillRect(x, y, s, s * .8); c.strokeStyle = '#2a2018'; c.setLineDash([3, 3]); c.strokeRect(x, y, s, s * .8); } });
+        const m = new T.MeshStandardMaterial({ map: patch, roughness: .95, side: T.DoubleSide, flatShading: true }), wrap = cloth('#8a7a62');
+        const cl = G(chest, [0, .8 * k, 0]); d.cloak = cl;
+        P(cl, A.facet(new T.CylinderGeometry(.36 * k, .8 * k, 3.4 * k, 11, 2, true), .05 * k, 15), m, [0, -1.7 * k, 0]);
+        const cw = G(head, [0, .26 * k, -.03 * k]);
+        hood(cw, m, .92 * k, false);
+        P(cw, new T.CylinderGeometry(.26 * k, .27 * k, .18 * k, 12, 1, true), wrap, [0, -.2 * k, .03 * k]);
+        const pack = G(chest, [0, .35 * k, -.3 * k]);
+        P(pack, A.box(.5 * k, .65 * k, .28 * k), A.mat('#4a3826', 0, .9), [0, 0, 0]);
+        P(pack, A.cyl(.1 * k, .1 * k, .62 * k, 8), A.mat('#6a5a3e', 0, .9), [0, .4 * k, 0], { rot: [0, 0, Math.PI / 2] });
+        const staff = G(arms.R.wr, [0, -.2 * k, .05 * k]);
+        bone(staff, [0, 1.0 * k, 0], [0, -2.2 * k, 0], .035 * k, .03 * k, A.M.woodD);
+        d.parts.push(cl, cw, pack, staff);
+      }
+      const show = kind => { for (const [n, d] of Object.entries(D)) for (const q of d.parts) q.visible = n === kind; mask.visible = kind === 'bare'; };
+
+      // ---- the birds out in the grass: they don't mind a disguise, but they know what it is without one
+      const birdM = A.mat('#2a2522', 0, .8), birds = [];
+      for (let i = 0; i < 9; i++) {
+        const b = G(root), body = G(b);
+        P(body, A.ico(.06, 0), birdM, [0, .06, 0], { scale: [.9, .8, 1.6], cast: false });
+        const wings = [-1, 1].map(sx => { const w = G(body, [sx * .04, .08, 0]); P(w, A.box(.16, .006, .08), birdM, [sx * .08, 0, 0], { cast: false }); return w; });
+        const at = [OUTB[0] + 1.2 + nz(i) * 2.6, OUTB[1] - .6 + nz(i + 9) * 2.4];
+        birds.push({ b, body, wings, at, ph: nz(i + 20) * 6, dir: nz(i + 30) * 1.2 - .6 });
+      }
+
+      // ---- the timeline: each visit plays out over a minute or so
+      const C = 44, SEQ = ['cape', 'woodsman', 'bare', 'bark', 'traveller', 'bare'];
+      const path = (pts, u) => { const L = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); L.push(l); tot += l; }
+        let d = Math.max(0, Math.min(1, u)) * tot; for (let i = 0; i < L.length; i++) { if (d <= L[i] || i === L.length - 1) { const f = Math.min(1, d / L[i]); return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f, Math.atan2(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]), tot]; } d -= L[i]; } };
+      let yaw = Math.PI / 2, lastKind = '', walked = 0, lastPos = null, breath = 0, scanAt = 0, scanN = 0, scanFrom = [0, 0, 0], scanTo = [0, 0, 0], scanT = -9;
+      const sides = ['L', 'R'], J = R.J;
+      // smooth noise (-1..1), so that nothing it does ever quite repeats; the world around it loops, it does not
+      const vn = (sd, x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return (nz(sd * 57.3 + i) * (1 - u) + nz(sd * 57.3 + i + 1) * u) * 2 - 1; };
+      const fb = (sd, x) => vn(sd, x) * .65 + vn(sd + 13, x * 2.3) * .35;
+      const bump = (x, a, b) => x > a && x < b ? Math.sin((x - a) / (b - a) * Math.PI) : 0;   // a brief swell between a and b
+      const add = (name, x = 0, y = 0, z = 0) => { const w = J[name].want; w[0] += x; w[1] += y; w[2] += z; };
+      const scan = (t, amp, sd) => {                          // where it looks: it holds, then turns, with a small turn the other way first
+        if (t > scanAt || t < scanT) { scanFrom = scanTo.slice(); const q = scanN * 3 + sd; scanTo = [(nz(q + 1) - .5) * .35 * amp, (nz(q + 2) - .5) * 1.7 * amp, nz(q + 3) < .4 ? (nz(q + 7) - .5) * 1.1 * amp : 0]; scanT = t; scanAt = t + 1.1 + nz(q + 4) * 2.8; scanN++; }
+        R.want('head', ...(t - scanT < .28 ? scanFrom.map((v, i) => v - (scanTo[i] - v) * .18) : scanTo));
+      };
+      const rest = (t, hold) => {                             // standing: its weight settles on one leg, then drifts to the other; never quite still
+        const wl = fb(5, t * .09) * (hold ? .2 : 1);
+        R.want('pelvis', 0, fb(6, t * .07) * .05, wl * .06); hips.position.x = wl * .07 * k;
+        R.want('spine', .02 + fb(8, t * .11) * .025, 0, -wl * .08); R.want('chest', 0, fb(9, t * .08) * .07, -wl * .02);
+        for (const sx of sides) {
+          const sg = sx === 'L' ? -1 : 1, free = Math.max(0, sg * wl);
+          R.want('hp' + sx, -free * .14, 0, -wl * .06); R.want('kn' + sx, free * .38); R.want('an' + sx);
+          R.want('sh' + sx, .04 + fb(20 + sg, t * .13) * .05, 0, sg * .07 + fb(22 + sg, t * .1) * .03); R.want('el' + sx, -.14 + fb(24 + sg, t * .15) * .07); R.want('wr' + sx, .05 + fb(26 + sg, t * .2) * .1);
+        }
+        R.want('neck', fb(30, t * .06) * .05); R.want('head', fb(31, t * .05) * .04, fb(32, t * .04) * .12, fb(33, t * .06) * .05);
+      };
+      const gait = (kind, ph, fast) => {                        // each disguise walks wrongly in its own way; under all of them, real weight
+        const s = Math.sin(ph), c = Math.cos(ph), vv = 1 + .12 * fb(50, ph * .3);   // no two strides alike
+        R.want('pelvis', 0, s * .1, c * .035); hips.position.x = c * .05 * k;     // the hips twist and sway over each step
+        R.want('chest', J.chest.want[0], -s * .13, 0); add('head', 0, s * .04, 0);   // the shoulders twist against them; the head stays level
+        if (kind === 'cape') {                                  // a glide: hardly any stride under the cape
+          R.want('hpL', -s * .14); R.want('hpR', s * .14); R.want('knL', Math.max(0, c) * .2); R.want('knR', Math.max(0, -c) * .2);
+        } else if (kind === 'woodsman') {                       // a man's walk, learnt from far off: knees far too high, arms swinging with the same leg
+          R.want('hpL', -s * .62 * vv); R.want('hpR', s * .62 * vv); R.want('knL', Math.max(0, c) * 1.3 * vv); R.want('knR', Math.max(0, -c) * 1.3 * vv);
+          R.want('shL', -s * .5, 0, -.07); R.want('shR', s * .5, 0, .07);
+          R.want('neck', .15 + Math.max(0, Math.sin(ph * 2)) * .35);   // and its head bobs like the birds'
+        } else if (kind === 'traveller') {                      // a limp it copied, which changes legs halfway along
+          const stiff = walked % 9 < 4.5 ? 'L' : 'R', loose = stiff === 'L' ? 'R' : 'L', sg = stiff === 'L' ? 1 : -1;
+          R.want('hp' + stiff, -s * sg * .3); R.want('kn' + stiff, 0); R.want('hp' + loose, s * sg * .5 * vv); R.want('kn' + loose, Math.max(0, -c * sg) * .9 * vv);
+          add('spine', 0, 0, sg * Math.max(0, s * sg) * .12);
+        } else {                                                // its own walk: long, smooth, unhurried strides (or a run)
+          const a = (fast ? .75 : .45) * vv; R.want('hpL', -s * a); R.want('hpR', s * a); R.want('knL', Math.max(0, c) * (fast ? 1.3 : .8) * vv); R.want('knR', Math.max(0, -c) * (fast ? 1.3 : .8) * vv);
+          R.want('shL', s * a * .8, 0, -.07); R.want('shR', -s * a * .8, 0, .07); R.want('elL', -.15 - Math.max(0, -s) * .3); R.want('elR', -.15 - Math.max(0, s) * .3);
+          if (fast) { add('spine', .35); add('chest', .2); }
+        }
+        for (const sx of sides) { const sg = sx === 'L' ? -1 : 1; R.want('an' + sx, -(J['hp' + sx].want[0] + J['kn' + sx].want[0]) * .8 + Math.max(0, sg * s) * .25); }   // heel down, toe off
+      };
+      return (t, dt = 1 / 60) => {
+        const n = Math.floor(t / C), kt = t - n * C, kind = only || SEQ[n % SEQ.length], bare = kind === 'bare';
+        if (kind !== lastKind) { show(kind); lastKind = kind; }
+        const holding = bare && kt > 18.2 && kt < 21.9;               // when it is noticed, it holds its breath
+        root.userData.kt = kt;                                        // (for testing: where it is in its visit)
+        rest(t, holding);
+        let x = HIDE[0], z = HIDE[1], face = PEER, moving = 0, fast = false, lean = -.12, drop = 0;
+        const peer = smooth(1.5, 3.5, kt) * (1 - smooth(10, 11.5, kt));
+        // peering: lean out from behind the tree and look about; a hand on the boughs
+        if (kt < 11.5) {
+          lean = -.12 + peer * .75;
+          if (peer > .02) scan(t, peer, n * 31);
+          const lh = LS > 0 ? 'L' : 'R'; R.want('sh' + lh, -1.15 * peer, 0, -LS * .35 * peer); R.want('el' + lh, -.6 * peer); R.want('wr' + lh, -.2 * peer);
+        }
+        // before it steps out, it gathers itself: a small dip, a lean back
+        const gather = bump(kt, 10.9, 11.75); drop += gather * .12 * k; for (const sx of sides) add('kn' + sx, gather * .3); add('spine', -gather * .1);
+        const out = bare ? OUTB : OUT, back = [out, SIDE, HIDE];
+        if (kt >= 11.5 && kt < 13.5) { const u = smooth(11.5, 13.5, kt); x = HIDE[0] + (SIDE[0] - HIDE[0]) * u; z = HIDE[1] + (SIDE[1] - HIDE[1]) * u; face = Math.PI / 2; moving = 1; }   // stepping out from behind it
+        if (kt >= 13.5) { x = SIDE[0]; z = SIDE[1]; face = Math.PI / 2; }
+        if (!bare) {
+          if (kt >= 13.5 && kt < 23) {
+            let u = (kt - 13.5) / 9.5;
+            if (kind === 'cape') u += Math.sin(u * 6.28 * 3.5) / (6.28 * 3.5);                  // the cape: stops dead now and then, then glides on
+            if (kind === 'bark') u = (Math.floor(u * 5) + smooth(.55, 1, (u * 5) % 1)) / 5;      // the bark: still as a tree, then a few lurching steps
+            const [px, pz, a] = path([SIDE, out], u); x = px; z = pz; face = a; moving = kind === 'bark' ? ((u * 5) % 1 > .5 ? 1 : 0) : 1;
+          } else if (kt >= 23 && kt < 28.5) {                                                    // stands and looks at the keep
+            x = out[0]; z = out[1]; face = Math.PI / 2; scan(t, .4, 200 + n * 17);
+          } else if (kt >= 28.5 && kt < 38.5) {
+            const u = (kt - 28.5) / 10; const [px, pz, a] = path(back, u); x = px; z = pz; face = a; moving = 1;
+          } else if (kt >= 38.5) { x = HIDE[0]; z = HIDE[1]; }
+          if (kind === 'bark' && kt > 11.5 && kt < 38.5) for (const sx of sides) { const sg = sx === 'L' ? -1 : 1; R.want('sh' + sx, -2.3, 0, sg * .5); R.want('el' + sx, -.35, 0, sg * .2); }   // boughs, held up
+        } else {
+          if (kt >= 13.5 && kt < 18.2) { const [px, pz, a] = path([SIDE, out], (kt - 13.5) / 4.7); x = px; z = pz; face = a; moving = 1; }
+          else if (kt >= 18.2 && kt < 21.9) {
+            x = out[0]; z = out[1]; face = Math.PI / 2 + .15;
+            // noticed: it freezes mid-step, turns its head slowly to the birds, then lifts a hand to its own face
+            R.want('head', .1, -.55, .25);
+            const pre = bump(kt, 19.2, 19.65), lift = smooth(19.6, 20.6, kt);   // (the arm draws back a little before it rises)
+            R.want('shR', -1.75 * lift + pre * .35, 0, -.3 * lift); R.want('elR', -2.55 * lift, 0, 0); R.want('wrR', -.5 * lift);
+            if (lift > .5) R.want('head', .45, -.1, -.15);
+            // and then it looks straight at whoever is watching, a long moment, before it goes
+            const look = smooth(20.7, 21.2, kt), toCam = Math.atan2(Math.sin(Math.atan2(CAM[0] - x, CAM[1] - z) - yaw), Math.cos(Math.atan2(CAM[0] - x, CAM[1] - z) - yaw));
+            if (look > 0) { R.want('head', .12, toCam * .8, .2 * look); R.want('neck', 0, toCam * .2, 0); R.rate('head', 3.4); } else R.rate('head', 4.2);
+            R.want('hpL', -.25); R.want('hpR', .25); R.want('knR', .4);                         // caught mid-step
+          } else if (kt >= 21.9 && kt < 24.6) { const [px, pz, a] = path(back, smooth(22.1, 24.6, kt) * .4 + (kt - 21.9) / 2.7 * .6); x = px; z = pz; face = a; moving = 1; fast = true; R.rate('head', 4.2); }
+          else if (kt >= 24.6) { x = HIDE[0]; z = HIDE[1]; }
+          // before it runs, all its length folds down into a crouch; then it goes
+          const crouch = bump(kt, 21.3, 22.2); drop += crouch * .4 * k; for (const sx of sides) { add('kn' + sx, crouch * 1.0); add('hp' + sx, -crouch * .5); } add('spine', crouch * .45); add('neck', crouch * .2);
+        }
+        // ground under it, how far it has walked (its stride follows the ground it covers), which way it faces
+        const step = lastPos ? Math.hypot(x - lastPos[0], z - lastPos[1]) : 0; lastPos = [x, z]; if (step < 1) walked += step;
+        if (moving) gait(kind, walked * Math.PI / (fast ? 2.4 : 1.7) * (kind === 'woodsman' ? .75 : 1), fast);
+        else for (const sx of sides) R.want('an' + sx, -(J['hp' + sx].want[0] + J['kn' + sx].want[0]));   // standing: feet flat on the ground
+        R.rate('hpL', moving ? 16 : 7); R.rate('hpR', moving ? 16 : 7);
+        let dy = face - yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); yaw += dy * (1 - Math.exp(-dt * (fast ? 7 : 2.5)));
+        g.position.set(x, gy(x, z), z); g.rotation.y = yaw;
+        // leaning out sideways from behind the tree (toward the open side), bending at the waist
+        add('spine', 0, 0, LS * lean * .5); add('chest', 0, 0, LS * lean * .45);
+        // breathing: slow and uneven, the ribs filling, the shoulders lifting; it stops when it is noticed
+        if (!holding) breath += dt * 6.283 * (.19 + .05 * fb(40, t * .05));
+        const b = (Math.sin(breath) + 1) / 2;
+        rib.scale.set(1 + b * .035, 1 + b * .015, .5 * (1 + b * .09)); add('chest', -b * .03); for (const sx of sides) add('sh' + sx, 0, 0, (sx === 'L' ? 1 : -1) * b * .02);
+        hips.position.y = LEG - drop - (moving ? Math.abs(Math.sin(walked * Math.PI / 1.7)) * (kind === 'cape' ? 0 : .06 * k) + (fast ? .25 * k : 0) : 0);
+        // the fingers: each feeling the air on its own, trailing when the arm moves and swinging on after it stops; gripping when a hand is raised
+        for (const sx of sides) {
+          const pv = J['sh' + sx].vel[0] + J['el' + sx].vel[0] + J['wr' + sx].vel[0], grip = J['sh' + sx].cur[0] < -.8 ? .5 : 0;
+          for (let f = 0; f < 4; f++) {
+            const curl = .22 + .18 * fb(60 + f + (sx === 'L' ? 0 : 9), t * .25);
+            R.want(`f${sx}${f}a`, -curl - grip + pv * .06); R.want(`f${sx}${f}b`, -curl * 1.2 - grip + pv * .08);
+          }
+        }
+        if (D[kind]?.cloak) { const c = D[kind].cloak; c.rotation.set(-(J.spine.cur[0] + J.chest.cur[0]) + (moving ? .08 : 0), 0, -(J.pelvis.cur[2] + J.spine.cur[2] + J.chest.cur[2]) * .85); }   // the cloth hangs straight, trailing a little
+        R.step(dt);
+        // the birds: pecking in the grass, until something wrong walks out among them
+        const flee = bare && kt > 18.2 ? kt - 18.2 : -1;
+        for (const [i, b] of birds.entries()) {
+          const f = flee - i * .07;
+          if (f > 0) {
+            const up = f * 3.2, away = f * 5;
+            b.b.position.set(b.at[0] + away * .8, gy(b.at[0], b.at[1]) + up + f * f * .3, b.at[1] + away * b.dir); b.b.rotation.y = Math.atan2(.8, b.dir);
+            b.wings.forEach((w, s) => { w.rotation.z = (s ? -1 : 1) * Math.sin(t * 28 + i) * .9; }); b.body.rotation.x = -.4; b.b.visible = f < 7;
+          } else {
+            b.b.visible = true; b.b.position.set(b.at[0], gy(b.at[0], b.at[1]), b.at[1]); b.b.rotation.y = b.ph + Math.floor((t + b.ph) / 3) * 1.3;
+            b.body.rotation.x = Math.max(0, Math.sin((t + b.ph) * 5)) ** 4 * .7; b.wings.forEach(w => { w.rotation.z = 0; });
+          }
+        }
+      };
+    },
+  },
+
   // ================================================================ THE CLOCK-HEADED FIGURE
   clockhead: {
-    name: 'The clock-headed figure', hour: 22,
-    blurb: 'Otherworldly. Very tall and thin, with an old clock face where its head should be, its hands spinning wrong. Time stutters around it: it freezes mid-step, then is suddenly further along, sometimes walks backward, and the fire flickers the wrong way.',
+    name: 'The Five Hours', hour: 22,
+    blurb: 'Otherworldly. Very tall and thin, in a long coat with a high collar, and one head at a time: a clock, an hourglass, a metronome, a galaxy turning under glass, or a gilded smiling mask. A head sinks into the collar and another rises when its mood changes. The clock watches, patient, and walks slowly. The metronome walks in step with its own ticking. The hourglass paces, restless, until its sand runs out. The galaxy stands looking up at the sky, far away, and the fire flickers. Nobody can read the mask: it stands and watches whoever is watching it. Some are seen with only one head.',
     view: [[-6.6, 1.8, 4.6], [-12.2, 2.2, .8]],
+    variants: [['', 'five heads'], ['clock', 'only a clock'], ['hourglass', 'only an hourglass'], ['metronome', 'only a metronome'], ['galaxy', 'only a galaxy'], ['mask', 'only a mask']],
     knight: { place: 'repair:doorway', action: 'stand', emote: 'question', note: 'not sure what time it is any more' },
     build(root) {
-      const coat = ds('#17151a', 0, .9), skin = A.mat('#2a2622', 0, .7), brass = A.mat('#9a7a3a', .8, .35);
-      const g = G(root, [-12, 0, 1.4], [0, Math.PI / 2, 0]), body = G(g);
+      const v = root.userData.appearance?.variant || {}, only = v.kind || '', ZW = .1;   // it walks the aisle between the building plots
+      const coat = ds(only ? '#1d1a17' : '#17151a', 0, .9), skin = A.mat('#2a2622', 0, .7), brass = A.mat('#9a7a3a', .8, .35), dark = A.mat('#120e0a');
+      const g = G(root, [-12, 0, ZW], [0, Math.PI / 2, 0]), body = G(g); g.scale.setScalar((v.size || 1) * (only ? .82 : 1));
       const legs = [-1, 1].map(sx => { const l = G(body, [sx * .12, 1.35, 0]); bone(l, [0, 0, 0], [0, -1.35, .02], .05, .04, skin); return l; });
       const coatM = new T.Mesh(A.facet(new T.CylinderGeometry(.2, .44, 1.7, 9, 2, true), .05, 4), coat); coatM.position.y = 1.55; coatM.castShadow = true; body.add(coatM);
       P(body, A.cyl(.24, .2, .8, 8), coat, [0, 2.6, 0], { scale: [1, 1, .7] });
-      bone(body, [0, 2.95, 0], [0, 3.25, 0], .045, .04, skin);
       const arms = [-1, 1].map(sx => { const a = G(body, [sx * .27, 2.9, 0]); bone(a, [0, 0, 0], [sx * .08, -.75, .05], .04, .035, skin); bone(a, [sx * .08, -.75, .05], [sx * .05, -1.5, .1], .035, .03, skin); return a; });
-      // the head: an old clock face, brass-rimmed, its hands not keeping any time we know
-      const head = G(body, [0, 3.55, 0]);
-      const face = canvasTex(256, 256, (c, w) => {
-        c.fillStyle = '#e6dcc2'; c.beginPath(); c.arc(w / 2, w / 2, w / 2, 0, 6.3); c.fill();
-        c.strokeStyle = '#3a2f22'; c.fillStyle = '#3a2f22';
-        for (let k = 0; k < 60; k++) {
-          const a = k / 60 * 6.283, big = k % 5 === 0, r0 = w / 2 - 10, r1 = r0 - (big ? 22 : 9);
-          c.lineWidth = big ? 5 : 2; c.beginPath(); c.moveTo(w / 2 + Math.cos(a) * r0, w / 2 + Math.sin(a) * r0); c.lineTo(w / 2 + Math.cos(a) * r1, w / 2 + Math.sin(a) * r1); c.stroke();
+      // the high collar the heads sink into and rise from
+      const collar = G(body, [0, 3.0, 0]);
+      P(collar, new T.CylinderGeometry(.27, .2, .5, 12, 1, true), coat, [0, .22, 0], { jitter: .01 });
+      P(collar, A.cyl(.12, .12, .1, 8), dark, [0, .15, 0], { cast: false });
+      const neck = G(collar, [0, .5, 0]);                       // where the head sits; it sinks down into the collar
+      const heads = {};
+      const make = {
+        clock(h) {   // an old clock face, brass-rimmed; the hands keep proper time while it is patient
+          const face = canvasTex(256, 256, (c, w) => {
+            c.fillStyle = '#e6dcc2'; c.beginPath(); c.arc(w / 2, w / 2, w / 2, 0, 6.3); c.fill(); c.strokeStyle = '#3a2f22'; c.fillStyle = '#3a2f22';
+            for (let k = 0; k < 60; k++) { const a = k / 60 * 6.283, big = k % 5 === 0, r0 = w / 2 - 10, r1 = r0 - (big ? 22 : 9); c.lineWidth = big ? 5 : 2; c.beginPath(); c.moveTo(w / 2 + Math.cos(a) * r0, w / 2 + Math.sin(a) * r0); c.lineTo(w / 2 + Math.cos(a) * r1, w / 2 + Math.sin(a) * r1); c.stroke(); }
+            c.globalAlpha = .25; c.beginPath(); c.arc(w * .62, w * .35, 40, 0, 6.3); c.fill();
+          });
+          const f = G(h, [0, .4, 0]);
+          P(f, A.cyl(.42, .42, .1, 24), brass, [0, 0, 0], { rot: [Math.PI / 2, 0, 0], jitter: 0 });
+          P(f, new T.CircleGeometry(.38, 32), new T.MeshStandardMaterial({ map: face, roughness: .6, emissive: '#3a3020', emissiveIntensity: .35 }), [0, 0, .051], { jitter: 0, cast: false });
+          const hour = G(f, [0, 0, .06]), minute = G(f, [0, 0, .065]);
+          P(hour, A.box(.03, .2, .012), dark, [0, .09, 0], { jitter: 0, cast: false }); P(minute, A.box(.02, .3, .012), dark, [0, .14, 0], { jitter: 0, cast: false });
+          P(f, A.ico(.03, 0), brass, [0, 0, .075], { jitter: 0, cast: false });
+          return { hour, minute };
+        },
+        hourglass(h) {   // glass and brass; the sand runs while it is restless, and it flips when the mood comes
+          const f = G(h, [0, .36, 0]), turn = G(f);
+          const glass = new T.MeshStandardMaterial({ color: '#cfe4ef', transparent: true, opacity: .28, roughness: .08, metalness: .1, depthWrite: false, side: T.DoubleSide });
+          const prof = [[.02, -.27], [.15, -.23], [.17, -.13], [.1, -.04], [.022, 0], [.1, .04], [.17, .13], [.15, .23], [.02, .27]].map(([x, y]) => new T.Vector2(x, y));
+          const gm = new T.Mesh(new T.LatheGeometry(prof, 16), glass); turn.add(gm);
+          for (const y of [-.3, .3]) P(turn, A.cyl(.21, .21, .04, 12), brass, [0, y, 0]);
+          for (let k = 0; k < 3; k++) { const a = k / 3 * 6.28; bone(turn, [Math.cos(a) * .19, -.3, Math.sin(a) * .19], [Math.cos(a) * .19, .3, Math.sin(a) * .19], .014, .014, brass, 5); }
+          const sandM = A.mat('#d9b46a', 0, .9);
+          const top = G(turn, [0, .025, 0]), bot = G(turn, [0, -.25, 0]);
+          P(top, new T.ConeGeometry(.15, .2, 14), sandM, [0, .1, 0], { rot: [Math.PI, 0, 0], jitter: 0, cast: false });
+          P(bot, new T.ConeGeometry(.15, .16, 14), sandM, [0, .08, 0], { jitter: 0, cast: false });
+          const stream = P(turn, A.cyl(.006, .006, .24, 4), sandM, [0, -.12, 0], { jitter: 0, cast: false });
+          return { turn, top, bot, stream };
+        },
+        metronome(h) {   // a dark wooden pyramid, its arm swinging; it keeps time with whatever it watches
+          const f = G(h, [0, .32, 0]), wood = A.mat('#4a2e1c', 0, .6);
+          P(f, new T.CylinderGeometry(.08, .24, .62, 4), wood, [0, 0, 0], { rot: [0, Math.PI / 4, 0], jitter: 0 });
+          P(f, A.box(.11, .46, .01), A.mat('#d8c9a2', 0, .7), [0, .02, .125], { rot: [-.2, 0, 0], jitter: 0, cast: false });
+          const arm = G(f, [0, -.2, .15]);
+          P(arm, A.box(.014, .5, .012), brass, [0, .25, 0], { jitter: 0, cast: false });
+          P(arm, A.box(.07, .06, .03), brass, [0, .33, 0], { jitter: 0 });
+          return { arm };
+        },
+        galaxy(h) {   // a glass globe with a galaxy slowly turning inside it
+          const f = G(h, [0, .36, 0]);
+          P(f, new T.SphereGeometry(.3, 20, 14), new T.MeshStandardMaterial({ color: '#0a0c1a', transparent: true, opacity: .55, roughness: .05, metalness: .2, depthWrite: false }), [0, 0, 0], { jitter: 0, cast: false });
+          const N = 1400, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), r = A.rand(41), cc = new T.Color();
+          for (let i = 0; i < N; i++) {
+            const u = Math.sqrt(r()), arm = i % 3, rad = .01 + u * .26, a = arm * 2.094 + u * 4.6 + (r() - .5) * .7 * (1 - u * .4);
+            pos.set([Math.cos(a) * rad, (r() - .5) * .05 * (1 - u), Math.sin(a) * rad], i * 3);
+            cc.setHSL(.62 + u * .2 - (u < .15 ? .55 : 0), .7, .85 - u * .35); col.set([cc.r, cc.g, cc.b], i * 3);
+          }
+          const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
+          const disc = G(f, [0, 0, 0], [1.25, 0, .3]);                       // turned to face out of the globe
+          disc.add(new T.Points(geo, new T.PointsMaterial({ size: .024, vertexColors: true, transparent: true, opacity: .95, depthWrite: false, blending: T.AdditiveBlending, fog: false })));
+          P(disc, A.ico(.045, 1), glow('#fff2d8', 2.5, { fog: false }), [0, 0, 0], { cast: false });
+          const haze = softLight('#9fb0ff', 1.4, .9); f.add(haze);           // its faint light in the glass
+          return { disc };
+        },
+        mask(h) {   // a gilded theatre mask on a dark head: hollow eyes curved up as if smiling, a hollow smile. Nobody can read it.
+          const tex = canvasTex(256, 256, (c, w) => {
+            const gr = c.createLinearGradient(0, 0, w * .9, w); gr.addColorStop(0, '#d9bd70'); gr.addColorStop(.5, '#a07e36'); gr.addColorStop(1, '#5c4318');
+            c.fillStyle = gr; c.beginPath();                                   // broad at the brow, narrowing to a pointed chin
+            c.moveTo(w * .5, w * .02); c.bezierCurveTo(w * .86, w * .02, w * .95, w * .3, w * .9, w * .5); c.bezierCurveTo(w * .84, w * .78, w * .62, w * .97, w * .5, w * .99);
+            c.bezierCurveTo(w * .38, w * .97, w * .16, w * .78, w * .1, w * .5); c.bezierCurveTo(w * .05, w * .3, w * .14, w * .02, w * .5, w * .02); c.fill();
+            c.strokeStyle = 'rgba(70,48,14,.7)'; c.lineWidth = 3; c.lineCap = 'round';
+            for (const sx of [-1, 1]) { c.beginPath(); c.moveTo(w * (.5 + sx * .06), w * .3); c.quadraticCurveTo(w * (.5 + sx * .2), w * .18, w * (.5 + sx * .36), w * .3); c.stroke(); }   // arched brows
+            c.beginPath(); c.moveTo(w * .5, w * .36); c.lineTo(w * .47, w * .55); c.lineTo(w * .53, w * .55); c.stroke();   // the nose
+            c.strokeStyle = 'rgba(40,26,8,.55)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(w * .3, w * .08); c.lineTo(w * .34, w * .22); c.lineTo(w * .31, w * .31); c.stroke();   // an old crack in the gilt
+            c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000';
+            for (const sx of [-1, 1]) { const x = w * (.5 + sx * .2), y = w * .42; c.beginPath(); c.moveTo(x - w * .1, y + w * .015); c.quadraticCurveTo(x, y - w * .085, x + w * .1, y + w * .015); c.quadraticCurveTo(x, y - w * .045, x - w * .1, y + w * .015); c.fill(); }   // eyes: thin hollow arcs, curved up
+            c.beginPath(); c.moveTo(w * .18, w * .64); c.quadraticCurveTo(w * .5, w * .9, w * .82, w * .64); c.quadraticCurveTo(w * .5, w * .8, w * .18, w * .64); c.fill();   // a hollow smile, a thin crescent, too wide
+          });
+          const f = G(h, [0, .36, 0]);
+          P(f, A.ico(.24, 2), A.mat('#120f10', 0, .8), [0, 0, -.06], { scale: [.85, 1.12, .9], jitter: .003 });   // the dark head it is worn on
+          const m = new T.Mesh(new T.SphereGeometry(.3, 24, 16, Math.PI / 2 - .85, 1.7, Math.PI / 2 - 1.0, 2.0),
+                               new T.MeshStandardMaterial({ map: tex, alphaTest: .5, metalness: .7, roughness: .38, side: T.DoubleSide, emissive: '#3a2c10', emissiveMap: tex, emissiveIntensity: .18 }));
+          m.scale.set(.72, 1.12, .5); m.position.z = .02; f.add(m);
+          return {};
+        },
+      };
+      const NAMES = ['clock', 'hourglass', 'metronome', 'galaxy', 'mask'];
+      for (const n of (only ? [only] : NAMES)) { const h = G(neck); h.visible = false; heads[n] = { h, ...make[n](h) }; }
+      let mood = only || 'clock', next = null, swapT = -9, moodT = 0, until = 10, x = -12, dir = 1, faceYaw = Math.PI / 2, handM = 0, dist = 0, swing = 0, walking = false;
+      heads[mood].h.visible = true;
+      // it walks plainly, like anyone: legs and arms follow the ground it covers, and it turns round at the ends of its path
+      const walk = (speed, dt) => { x += dir * speed * dt; dist += speed * dt; walking = true; if (x > -10.2 || x < -14.6) { dir = -dir; x = Math.max(-14.6, Math.min(-10.2, x)); } };
+      return (t, dt = 1 / 60) => {
+        // the mood changes now and then (the hourglass: when its sand runs out); the head sinks, another rises
+        if (!only && next === null && t > until) { next = NAMES.filter(n => n !== mood)[Math.floor(Math.random() * 4)]; swapT = t; }
+        const sw = t - swapT;
+        if (next !== null) {
+          if (sw >= .9 && heads[mood].h.visible) { heads[mood].h.visible = false; mood = next; heads[mood].h.visible = true; moodT = t; }
+          if (sw >= 1.8) { next = null; until = t + (mood === 'hourglass' ? 9 : 9 + Math.random() * 7); }
         }
-        c.globalAlpha = .25; c.beginPath(); c.arc(w * .62, w * .35, 40, 0, 6.3); c.fill();   // an old stain
-      });
-      P(head, A.cyl(.42, .42, .1, 24), brass, [0, 0, 0], { rot: [Math.PI / 2, 0, 0], jitter: 0 });
-      P(head, new T.CircleGeometry(.38, 32), new T.MeshStandardMaterial({ map: face, roughness: .6, emissive: '#3a3020', emissiveIntensity: .35 }), [0, 0, .051], { jitter: 0, cast: false });
-      const hour = G(head, [0, 0, .06]), minute = G(head, [0, 0, .065]);
-      P(hour, A.box(.03, .2, .012), A.mat('#120e0a'), [0, .09, 0], { jitter: 0, cast: false });
-      P(minute, A.box(.02, .3, .012), A.mat('#120e0a'), [0, .14, 0], { jitter: 0, cast: false });
-      P(head, A.ico(.03, 0), brass, [0, 0, .075], { jitter: 0, cast: false });
-      let mode = 'freeze', until = 0, x = -12, dir = 1, handH = 0, handM = 0;
-      const pose = () => { arms.forEach(a => { a.rotation.set((Math.random() - .5) * 1.6, 0, (Math.random() - .5) * .8); }); legs.forEach(l => { l.rotation.x = (Math.random() - .5) * .9; }); head.rotation.z = (Math.random() - .5) * .9; };
-      return (t, dt) => {
-        if (t > until) {   // time does something different every few seconds
-          mode = ['freeze', 'skip', 'skip', 'backward', 'race'][Math.floor(Math.random() * 5)]; until = t + 1.2 + Math.random() * 2.5;
-          if (mode === 'skip') { x += dir * (.5 + Math.random() * .8); pose(); }
-          if (x > -10.2 || x < -14.6) { dir = -dir; x = Math.max(-14.6, Math.min(-10.2, x)); }
+        const sink = next !== null ? (sw < .9 ? smooth(0, .9, sw) : 1 - smooth(.9, 1.8, sw)) : 0;
+        neck.position.y = .5 - sink * .62; neck.scale.setScalar(1 - sink * .55);
+        collar.rotation.y = next !== null ? Math.sin(t * 30) * .04 : 0;     // the collar shudders as they change
+        const mt = t - moodT, H = heads[mood];
+        A.setFireDim(1); walking = false; let ph = null, nod = 0;
+        if (next !== null) { /* it stands still while its head changes */ }
+        else if (mood === 'clock') {                 // patient: it stands and watches, then walks a little way, slowly. Its hands stop just before it moves.
+          const k = mt % 7;
+          if (k > 4.6) walk(.35, dt);
+          if (k < 4.2) handM = Math.floor(t) * .1047;
+          H.minute.rotation.z = -handM; H.hour.rotation.z = -handM / 12;
+        } else if (mood === 'metronome') {            // focused: it walks steadily, every step on the tick
+          const sw2 = Math.sin(t * 2.4); H.arm.rotation.z = sw2 * .5;
+          walk(.46, dt); ph = t * 2.4; nod = Math.abs(sw2) ** 8 * .1;
+        } else if (mood === 'hourglass') {           // restless: it flips, the sand runs, and it paces up and down until it is empty
+          const flip = smooth(0, .9, mt), f = Math.min(1, Math.max(0, (mt - 1) / 8));
+          H.turn.rotation.z = Math.PI * (1 - flip);
+          H.top.scale.setScalar(Math.max(.01, 1 - f) ** .5); H.bot.scale.setScalar(Math.max(.01, f) ** .5); H.stream.visible = flip > .99 && f < 1;
+          if (mt > 1) walk(.9, dt);
+          if (f >= 1 && !only) until = Math.min(until, t);
+          if (only && mt > 10) moodT = t;            // the lone hourglass flips again
+        } else if (mood === 'galaxy') {              // distant: it stands with its head tipped back to the sky, and the fire flickers
+          H.disc.rotation.y = -t * .35;
+          A.setFireDim(.7 + .3 * Math.sin(t * 13));
+        } else if (mood === 'mask') {                // unreadable: it stands and watches whoever is watching; now and then it walks a few steps, then watches again
+          if (mt % 8 > 5.5) walk(.3, dt);
         }
-        if (mode === 'backward') { x -= dir * dt * .5; const ph = t * 4; legs.forEach((l, i) => { l.rotation.x = -Math.sin(ph + i * Math.PI) * .4; }); arms.forEach((a, i) => { a.rotation.x = Math.sin(ph + i * Math.PI) * .3; }); }
-        if (mode === 'race') { body.position.x = (Math.random() - .5) * .03; body.position.z = (Math.random() - .5) * .03; }
-        g.position.set(x, 0, 1.4); g.rotation.y = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
-        const speed = { freeze: 0, skip: 0, backward: -9, race: 40 }[mode];
-        handM += speed * dt; handH += speed * dt / 12;
-        minute.rotation.z = -handM; hour.rotation.z = -handH;
-        A.setFireDim(mode === 'backward' ? .7 + .3 * Math.sin(t * 13) : 1);
+        // legs and arms: a plain stride while it walks, easing to stillness when it stops
+        swing = Math.max(0, Math.min(1, swing + (walking ? 3 : -3) * dt));
+        if (ph === null) ph = dist * Math.PI / .6;
+        legs.forEach((l, i) => { l.rotation.x = Math.sin(ph + i * Math.PI) * .38 * swing; });
+        arms.forEach((m, i) => { m.rotation.set(-Math.sin(ph + i * Math.PI) * .22 * swing, 0, 0); });
+        body.position.y = Math.abs(Math.cos(ph)) * .03 * swing;
+        neck.rotation.x = mood === 'galaxy' ? -.55 * (1 - sink) : nod;
+        // which way it faces: the way it walks; the mask, standing, turns slowly to whoever is watching
+        const c = A.camera.position, want = mood === 'mask' && next === null && !walking ? Math.atan2(c.x - x, c.z - ZW) : (dir > 0 ? Math.PI / 2 : -Math.PI / 2);
+        let dy = want - faceYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); faceYaw += dy * (1 - Math.exp(-dt * (mood === 'mask' ? 1.2 : 3)));
+        g.position.set(x, 0, ZW); g.rotation.y = faceYaw;
       };
     },
     exit() { A.setFireDim(1); },
+  },
+
+  // ================================================================ THE VISITING PEOPLES (mockups)
+  tidekin: {
+    name: 'The Tidekin', hour: 18,
+    blurb: 'A people of the lake: smooth otter-and-newt folk, dark green-bronze with pale bellies, who carry lit shells as lanterns. Curious, shy and gentle. First one surfaces at dusk and watches him; then a few come to fish and sing along the shore; in time they build a little floating village of reeds; and once, their eldest comes to the wall.',
+    view: [[16, 2.4, 14], [22, .2, 18.8]],
+    variants: [['', 'one, watching from the lake'], ['shore', 'a few on the shore, singing'], ['eldest', 'their eldest']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'something is watching from the lake' },
+    build(root) {
+      const kind = root.userData.appearance?.variant?.kind || '', LX = 27, LZ = 23, LL = -.35;
+      const at = (d, k) => [LX - .76 * k + .65 * d, LZ - .65 * k - .76 * d];   // k: out from the lake's middle toward the keep; d: along the shore
+      const look = (cd, ck, ld, lk, ly) => { const c = at(cd, ck), l = at(ld, lk); this.view = [[c[0], gy(...c) + 2.0, c[1]], [l[0], ly, l[1]]]; };
+      const rip = Array.from({ length: 5 }, () => { const m = new T.Mesh(new T.RingGeometry(.9, 1, 32), new T.MeshBasicMaterial({ color: '#d6eaf2', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; root.add(m); return { m, t0: -99, x: 0, z: 0 }; });
+      let ri = 0; const ripple = (x, z, t) => { const q = rip[ri++ % rip.length]; Object.assign(q, { t0: t, x, z }); };
+      const ripples = t => { for (const q of rip) { const k = (t - q.t0) / 3; q.m.visible = k >= 0 && k < 1; if (q.m.visible) { q.m.position.set(q.x, LL + .03, q.z); q.m.scale.setScalar(.3 + k * 2.2); q.m.material.opacity = (1 - k) * .45; } } };
+      const faceKeep = (o, x, z) => { o.g.rotation.y = Math.atan2(-x, -z); };
+      if (kind === 'shore') {                                          // a few on the shore at dusk, singing (no words), one fishing
+        look(2.6, 15.2, 0, 10.6, .7);
+        const folk = [-1.4, 0, 1.4].map((d, i) => { const [x, z] = at(d, 10.7), o = tidekin(root, [x, gy(x, z), z], .95 + i * .05, false, 10 + i); o.g.rotation.y = Math.atan2(LX - x, LZ - z) + (i - 1) * .3; o.body.position.y = -.28; return o; });
+        const rod = G(folk[2].arms.L, [-.04, -.5, .22]); bone(rod, [0, 0, 0], [0, .6, 1.3], .012, .006, A.M.woodL, 4); bone(rod, [0, .6, 1.3], [0, -1.0, 1.9], .002, .002, A.mat('#d8d8d0'), 3);
+        const notes = Array.from({ length: 8 }, (_, i) => { const m = P(root, A.ico(.025, 0), glow('#fff0c8', 2, { fog: false }), [0, 0, 0], { cast: false }); return { m, i }; });
+        return t => {
+          folk.forEach((o, i) => {
+            const sing = i < 2 ? Math.max(0, Math.sin(t * 1.9 + i * 1.7)) : 0;
+            o.head.rotation.set(i < 2 ? -.45 - sing * .15 : .25, Math.sin(t * .3 + i) * .2, Math.sin(t * .8 + i) * .1);
+            o.jaw.rotation.x = .1 + sing * .35; o.body.rotation.z = Math.sin(t * .8 + i * 2) * .07;
+            o.arms.R.rotation.x = -.5; o.lantern.rotation.x = .5; o.arms.L.rotation.x = i === 2 ? -1.1 : -.3; o.shellM.emissiveIntensity = 1.4 + Math.sin(t * 2 + i) * .2;
+            o.tail[0].rotation.set(-1.75, .5, 0); o.tail.forEach((j, q) => { if (q) j.rotation.z = .35; });   // tail curled round beside it
+          });
+          for (const q of notes) { const o = folk[q.i % 2], k = (t * .3 + q.i / 8) % 1, p = o.g.position; q.m.position.set(p.x + Math.sin(q.i * 2 + t) * .3, p.y + 1.3 + k * 2.2, p.z + Math.cos(q.i * 3) * .3); q.m.visible = k < .9; }
+        };
+      }
+      if (kind === 'eldest') {                                         // their eldest: old and barnacled, walking the shore slowly with a staff
+        look(-1, 19, .4, 10.8, .9);
+        const o = tidekin(root, [0, 0, 0], 1.25, true, 20);
+        return t => {
+          const c = t % 40, u = c < 20 ? smooth(0, 16, c) : 1 - smooth(20, 36, c), d = -2.6 + u * 5.2, [x, z] = at(d, 10.9), walking = (c > .5 && c < 16) || (c > 20.5 && c < 36);
+          const [x2, z2] = at(d + (c < 20 ? .1 : -.1), 10.9);
+          o.g.position.set(x, gy(x, z), z);
+          const stop = !walking; o.g.rotation.y = stop ? Math.atan2(-x, -z) : Math.atan2(x2 - x, z2 - z);   // when it stops, it turns to the keep
+          o.body.position.y = walking ? Math.abs(Math.sin(t * 2.2)) * .03 : 0; o.body.rotation.z = walking ? Math.sin(t * 2.2) * .06 : 0;
+          o.arms.R.rotation.x = stop ? -1.5 : -.6; o.lantern.rotation.x = -o.arms.R.rotation.x;   // it lifts its lantern toward the keep
+          o.arms.L.rotation.x = -.5 + (walking ? Math.sin(t * 2.2) * .15 : 0);
+          o.head.rotation.set(stop ? -.1 : .1, 0, Math.sin(t * .5) * .05); o.tail[0].rotation.y = Math.sin(t * 2.2) * .3;
+        };
+      }
+      look(0, 14, 0, 6.5, -.1);                                        // one, surfacing at dusk to watch him
+      const spots = [at(-1.5, 7.2), at(1.8, 6.8), at(0, 6)], o = tidekin(root, [0, -5, 0], 1, false, 3);
+      let n = -1, dove = false;
+      return t => {
+        const c = t % 14, cyc = Math.floor(t / 14), sp = spots[cyc % 3];
+        if (cyc !== n) { n = cyc; dove = false; o.g.position.x = sp[0]; o.g.position.z = sp[1]; faceKeep(o, ...sp); ripple(sp[0], sp[1], t - c + 1.3); }
+        if (c > 12 && !dove) { dove = true; ripple(sp[0], sp[1], t); }
+        const up = smooth(1.2, 2.6, c) * (1 - smooth(11.6, 12.8, c));
+        o.g.position.y = LL - 1.8 + up * .95;   // head and shoulders out of the water
+        o.head.rotation.set(-.08 + Math.sin(t * .7) * .04, Math.sin(t * .4) * .35, pulse(t, 5.3, 1.2) * .35);   // a curious tilt of the head, now and then
+        o.arms.R.rotation.x = -1.0 - pulse(t + 1, 7, 2.5) * .5; o.lantern.rotation.x = -o.arms.R.rotation.x; o.arms.L.rotation.x = -.3;
+        o.shellM.emissiveIntensity = 1.4 + Math.sin(t * 2) * .2; o.tail[0].rotation.y = Math.sin(t * 1.3) * .5;
+        ripples(t);
+      };
+    },
+  },
+  burrowfolk: {
+    name: 'The Burrowfolk', hour: 19,
+    blurb: 'A people under the plain: mole-and-badger diggers in leather aprons, with lantern-mushrooms growing on their backs. First a lost youngster pops up in the courtyard; then diggers come looking for it, with tunnels and mounds; they farm glowing mushrooms in a hollow on the plain; and their Burrow-Mother, huge, gentle and nearly blind, surfaces to thank him or to scold him, depending on how he treated the little one.',
+    view: [[-6.4, 1.4, -.9], [-10.8, .35, .1]],
+    variants: [['', 'a lost youngster'], ['diggers', 'diggers, searching'], ['mother', 'the Burrow-Mother']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a little nose, in the courtyard' },
+    build(root) {
+      const kind = root.userData.appearance?.variant?.kind || '';
+      if (kind === 'diggers') {
+        this.view = [[-4.6, 1.9, 7.6], [-2, .6, 12.6]];
+        for (const [x, z, rr] of [[-3.6, 12.4, .55], [-.4, 13.8, .5], [-2.2, 15, .6], [1.2, 11.6, .4]]) dirtMound(root, x, z, rr, rr > .45);
+        const a = burrower(root, [-2.9, gy(-2.9, 12.1), 12.1], 1, { seed: 6 }), b = burrower(root, [-1.1, gy(-1.1, 13.0), 13.0], .95, { seed: 7 });
+        a.g.rotation.y = 2.4; b.g.rotation.y = Math.atan2(1.1, -13);
+        const clods = Array.from({ length: 10 }, (_, i) => ({ m: P(root, A.ico(.05, 0), A.mat('#4a3826', 0, 1), [0, -9, 0]), i }));
+        return t => {
+          // one digs: claws in, earth thrown back over its shoulder
+          const dig = Math.sin(t * 6); a.arms.L.rotation.x = -.6 + dig * .5; a.arms.R.rotation.x = -.6 - dig * .5; a.body.rotation.x = .35; a.head.rotation.x = .3;
+          for (const q of clods) { const k = (t * 1.2 + q.i / 10) % 1, p = a.g.position; q.m.position.set(p.x + Math.sin(a.g.rotation.y) * (-.4 - k * 1.2) + (q.i % 3 - 1) * .1, p.y + .6 + Math.sin(k * Math.PI) * .9, p.z + Math.cos(a.g.rotation.y) * (-.4 - k * 1.2)); }
+          // the other stands up tall and sniffs the air, turning, calling for the little one
+          const call = pulse(t, 6, 1.6); b.head.rotation.set(-.3 - call * .4, Math.sin(t * .5) * .8, 0); b.nose.scale.setScalar(1 + Math.max(0, Math.sin(t * 14)) * .25 * (1 - call));
+          b.arms.R.rotation.x = -1.2 + Math.sin(t * .5) * .1; b.arms.L.rotation.x = -.2;
+          for (const o of [a, b]) o.caps.forEach((m, i) => { m.emissiveIntensity = 1.4 + Math.sin(t * 1.5 + i) * .3; });
+        };
+      }
+      if (kind === 'mother') {
+        this.view = [[-7, 3.2, 3.4], [-1, 2.2, 15]];
+        const MX = -1, MZ = 15, y0 = gy(MX, MZ), r = A.rand(19);
+        for (let i = 0; i < 14; i++) { const a = i / 14 * 6.28, rr = 2.3 + r() * .5; P(root, A.box(.5 + r() * .4, .25, .4 + r() * .3), A.mat(i % 3 ? '#4a3826' : '#2e3122', 0, 1), [MX + Math.cos(a) * rr, y0 + .05, MZ + Math.sin(a) * rr], { rot: [(r() - .5) * .8, a, (r() - .5) * .8], jitter: .05 }); }   // the ground heaved up round her
+        const m = burrower(root, [MX, y0 - 4, MZ], 2.8, { mother: true, seed: 8 }); m.g.rotation.y = Math.atan2(-MX, -MZ);
+        return t => {
+          const c = t % 40, up = smooth(1, 8, c) * (1 - smooth(34, 39, c));   // she surfaces, slowly, and after a long while sinks back
+          m.g.position.y = y0 - 4.2 + up * 2.9;
+          m.head.rotation.set(.15 + Math.sin(t * .3) * .1, Math.sin(t * .2) * .35, 0);   // she cannot see well: she finds the keep by smell
+          m.nose.scale.setScalar(1 + Math.max(0, Math.sin(t * 3)) ** 3 * .3);
+          m.arms.L.rotation.x = -.9; m.arms.R.rotation.x = -.9 + Math.sin(t * .4) * .1;
+          m.caps.forEach((q, i) => { q.emissiveIntensity = 1.3 + Math.sin(t * .9 + i * .7) * .4; });
+        };
+      }
+      const H1 = [-9.7, -.5], H2 = [-11.9, .55];                       // a lost youngster, popping up in the courtyard
+      const y1 = dirtMound(root, ...H1, .35), y2 = dirtMound(root, ...H2, .35);
+      const y = burrower(root, [0, -5, 0], .42, { young: true, seed: 4 });
+      return t => {
+        const c = t % 13, first = c < 7, [hx, hz] = first ? H1 : H2, base = first ? y1 : y2;
+        const up = first ? smooth(1, 1.4, c) * (1 - smooth(6, 6.25, c)) : smooth(8, 8.4, c) * (1 - smooth(12, 12.3, c));   // up it pops; down it ducks, quick
+        y.g.position.set(hx, base - .75 + up * .72, hz);
+        y.g.rotation.y = first && c > 4 ? Math.atan2(-7.4 - hx, 1 - hz) : first ? 1.2 + Math.sin(c * 1.4) * .9 : Math.atan2(-hx, -hz);   // it looks about; then it sees him
+        y.head.rotation.set(first && c > 4 ? -.15 : 0, 0, pulse(c, 3.1, .8) * .3);
+        y.nose.scale.setScalar(1 + Math.max(0, Math.sin(t * 16)) * .3);
+        y.arms.L.rotation.x = y.arms.R.rotation.x = -1.2;               // little claws on the rim of the hole
+      };
+    },
+  },
+  kitemakers: {
+    name: 'The Kitemakers', hour: 13,
+    blurb: 'A people of the wind: light, long-limbed gliders with silk between arm and leg, patterned like kites, who ride the wind fronts on windy days. First a scout glides in and lands on the keep; then a flock passes over; they rest on the walls in a gale; and once, a great migration darkens the sky for an hour while their Wind-Chief, the largest, its silk ragged with ancient patterns, circles the keep once. They leave dropped silk he can keep.',
+    view: [[10.5, 4.4, 1.5], [5.6, 5.0, -4.4]],
+    variants: [['', 'a scout, landing on the keep'], ['flock', 'the great migration, and the Wind-Chief']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'someone is on the roof' },
+    build(root) {
+      const kind = root.userData.appearance?.variant?.kind || '';
+      if (kind === 'flock') {
+        this.view = [[-34, 6, 36], [0, 9, 0]];
+        const chief = kiteFolk(root, 2.1, { chief: true, seed: 41 }), flock = Array.from({ length: 14 }, (_, i) => ({ k: kiteFolk(root, .8 + (i % 3) * .1, { seed: 50 + i }), i }));
+        const at = (a, R, H) => [Math.cos(a) * R, H + Math.sin(a * 2) * 1.2, Math.sin(a) * R];
+        const fly = (K, a, R, H, t) => { const p = at(a, R, H), q = at(a + .02, R, H); K.g.position.set(...p); K.g.rotation.set(0, Math.atan2(q[0] - p[0], q[2] - p[2]), -.35); K.body.rotation.set(Math.PI / 2 - .12, 0, 0); K.pose(1, t); };
+        return t => {
+          fly(chief, t * .07, 14, 13, t);                              // the Wind-Chief circles the keep once, slowly
+          for (const { k, i } of flock) fly(k, t * .07 - .2 - Math.floor(i / 4) * .09 - (i % 4) * .025, 12.5 + (i % 4) * 1.3, 11.5 + Math.floor(i / 4) * 1.1 + Math.sin(t * 1.3 + i) * .3, t + i);
+        };
+      }
+      // a scout: glides in on the wind, lands on the corner of the keep's wall, looks about, and goes
+      const k = kiteFolk(root, 1, { seed: 33 }), LAND = V(5.3, 4.22, -4.3);
+      const inC = new T.CatmullRomCurve3([V(36, 17, -22), V(21, 11, -12), V(10.5, 6.6, -6.4), LAND.clone().add(V(.25, .35, 0))]);
+      const outC = new T.CatmullRomCurve3([LAND.clone(), V(1.5, 6.8, -9), V(-13, 10.5, -15), V(-42, 17, -22)]);
+      const P0 = V(), P1 = V();
+      return t => {
+        const c = t % 26; let spread = 1, pitch = Math.PI / 2 - .15, stand = 0;
+        if (c < 7.4) { const u = 1 - (1 - c / 7.4) ** 1.5; inC.getPointAt(u, P0); inC.getPointAt(Math.min(1, u + .01), P1); if (u > .995) P1.copy(P0).add(V(-1, 0, 0)); const fl = smooth(.82, 1, u); pitch = (Math.PI / 2 - .15) * (1 - fl); stand = fl; k.g.rotation.set(0, Math.atan2(P1.x - P0.x, P1.z - P0.z), 0); }   // flaring as it lands
+        else if (c < 16) { P0.copy(LAND); spread = 1 - smooth(7.4, 8.4, c) + pulse(c - 11, 99, 1.6) * .7; pitch = 0; stand = 1; k.g.rotation.set(0, -2.2 + Math.sin(c * .45) * .7, 0); k.head.rotation.set(Math.sin(c * .9) * .1, Math.sin(c * .6) * .6, pulse(c, 4.4, 1) * .3); }   // folded; a stretch of the silk; looking about
+        else { const u = ((c - 16) / 10) ** 1.25; outC.getPointAt(Math.min(1, u), P0); outC.getPointAt(Math.min(1, u + .01), P1); spread = smooth(16, 16.6, c); pitch = (Math.PI / 2 - .2) * smooth(16, 16.8, c); stand = 1 - smooth(16, 16.6, c); k.g.rotation.set(0, Math.atan2(P1.x - P0.x, P1.z - P0.z), 0); }
+        k.g.visible = !(c > 25.5); k.g.position.copy(P0); k.body.rotation.set(pitch, 0, 0); k.body.position.y = stand * .78; k.pose(spread, t);
+      };
+    },
+  },
+
+  // ================================================================ THE ABYSSALS (mockups)
+  hanging: {
+    name: 'The hanging dark', hour: 18,
+    blurb: 'From the abyss. It hangs upright a little above the ground, ribs open at the front with a light moving inside them, a ragged skin from its shoulders, arms long enough to drag. No face at all. It holds perfectly still, then is suddenly turned another way. Its light is its mood: deep teal when calm, violet when unsettled, pale and flickering just before it acts.',
+    view: [[-6.4, 2.6, 2.9], [-9.5, 1.6, 10.5]], variants: DEPTHS,
+    knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'it was facing the other way a moment ago' },
+    build(root) { return abyssHanging(root, [-9.5, 0, 10.5], root.userData.appearance?.variant?.kind === 'deep', 11).tick; },
+  },
+  fingerwalker: {
+    name: 'The finger-walker', hour: 18,
+    blurb: 'From the abyss. Low and wide, on long legs that end in fingers, with a seam of light down its back and a smooth bulb of a head on a long stalk that snaps from one way to another. It scuttles in sudden bursts, then holds still for a long time, one finger tapping. How long it holds still is how calm it is.',
+    view: [[-5.6, 2.6, 2.9], [-8.5, 1.0, 10]], variants: DEPTHS,
+    knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'one finger, tapping' },
+    build(root) { return abyssFingers(root, [-8.5, 0, 10], root.userData.appearance?.variant?.kind === 'deep', 23).tick; },
+  },
+  scatter: {
+    name: 'The scatter', hour: 18,
+    blurb: 'From the abyss. A cloud of dark shards around a small cold light. Now and then every shard snaps into a shape at once: a tall figure, a spire, a long arm reaching toward the keep. Then it all falls apart again. When its light goes pale, it only reaches.',
+    view: [[-7, 2.8, 2.9], [-10, 1.6, 11]], variants: DEPTHS,
+    knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'it keeps making shapes' },
+    build(root) { return abyssScatter(root, [-10, 0, 11], root.userData.appearance?.variant?.kind === 'deep', 37).tick; },
+  },
+  rift: {
+    name: 'The rift', hour: 18,
+    blurb: 'A world event, rare. A tear opens in the land, cold light far down inside it, and dark rises out of it like smoke. The longer it stays open, the deeper the things that climb out of it, and at its deepest the tear climbs up out of the ground and stands open in the air, as if the land had split up into the sky. When it closes, it leaves a scar that can open again. (Where it opens is still to be decided.)',
+    view: [[-5.5, 6.0, 3.0], [5, 2.6, 17.5]],
+    variants: [['', 'as it deepens (plays out)'], ['deepest', 'at its deepest']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'the ground is open' },
+    build(root) {
+      const RX = 5, RZ = 17, y0 = gy(RX, RZ), r = A.rand(77), L = 9;
+      const g = G(root, [RX, y0, RZ], [0, .25, 0]);
+      // the tear: a jagged opening in the turf, black all the way down, with cold light far below
+      const shape = new T.Shape(), top = [], bot = [];
+      for (let i = 0; i <= 14; i++) { const u = i / 14, w = Math.sin(u * Math.PI) ** .7 * (1.15 + r() * .6); top.push([(u - .5) * L + (r() - .5) * .3, w * (i % 2 ? 1 : .75)]); bot.push([(u - .5) * L + (r() - .5) * .3, -w * (i % 2 ? .8 : 1.05)]); }
+      shape.moveTo(...top[0]); top.forEach(q => shape.lineTo(...q)); bot.reverse().forEach(q => shape.lineTo(...q));
+      const hole = new T.Mesh(new T.ShapeGeometry(shape), new T.MeshBasicMaterial({ color: '#000000', fog: false })); hole.rotation.x = -Math.PI / 2; hole.position.y = .08; g.add(hole);
+      const deepM = glow('#7a4cff', 2.2, { fog: false, transparent: true, opacity: .8 });
+      for (let i = 1; i < 13; i++) { const u = i / 14, x = (u - .5) * L; P(g, A.box(L / 14 * 1.1, .01, .05 + Math.sin(u * Math.PI) * .12), deepM, [x, .09, (r() - .5) * .1], { rot: [0, (r() - .5) * .3, 0], cast: false, jitter: 0 }); }
+      const depthTex = canvasTex(256, 64, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.5, 'rgba(150,110,255,.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
+      const deepGlow = new T.Mesh(new T.PlaneGeometry(L * .82, 1.3), new T.MeshBasicMaterial({ map: depthTex, transparent: true, opacity: .55, blending: T.AdditiveBlending, depthWrite: false, fog: false }));
+      deepGlow.rotation.x = -Math.PI / 2; deepGlow.position.y = .1; g.add(deepGlow);   // light from far down, along the length of it
+      // its torn edges: turf and stone heaved up along both sides
+      const turf = A.mat('#2a2e1e', 0, 1), stone = A.M.stoneD;
+      for (let i = 0; i < 18; i++) { const u = (i % 9 + .5) / 9, side = i < 9 ? 1 : -1, w = Math.sin(u * Math.PI) ** .7 * 1.6 + .3;
+        P(g, A.box(.6 + r() * .5, .18, .5 + r() * .3), i % 3 ? turf : stone, [(u - .5) * L, .05, side * w], { rot: [side * (.3 + r() * .4), r() * .6, (r() - .5) * .3], jitter: .05 }); }
+      // dark rising out of it like smoke, a few violet motes, and the light it gives (no real light)
+      const smoke = Array.from({ length: 22 }, (_, i) => { const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#000000', transparent: true, opacity: 0, depthWrite: false, fog: false })); g.add(sp); return { sp, x: (r() - .5) * L * .8, ph: r() }; });
+      const motes = Array.from({ length: 14 }, () => { const m = P(g, A.ico(.03, 0), glow('#b9a2ff', 2.5, { fog: false }), [0, 0, 0], { cast: false }); return { m, x: (r() - .5) * L * .8, ph: r() }; });
+      const lamp = softLight('#7a4cff', 3, 9); lamp.position.y = .6; g.add(lamp);
+      // at its deepest, the tear climbs up out of the ground and stands open in the air: black, with
+      // dark violet edges, smoke pouring off them (unlike the seam's clean crack)
+      const TH = 7.5, tshape = new T.Shape(), tl = [], tr = [];
+      for (let i = 0; i <= 12; i++) { const u = i / 12, w = Math.sin(u * Math.PI) ** .8 * (1.0 + r() * .5) * (1 - u * .35); tl.push([-w + (r() - .5) * .15, u * TH]); tr.push([w + (r() - .5) * .15, u * TH]); }
+      const outline = tr.slice().reverse(); tshape.moveTo(0, 0); tl.forEach(q => tshape.lineTo(...q)); outline.forEach(q => tshape.lineTo(...q));
+      const tgeo = new T.ShapeGeometry(tshape), tear = G(g, [0, .05, 0]);
+      const rim = new T.Shape(); rim.moveTo(0, -.25); tl.forEach(([x, y]) => rim.lineTo(x * 1.25 - .05, y * 1.02)); outline.forEach(([x, y]) => rim.lineTo(x * 1.25 + .05, y * 1.02));   // its edge: only a border, the middle stays black
+      const inner = new T.Path(); inner.moveTo(0, 0); tl.forEach(q => inner.lineTo(...q)); outline.forEach(q => inner.lineTo(...q)); rim.holes.push(inner);
+      const edge = new T.Mesh(new T.ShapeGeometry(rim), new T.MeshBasicMaterial({ color: '#6a3cff', transparent: true, opacity: .8, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide, fog: false })); tear.add(edge);
+      tear.add(new T.Mesh(tgeo, new T.MeshBasicMaterial({ color: '#000000', side: T.DoubleSide, fog: false })));
+      const tsmoke = Array.from({ length: 16 }, () => { const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#05030a', transparent: true, opacity: 0, depthWrite: false, fog: false })); g.add(sp); return { sp, side: r() < .5 ? -1 : 1, y: r() * TH, ph: r() }; });
+      const deepest = root.userData.appearance?.variant?.kind === 'deepest';
+      // what comes out of it: from deep down
+      const hang = abyssHanging(root, [RX - .4, 0, RZ + .2], true, 21), walk = abyssFingers(root, [RX + 3.2, 0, RZ + 3.0], true, 22), scat = abyssScatter(root, [RX - 3.4, 0, RZ + 3.2], true, 23);
+      return (t, dt) => {
+        for (const s of smoke) { const k = (t * .06 + s.ph) % 1; s.sp.position.set(s.x + Math.sin(t * .3 + s.ph * 9) * .4, .2 + k * 5, Math.sin(s.ph * 20) * .3); s.sp.scale.setScalar(1 + k * 3); s.sp.material.opacity = Math.sin(k * Math.PI) * .55; }
+        for (const m of motes) { const k = (t * .12 + m.ph) % 1; m.m.position.set(m.x, k * 3.5, Math.sin(m.ph * 30 + t) * .3); m.m.visible = k < .9; }
+        deepM.emissiveIntensity = 1.8 + Math.sin(t * .7) * .5 + Math.sin(t * 2.3) * .2; deepGlow.material.opacity = .45 + Math.sin(t * .7) * .15; lamp.intensity = 2.6 + Math.sin(t * .7) * .6;
+        hang.tick(t); walk.tick(t); scat.tick(t);
+        // the tear rising out of the ground (in the preview: it deepens, stands open a while, sinks back)
+        const cy = t % 50, up = deepest ? 1 : smooth(18, 30, cy) * (1 - smooth(44, 50, cy));
+        tear.visible = up > .01; tear.scale.set(.35 + .65 * up, Math.max(.01, up), 1);
+        edge.material.opacity = .55 + Math.sin(t * 1.3) * .2 + Math.sin(t * 3.1) * .1;
+        for (const q of tsmoke) { const k = (t * .15 + q.ph) % 1, yy = q.y * up; q.sp.position.set(q.side * (Math.sin(yy / TH * Math.PI) * 1.2 * up + k * 1.6), yy + k * 1.2, (q.ph - .5) * .4); q.sp.scale.setScalar(.8 + k * 2.2); q.sp.material.opacity = up * Math.sin(k * Math.PI) * .6; }
+        // now and then the hanging one sinks back into the tear and rises out of it again
+        const c = t % 34, rise = smooth(0, 6, c) * (1 - smooth(28, 33, c));
+        hang.g.position.y -= (1 - rise) * 4.2; hang.g.visible = rise > .02;
+      };
+    },
   },
 
   // ================================================================ A METEOR FALLS (an arrival)
@@ -3586,6 +4291,303 @@ const BEASTS = {
     },
   },
 };
+// ------------------------------------------------------------------ the visiting peoples
+// THE TIDEKIN: smooth otter-and-newt folk of the lake, dark green-bronze with pale bellies, who carry
+// lit shells as lanterns. Curious, shy and gentle.
+function tidekin(parent, pos, s = 1, elder = false, seed = 1) {
+  const r = A.rand(seed);
+  const skin = A.mat(elder ? '#5c6a58' : '#3f6448', .25, .4), belly = A.mat(elder ? '#d8d2bf' : '#cfc6a6', 0, .6), dark = A.mat('#0c0f0d', .3, .2);
+  const g = G(parent, pos); g.scale.setScalar(s);
+  const body = G(g);
+  P(body, A.ico(.3, 1), skin, [0, .78, 0], { scale: [.82, 1.45, .74] });
+  P(body, A.ico(.26, 1), belly, [0, .74, .08], { scale: [.7, 1.3, .6] });
+  const tail = chain(body, 5, .22, .11, .03, skin); tail[0].position.set(0, .42, -.18); tail[0].rotation.x = -2.0; tail[0].scale.set(.6, 1, 1);   // a newt's tail, flattened
+  for (const sx of [-1, 1]) { bone(body, [sx * .14, .45, 0], [sx * .17, .2, .06], .07, .05, skin); bone(body, [sx * .17, .2, .06], [sx * .16, .02, .12], .05, .04, skin); P(body, A.ico(.06, 0), skin, [sx * .16, .01, .2], { scale: [1.1, .35, 1.7] }); }
+  // the head: broad and flat, a short soft muzzle, small dark eyes, round ears like an otter's
+  const head = G(body, [0, 1.28, .06]);
+  P(head, A.ico(.2, 1), skin, [0, 0, 0], { scale: [1.05, .78, 1.15] });
+  P(head, A.ico(.12, 1), belly, [0, -.05, .17], { scale: [1.1, .7, 1] });
+  P(head, A.ico(.025, 0), dark, [0, -.01, .29]);
+  for (const sx of [-1, 1]) {
+    P(head, A.ico(.032, 1), dark, [sx * .11, .05, .16]);
+    P(head, A.ico(.045, 0), skin, [sx * .16, .12, -.05], { scale: [1, .8, .6] });
+    for (let w = 0; w < 2; w++) bone(head, [sx * .06, -.05, .24], [sx * .22, -.07 + w * .04, .27], .004, .002, belly, 3);   // whiskers
+  }
+  const jaw = G(head, [0, -.1, .1]); P(jaw, A.ico(.09, 0), belly, [0, -.02, .08], { scale: [1, .45, 1.1] });
+  const arm = sx => { const a = G(body, [sx * .2, 1.02, .05]); bone(a, [0, 0, 0], [sx * .05, -.28, .1], .05, .04, skin); bone(a, [sx * .05, -.28, .1], [sx * .04, -.48, .2], .04, .03, skin); P(a, A.ico(.05, 0), skin, [sx * .04, -.5, .22], { scale: [1.3, .6, 1.2] }); return a; };
+  const arms = { L: arm(-1), R: arm(1) };
+  // a spiral shell on a cord, lit from inside: their lantern
+  const shellM = glow('#ffd9a0', 1.6), lantern = G(arms.R, [.04, -.52, .24]);
+  bone(lantern, [0, 0, 0], [0, -.16, 0], .004, .004, dark, 3);
+  P(lantern, new T.ConeGeometry(.07, .2, 9), shellM, [0, -.27, 0], { rot: [Math.PI, 0, 0], cast: false });
+  for (let k = 0; k < 3; k++) P(lantern, new T.TorusGeometry(.055 - k * .013, .01, 4, 10), A.mat('#e8d6b0', 0, .5), [0, -.2 - k * .045, 0], { rot: [Math.PI / 2, 0, 0] });
+  const glowL = softLight('#ffcf8a', 1.8, 1.4); glowL.position.y = -.27; lantern.add(glowL);
+  if (elder) {                                                         // the eldest: barnacled, with a staff of driftwood
+    for (let k = 0; k < 18; k++) { const a = Math.PI + (r() - .5) * 3.4, y = .5 + r() * .95; P(body, new T.CylinderGeometry(.018, .035, .035, 6), A.mat('#d4cdb8', 0, .8), [Math.sin(a) * .23, y, Math.cos(a) * .2], { rot: [Math.PI / 2 * Math.sign(Math.cos(a)), 0, 0] }); }
+    const staff = G(arms.L, [-.04, -.5, .22]); bone(staff, [0, .8, 0], [0, -.95, 0], .025, .03, A.M.woodL);
+  }
+  return { g, body, head, jaw, arms, tail, lantern, shellM };
+}
+// THE BURROWFOLK: mole-and-badger diggers in leather aprons, lantern-mushrooms growing on their backs.
+function burrower(parent, pos, s = 1, o = {}) {
+  const fur = A.mat(o.mother ? '#5c524a' : '#4a3f35', 0, .95), pale = A.mat('#e8e2d6', 0, .9), pink = A.mat('#d99a9a', 0, .6), dark = A.mat('#0d0b0a', .2, .3), claw = A.mat('#d8ccb0', .1, .5), apron = A.mat('#7a4e2c', 0, .8);
+  const g = G(parent, pos); g.scale.setScalar(s);
+  const body = G(g);
+  P(body, A.ico(.38, 1), fur, [0, .55, 0], { scale: [1, 1.15, .9] });
+  if (!o.mother) {                                                     // a leather apron, with a pocket and a trowel in it
+    P(body, A.box(.48, .55, .04), apron, [0, .5, .33], { rot: [.12, 0, 0] });
+    for (const sx of [-1, 1]) bone(body, [sx * .2, .8, .3], [0, 1.0, .2], .012, .012, apron, 4);
+    P(body, A.box(.16, .12, .03), apron, [.1, .42, .37], { rot: [.12, 0, 0] }); bone(body, [.12, .44, .38], [.14, .62, .36], .012, .01, A.M.woodL, 4);
+  }
+  const head = G(body, [0, 1.02, .12]);                                // a long snout, a pink nose, small eyes, a white stripe like a badger's
+  P(head, A.ico(.24, 1), fur, [0, 0, 0], { scale: [1, .85, 1.1] });
+  P(head, new T.ConeGeometry(.12, .3, 8), fur, [0, -.04, .3], { rot: [Math.PI / 2, 0, 0] });
+  const nose = P(head, A.ico(.055, 1), pink, [0, -.04, .46]);
+  P(head, A.box(.07, .02, .42), pale, [0, .19, .05], { rot: [-.15, 0, 0] });
+  for (const sx of [-1, 1]) { P(head, A.ico(.028, 0), o.mother ? A.mat('#cfd4d8', 0, .4) : dark, [sx * .11, .07, .2]); P(head, A.ico(.06, 0), fur, [sx * .17, .15, -.05], { scale: [1, .7, .5] }); }   // (the Mother's eyes are milky: she is nearly blind)
+  const arm = sx => { const a = G(body, [sx * .32, .72, .12]); bone(a, [0, 0, 0], [sx * .12, -.28, .12], .08, .07, fur); const h = G(a, [sx * .12, -.32, .14]); P(h, A.ico(.09, 0), fur, [0, 0, 0], { scale: [1.3, .6, 1] }); for (let c = 0; c < 3; c++) P(h, new T.ConeGeometry(.025, .16, 5), claw, [(c - 1) * .06, -.05, .1], { rot: [1.9, 0, 0] }); return a; };
+  const arms = { L: arm(-1), R: arm(1) };
+  for (const sx of [-1, 1]) P(body, A.ico(.11, 0), fur, [sx * .18, .1, .05], { scale: [1, .8, 1.3] });
+  const caps = [], n = o.mother ? 24 : o.young ? 3 : 6, r = A.rand(o.seed || 5);   // lantern-mushrooms on its back
+  for (let i = 0; i < n; i++) {
+    const a = (r() - .5) * 2.4, y = .4 + r() * .55, st = G(body, [Math.sin(a) * .3, y + .1, -Math.cos(a) * .3 - .02]);
+    bone(st, [0, 0, 0], [0, .12, -.02], .015, .012, pale, 5);
+    const capM = glow(['#ffd08a', '#9fe8c8', '#c8b4ff'][i % 3], 1.6);
+    P(st, new T.SphereGeometry(.07, 8, 5, 0, 6.3, 0, 1.5), capM, [0, .12, -.02], { scale: [1, .7, 1], cast: false }); caps.push(capM);
+  }
+  const lamp = softLight('#ffd8a0', o.mother ? 3 : 1.4, o.mother ? 2.2 : 1.6); lamp.position.set(0, .95, -.4); body.add(lamp);
+  return { g, body, head, nose, arms, caps };
+}
+function dirtMound(parent, x, z, rr, hole = true) {   // a heap of fresh earth, and the dark of a tunnel in it
+  const y = x > -17.2 && x < -5.3 && Math.abs(z) < 4.3 ? 0 : gy(x, z);   // (the courtyard floor is level)
+  P(parent, A.ico(rr, 1), A.mat('#4a3826', 0, 1), [x, y - rr * .3, z], { scale: [1, .6, 1], jitter: .03 });
+  if (hole) { const h = new T.Mesh(new T.CircleGeometry(rr * .45, 10), new T.MeshBasicMaterial({ color: '#050403' })); h.rotation.x = -Math.PI / 2; h.position.set(x, y + rr * .31, z); parent.add(h); }
+  return y + rr * .3;
+}
+// THE KITEMAKERS: light, long-limbed gliders with silk between arm and leg, patterned like kites, who
+// ride the wind fronts. The Wind-Chief is the largest, its silk ragged and its patterns very old.
+function kiteFolk(parent, s = 1, o = {}) {
+  const r = A.rand(o.seed || 9);
+  const skin = A.mat(o.chief ? '#9aa0a6' : '#b9c2c9', 0, .7), dark = A.mat('#0e1014', .2, .3);
+  const PAL = [['#c8443a', '#e8c068'], ['#2f7f8a', '#efe2c0'], ['#d9862c', '#3d5a8a'], ['#7a3f8a', '#e6d6a8'], ['#3f7a4a', '#e8b04a']], [c1, c2] = PAL[Math.floor(r() * PAL.length)];
+  const tex = canvasTex(128, 128, (c, w) => {
+    c.fillStyle = c1; c.fillRect(0, 0, w, w);
+    c.fillStyle = c2; c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w, w / 2); c.lineTo(w / 2, w); c.lineTo(0, w / 2); c.closePath(); c.fill();
+    c.strokeStyle = '#1a1410'; c.lineWidth = 3; c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2, w); c.moveTo(0, w / 2); c.lineTo(w, w / 2); c.stroke(); c.strokeRect(1, 1, w - 2, w - 2);
+    if (o.chief) { c.globalAlpha = .4; c.fillStyle = '#8a8070'; c.fillRect(0, 0, w, w); c.globalAlpha = 1; c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000'; for (let k = 0; k < 8; k++) { c.beginPath(); c.arc(r() * w, r() * w, 4 + r() * 9, 0, 6.3); c.fill(); } }   // faded and torn
+  });
+  const memM = new T.MeshStandardMaterial({ map: tex, side: T.DoubleSide, roughness: .8, alphaTest: .5, flatShading: true });
+  const g = G(parent), body = G(g); g.scale.setScalar(s);
+  P(body, A.ico(.16, 1), skin, [0, 0, 0], { scale: [.85, 2.6, .6] });
+  const head = G(body, [0, .55, .02]); P(head, A.ico(.11, 1), skin, [0, .05, 0], { scale: [.8, 1.25, .9] });
+  for (const sx of [-1, 1]) P(head, A.ico(.025, 1), dark, [sx * .045, .07, .085], { scale: [1, .6, .5] });   // calm dark eyes
+  const crest = [], crestM = A.mat(o.chief ? '#d8d0c0' : c2, 0, .8);
+  for (let k = 0; k < 5; k++) { const f = G(head, [(k - 2) * .025, .15, -.04]); bone(f, [0, 0, 0], [0, .06, -.3], .006, .002, crestM, 3); crest.push(f); }   // fine filaments streaming back
+  const limb = (at, len) => { const a = G(body, at); bone(a, [0, 0, 0], [0, -len, 0], .025, .02, skin); const b = G(a, [0, -len, 0]); bone(b, [0, 0, 0], [0, -len, 0], .02, .014, skin); return { a, b, tip: G(b, [0, -len, 0]) }; };
+  const L = { armL: limb([-.1, .32, 0], .42), armR: limb([.1, .32, 0], .42), legL: limb([-.07, -.38, 0], .4), legR: limb([.07, -.38, 0], .4) };
+  const sheets = [-1, 1].map(sx => {                                   // the silk, rebuilt each frame between arm and leg
+    const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(18), 3)); geo.setAttribute('uv', new T.BufferAttribute(new Float32Array([0, 1, .5, 1, 1, 1, 1, 0, .5, 0, 0, 0]), 2)); geo.setIndex([0, 1, 4, 0, 4, 5, 1, 2, 3, 1, 3, 4]);
+    const m = new T.Mesh(geo, memM); m.castShadow = true; m.frustumCulled = false; body.add(m); return { geo, sx };
+  });
+  const tailM = A.mat(c1, 0, .8), tails = [-1, 1].map(sx => { const ch = chain(body, 6, .22, .02, .01, tailM); ch[0].position.set(sx * .04, -.4, -.05); return ch; });   // two kite tails
+  const v = new T.Vector3(), local = q => { q.getWorldPosition(v); return body.worldToLocal(v).toArray(); };
+  return {
+    g, body, head,
+    pose(spread, t) {
+      for (const [k, sx] of [['armL', -1], ['armR', 1]]) { L[k].a.rotation.set(0, 0, sx * (.12 + spread * 1.42)); L[k].b.rotation.set(0, 0, sx * (.35 - spread * .3)); }
+      for (const [k, sx] of [['legL', -1], ['legR', 1]]) { L[k].a.rotation.set(0, 0, sx * (.04 + spread * .62)); L[k].b.rotation.set(0, 0, -sx * .1 * spread); }
+      g.updateMatrixWorld(true);
+      for (const S of sheets) { const [a, l] = S.sx < 0 ? [L.armL, L.legL] : [L.armR, L.legR], arr = S.geo.attributes.position.array; [a.a, a.b, a.tip, l.tip, l.b, l.a].forEach((q, i) => arr.set(local(q), i * 3)); S.geo.attributes.position.needsUpdate = true; S.geo.computeVertexNormals(); }
+      tails.forEach((ch, i) => ch.forEach((j, k) => { j.rotation.x = .25 + Math.sin(t * 6 + k * .8 + i) * .25 * (.4 + spread); j.rotation.z = Math.sin(t * 4.3 + k + i * 2) * .15; }));
+      crest.forEach((f, k) => { f.rotation.x = Math.sin(t * 7 + k) * .15 * (.4 + spread); });
+    },
+  };
+}
+
+// ------------------------------------------------------------------ the abyssals
+// Their light shows their mood: calm (deep teal), uneasy (violet), about to act (pale, flickering).
+const ABYSS_MOOD = ['#2fd3c4', '#8a5cff', '#f2e8c8'];
+// The erratic motor: every part of an abyssal holds, then snaps (or, now and then, drifts at the wrong
+// speed) somewhere new, each part on its own clock. The rhythm of the holds is the other way to read
+// its mood: calm, long holds; uneasy, any length at all; about to act, a fast steady beat.
+function erratic(seed) {
+  const r = A.rand(seed), ch = {};
+  let mood = 0, moodUntil = 0;
+  const cur = (c, t) => { const k = Math.min(1, Math.max(0, (t - c.t0) / c.dur)); return c.from + (c.to - c.from) * (c.smooth ? k * k * (3 - 2 * k) : k); };
+  return {
+    r, get mood() { return mood; },
+    tick(t) { if (t > moodUntil) { mood = [0, 0, 1, 1, 2][Math.floor(r() * 5)]; moodUntil = t + 7 + r() * 8; } },
+    // one channel, between lo and hi: 'snap' (mostly snaps, sometimes a slow drift), 'drift' (always slow), 'burst' (sudden dashes)
+    v(name, lo, hi, t, how = 'snap') {
+      let c = ch[name]; if (!c) c = ch[name] = { from: (lo + hi) / 2, to: (lo + hi) / 2, t0: 0, dur: .1, next: r() * 2, smooth: false };
+      if (t > c.next) {
+        c.from = cur(c, t); c.to = lo + r() * (hi - lo); c.t0 = t;
+        const slow = how === 'drift' || (how === 'snap' && r() < .15);
+        c.dur = how === 'burst' ? Math.abs(c.to - c.from) / (3 + r() * 2) + .05 : slow ? 1.2 + r() * 2.5 : .05 + r() * .08; c.smooth = slow;
+        c.next = t + c.dur + (mood === 0 ? 1.8 + r() * 2.6 : mood === 1 ? .15 + r() * 3 : .4 + r() * .12);
+      }
+      return cur(c, t);
+    },
+    moving(name, t) { const c = ch[name]; return !!c && t >= c.t0 && t < c.t0 + c.dur; },
+    tremor(t, amp) { return (Math.sin(t * 47) * .6 + Math.sin(t * 73 + 1) * .4) * amp; },
+  };
+}
+const abyssSkin = shallow => new T.MeshStandardMaterial({ color: '#06070b', roughness: .22, metalness: .35, flatShading: true, transparent: shallow, opacity: shallow ? .8 : 1 });
+function abyssHalo(parent, y, size, op) {   // the dark around them: it eats the light
+  const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#000000', transparent: true, opacity: op, depthWrite: false, fog: false }));
+  sp.position.y = y; sp.scale.setScalar(size); parent.add(sp); return sp;
+}
+function abyssFray(parent, n, y0, h, rad) {   // the shallow ones are fraying away: they cannot stay long
+  const pos = new Float32Array(n * 3), geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+  parent.add(new T.Points(geo, new T.PointsMaterial({ color: '#0a0812', size: .07, transparent: true, opacity: .8, depthWrite: false })));
+  return t => { for (let i = 0; i < n; i++) { const k = (t * .25 + i / n) % 1, a = i * 2.39; pos.set([Math.cos(a) * rad * (1 + k), y0 + (i % 5) / 5 * h + k * 1.4, Math.sin(a) * rad * (1 + k)], i * 3); } geo.attributes.position.needsUpdate = true; };
+}
+function abyssLight(E, mats, lamp) {   // the mood light: its colour; when it is about to act, it flickers
+  const c = ABYSS_MOOD[E.mood], fl = E.mood === 2 && Math.random() < .3 ? .25 : 1;
+  for (const m of mats) { m.color.set(c); m.emissive.set(c); m.emissiveIntensity = 2.2 * fl; }
+  if (lamp) { lamp.material.color.set(c); lamp.intensity = 2.4 * fl; }
+}
+// THE HANGING DARK: hangs upright a little above the ground, ribs open at the front with the light
+// moving inside, a ragged skin from its shoulders, arms long enough to drag, a smooth bulb of a head.
+function abyssHanging(parent, pos, deep, seed) {
+  const E = erratic(seed), sh = !deep, skin = abyssSkin(sh), voidM = new T.MeshBasicMaterial({ color: '#000000' }), light = glow(ABYSS_MOOD[0], 2.2);
+  const g = G(parent, pos); g.scale.setScalar(deep ? 1.3 : .85);
+  const body = G(g, [0, .45, 0]);
+  for (let i = 0; i < 9; i++) P(body, A.ico(.075 - i * .004, 0), skin, [0, .25 + i * .26, -.06]);   // the spine, its knuckles showing
+  for (let i = 0; i < 5; i++) {                                         // ribs, open at the front
+    const y = 1.0 + i * .25, w = .3 - Math.abs(i - 1.6) * .035;
+    for (const sx of [-1, 1]) { bone(body, [0, y, -.06], [sx * w, y - .05, .06], .026, .02, skin, 5); bone(body, [sx * w, y - .05, .06], [sx * w * .55, y - .13, .24], .02, .012, skin, 5); }
+  }
+  P(body, A.ico(.11, 1), light, [0, 1.45, .03], { cast: false });
+  const lamp = softLight(ABYSS_MOOD[0], 2.4, 2.6); lamp.position.set(0, 1.45, .05); body.add(lamp);
+  // a ragged skin hanging from its shoulders in long strips, open at the front, the ribs showing between
+  const shroudM = ds('#020204', 0, .95); if (sh) { shroudM.transparent = true; shroudM.opacity = .8; }
+  const strips = [], rr = A.rand(seed + 3);
+  for (let i = 0; i < 15; i++) {                                        // thin tatters, each narrowing to a point
+    const a = .95 + i / 14 * (Math.PI * 2 - 1.9), len = 1.5 + rr() * 1.1, st = G(body, [Math.sin(a) * .28, 2.42, Math.cos(a) * .28 - .03], [0, a, 0]);
+    const geo = new T.PlaneGeometry(.11 + rr() * .05, len, 1, 4), gp = geo.attributes.position;
+    for (let v = 0; v < gp.count; v++) { const k = (len / 2 - gp.getY(v)) / len; gp.setX(v, gp.getX(v) * (1 - k * .9)); }
+    const m = new T.Mesh(geo, shroudM); m.position.set(0, -len / 2, .04); m.rotation.x = -.05; m.castShadow = true; st.add(m);
+    strips.push({ st, ph: rr() * 6 });
+  }
+  const neck = G(body, [0, 2.5, -.02]);                                // the neck droops forward; the head has nothing on it at all
+  bone(neck, [0, 0, 0], [0, .3, .2], .05, .04, skin); bone(neck, [0, .3, .2], [0, .32, .48], .04, .035, skin);
+  const head = G(neck, [0, .32, .48], [1.1, 0, 0]);                     // it hangs its head forward and down
+  P(head, A.ico(.16, 2), voidM, [0, .18, 0], { scale: [.75, 1.8, .8], cast: false });
+  const arms = [];
+  const arm = (sx, y, len) => {
+    const s0 = G(body, [sx * .3, y, 0]); bone(s0, [0, 0, 0], [sx * .05, -len, .05], .04, .03, skin);
+    const e = G(s0, [sx * .05, -len, .05]); bone(e, [0, 0, 0], [0, -len, .1], .03, .022, skin);
+    for (let f = 0; f < 3; f++) bone(e, [0, -len, .1], [(f - 1) * .07, -len - .35, .2], .014, .006, skin, 4);
+    arms.push({ s0, e, sx });
+  };
+  arm(-1, 2.3, 1.05); arm(1, 2.3, 1.05); if (deep) { arm(-1, 1.85, .8); arm(1, 1.85, .8); }   // the deep ones: a second pair
+  const halo = abyssHalo(g, 1.5, deep ? 5.5 : 4, deep ? .6 : .45);
+  const fray = sh ? abyssFray(body, 26, .2, 2.6, .25) : null;
+  const x0 = pos[0];
+  return { g, tick(t) {
+    E.tick(t); abyssLight(E, [light], lamp);
+    head.rotation.set(1.1 + E.v('nod', -.6, .5, t), E.v('turn', -1.3, 1.3, t), E.v('tilt', -1.4, 1.4, t)); neck.rotation.x = E.v('neck', -.4, .8, t);
+    const shake = Math.floor(t / 3.7 + seed) % arms.length;            // one limb at a time trembles
+    arms.forEach((a, i) => { a.s0.rotation.set(E.v('ax' + i, -.7, .35, t) + (i === shake ? E.tremor(t, .05) : 0), 0, a.sx * E.v('az' + i, -.05, .5, t)); a.e.rotation.x = E.v('ae' + i, -.9, .15, t); });
+    body.rotation.x = E.v('lean', -.15, .3, t); body.rotation.z = E.v('roll', -.15, .15, t); body.position.y = .45 + E.v('hang', -.06, .14, t);
+    g.rotation.y = E.v('yaw', -1.2, 1.2, t);
+    g.position.x = x0 + E.v('x', -2.5, 2.5, t, 'drift'); g.position.y = gy(g.position.x, g.position.z);
+    halo.material.opacity = (deep ? .6 : .45) * (E.mood === 2 ? 1.25 : 1);
+    strips.forEach(q => { q.st.rotation.x = .05 + E.v('st' + q.ph, -.05, .25, t, 'drift'); });   // the strips stir, slowly, with no wind
+    if (sh) { skin.opacity = shroudM.opacity = .6 + .25 * Math.abs(Math.sin(t * 1.7 + Math.sin(t * 5.3))); fray(t); }
+  } };
+}
+// THE FINGER-WALKER: low and wide, on long legs that end in fingers, a seam of light down its back,
+// its head a smooth bulb on a long stalk. It scuttles in sudden bursts, then holds, one finger tapping.
+function abyssFingers(parent, pos, deep, seed) {
+  const E = erratic(seed), sh = !deep, skin = abyssSkin(sh), voidM = new T.MeshBasicMaterial({ color: '#000000' }), light = glow(ABYSS_MOOD[0], 2.2);
+  const g = G(parent, pos); g.scale.setScalar(deep ? 1.3 : .85);
+  const body = G(g, [0, .8, 0]);
+  P(body, A.ico(.5, 1), skin, [0, 0, 0], { scale: [1.3, .36, .8] });
+  P(body, A.box(1.05, .025, .05), light, [0, .17, 0], { cast: false, jitter: 0 });
+  for (let q = 0; q < 4; q++) P(body, A.box(.025, .02, .22), light, [-.35 + q * .23, .155, (q % 2 ? 1 : -1) * .1], { rot: [0, q % 2 ? .5 : -.5, 0], cast: false, jitter: 0 });
+  const lamp = softLight(ABYSS_MOOD[0], 2, 2); lamp.position.y = .4; body.add(lamp);
+  const n = deep ? 8 : 6, legs = [];
+  for (let i = 0; i < n; i++) {
+    const side = i % 2 ? 1 : -1, along = ((i >> 1) - (n / 2 - 1) / 2) * .34;
+    const hip = G(body, [along, 0, side * .32]);
+    bone(hip, [0, 0, 0], [0, .55, side * .5], .045, .035, skin);
+    const knee = G(hip, [0, .55, side * .5]); bone(knee, [0, 0, 0], [0, -1.25, side * .4], .035, .025, skin);
+    for (let f = 0; f < 3; f++) bone(knee, [0, -1.25, side * .4], [(f - 1) * .09, -1.4, side * .52], .014, .007, skin, 4);   // it walks on fingers
+    legs.push({ hip, knee, side, i });
+  }
+  const stalk = chain(body, 5, .38, .06, .035, skin); stalk[0].position.set(.6, .1, 0);
+  const head = G(stalk[4], [0, .4, 0]); P(head, A.ico(.16, 2), voidM, [0, .05, 0], { scale: [.9, 1.3, .9], cast: false });
+  const halo = abyssHalo(g, .9, deep ? 5 : 3.6, deep ? .55 : .42);
+  const fray = sh ? abyssFray(body, 20, 0, .6, .5) : null;
+  const x0 = pos[0], z0 = pos[2]; let ph = 0, lastX = x0, lastZ = z0;
+  return { g, tick(t) {
+    E.tick(t); abyssLight(E, [light], lamp);
+    const x = x0 + E.v('x', -3.5, 3.5, t, 'burst'), z = z0 + E.v('z', -.8, .8, t, 'burst'), moving = E.moving('x', t) || E.moving('z', t);
+    ph += Math.hypot(x - lastX, z - lastZ) * 9; lastX = x; lastZ = z;
+    g.position.set(x, gy(x, z), z); g.rotation.y = E.v('yaw', -.5, .5, t);
+    const tap = Math.floor(t / 2.9 + seed) % n;
+    legs.forEach(L => {
+      if (moving) { L.hip.rotation.z = Math.sin(ph + L.i * 2.1) * .35; L.knee.rotation.x = -L.side * Math.max(0, Math.sin(ph + L.i * 2.1)) * .4; }
+      else { L.hip.rotation.z *= .6; L.knee.rotation.x = L.i === tap ? -L.side * Math.max(0, Math.sin(t * 9)) ** 4 * .3 : L.knee.rotation.x * .6; }   // holding still, one finger tapping
+    });
+    stalk.forEach((j, i) => { j.rotation.z = -.35 + E.v('s' + i, -.5, .5, t) * (i ? 1 : .4); j.rotation.x = E.v('sx' + i, -.3, .3, t); });
+    head.rotation.set(E.v('hx', -.8, .8, t), E.v('hy', -1.5, 1.5, t), E.v('hz', -1.2, 1.2, t));
+    body.rotation.z = moving ? .05 : E.v('bz', -.08, .08, t); body.position.y = .8 + (moving ? 0 : E.v('crouch', -.25, .05, t));
+    halo.material.opacity = (deep ? .55 : .42) * (E.mood === 2 ? 1.25 : 1);
+    if (sh) { skin.opacity = .6 + .25 * Math.abs(Math.sin(t * 1.9 + Math.sin(t * 4.1))); fray(t); }
+  } };
+}
+// THE SCATTER: a cloud of dark shards round a small cold light. Now and then every shard snaps into a
+// shape (a tall figure, a spire, a long arm reaching for the keep), then it all falls apart again.
+function abyssScatter(parent, pos, deep, seed) {
+  const E = erratic(seed), sh = !deep, N = deep ? 120 : 50, skin = abyssSkin(sh), light = glow(ABYSS_MOOD[0], 2.4);
+  const g = G(parent, pos); g.scale.setScalar(deep ? 1.25 : .9);
+  const inst = new T.InstancedMesh(new T.TetrahedronGeometry(.12, 0), skin, N); inst.castShadow = true; inst.frustumCulled = false; g.add(inst);
+  const core = P(g, A.ico(.16, 1), light, [0, 1.4, 0], { cast: false }); const lamp = softLight(ABYSS_MOOD[0], 2.6, 2.8); core.add(lamp);
+  const halo = abyssHalo(g, 1.4, deep ? 6 : 4.5, deep ? .55 : .42);
+  const r = A.rand(seed + 7), rnd = () => r() * 2 - 1;
+  const along = (segs, i) => { const q = segs[i % segs.length], u = r(); return [0, 1, 2].map(c => q[0][c] + (q[1][c] - q[0][c]) * u + rnd() * .06); };
+  const FIG = [[[-.18, 0, 0], [-.14, 1.3, 0]], [[.18, 0, 0], [.14, 1.3, 0]], [[0, 1.3, 0], [0, 2.4, 0]], [[-.3, 2.35, 0], [-.45, .9, .1]], [[.3, 2.35, 0], [.45, .9, .1]], [[0, 2.55, 0], [0, 2.85, .02]], [[-.3, 2.35, 0], [.3, 2.35, 0]]];
+  const REACH = [[[0, 1.3, 0], [0, 1.2, 1.4]], [[0, 1.2, 1.4], [0, .9, 2.8]], [[0, .9, 2.8], [-.15, .6, 3.3]], [[0, .9, 2.8], [.15, .6, 3.3]], [[0, .9, 2.8], [0, .55, 3.4]]];
+  const forms = {
+    cloud: () => Array.from({ length: N }, () => { let q; do q = [rnd(), rnd(), rnd()]; while (Math.hypot(...q) > 1); return [q[0] * 1.1, 1.4 + q[1] * .9, q[2] * 1.1]; }),
+    figure: () => Array.from({ length: N }, (_, i) => along(FIG, i)),
+    reach: () => Array.from({ length: N }, (_, i) => i < N * .35 ? [rnd() * .4, 1.3 + rnd() * .35, rnd() * .4] : along(REACH, i)),
+    spire: () => Array.from({ length: N }, () => { const y = r() * 3.6, w = .18 * (1 - y / 4); return [rnd() * w, y, rnd() * w]; }),
+  };
+  const CORE = { cloud: [0, 1.4, 0], figure: [0, 2.0, 0], reach: [0, 1.3, 0], spire: [0, 2.8, 0] };
+  const cur = forms.cloud(), from = cur.map(q => q.slice()), to = cur.map(q => q.slice()), t0 = new Float32Array(N), du = new Float32Array(N).fill(.1);
+  const spin = Array.from({ length: N }, () => [r() * 6, r() * 6, r() * 6]);
+  const M = new T.Matrix4(), Q = new T.Quaternion(), Eu = new T.Euler(), Sc = new T.Vector3(), Pp = new T.Vector3();
+  let form = 'cloud', next = 2, coreFrom = [0, 1.4, 0], coreTo = [0, 1.4, 0], coreT = 0;
+  const x0 = pos[0];
+  return { g, tick(t) {
+    E.tick(t); abyssLight(E, [light], lamp);
+    if (t > next) {   // all at once (each shard a moment apart) they snap into something else
+      const opts = E.mood === 2 ? (form === 'reach' ? ['cloud'] : ['reach']) : ['cloud', 'figure', 'spire', 'reach', 'cloud'].filter(f => f !== form);
+      form = opts[Math.floor(r() * opts.length)]; const tg = forms[form]();
+      for (let i = 0; i < N; i++) { from[i] = cur[i].slice(); to[i] = tg[i]; t0[i] = t + r() * .5; du[i] = r() < .1 ? 1 + r() * 1.5 : .06 + r() * .1; }
+      coreFrom = core.position.toArray(); coreTo = CORE[form]; coreT = t;
+      next = t + (E.mood === 0 ? 5 + r() * 4 : E.mood === 1 ? 1 + r() * 6 : 1.3);
+    }
+    for (let i = 0; i < N; i++) {
+      const k = Math.min(1, Math.max(0, (t - t0[i]) / du[i]));
+      for (let c = 0; c < 3; c++) cur[i][c] = from[i][c] + (to[i][c] - from[i][c]) * k;
+      Pp.set(cur[i][0] + E.tremor(t + i, .012), cur[i][1], cur[i][2] + E.tremor(t + i * 1.3, .012));
+      Eu.set(spin[i][0] + (form === 'cloud' ? t * .3 : 0), spin[i][1], spin[i][2]); Q.setFromEuler(Eu);
+      Sc.set(1, form === 'cloud' ? 1 : 1.8, 1); M.compose(Pp, Q, Sc); inst.setMatrixAt(i, M);
+    }
+    inst.instanceMatrix.needsUpdate = true;
+    const kc = Math.min(1, (t - coreT) / .3); core.position.set(...coreFrom.map((q, c) => q + (coreTo[c] - q) * kc));
+    const gx = x0 + E.v('x', -2, 2, t, 'drift'), gz = g.position.z; g.position.set(gx, gy(gx, gz), gz);
+    g.rotation.y = form === 'reach' ? Math.atan2(-gx, -gz) : E.v('yaw', -1, 1, t);   // the arm always reaches for the keep
+    halo.material.opacity = (deep ? .55 : .42) * (E.mood === 2 ? 1.25 : 1);
+    if (sh) skin.opacity = .6 + .25 * Math.abs(Math.sin(t * 1.3 + Math.sin(t * 3.7)));
+  } };
+}
+
 const ORDER = Object.keys(BEASTS);
 // beings that come young, grown or old, each age its own design (brain/creatures.py AGED: keep the two in step)
 const AGED = ['axolotl', 'bellcrab', 'glassbeak', 'ashwolves', 'dragon', 'dragon2', 'whale', 'thorn', 'basilisk', 'wyrm', 'larva',
@@ -3606,7 +4608,15 @@ function show(key, hour) {
   const def = BEASTS[key], root = new T.Group();
   const aged = AGED.includes(key);
   if (ui?.age) ui.age.style.display = aged ? '' : 'none';                          // only beings that have ages
-  root.userData.appearance = { variant: { size: 1, age: aged ? (ui?.age?.value || '') : '' } };   // the preview's chosen age
+  const kinds = def.variants;                                                        // beings that come in kinds (def.variants: [value, label])
+  if (ui?.kind) {
+    ui.kind.style.display = kinds ? '' : 'none';
+    if (kinds && ui.kind.dataset.for !== key) {
+      ui.kind.innerHTML = kinds.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); ui.kind.dataset.for = key;
+      const q = new URLSearchParams(location.search).get('kind'); ui.kind.value = kinds.some(k => k[0] === q) ? q : kinds[0][0];
+    }
+  }
+  root.userData.appearance = { variant: { size: 1, age: aged ? (ui?.age?.value || '') : '', kind: kinds ? ui?.kind?.value || '' : '' } };   // the preview's chosen age and kind
   A.scene.add(root);
   const tick = def.build(root);
   cur = { key, def, root, tick };
@@ -3616,6 +4626,7 @@ function show(key, hour) {
   const [pos, at] = def.views?.[root.userData.appearance.variant.age] || def.view, far = innerWidth / innerHeight < 1 ? 1.75 : 1;   // (an age can have its own view); tall screens: step back to fit it in
   A.view(pos.map((v, i) => at[i] + (v - at[i]) * far), at);
   const u = new URL(location.href); u.searchParams.set('creature', key); u.searchParams.set('hour', A.hour);
+  if (kinds) u.searchParams.set('kind', root.userData.appearance.variant.kind); else u.searchParams.delete('kind');
   history.replaceState(null, '', u);
   ui.name.textContent = def.name; ui.blurb.textContent = def.blurb;
   ui.count.textContent = `${ORDER.indexOf(key) + 1} / ${ORDER.length}`;
@@ -3634,10 +4645,12 @@ function buildUI() {
   const el = document.createElement('div'); el.id = 'bestiary'; el.className = 'panel';
   el.innerHTML = `<div class="row"><button data-d="-1" title="Previous">◀</button><b></b><small class="n"></small><button data-d="1" title="Next">▶</button>
     <select title="Time of day">${TIMES.map(([n, h]) => `<option value="${h}">${n}</option>`).join('')}</select>
-    <select title="Age" class="age"><option value="">grown</option><option value="young">young</option><option value="old">old</option></select></div>
+    <select title="Age" class="age"><option value="">grown</option><option value="young">young</option><option value="old">old</option></select>
+    <select title="Kind" class="kind"></select></div>
     <p></p><small>Mockup only: not part of Rooken's world (yet). ${matchMedia('(pointer: coarse)').matches ? 'Drag to look around.' : 'Drag to look around, WASD to fly.'}</small>`;
   document.body.append(el);
-  ui = { name: el.querySelector('b'), blurb: el.querySelector('p'), count: el.querySelector('.n'), time: el.querySelector('select'), age: el.querySelector('select.age') };
+  ui = { name: el.querySelector('b'), blurb: el.querySelector('p'), count: el.querySelector('.n'), time: el.querySelector('select'), age: el.querySelector('select.age'), kind: el.querySelector('select.kind') };
+  ui.kind.onchange = () => { const u = new URL(location.href); u.searchParams.set('kind', ui.kind.value); history.replaceState(null, '', u); show(cur.key, A.hour); ui.kind.blur(); };
   const qAge = new URLSearchParams(location.search).get('age'); if (qAge) ui.age.value = qAge;
   ui.age.onchange = () => { const u = new URL(location.href); u.searchParams.set('age', ui.age.value); history.replaceState(null, '', u); show(cur.key, A.hour); ui.age.blur(); };
   el.querySelectorAll('button').forEach(b => b.onclick = () => {
