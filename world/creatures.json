@@ -15,7 +15,19 @@
       "drive": "the cold",
       "temper": "wary",
       "caption": "You shelter, but outside it does as it likes. It thins at the shut window until only the eyes remain, watching the firelight from the rain. The eyes blink slowly, and the fog drifts down the hill, gone. In this weather it doesn't work the w",
-      "caption_at": "2026-11-22T06:01:46+00:00"
+      "caption_at": "2026-11-22T06:01:46+00:00",
+      "met": {
+        "outcome": "bad",
+        "steps": 2,
+        "time": "2026-11-22T06:01:48+00:00"
+      },
+      "seen": true,
+      "mind": {
+        "why": "The rain chills the stones, and the cold calls to it.",
+        "approach": "distant",
+        "doing": "It rolls into the shadow of the keep's outer wall. The eyes in the mist open, facing the dark tower.",
+        "says": ""
+      }
     },
     {
       "id": "golem-202611240100",

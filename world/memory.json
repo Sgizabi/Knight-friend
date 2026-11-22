@@ -44,7 +44,6 @@
   ],
   "last_long": "2026-11-22T02:30:21+00:00",
   "recent_thoughts": [
-    "Rain drums, fire hums, I’ll shape the new handle.",
     "Rain drums, stone listens, I read the manual.",
     "Rain drums, fire crackles, I’ll watch the flames awhile.",
     "Rain drums, fire hums, I’ll shape the next handle.",
@@ -55,7 +54,8 @@
     "Rain taps, ink dries, I’ll finish the entry.",
     "Rain drums, stone listens, I watch the fire.",
     "Rain drums, fire crackles, I’ll watch the flames awhile.",
-    "Rain drums, fire hums, I stare at the flames."
+    "Rain drums, fire hums, I stare at the flames.",
+    "Fog eyes felt like broken glass staring back."
   ],
   "last_glance": "2026-11-22T04:30:22+00:00",
   "visits_seen_until": "2026-11-22T02:25:23+00:00",
@@ -68,5 +68,12 @@
   },
   "questions_waiting": [],
   "questions_date": "20261121",
-  "beings_since": []
+  "beings_since": [
+    {
+      "time": "2026-11-22T06:00:23+00:00",
+      "kind": "fog",
+      "text": "It woke you in the night. The fog thickens in the courtyard. Something blinks in the mist. Then you see it: a bank of fog with eyes in it, opening and closing, edging toward the light. You chose to watch (I stay near the fire and watch the mist.). You watch. The fog thickens against the stone, pressing its many eyes flat against the cold wall. In this weather it doesn't work the way it should. You chose to hide (I bar the door with a broken plank and sit close to the fire.). You shelter, but outside it does as it likes. It thins at the shut window until only the eyes remain, watching the firelight from the rain. The eyes blink slowly, and the fog drifts down the hill, gone. In this weather it doesn't work the way it should."
+    }
+  ],
+  "last_encounter": "2026-11-22T06:01:48+00:00"
 }

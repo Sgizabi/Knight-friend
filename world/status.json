@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-22T06:01:44+00:00",
-  "place": "fire",
-  "action": "sit",
-  "emote": "sigh",
-  "note": "I bar the door with a broken plank and sit close to the fire.",
-  "thought": "Rain's loud, fog's weird, better not get surprised"
+  "awake": false,
+  "since": "2026-11-22T06:01:48+00:00",
+  "place": "bedroll",
+  "action": "sleep",
+  "emote": "zzz",
+  "note": "back to sleep",
+  "thought": ""
 }

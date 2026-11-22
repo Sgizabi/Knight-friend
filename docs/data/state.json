@@ -46,22 +46,26 @@
         "emote": "zzz",
         "note": "asleep for the night"
       }
-    ]
+    ],
+    "live_thought": {
+      "text": "Fog eyes felt like broken glass staring back.",
+      "time": "2026-11-22T06:01:48+00:00"
+    }
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T06:01:44+00:00",
-    "place": "fire",
-    "action": "sit",
-    "emote": "sigh",
-    "note": "I bar the door with a broken plank and sit close to the fire.",
-    "thought": "Rain's loud, fog's weird, better not get surprised"
+    "awake": false,
+    "since": "2026-11-22T06:01:48+00:00",
+    "place": "bedroll",
+    "action": "sleep",
+    "emote": "zzz",
+    "note": "back to sleep",
+    "thought": ""
   },
   "needs": {
-    "rest": 38.1,
+    "rest": 35.1,
     "warmth": 82.9,
     "inspiration": 16.3,
-    "spirit": 77.6
+    "spirit": 69.6
   },
   "needs_prev": {
     "rest": 26.1,
@@ -69,7 +73,7 @@
     "inspiration": 12.0,
     "spirit": 87.5
   },
-  "needs_at": "2026-11-22T06:01:44+00:00",
+  "needs_at": "2026-11-22T06:01:48+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -693,7 +697,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T05:00:23+00:00",
+    "updated": "2026-11-22T06:01:48+00:00",
     "seen_until": "2026-11-22T02:25:23+00:00"
   },
   "gifts": [],
@@ -850,5 +854,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T06:01:46+00:00"
+  "exported": "2026-11-22T06:01:48+00:00"
 }
