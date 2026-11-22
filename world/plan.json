@@ -32,5 +32,10 @@
         "Warm water still feels good after the upgrade"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-22T19:30:22+00:00",
+  "live_thought": {
+    "text": "The forge glows, iron ready, I’ll keep hammering.",
+    "time": "2026-11-22T19:30:22+00:00"
+  }
 }

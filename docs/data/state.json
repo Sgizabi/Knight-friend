@@ -68,11 +68,16 @@
           "Warm water still feels good after the upgrade"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-22T19:30:22+00:00",
+    "live_thought": {
+      "text": "The forge glows, iron ready, I’ll keep hammering.",
+      "time": "2026-11-22T19:30:22+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T19:01:34+00:00",
+    "since": "2026-11-22T19:30:22+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -80,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 60.7,
+    "warmth": 84.5,
+    "inspiration": 36.2,
+    "spirit": 85.9
+  },
+  "needs_prev": {
     "rest": 62.5,
     "warmth": 85.5,
     "inspiration": 36.2,
     "spirit": 86.8
   },
-  "needs_prev": {
-    "rest": 67.5,
-    "warmth": 83.3,
-    "inspiration": 48.2,
-    "spirit": 84.4
-  },
-  "needs_at": "2026-11-22T19:01:34+00:00",
+  "needs_at": "2026-11-22T19:30:22+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -914,7 +919,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T19:01:34+00:00",
+    "updated": "2026-11-22T19:30:22+00:00",
     "seen_until": "2026-11-22T18:55:25+00:00"
   },
   "gifts": [],
@@ -1060,5 +1065,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T19:01:34+00:00"
+  "exported": "2026-11-22T19:30:22+00:00"
 }
