@@ -71,11 +71,16 @@
           "Time for a short rest before more code."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-22T03:30:23+00:00",
+    "live_thought": {
+      "text": "Rain drums, stone listens, I watch the fire.",
+      "time": "2026-11-22T03:30:23+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T02:43:45+00:00",
+    "since": "2026-11-22T03:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -83,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 22.3,
+    "warmth": 82.2,
+    "inspiration": 12.0,
+    "spirit": 90.6
+  },
+  "needs_prev": {
     "rest": 24.2,
     "warmth": 84.1,
     "inspiration": 12.0,
     "spirit": 92.4
   },
-  "needs_prev": {
-    "rest": 44.4,
-    "warmth": 86.1,
-    "inspiration": 31.5,
-    "spirit": 85.9
-  },
-  "needs_at": "2026-11-22T02:43:45+00:00",
+  "needs_at": "2026-11-22T03:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -718,7 +723,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T02:43:45+00:00",
+    "updated": "2026-11-22T03:30:23+00:00",
     "seen_until": "2026-11-22T02:25:23+00:00"
   },
   "gifts": [],
@@ -852,5 +857,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T02:43:45+00:00"
+  "exported": "2026-11-22T03:30:23+00:00"
 }
