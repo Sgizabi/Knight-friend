@@ -841,6 +841,8 @@
           "mark": "",
           "age": ""
         },
+        "caption": "You watch. The fog thickens against the stone, pressing its many eyes flat against the cold wall. In this weather it doesn't work the way it should.",
+        "caption_at": "2026-11-22T06:00:27+00:00",
         "render": "fog",
         "nature": "hostile"
       }
@@ -848,5 +850,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T06:00:25+00:00"
+  "exported": "2026-11-22T06:00:27+00:00"
 }

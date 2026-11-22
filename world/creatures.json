@@ -13,7 +13,9 @@
         "age": ""
       },
       "drive": "the cold",
-      "temper": "wary"
+      "temper": "wary",
+      "caption": "You watch. The fog thickens against the stone, pressing its many eyes flat against the cold wall. In this weather it doesn't work the way it should.",
+      "caption_at": "2026-11-22T06:00:27+00:00"
     },
     {
       "id": "golem-202611240100",
