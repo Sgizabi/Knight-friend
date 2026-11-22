@@ -42,5 +42,10 @@
         "Warmth's good, but I’ll set an alarm for the next shift."
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-22T23:30:21+00:00",
+  "live_thought": {
+    "text": "Stone feels warm under my hands.",
+    "time": "2026-11-22T23:30:21+00:00"
+  }
 }

@@ -78,11 +78,16 @@
           "Warmth's good, but I’ll set an alarm for the next shift."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-22T23:30:21+00:00",
+    "live_thought": {
+      "text": "Stone feels warm under my hands.",
+      "time": "2026-11-22T23:30:21+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T23:03:43+00:00",
+    "since": "2026-11-22T23:30:21+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 51.8,
+    "warmth": 87.5,
+    "inspiration": 32.2,
+    "spirit": 83.2
+  },
+  "needs_prev": {
     "rest": 51.3,
     "warmth": 85.1,
     "inspiration": 32.2,
     "spirit": 84.0
   },
-  "needs_prev": {
-    "rest": 57.1,
-    "warmth": 84.6,
-    "inspiration": 48.2,
-    "spirit": 80.8
-  },
-  "needs_at": "2026-11-22T23:03:43+00:00",
+  "needs_at": "2026-11-22T23:30:21+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -924,7 +929,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T23:03:43+00:00",
+    "updated": "2026-11-22T23:30:21+00:00",
     "seen_until": "2026-11-22T22:55:31+00:00"
   },
   "gifts": [],
@@ -1132,5 +1137,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T23:03:43+00:00"
+  "exported": "2026-11-22T23:30:21+00:00"
 }
