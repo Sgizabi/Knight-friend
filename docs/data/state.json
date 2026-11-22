@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-22T22:00:24+00:00",
+    "applied_until": "2026-11-22T22:30:24+00:00",
     "live_thought": {
-      "text": "The fire's glow makes the stones feel less cold.",
-      "time": "2026-11-22T22:00:24+00:00"
+      "text": "The fire's warmth keeps the cold stones at bay",
+      "time": "2026-11-22T22:30:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T22:00:25+00:00",
+    "since": "2026-11-22T22:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 57.1,
+    "warmth": 84.6,
+    "inspiration": 48.2,
+    "spirit": 80.8
+  },
+  "needs_prev": {
     "rest": 57.5,
     "warmth": 86.2,
     "inspiration": 48.2,
     "spirit": 81.6
   },
-  "needs_prev": {
-    "rest": 59.1,
-    "warmth": 87.1,
-    "inspiration": 48.2,
-    "spirit": 82.4
-  },
-  "needs_at": "2026-11-22T22:00:25+00:00",
+  "needs_at": "2026-11-22T22:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -929,7 +929,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T22:00:24+00:00",
+    "updated": "2026-11-22T22:30:24+00:00",
     "seen_until": "2026-11-22T20:55:26+00:00"
   },
   "gifts": [],
@@ -1140,5 +1140,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T22:00:25+00:00"
+  "exported": "2026-11-22T22:30:24+00:00"
 }
