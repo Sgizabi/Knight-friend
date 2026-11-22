@@ -69,15 +69,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-22T19:30:22+00:00",
+    "applied_until": "2026-11-22T20:00:25+00:00",
     "live_thought": {
-      "text": "The forge glows, iron ready, I’ll keep hammering.",
-      "time": "2026-11-22T19:30:22+00:00"
+      "text": "The steam drifts, warm enough to linger a bit longer.",
+      "time": "2026-11-22T20:00:25+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T19:30:22+00:00",
+    "since": "2026-11-22T20:00:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -85,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 61.8,
+    "warmth": 87.3,
+    "inspiration": 36.2,
+    "spirit": 85.0
+  },
+  "needs_prev": {
     "rest": 60.7,
     "warmth": 84.5,
     "inspiration": 36.2,
     "spirit": 85.9
   },
-  "needs_prev": {
-    "rest": 62.5,
-    "warmth": 85.5,
-    "inspiration": 36.2,
-    "spirit": 86.8
-  },
-  "needs_at": "2026-11-22T19:30:22+00:00",
+  "needs_at": "2026-11-22T20:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -919,7 +919,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T19:30:22+00:00",
+    "updated": "2026-11-22T20:00:25+00:00",
     "seen_until": "2026-11-22T18:55:25+00:00"
   },
   "gifts": [],
@@ -1060,10 +1060,75 @@
       }
     }
   },
+  "animals": [
+    {
+      "start": "2026-11-22T20:00:00+00:00",
+      "end": "2026-11-22T21:00:00+00:00",
+      "kinds": [
+        "songbirds",
+        "fish"
+      ]
+    },
+    {
+      "start": "2026-11-22T21:00:00+00:00",
+      "end": "2026-11-22T22:00:00+00:00",
+      "kinds": [
+        "fish"
+      ]
+    },
+    {
+      "start": "2026-11-22T22:00:00+00:00",
+      "end": "2026-11-22T23:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "fish",
+        "cat"
+      ]
+    },
+    {
+      "start": "2026-11-22T23:00:00+00:00",
+      "end": "2026-11-23T00:00:00+00:00",
+      "kinds": [
+        "deer"
+      ]
+    },
+    {
+      "start": "2026-11-23T00:00:00+00:00",
+      "end": "2026-11-23T01:00:00+00:00",
+      "kinds": [
+        "bats",
+        "fish"
+      ]
+    },
+    {
+      "start": "2026-11-23T01:00:00+00:00",
+      "end": "2026-11-23T02:00:00+00:00",
+      "kinds": [
+        "owl",
+        "cat"
+      ]
+    },
+    {
+      "start": "2026-11-23T02:00:00+00:00",
+      "end": "2026-11-23T03:00:00+00:00",
+      "kinds": [
+        "owl",
+        "bats"
+      ]
+    },
+    {
+      "start": "2026-11-23T03:00:00+00:00",
+      "end": "2026-11-23T04:00:00+00:00",
+      "kinds": [
+        "owl"
+      ]
+    }
+  ],
   "creatures": {
     "current": [],
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T19:30:22+00:00"
+  "exported": "2026-11-22T20:00:25+00:00"
 }
