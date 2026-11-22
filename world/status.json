@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-22T17:00:30+00:00",
-  "place": "raise:3",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-22T17:01:34+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "Add the export feature for the shim summary and confirm dialog for reset, then finish the remaining construction.",
-  "thought": "The rain's still tapping, the joint is firm, and the shim list needs that export button."
+  "note": "",
+  "thought": ""
 }

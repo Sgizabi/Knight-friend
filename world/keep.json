@@ -498,9 +498,9 @@
       "place": "bathhouse",
       "needed": 4,
       "plot": 3,
-      "done": 3,
+      "done": 4,
       "started": "2026-11-21T15:00:30+00:00",
-      "finished": null
+      "finished": "2026-11-22T17:00:32+00:00"
     }
   ],
   "damage": {}

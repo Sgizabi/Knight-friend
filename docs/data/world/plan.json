@@ -1,49 +1,45 @@
 {
-  "start": "2026-11-22T15:01:34+00:00",
+  "start": "2026-11-22T17:01:34+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "glasshouse",
-      "action": "work",
+      "place": "bathhouse",
+      "action": "sit",
       "minutes": 20,
-      "emote": "question",
-      "note": "",
+      "emote": "heart",
+      "note": "warm soak",
       "thoughts": [
-        "Why do seedlings grow so fast?",
-        "These shards are oddly sharp."
+        "Stone finally behaves"
       ]
     },
     {
-      "place": "forge",
+      "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "dots",
-      "note": "",
+      "emote": "question",
+      "note": "code export feature",
       "thoughts": [
-        "Need to sharpen the hammer again.",
-        "The bellows still sigh quietly."
+        "CSV export should be easy"
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "stack dry logs",
+      "thoughts": [
+        "Logs still a bit damp"
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "heart",
-      "note": "",
+      "emote": "music",
+      "note": "update inventory list",
       "thoughts": [
-        "List the broken things I found today.",
-        "Maybe add a line about the pot."
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "zzz",
-      "note": "",
-      "thoughts": [
-        "Warmth is decent, not too hot.",
-        "Think about the bathhouse export feature."
+        "Add new lantern oil seal entry"
       ]
     }
   ]

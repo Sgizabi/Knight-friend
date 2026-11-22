@@ -30,79 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 36,
-    "last_wake": "2026-11-22T15:01:34+00:00",
+    "wakeups": 37,
+    "last_wake": "2026-11-22T17:01:34+00:00",
     "nights_slept_through": 12
   },
   "plan": {
-    "start": "2026-11-22T15:01:34+00:00",
+    "start": "2026-11-22T17:01:34+00:00",
     "mood": "content",
     "steps": [
       {
-        "place": "glasshouse",
-        "action": "work",
+        "place": "bathhouse",
+        "action": "sit",
         "minutes": 20,
-        "emote": "question",
-        "note": "",
+        "emote": "heart",
+        "note": "warm soak",
         "thoughts": [
-          "Why do seedlings grow so fast?",
-          "These shards are oddly sharp."
+          "Stone finally behaves"
         ]
       },
       {
-        "place": "forge",
+        "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "dots",
-        "note": "",
+        "emote": "question",
+        "note": "code export feature",
         "thoughts": [
-          "Need to sharpen the hammer again.",
-          "The bellows still sigh quietly."
+          "CSV export should be easy"
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "stack dry logs",
+        "thoughts": [
+          "Logs still a bit damp"
         ]
       },
       {
         "place": "desk",
         "action": "write",
         "minutes": 20,
-        "emote": "heart",
-        "note": "",
+        "emote": "music",
+        "note": "update inventory list",
         "thoughts": [
-          "List the broken things I found today.",
-          "Maybe add a line about the pot."
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "zzz",
-        "note": "",
-        "thoughts": [
-          "Warmth is decent, not too hot.",
-          "Think about the bathhouse export feature."
+          "Add new lantern oil seal entry"
         ]
       }
-    ],
-    "applied_until": "2026-11-22T16:30:24+00:00",
-    "live_thought": {
-      "text": "The fire hums, stone cold, I could stay a while.",
-      "time": "2026-11-22T16:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T17:00:30+00:00",
-    "place": "raise:3",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-22T17:01:34+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "Add the export feature for the shim summary and confirm dialog for reset, then finish the remaining construction.",
-    "thought": "The rain's still tapping, the joint is firm, and the shim list needs that export button."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 78.0,
-    "warmth": 83.8,
+    "rest": 69.0,
+    "warmth": 86.6,
     "inspiration": 48.2,
-    "spirit": 71.6
+    "spirit": 87.2
   },
   "needs_prev": {
     "rest": 77.3,
@@ -110,7 +101,7 @@
     "inspiration": 48.2,
     "spirit": 72.1
   },
-  "needs_at": "2026-11-22T17:00:30+00:00",
+  "needs_at": "2026-11-22T17:01:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -154,6 +145,10 @@
         "warmth": -0.03,
         "rest": -0.02,
         "inspiration": 0.07
+      },
+      "bathhouse": {
+        "warmth": 0.22,
+        "rest": 0.08
       }
     },
     "spirit_home": 55.0,
@@ -685,11 +680,11 @@
         "about": "a timber hut with a wooden tub and a stove",
         "place": "bathhouse",
         "plot": 3,
-        "done": 3,
+        "done": 4,
         "needed": 4,
         "kind": null,
         "look": null,
-        "finished": null
+        "finished": "2026-11-22T17:00:32+00:00"
       }
     ],
     "plots": 4
@@ -706,7 +701,8 @@
     "tower",
     "forge",
     "woodshed",
-    "glasshouse"
+    "glasshouse",
+    "bathhouse"
   ],
   "gallery": [],
   "projects": [
@@ -734,8 +730,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T16:30:24+00:00",
-    "seen_until": "2026-11-22T14:55:28+00:00"
+    "updated": "2026-11-22T17:01:34+00:00",
+    "seen_until": "2026-11-22T16:55:27+00:00"
   },
   "gifts": [],
   "gate": [
@@ -880,5 +876,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T17:00:30+00:00"
+  "exported": "2026-11-22T17:01:34+00:00"
 }
