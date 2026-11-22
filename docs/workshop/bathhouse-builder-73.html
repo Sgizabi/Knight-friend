@@ -2,7 +2,7 @@
 <html lang="en">
 <head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; media-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'"><meta name="referrer" content="no-referrer">
 <meta charset="utf-8">
-<title>Bathhouse Builder – Shim Summary</title>
+<title>Bathhouse Builder – Shim Summary (Enhanced)</title>
 <style>
 body{font-family:sans-serif;background:#f0f0f0;margin:0;padding:1em;color:#333}
 h1{margin-top:0}
@@ -11,50 +11,76 @@ h1{margin-top:0}
 #log{max-height:150px;overflow:auto;background:#fff;padding:5px;border:1px solid #555;margin-top:1em}
 #summary{margin-top:1em;padding:5px;background:#fff;border:1px solid #555}
 button{margin:0.3em}
+select{margin:0.3em}
 </style>
 </head>
 <body>
 <h1>Bathhouse Floor Shim Stacker</h1>
+
+<div>
+  <label for="section">Section:</label>
+  <select id="section">
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+  </select>
+  <button id="add">Add Shim</button>
+  <button id="remove">Remove Shim</button>
+  <button id="reset">Reset Section</button>
+  <button id="resetAll">Reset All</button>
+  <button id="test">Test Stability</button>
+</div>
+
 <div id="stack"></div>
-<button id="add">Add Shim</button>
-<button id="remove">Remove Shim</button>
-<button id="reset">Reset Floor</button>
-<button id="test">Test Stability</button>
+
 <div id="summary">Total shims this floor: 0</div>
 <div id="log"></div>
 
 <script>
-let level=0;
-let total=0; // total shims for the current floor
-const stack=document.getElementById('stack');
-const log=document.getElementById('log');
-const summary=document.getElementById('summary');
+let currentSection = 0;
+const sections = [{level:0,total:0},{level:0,total:0},{level:0,total:0}];
+
+const stack = document.getElementById('stack');
+const log   = document.getElementById('log');
+const summary = document.getElementById('summary');
+const sel   = document.getElementById('section');
 
 function draw(){
+  const sec = sections[currentSection];
   stack.innerHTML='';
-  for(let i=0;i<level;i++){
+  for(let i=0;i<sec.level;i++){
     const d=document.createElement('div');
     d.className='block';
     d.style.bottom=(i*20)+'px';
     stack.appendChild(d);
   }
-  summary.textContent='Total shims this floor: '+total;
+  summary.textContent='Total shims this floor: '+sec.total;
 }
 function add(){
-  level++; total++;
-  draw(); logMsg('Added shim '+level);
+  const sec = sections[currentSection];
+  sec.level++; sec.total++;
+  draw(); logMsg('Added shim '+sec.level+' to section '+currentSection);
 }
 function rem(){
-  if(level>0){
-    logMsg('Removed shim '+level);
-    level--; draw();
+  const sec = sections[currentSection];
+  if(sec.level>0){
+    logMsg('Removed shim '+sec.level+' from section '+currentSection);
+    sec.level--; draw();
   }
 }
 function reset(){
-  if(level>0){
-    logMsg('Reset floor, removed '+level+' shims');
+  const sec = sections[currentSection];
+  if(sec.level>0){
+    logMsg('Reset section '+currentSection+', removed '+sec.level+' shims');
   }
-  level=0; total=0; draw();
+  sec.level=0; sec.total=0; draw();
+}
+function resetAll(){
+  for(let i=0;i<sections.length;i++){
+    sections[i].level=0; sections[i].total=0;
+  }
+  logMsg('All sections cleared');
+  draw();
 }
 function test(){
   const wobble=Math.random();
@@ -68,9 +94,11 @@ function logMsg(msg){
   log.appendChild(p);
   log.scrollTop=log.scrollHeight;
 }
+sel.onchange = function(){ currentSection = +this.value; draw(); };
 document.getElementById('add').onclick=add;
 document.getElementById('remove').onclick=rem;
 document.getElementById('reset').onclick=reset;
+document.getElementById('resetAll').onclick=resetAll;
 document.getElementById('test').onclick=test;
 draw();
 </script>

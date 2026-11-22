@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-22T02:34:30+00:00",
+  "since": "2026-11-22T02:38:35+00:00",
   "place": "workbench",
   "action": "work",
   "emote": "dots",
-  "note": "add the summary field that totals shims per floor section and verify it works",
-  "thought": "The rain's still drumming, but the shim summary page feels half‑done. I should finish the total count so the build can move on."
+  "note": "continue",
+  "thought": "The rain's still drumming and the bathhouse is only a quarter done. I should finish the shim summary so I can see if I need more wood."
 }
