@@ -1,7 +1,7 @@
 {
   "start": "2026-11-22T11:00:32+00:00",
   "mood": "content",
-  "applied_until": "2026-11-22T11:00:32+00:00",
+  "applied_until": "2026-11-22T12:00:25+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -10,5 +10,9 @@
       "emote": "zzz",
       "note": "asleep for the night"
     }
-  ]
+  ],
+  "live_thought": {
+    "text": "The fire's glow keeps the cold at bay",
+    "time": "2026-11-22T12:00:25+00:00"
+  }
 }
