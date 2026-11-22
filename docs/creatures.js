@@ -1931,51 +1931,161 @@ const BEASTS = {
   // ================================================================ THE SEAM
   seam: {
     name: 'The Seam', hour: 22,
-    blurb: 'Seen only by those who have seen enough. A crack in the air above the courtyard. Through it, something enormous moves in a space that should not be there. Sometimes a hand comes through, feeling around.',
+    blurb: 'Seen only by those who have seen enough. A tear in the air above the courtyard, its edges bright and torn like cloth. Through it is somewhere else: a dim violet space, and something enormous moving slowly past. It opens wider while it is watched. Sometimes a long pale hand comes through, takes hold of the edge, and feels its way out toward the knight.',
     view: [[-7.0, 2.2, 4.9], [-11.4, 3.7, -.3]],
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'very still, in case the hand is looking for him' },
     build(root) {
-      const g = G(root, [-11.5, 4.1, -.3], [0, .45, 0]);
-      const pts = [[0, 2.2], [.18, 1.6], [.42, 1.3], [.3, .8], [.62, .3], [.5, -.3], [.7, -.8], [.35, -1.3], [.2, -1.8], [0, -2.3],
-                   [-.22, -1.7], [-.45, -1.2], [-.3, -.6], [-.66, -.1], [-.48, .5], [-.62, 1.0], [-.3, 1.4], [-.16, 1.8]];
-      const shape = new T.Shape(pts.map(([x, y]) => new T.Vector2(x, y)));
-      const tex = canvasTex(256, 512, (c, w, h) => {
-        const gr = c.createRadialGradient(w * .5, h * .5, 10, w * .5, h * .5, h * .6);
-        gr.addColorStop(0, '#2a1a4a'); gr.addColorStop(1, '#05030c'); c.fillStyle = gr; c.fillRect(0, 0, w, h);
-        const r = A.rand(3);
-        for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(230,220,255,${.3 + r() * .7})`; c.fillRect(r() * w, r() * h, r() < .1 ? 2 : 1, r() < .1 ? 2 : 1); }
-        c.fillStyle = 'rgba(190,170,255,.18)'; c.beginPath(); c.ellipse(w * .5, h * .55, 110, 46, .2, 0, 6.3); c.fill();   // something vast, an eye
-        c.fillStyle = 'rgba(255,214,140,.55)'; c.beginPath(); c.ellipse(w * .5, h * .55, 34, 34, 0, 0, 6.3); c.fill();
-        c.fillStyle = '#05030c'; c.beginPath(); c.ellipse(w * .5, h * .55, 7, 26, 0, 0, 6.3); c.fill();
+      // The tear is a real opening: what is on the other side is drawn only where the tear is (a
+      // stencil), set far back behind it, so it shifts with depth as the camera moves, as a room seen
+      // through a window does. Its edges are torn and bright and never quite still; threads of the
+      // torn air stretch across the gap and snap as it widens. It widens while it is watched (its
+      // tell; here, by whoever is watching the page), and when the hand pulls on it.
+      const g = G(root, [-11.5, 4.1, -.3], [0, .45, 0]), H = 4.6, NY = 30;
+      const STENCIL = { stencilWrite: true, stencilRef: 1, stencilFunc: T.EqualStencilFunc, stencilFail: T.KeepStencilOp, stencilZFail: T.KeepStencilOp, stencilZPass: T.KeepStencilOp };
+      const behind = (m, order) => { m.renderOrder = order; m.frustumCulled = false; return m; };
+      // ---- the opening: a strip between its two torn edges, rebuilt each frame
+      const L = new Float32Array((NY + 1) * 3), Rr = new Float32Array((NY + 1) * 3), hole = new Float32Array((NY + 1) * 2 * 3), hIdx = [];
+      for (let i = 0; i < NY; i++) { const a = i * 2; hIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      const holeG = new T.BufferGeometry(); holeG.setAttribute('position', new T.BufferAttribute(hole, 3)); holeG.setIndex(hIdx);
+      const holeM = new T.MeshBasicMaterial({ color: '#07040f', transparent: true, depthWrite: false, fog: false, side: T.DoubleSide,
+        stencilWrite: true, stencilRef: 1, stencilFunc: T.AlwaysStencilFunc, stencilZPass: T.ReplaceStencilOp });
+      g.add(behind(new T.Mesh(holeG, holeM), 10));
+      const sn = (sd, x) => { const k = Math.floor(x), f = x - k, e = f * f * (3 - 2 * f); return nz(sd + k) * (1 - e) + nz(sd + k + 1) * e; };   // smooth noise
+      const jag = Array.from({ length: NY + 1 }, (_, i) => [.7 + sn(11, i * .3) * .5 + nz(i * 3.1) * .12, .7 + sn(37, i * .27) * .5 + nz(i * 5.7 + 2) * .12]);   // each edge torn its own way: long ragged runs, small splinters
+      const halfW = (i, w, t) => { const y = i / NY * 2 - 1, env = Math.pow(Math.max(0, 1 - y * y), .7); return w * env; };
+      // ---- the other side: a dim violet space, something vast drifting past, motes
+      const far = canvasTex(512, 512, (c, w) => {
+        c.fillStyle = '#0a0618'; c.fillRect(0, 0, w, w); const q = A.rand(17);
+        for (let k = 0; k < 14; k++) { const gr = c.createRadialGradient(q() * w, q() * w, 0, q() * w, q() * w, 60 + q() * 150); gr.addColorStop(0, `rgba(${90 + q() * 60},${40 + q() * 40},${150 + q() * 80},.35)`); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, w); }
+        for (let k = 0; k < 420; k++) { c.fillStyle = `rgba(235,225,255,${.25 + q() * .75})`; const s = q() < .08 ? 2 : 1; c.fillRect(q() * w, q() * w, s, s); }
       });
-      tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(.9, .45);
-      const sg = new T.ShapeGeometry(shape); const uv = sg.attributes.uv, pos = sg.attributes.position;
-      for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + .7) / 1.4, (pos.getY(i) + 2.3) / 4.5);
-      const inner = new T.Mesh(sg, new T.MeshBasicMaterial({ map: tex, fog: false, side: T.DoubleSide })); g.add(inner);
-      const edge = glow('#e2d2ff', 2.4, { fog: false });
-      for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; const m = bone(g, [a[0], a[1], 0], [b[0], b[1], 0], .035, .035, edge, 4, 0); m.castShadow = false; }
-      const lamp = new T.PointLight('#b9a2ff', 5, 10, 1.4); lamp.position.z = .8; g.add(lamp);
-      // the hand: a long pale arm feeling its way out
-      const pale = A.mat('#d8d0c4', 0, .6, { emissive: '#3a3448', emissiveIntensity: .6 }), arm = G(g, [.05, -.3, 0], [Math.PI / 2 + .5, 0, 0]);
-      const fore = chain(arm, 4, .42, .11, .07, pale, { sides: 6 });
-      const hand = G(fore[3], [0, .42, 0]); P(hand, A.box(.2, .18, .07), pale, [0, .06, 0]);
+      const back = behind(new T.Mesh(new T.PlaneGeometry(90, 90), new T.MeshBasicMaterial({ map: far, transparent: true, depthTest: false, depthWrite: false, fog: false, ...STENCIL })), 11);
+      back.position.z = -45; g.add(back);
+      // the vast thing: a long, pale, ridged body sliding slowly past, rows of faint lights along it
+      const vast = G(g, [0, 0, -34]);
+      const curve = new T.CatmullRomCurve3([V(-40, -10, 0), V(-18, -3, -5), V(0, 2, 0), V(18, -1, 5), V(40, -9, 0)]);
+      const vM = new T.MeshBasicMaterial({ color: '#251c3a', transparent: true, depthTest: false, depthWrite: false, fog: false, ...STENCIL });
+      const ridgeM = new T.MeshBasicMaterial({ color: '#33284f', transparent: true, depthTest: false, depthWrite: false, fog: false, ...STENCIL });
+      vast.add(behind(new T.Mesh(A.facet(new T.TubeGeometry(curve, 70, 5.5, 12), .6, 5), vM), 12));
+      const ridges = G(vast);
+      for (let k = 0; k < 34; k++) { const u = (k + nz(k) * .6) / 34, p = curve.getPointAt(u); const m = new T.Mesh(A.facet(new T.TorusGeometry(5.5 + nz(k + 9) * .3, .2 + nz(k + 3) * .35, 4, 14), .3, k), ridgeM); m.position.copy(p); m.lookAt(curve.getPointAt(Math.min(1, u + .01))); ridges.add(m); }
+      merge(ridges); ridges.children.forEach(m => behind(m, 13));
+      const NL = 60, lA = new Float32Array(NL * 3);
+      for (let k = 0; k < NL; k++) { const u = (k % 30 + nz(k) * .5) / 30, p = curve.getPointAt(u); lA.set([p.x, p.y + (k < 30 ? 4.2 : -3.9) + nz(k + 5), p.z + 3.6], k * 3); }
+      const lG = new T.BufferGeometry(); lG.setAttribute('position', new T.BufferAttribute(lA, 3));
+      const lights = behind(new T.Points(lG, new T.PointsMaterial({ color: '#d8c8ff', size: .35, transparent: true, depthTest: false, depthWrite: false, fog: false, ...STENCIL })), 14); vast.add(lights);
+      const NMo = 50, moA = new Float32Array(NMo * 3), motes = Array.from({ length: NMo }, () => ({ x: (nz(Math.random() * 99) - .5) * 6, y: (Math.random() - .5) * 6, z: -2 - Math.random() * 12, sp: .2 + Math.random() * .4 }));
+      const moG = new T.BufferGeometry(); moG.setAttribute('position', new T.BufferAttribute(moA, 3));
+      g.add(behind(new T.Points(moG, new T.PointsMaterial({ color: '#c9b8ff', size: .05, transparent: true, opacity: .8, depthTest: false, depthWrite: false, fog: false, ...STENCIL })), 15));
+      // ---- the torn edges: a bright thin lip, a soft glow outside it
+      const NE = (NY + 1) * 2, lipA = new Float32Array(NE * 2 * 3), gloA = new Float32Array(NE * 2 * 3), eUV = new Float32Array(NE * 2 * 2), eIdx = [];
+      for (let k = 0; k < NE; k++) { eUV.set([0, 0, 1, 0], k * 4); if (k < NE - 1 && k !== NY) { const a = k * 2; eIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+      const ribbon = (arr, mat, order) => { const gg = new T.BufferGeometry(); gg.setAttribute('position', new T.BufferAttribute(arr, 3)); gg.setAttribute('uv', new T.BufferAttribute(eUV, 2)); gg.setIndex(eIdx); g.add(behind(new T.Mesh(gg, mat), order)); return gg; };
+      const fade = canvasTex(64, 4, (c, w) => { const gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, 4); });
+      const lipM = new T.MeshBasicMaterial({ color: '#efe4ff', transparent: true, opacity: .95, depthWrite: false, fog: false, side: T.DoubleSide });
+      const gloM = new T.MeshBasicMaterial({ color: '#8a6cf0', map: fade, transparent: true, opacity: .4, depthWrite: false, blending: T.AdditiveBlending, fog: false, side: T.DoubleSide });
+      const lipG = ribbon(lipA, lipM, 16), gloG = ribbon(gloA, gloM, 17);
+      // threads of torn air across the gap: they stretch, and snap when it opens too wide (then hang from the edges)
+      const NT = 8, thA = new Float32Array(NT * 4 * 3 * 2), threads = Array.from({ length: NT }, (_, k) => ({ i: 4 + Math.round(nz(k * 7.3) * (NY - 8)), snap: .45 + nz(k * 2.9) * .5, ph: k * 1.7 }));
+      const thG = new T.BufferGeometry(); thG.setAttribute('position', new T.BufferAttribute(thA, 3));
+      g.add(behind(new T.LineSegments(thG, new T.LineBasicMaterial({ color: '#e6dcff', transparent: true, opacity: .7, depthWrite: false, fog: false })), 18));
+      // ---- what comes out: cold motes and frost, a violet light, the fire flinching when it is wide
+      const NC = 40, cA = new Float32Array(NC * 3), cold = Array.from({ length: NC }, (_, k) => ({ ph: nz(k * 1.3), x: nz(k * 4.1) - .5, sp: .3 + nz(k * 8.3) * .4 }));
+      const cG = new T.BufferGeometry(); cG.setAttribute('position', new T.BufferAttribute(cA, 3));
+      const coldP = new T.Points(cG, new T.PointsMaterial({ color: '#dfe6ff', size: .04, transparent: true, opacity: .7, depthWrite: false, fog: false })); coldP.frustumCulled = false; root.add(coldP);
+      const frost = new T.Mesh(new T.CircleGeometry(2.4, 24), new T.MeshBasicMaterial({ color: '#cfd8f0', transparent: true, opacity: 0, depthWrite: false }));
+      frost.rotation.x = -Math.PI / 2; frost.position.set(-11.1, .025, .3); root.add(frost);
+      const lamp = softLight('#b9a2ff', 4, 6); lamp.position.set(0, 0, .6); g.add(lamp);
+      // ---- the hand: long and pale, on sprung joints (it has weight; the fingers trail and feel)
+      const pale = A.mat('#ddd6ca', 0, .5, { emissive: '#4a4458', emissiveIntensity: .7 }), paleD = A.mat('#bfb6ac', 0, .55, { emissive: '#363048', emissiveIntensity: .65 });
+      const R = rig(), arm = G(g, [0, -.3, -4.6]);                            // its root moves: deep inside, or near the opening
+      const sh = R.add('sh', G(arm), 3.2, .8);
+      bone(sh, [0, 0, 0], [0, 0, 1.35], .125, .095, pale, 7); P(sh, A.ico(.1, 1), paleD, [0, 0, 1.35]);
+      const el = R.add('el', G(sh, [0, 0, 1.35]), 3.6, .75);
+      bone(el, [0, 0, 0], [0, 0, 1.3], .095, .065, pale, 7);
+      const wr = R.add('wr', G(el, [0, 0, 1.3]), 5, .6);
+      P(wr, A.ico(.07, 1), paleD); P(wr, A.ico(.15, 1), pale, [0, 0, .17], { scale: [1.05, .38, 1.25], jitter: .008 });   // a long, thin palm
       const fingers = [];
       for (let f = 0; f < 5; f++) {
-        const fb = G(hand, [(f - 2) * .045, .14, 0], [f === 0 ? .3 : 0, 0, (f - 2) * .12]);
-        fingers.push(chain(fb, 3, f === 0 ? .1 : .16, .022, .012, pale, { sides: 5, jitter: .003 }));
+        const th = f === 0, base = th ? [-.13, -.01, .06] : [-.085 + (f - 1) * .057, 0, .32], segs = [];
+        let at = wr, pos = base;
+        for (let j = 0; j < 3; j++) {
+          const jn = R.add(`f${f}${j}`, G(at, pos, th && j === 0 ? [0, -.7, 0] : [0, 0, 0]), 9 + f * .6 + j * 1.5, .4);
+          const len = th ? .15 : (f === 2 ? .22 : .19) - j * .025;
+          bone(jn, [0, 0, 0], [0, 0, len], .024 - j * .004, .02 - j * .004, pale, 5, .003);
+          segs.push(jn); at = jn; pos = [0, 0, len];
+        }
+        fingers.push(segs);
       }
-      const motes = Array.from({ length: 10 }, (_, i) => { const m = new T.Mesh(A.ico(.03, 0), edge); g.add(m); return { m, ph: i / 10 }; });
-      return (t) => {
-        tex.offset.set(.05 + Math.sin(t * .07) * .05, .25 + Math.sin(t * .05 + 1) * .25);
-        const reach = .5 + .5 * Math.sin(t * .3);
-        arm.rotation.x = Math.PI / 2 + .75 + reach * .35; arm.rotation.z = -.5 + Math.sin(t * .37) * .3; arm.scale.setScalar(.9 + reach * .55);
-        fore.forEach((j, i) => { j.rotation.x = Math.sin(t * .8 - i) * .15; j.rotation.z = Math.sin(t * .5 + i) * .1; });
-        const curl = .5 + .5 * Math.sin(t * 1.1);
-        fingers.forEach(c => c.forEach(j => { j.rotation.x = .15 + curl * .5; }));
-        for (const { m, ph } of motes) { const k = (t * .15 + ph) % 1; m.position.set(Math.sin(ph * 40) * .5 * k, Math.cos(ph * 30) * 1.6, k * 2.5); m.visible = k > .05; }
-        edge.emissiveIntensity = 2 + Math.sin(t * 2.3) * .6; lamp.intensity = 4.5 + Math.sin(t * 2.3) * 1.2;
+      // the hand's visit: it comes up from deep inside, takes hold of the edge, reaches out toward him, feels
+      // the air, and goes back. Where a part of it is still on the other side, it is seen only through the tear.
+      const armMeshes = []; arm.traverse(o => { if (o.isMesh) armMeshes.push(o); });
+      const insideM = new Map();
+      for (const m of armMeshes) { const im = m.material.clone(); Object.assign(im, STENCIL, { transparent: true }); insideM.set(m, [m.material, im]); }
+      const cam = V(), fwd = V(), to = V(), kn = V(), loc = V(), wp = V(), gInv = new T.Matrix4();
+      let widen = 0, pull = 0, lastT = 0;
+      const LOOP = 40;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        // watched? (the camera turned toward it, and not too far off)
+        A.camera.getWorldPosition(cam); A.camera.getWorldDirection(fwd); g.getWorldPosition(to); const dist = to.distanceTo(cam); to.sub(cam).normalize();
+        const watched = smooth(.9, .97, fwd.dot(to)) * (dist < 45 ? 1 : 0);
+        widen += (watched - widen) * (1 - Math.exp(-dt * (watched > widen ? .25 : .08)));
+        const u = (t % LOOP);
+        const reach = smooth(5, 9, u) * (1 - smooth(29, 35, u)), grip = smooth(9, 11, u) * (1 - smooth(14.5, 16, u)), out = smooth(14, 20, u) * (1 - smooth(27, 33, u));
+        pull += ((grip > .5 ? 1 : 0) - pull) * (1 - Math.exp(-dt * 1.2));
+        const W = .38 * (1 + widen * .75 + pull * .35) * (1 + Math.sin(t * .37) * .05);   // a crack; watched, it opens to a gap a man could step through
+        // the edges, crawling a little
+        for (let i = 0; i <= NY; i++) {
+          const y = (i / NY - .5) * H, w = halfW(i, W, t), jl = jag[i][0] + Math.sin(t * 1.7 + i) * .05, jr = jag[i][1] + Math.sin(t * 1.3 + i * 1.7) * .05;
+          const sway = Math.sin(y * .9 + t * .23) * .12;
+          L.set([sway - w * jl, y, 0], i * 3); Rr.set([sway + w * jr, y, 0], i * 3);
+          hole.set([L[i * 3], y, 0, Rr[i * 3], y, 0], i * 6);
+        }
+        holeG.attributes.position.needsUpdate = true; holeG.computeBoundingSphere();
+        // the lip and its glow, outward from each edge (left edge, then right)
+        for (let side = 0; side < 2; side++) for (let i = 0; i <= NY; i++) {
+          const E = side ? Rr : L, k = side * (NY + 1) + i, sg = side ? 1 : -1, x = E[i * 3], y = E[i * 3 + 1], th = .025 + (1 - Math.abs(i / NY * 2 - 1)) * .03;
+          lipA.set([x, y, .01, x + sg * th, y, .01], k * 6); gloA.set([x, y, .02, x + sg * (.1 + widen * .1) * (.6 + jag[i][side] * .5), y, .02], k * 6);
+        }
+        lipG.attributes.position.needsUpdate = true; gloG.attributes.position.needsUpdate = true;
+        // threads: whole while the gap is narrow; snapped (hanging from each edge, swinging) once it is too wide
+        threads.forEach((q, k) => {
+          const i = q.i, lx = L[i * 3], rx = Rr[i * 3], y = L[i * 3 + 1], o = k * 12, broke = rx - lx > q.snap * 1.6;
+          if (!broke) { const mx = (lx + rx) / 2, my = y - .04 - Math.sin(t + q.ph) * .02; thA.set([lx, y, 0, mx, my, .01, mx, my, .01, rx, y, 0], o); }
+          else { const s1 = Math.sin(t * 1.1 + q.ph) * .08, s2 = Math.sin(t * .9 + q.ph * 2) * .08; thA.set([lx, y, 0, lx + .12 + s1, y - .3, .02, rx, y, 0, rx - .12 + s2, y - .3, .02], o); }
+        });
+        thG.attributes.position.needsUpdate = true;
+        // the other side: the vast thing slides past, the motes drift
+        vast.position.x = Math.sin(t * .02) * 12; vast.rotation.z = Math.sin(t * .013) * .2; vast.position.y = Math.sin(t * .03) * 2;
+        motes.forEach((m, k) => { m.x += m.sp * dt * .3; if (m.x > 3) m.x = -3; moA.set([m.x, m.y + Math.sin(t * .4 + k) * .2, m.z], k * 3); });
+        moG.attributes.position.needsUpdate = true;
+        // the hand: deep inside, then near the opening, then out toward him; it turns toward him as it reaches
+        A.K.J.hips.getWorldPosition(kn); kn.y += .8; gInv.copy(g.matrixWorld).invert(); loc.copy(kn).applyMatrix4(gInv);
+        const gx = L[Math.round(NY * .55) * 3];                                // the left lip, about halfway up: where it takes hold
+        arm.position.set(grip * (gx + .1) - out * .3, -.3 - out * .4, -4.6 + reach * 1.7 + out * 2.6);   // (reaching: only the fingertips through; out: the whole forearm)
+        const aimY = Math.atan2(loc.x - arm.position.x, loc.z - arm.position.z), aimX = -Math.atan2(loc.y - arm.position.y, Math.hypot(loc.x - arm.position.x, loc.z - arm.position.z));
+        R.want('sh', aimX * out * .8 + Math.sin(t * .5) * .05, aimY * out * .9 + grip * -.35, Math.sin(t * .31) * .1);
+        R.want('el', .5 - out * .25 + Math.sin(t * .7) * .06, grip * -.5, 0);
+        R.want('wr', -.2 + grip * .6 + Math.sin(t * .9) * .15 * out, Math.sin(t * .6) * .3 * out, grip * -.8 + Math.sin(t * .45) * .25);
+        fingers.forEach((segs, f) => segs.forEach((jn, j) => {
+          const feel = Math.sin(t * (1.3 + f * .21) + f * 1.7 + j * .6) * .25 * (out + reach * .5), curl = grip * (j === 0 ? 1.0 : 1.2) + (1 - reach) * .6 + .12;
+          R.want(`f${f}${j}`, curl + feel, f === 0 && j === 0 ? -.7 : (f - 2) * .08 * (1 - grip) * (j === 0 ? 1 : 0), 0);
+        }));
+        R.step(dt);
+        // what is still on the other side is seen only through the tear
+        for (const m of armMeshes) { m.getWorldPosition(wp); wp.applyMatrix4(gInv); const [a, b] = insideM.get(m), inside = wp.z < -.02; m.material = inside ? b : a; m.renderOrder = inside ? 19 : 0; }
+        // the cold coming out of it
+        cold.forEach((c, k) => { const v = (t * .08 * c.sp + c.ph) % 1; wp.set(c.x * W * 1.2, (c.ph - .5) * H * .8 - v * 2.2, .2 + v * 1.6); wp.applyMatrix4(g.matrixWorld); cA.set([wp.x, wp.y, wp.z], k * 3); });
+        cG.attributes.position.needsUpdate = true;
+        frost.material.opacity = .05 + widen * .1 + pull * .05;
+        lipM.opacity = .8 + Math.sin(t * 2.3) * .15; gloM.opacity = .3 + widen * .2 + Math.sin(t * 2.3) * .06;
+        lamp.intensity = 3.5 + widen * 2.5 + Math.sin(t * 2.3) * .8;
+        A.setFireDim(1 - widen * .25);
+        lastT = t;
       };
     },
+    exit() { A.setFireDim(1); },
   },
 
   // ================================================================ THE BLOOM-HEADED WANDERER
@@ -2209,61 +2319,149 @@ const BEASTS = {
   // ================================================================ THE STITCHED SKY
   stitched: {
     name: 'The Stitched Sky', hour: 22,
-    blurb: 'A night when the stars visibly move, and the sky turns out to have seams. Something vast looks down through the gaps between the stitches.',
-    view: [[-8, 1.6, 3.6], [-6, 17, -40]],
+    blurb: 'Seen only by those who have seen enough. A night when the stars move, slowly, as if drawn toward something, and the sky turns out to have seams: long pale scars across it, stitched shut. One of them opens, its stitches pulling taut, and something vast looks down through the gap. It opens wider when the fire burns bright.',
+    view: [[-8, 1.6, 3.6], [34, 47, -72]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'exclaim', note: 'looking up at the seams in the sky' },
     build(root) {
-      const W = 1024, H = 512, cvs = document.createElement('canvas'); cvs.width = W; cvs.height = H;
-      const c = cvs.getContext('2d'), tex = new T.CanvasTexture(cvs); tex.colorSpace = T.SRGBColorSpace;
-      const tear = [[150, 250], [300, 205], [460, 185], [620, 195], [780, 225], [900, 262], [780, 300], [620, 330], [460, 335], [300, 315]];
-      const small = [[620, 70], [690, 58], [760, 66], [690, 92]];
-      const path = pts => { c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); };
-      let look = { x: 0, y: 0 };
-      const draw = (t) => {
-        c.clearRect(0, 0, W, H);
-        c.save(); path(tear); c.clip();
-        const gr = c.createLinearGradient(0, 180, 0, 340); gr.addColorStop(0, '#1a0a20'); gr.addColorStop(.5, '#3a1430'); gr.addColorStop(1, '#1a0a20');
-        c.fillStyle = gr; c.fillRect(0, 0, W, H);
-        const ex = 525 + look.x * 90, ey = 262 + look.y * 25;
-        c.fillStyle = '#a89c78'; c.beginPath(); c.ellipse(ex, ey, 150, 52, 0, 0, 6.3); c.fill();
-        c.fillStyle = '#c4862a'; c.beginPath(); c.arc(ex + look.x * 30, ey, 44, 0, 6.3); c.fill();
-        c.fillStyle = '#f2c060'; c.beginPath(); c.arc(ex + look.x * 30, ey, 30, 0, 6.3); c.fill();
-        c.fillStyle = '#120608'; c.beginPath(); c.ellipse(ex + look.x * 30, ey, 7 + Math.sin(t * .7) * 3, 40, 0, 0, 6.3); c.fill();
-        c.restore();
-        c.save(); path(small); c.clip(); c.fillStyle = '#2a0f28'; c.fillRect(0, 0, W, H);
-        c.fillStyle = '#c9b48a'; c.beginPath(); c.arc(690 + Math.sin(t * .4) * 20, 75, 16, 0, 6.3); c.fill(); c.restore();
-        c.strokeStyle = '#efe3c8'; c.lineWidth = 3; path(tear); c.stroke(); path(small); c.stroke();
-        c.lineWidth = 4; c.strokeStyle = '#f6ecd6';
-        for (let i = 0; i < 14; i++) {   // the stitches holding it shut
-          const x = 200 + i * 48, top = 232 - Math.sin((i + .5) / 14 * Math.PI) * 50, bot = 270 + Math.sin((i + .5) / 14 * Math.PI) * 60;
-          c.beginPath(); c.moveTo(x - 10, top - 14); c.lineTo(x + 10, bot + 14); c.stroke();
+      // Laid on the sky itself (a great sphere around the keep, far off): long pale scars with cross-
+      // stitches over them. The main seam's lips part along the middle, its stitches stretching taut
+      // across the gap. What is behind is drawn only where the gap is (a stencil): a dark red depth and
+      // an eye, so large that the gap only ever shows part of it, that looks about and then finds whoever
+      // is watching. The stars it brings drift toward the gap, faster as they near it, and go in.
+      // Its tell: the gap opens wider while the fire burns bright.
+      const Cn = V(-6, 0, 0), RS = 140, D = V(.42, .5, -.76).normalize(),   // (east of north, clear of the moon)
+        E = V().crossVectors(D, V(0, 1, 0)).normalize(), N = V().crossVectors(E, D).normalize();
+      const sky = (a, b, r = RS, out = V()) => out.copy(D).addScaledVector(E, a).addScaledVector(N, b).normalize().multiplyScalar(r).add(Cn);
+      const STEN = { stencilWrite: true, stencilRef: 2, stencilFunc: T.EqualStencilFunc, stencilFail: T.KeepStencilOp, stencilZFail: T.KeepStencilOp, stencilZPass: T.KeepStencilOp };
+      const order = (m, o) => { m.renderOrder = o; m.frustumCulled = false; return m; };
+      const basic = (color, o = {}) => new T.MeshBasicMaterial({ color, transparent: true, depthWrite: false, fog: false, side: T.DoubleSide, ...o });
+      // a strip of quads along points (in sky angles), w wide: [positions], written into arr from k
+      const tmp = V(), tmp2 = V();
+      const strip = (pts, w, arr, k = 0) => {
+        for (let i = 0; i < pts.length; i++) {
+          const p = pts[i], q = pts[Math.min(pts.length - 1, i + 1)], o = pts[Math.max(0, i - 1)], dx = q[0] - o[0], dy = q[1] - o[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * w / 2, ny = dx / l * w / 2;
+          sky(p[0] + nx, p[1] + ny, RS, tmp); arr.set([tmp.x, tmp.y, tmp.z], (k + i * 2) * 3);
+          sky(p[0] - nx, p[1] - ny, RS, tmp); arr.set([tmp.x, tmp.y, tmp.z], (k + i * 2 + 1) * 3);
         }
-        for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(655 + i * 30, 56); c.lineTo(668 + i * 30, 92); c.stroke(); }
-        tex.needsUpdate = true;
+        return k + pts.length * 2;
       };
-      draw(0);
-      const plane = new T.Mesh(new T.PlaneGeometry(64, 32), new T.MeshBasicMaterial({ map: tex, transparent: true, fog: false, depthWrite: false }));
-      plane.position.set(-6, 24, -50); plane.lookAt(-8, 1.6, 3.6); root.add(plane);
-      // stars that slowly swirl out of place
-      const N = 260, pos = new Float32Array(N * 3), seeds = [], r = A.rand(61);
-      for (let i = 0; i < N; i++) seeds.push({ a: r() * 6.28, d: 6 + r() * 34, sp: (r() - .5) * .03 });
-      const sg = new T.BufferGeometry(); sg.setAttribute('position', new T.BufferAttribute(pos, 3));
-      const stars = new T.Points(sg, new T.PointsMaterial({ color: '#e8e2ff', size: .35, fog: false, transparent: true, depthWrite: false })); root.add(stars);
-      const right = V(1, 0, 0).applyQuaternion(plane.quaternion), up = V(0, 1, 0).applyQuaternion(plane.quaternion);
-      const camPos = V(), toCam = V();
-      let lastDraw = 0;
-      return (t) => {
-        for (let i = 0; i < N; i++) {
-          const s = seeds[i], a = s.a + t * s.sp * (40 / s.d);
-          const x = Math.cos(a) * s.d, y = Math.sin(a) * s.d * .55;
-          pos[i * 3] = plane.position.x + right.x * x + up.x * y; pos[i * 3 + 1] = plane.position.y + right.y * x + up.y * y; pos[i * 3 + 2] = plane.position.z + right.z * x + up.z * y + 1;
-        }
-        sg.attributes.position.needsUpdate = true;
-        if (t - lastDraw > .08) {
-          A.camera.getWorldPosition(camPos); toCam.copy(camPos).sub(plane.position).normalize();
-          look = { x: Math.max(-1, Math.min(1, toCam.dot(right) * 3 + Math.sin(t * .2) * .3)), y: Math.max(-1, Math.min(1, -toCam.dot(up) * 3)) };
-          draw(t); lastDraw = t;
-        }
+      const stripIdx = (n, k, idx) => { for (let i = 0; i < n - 1; i++) { const a = k + i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } };
+      // ---- the seams: the main one across the middle, three more, one of them a little open too
+      const mainB = a => .05 - .09 * a * a + .012 * Math.sin(a * 13);
+      const SEAMS = [
+        { pts: Array.from({ length: 63 }, (_, i) => { const a = -.62 + i * .02; return [a, mainB(a)]; }), open: [-.32, .32], H: .075 },
+        { pts: Array.from({ length: 31 }, (_, i) => { const u = i / 30; return [-.95 + u * .62, .3 + u * .22 + Math.sin(u * 9) * .015]; }) },
+        { pts: Array.from({ length: 31 }, (_, i) => { const u = i / 30; return [.3 + u * .55, -.2 + u * .32 + Math.sin(u * 7 + 1) * .012]; }) },
+        { pts: Array.from({ length: 16 }, (_, i) => { const u = i / 15; return [.42 + u * .3, .38 + u * .06 + Math.sin(u * 5) * .01]; }), open: [.48, .66], H: .022 },
+      ];
+      // the scar lines (never change): one mesh
+      const nS = SEAMS.reduce((n, s) => n + s.pts.length * 2, 0), scarA = new Float32Array(nS * 3), scarI = [];
+      let k0 = 0; for (const s of SEAMS) { stripIdx(s.pts.length, k0, scarI); k0 = strip(s.pts, .0035, scarA, k0); }
+      const scarG = new T.BufferGeometry(); scarG.setAttribute('position', new T.BufferAttribute(scarA, 3)); scarG.setIndex(scarI);
+      const scarM = basic('#7d7494', { opacity: .45 });
+      root.add(order(new T.Mesh(scarG, scarM), 20));
+      // the stitches: slanted, every so often along each seam; on an open stretch they stretch across the gap
+      const stitches = [];
+      SEAMS.forEach((s, si) => { for (let i = 1; i < s.pts.length - 1; i += 2 + Math.round(nz(si * 13 + i) * 1.4)) stitches.push({ si, i, a: s.pts[i][0], b: s.pts[i][1], tilt: (nz(si * 40 + i) < .3 ? -1 : 1) * (.007 + nz(si * 41 + i) * .01), reach: .016 + nz(si * 7 + i) * .012 }); });   // uneven, as if sewn in a hurry
+      const NSt = stitches.length, stA = new Float32Array(NSt * 4 * 3), stI = [];
+      for (let k = 0; k < NSt; k++) { const a = k * 4; stI.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      const stG = new T.BufferGeometry(); stG.setAttribute('position', new T.BufferAttribute(stA, 3)); stG.setIndex(stI);
+      const stM = basic('#cdbfa2', { opacity: .6 });
+      root.add(order(new T.Mesh(stG, stM), 22));
+      // ---- the openings: a hole (marks the stencil), lit lips; behind: the depth, the eye, far stars
+      const shade = canvasTex(64, 4, (c, w) => { const gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, 4); });
+      const opens = SEAMS.filter(s => s.open).map(s => {
+        const n = 25, hA = new Float32Array(n * 2 * 3), lipA = new Float32Array(n * 2 * 2 * 3), hI = [], lI = [];
+        stripIdx(n, 0, hI); stripIdx(n, 0, lI); stripIdx(n, n * 2, lI);
+        const hG = new T.BufferGeometry(); hG.setAttribute('position', new T.BufferAttribute(hA, 3)); hG.setIndex(hI);
+        const lG = new T.BufferGeometry(); lG.setAttribute('position', new T.BufferAttribute(lipA, 3)); lG.setIndex(lI);
+        root.add(order(new T.Mesh(hG, basic('#120408', { stencilWrite: true, stencilRef: 2, stencilFunc: T.AlwaysStencilFunc, stencilZPass: T.ReplaceStencilOp })), 21));
+        const lipM = basic('#a8908a', { opacity: .7 }); root.add(order(new T.Mesh(lG, lipM), 23));
+        const shA = new Float32Array(n * 2 * 2 * 3), shUV = new Float32Array(n * 2 * 2 * 2);
+        for (let i = 0; i < n * 2; i++) shUV.set([0, 0, 1, 0], i * 4);
+        const shG = new T.BufferGeometry(); shG.setAttribute('position', new T.BufferAttribute(shA, 3)); shG.setAttribute('uv', new T.BufferAttribute(shUV, 2)); shG.setIndex(lI);
+        root.add(order(new T.Mesh(shG, basic('#000000', { map: shade, depthTest: false, ...STEN })), 29));   // the lips' shadow, over whatever is inside
+        return { s, n, hA, hG, lipA, lG, lipM, shA, shG, O: 0 };
+      });
+      const depth = canvasTex(256, 256, (c, w) => { const gr = c.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); gr.addColorStop(0, '#5a1424'); gr.addColorStop(.55, '#2a0812'); gr.addColorStop(1, '#0c0206'); c.fillStyle = gr; c.fillRect(0, 0, w, w); });
+      const back = order(new T.Mesh(new T.PlaneGeometry(200, 200), basic('#ffffff', { map: depth, depthTest: false, ...STEN })), 24);
+      sky(0, .05, 290, back.position); back.lookAt(Cn); back.scale.setScalar(1.6); root.add(back);
+      // the eye: vast, old, wet; it is far behind the gap, and turns
+      const eye = G(root); sky(0, .05, 230, eye.position);
+      const scl = canvasTex(256, 128, (c, w, h) => { c.fillStyle = '#5e5440'; c.fillRect(0, 0, w, h); const q = A.rand(31);
+        for (let i = 0; i < 40; i++) { let x = q() * w, y = q() * h; c.strokeStyle = `rgba(${110 + q() * 40},20,24,${.3 + q() * .4})`; c.lineWidth = .7 + q() * 1.4; c.beginPath(); c.moveTo(x, y); for (let j = 0; j < 7; j++) { x += (q() - .5) * 26; y += (q() - .5) * 14; c.lineTo(x, y); } c.stroke(); } });
+      eye.add(order(new T.Mesh(new T.SphereGeometry(44, 40, 24), basic('#ffffff', { map: scl, depthTest: false, side: T.FrontSide, ...STEN })), 25));
+      const irisT = canvasTex(256, 256, (c, w) => { const gr = c.createRadialGradient(w / 2, w / 2, w * .1, w / 2, w / 2, w / 2); gr.addColorStop(0, '#b89a5a'); gr.addColorStop(.6, '#8a6a34'); gr.addColorStop(.9, '#40301a'); gr.addColorStop(1, '#1a120a'); c.fillStyle = gr; c.beginPath(); c.arc(w / 2, w / 2, w / 2, 0, 6.3); c.fill();
+        c.filter = 'blur(1.2px)'; const q = A.rand(8); for (let i = 0; i < 160; i++) { const a = q() * 6.28; c.strokeStyle = q() < .5 ? 'rgba(255,230,170,.16)' : 'rgba(60,30,8,.3)'; c.lineWidth = 1; c.beginPath(); c.moveTo(w / 2 + Math.cos(a) * w * .14, w / 2 + Math.sin(a) * w * .14); c.lineTo(w / 2 + Math.cos(a) * w * (.35 + q() * .14), w / 2 + Math.sin(a) * w * (.35 + q() * .14)); c.stroke(); } });
+      const iris = order(new T.Mesh(new T.CircleGeometry(19, 40), basic('#ffffff', { map: irisT, depthTest: false, ...STEN })), 26); iris.position.z = 43.9; eye.add(iris);
+      const pupil = order(new T.Mesh(new T.CircleGeometry(9, 28), basic('#050203', { depthTest: false, ...STEN })), 27); pupil.position.z = 44; eye.add(pupil);
+      // behind the small seam: a few warm stars of somewhere else
+      const NW = 24, wA = new Float32Array(NW * 3);
+      for (let k = 0; k < NW; k++) { sky(.48 + nz(k) * .18, .395 + (nz(k + 9) - .5) * .05, 180, tmp); wA.set([tmp.x, tmp.y, tmp.z], k * 3); }
+      const wG = new T.BufferGeometry(); wG.setAttribute('position', new T.BufferAttribute(wA, 3));
+      root.add(order(new T.Points(wG, new T.PointsMaterial({ color: '#ffcf9a', size: 1.6, transparent: true, depthTest: false, depthWrite: false, fog: false, ...STEN })), 25));
+      // ---- the stars it brings: they drift round toward the main gap, quicker as they come close, and go in
+      const NSr = 320, srA = new Float32Array(NSr * 3), stars = Array.from({ length: NSr }, (_, k) => ({ ang: nz(k) * 6.28, rad: .15 + nz(k + 7) * 1.05, sp: .6 + nz(k + 3) * .8 }));
+      const srG = new T.BufferGeometry(); srG.setAttribute('position', new T.BufferAttribute(srA, 3));
+      const srM = new T.PointsMaterial({ color: '#e8e2ff', size: 1.1, transparent: true, opacity: .9, depthWrite: false, fog: false });
+      root.add(order(new T.Points(srG, srM), 19));
+      const cam = V(), look = V(), want = V();
+      let next = 0, last = 0;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        // how open: its own slow breath of opening and closing, and wider when the fire is bright (its tell)
+        const fire = Math.max(0, Math.min(1, (A.fireLight.intensity - 26) / 22));
+        const u = t % 80, cyc = .12 + .7 * smooth(4, 26, u) * (1 - smooth(56, 74, u));
+        opens.forEach((o, n) => {
+          const wantO = n === 0 ? Math.min(1, cyc + fire * .3) : .25 + .2 * Math.sin(t * .11);
+          o.O += (wantO - o.O) * (1 - Math.exp(-dt * .6));
+          const [a0, a1] = o.s.open, hA = o.hA, lip = o.lipA, top = [], bot = [];
+          for (let i = 0; i < o.n; i++) {
+            const a = a0 + (a1 - a0) * i / (o.n - 1), x = (a - (a0 + a1) / 2) / ((a1 - a0) / 2), h = o.O * o.s.H * Math.pow(Math.max(0, 1 - x * x), .75) * (1 + Math.sin(t * .7 + i * .8) * .04);
+            const b = n === 0 ? mainB(a) : o.s.pts[0][1] + (a - o.s.pts[0][0]) / (o.s.pts.at(-1)[0] - o.s.pts[0][0]) * (o.s.pts.at(-1)[1] - o.s.pts[0][1]);
+            top.push([a, b + h]); bot.push([a, b - h]);
+            sky(a, b + h, RS - .5, tmp); hA.set([tmp.x, tmp.y, tmp.z], i * 6); sky(a, b - h, RS - .5, tmp); hA.set([tmp.x, tmp.y, tmp.z], i * 6 + 3);
+          }
+          o.top = top; o.bot = bot;
+          strip(top, .0026, lip, 0); strip(bot, .0026, lip, o.n * 2);
+          for (let i = 0; i < o.n; i++) {                                    // the shadow: from each lip a little way into the gap
+            const sh = Math.min(o.s.H * .55, (top[i][1] - bot[i][1]) * .45);
+            sky(top[i][0], top[i][1], RS - .6, tmp); o.shA.set([tmp.x, tmp.y, tmp.z], i * 6); sky(top[i][0], top[i][1] - sh, RS - .6, tmp); o.shA.set([tmp.x, tmp.y, tmp.z], i * 6 + 3);
+            sky(bot[i][0], bot[i][1], RS - .6, tmp); o.shA.set([tmp.x, tmp.y, tmp.z], (o.n + i) * 6); sky(bot[i][0], bot[i][1] + sh, RS - .6, tmp); o.shA.set([tmp.x, tmp.y, tmp.z], (o.n + i) * 6 + 3);
+          }
+          o.shG.attributes.position.needsUpdate = true;
+          o.hG.attributes.position.needsUpdate = true; o.lG.attributes.position.needsUpdate = true;
+          o.lipM.opacity = .35 + o.O * .35;
+        });
+        // the stitches: closed ones lie across the scar; on an open stretch, from lip to lip, pulled taut
+        stitches.forEach((s, k) => {
+          let ta = s.a - s.tilt, tb = s.b + s.reach, ba = s.a + s.tilt, bb = s.b - s.reach;
+          const o = opens.find(q => q.s === SEAMS[s.si] && s.a > q.s.open[0] && s.a < q.s.open[1]);
+          if (o) { const i = Math.round((s.a - o.s.open[0]) / (o.s.open[1] - o.s.open[0]) * (o.n - 1)), h = o.top[i][1] - o.bot[i][1]; if (h / 2 + .006 > s.reach) { tb = o.top[i][1] + .006; bb = o.bot[i][1] - .006; } }
+          const dx = ba - ta, dy = bb - tb, l = Math.hypot(dx, dy) || 1, w = .0014, nx = -dy / l * w, ny = dx / l * w;
+          sky(ta + nx, tb + ny, RS - 1, tmp); stA.set([tmp.x, tmp.y, tmp.z], k * 12); sky(ta - nx, tb - ny, RS - 1, tmp); stA.set([tmp.x, tmp.y, tmp.z], k * 12 + 3);
+          sky(ba + nx, bb + ny, RS - 1, tmp); stA.set([tmp.x, tmp.y, tmp.z], k * 12 + 6); sky(ba - nx, bb - ny, RS - 1, tmp); stA.set([tmp.x, tmp.y, tmp.z], k * 12 + 9);
+        });
+        stG.attributes.position.needsUpdate = true;
+        // the eye: it looks about while the gap opens; once it is open, it finds whoever is watching
+        A.camera.getWorldPosition(cam);
+        const O = opens[0].O;
+        if (t > next || t < last) { const q = A.rand(Math.floor(t * 3) + 5); want.set(cam.x + (q() - .5) * 120, cam.y + (q() - .5) * 60, cam.z + (q() - .5) * 120); next = t + 2 + q() * 3.5; }
+        const finds = smooth(.55, .7, O);
+        tmp2.copy(want).lerp(cam, finds); look.lerp(tmp2, 1 - Math.exp(-dt * (finds > .5 ? 1.2 : 3)));
+        eye.lookAt(look);
+        const narrow = .55 + .45 * (1 - fire) + Math.sin(t * .4) * .05;            // the fire's brightness narrows it
+        pupil.scale.set(.32 * narrow, 1, 1);
+        // the stars: round the gap and in
+        const c0 = [0, .05];
+        stars.forEach((s, k) => {
+          s.ang += dt * .03 * s.sp / Math.max(.2, s.rad); s.rad -= dt * .004 * s.sp * (.4 + O);
+          if (s.rad < .05 + (1 - O) * .06) { s.rad = .9 + nz(k + Math.floor(t)) * .3; s.ang = nz(k * 3 + Math.floor(t)) * 6.28; }
+          sky(c0[0] + Math.cos(s.ang) * s.rad * 1.6, c0[1] + Math.sin(s.ang) * s.rad * .55, RS + 2, tmp); srA.set([tmp.x, tmp.y, tmp.z], k * 3);
+        });
+        srG.attributes.position.needsUpdate = true;
+        scarM.opacity = .35 + O * .2; stM.opacity = .5 + O * .2;
+        last = t;
       };
     },
   },

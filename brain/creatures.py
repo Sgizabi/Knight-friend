@@ -113,7 +113,7 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "whale", "moths", "barrow", "thorn", "lanternheads", "brood", "thincrowd", "doorway",    # wave 2
             "basilisk", "wyrm", "crawl", "golem", "well", "bloom", "warden", "larva",               # wave 3
             "listener", "cartographer", "moon2", "bentone", "watcher", "nightgrown", "glassy1",     # wave 4
-            "clockhead", "stranger"}                                                                 # last wave
+            "clockhead", "stranger", "ninefold", "leech", "seam", "stitched"}                         # last wave
 
 
 def nature_of(a):

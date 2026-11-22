@@ -125,8 +125,9 @@ CHARACTERS = {
         traits=["vast", "watchful", "silent", "unknowable"],
         drives=["watching the sky", "watching him", "something only it understands"],
         signs=["the stars to the east look wrong, as if rearranged", "the feeling of being looked at, from everywhere"],
-        looks="a great ring of pale bone hanging in the night sky, nine eyes set into it, slowly turning",
-        tell="when all nine eyes turn the same way, something follows", likes=["stillness", "look back", "light"],
+        looks="a great ring of old bone, like a spine bent into a circle, hanging in the night sky over the courtyard, "
+              "nine eyes set into it, no two alike, each looking at something different",
+        tell="now and then all nine eyes turn to the same thing, one after another, and the ring stops turning", likes=["stillness", "look back", "light"],
         danger=0, gifts=["a dream you can't stop thinking about"], trace="a ring of flattened grass on the plain"),
     "moon2": B(
         traits=["vast", "silent", "drifting"],
@@ -160,7 +161,8 @@ CHARACTERS = {
         traits=["unknowable", "patient", "curious"],
         drives=["something on the other side wants to see", "the seam opens on its own"],
         signs=["a line in the air that doesn't move when you do", "a sound like cloth tearing, very far away"],
-        looks="a crack in the air itself, and a hand on the other side feeling its way through",
+        looks="a tear in the air above the courtyard, its edges bright and torn like cloth; through it, a dim violet somewhere "
+              "else and something enormous moving slowly past, and now and then a long pale hand feeling its way through",
         tell="it widens when it is watched", likes=["hand", "touch", "light", "gift"],
         danger=1, gifts=["something from the other side, small and strange"], trace="a faint line in the air that fades by dawn"),
     "bloom": B(
@@ -201,7 +203,8 @@ CHARACTERS = {
         traits=["vast", "unknowable", "watchful"],
         drives=["something looks through", "the seams loosen"],
         signs=["lines in the sky like stitching", "the stars on one side of the sky go dim"],
-        looks="the sky above the keep crossed with seams, and something on the other side looking through a gap",
+        looks="long pale scars across the night sky, stitched shut, the stars drifting toward them; one opens, its stitches "
+              "pulling taut, and an eye far larger than the gap looks down through it",
         tell="a seam opens wider when the fire is bright", likes=[],
         danger=0, gifts=["a thread of something like starlight caught on the tower"], trace="faint lines left across the dawn sky"),
     "manyjoint": B(
