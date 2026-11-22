@@ -914,7 +914,7 @@ const BEASTS = {
       // the eye: in a fold of its side facing the keep; a lid of turf peels up off it
       const eyeG = G(body, [-2.6, 2.2, -5.35], [0, Math.PI + .1, 0]);   // (facing out of its side, toward the keep)
       const socket = new T.Mesh(new T.SphereGeometry(1.35, 20, 12), A.mat('#1a1410', 0, .9)); socket.scale.set(1.5, .75, .5); eyeG.add(socket);
-      const ball = G(eyeG, [0, 0, .25]);
+      const ball = G(eyeG, [0, 0, -.15]);                                    // (set back, so closed lids cover it whole)
       const irisT = canvasTex(512, 256, (c, w, h) => {                     // (laid round the ball: the iris is only the middle of it)
         const bg = c.createLinearGradient(0, 0, w, 0); bg.addColorStop(0, '#120c06'); bg.addColorStop(.5, '#3a2810'); bg.addColorStop(1, '#120c06');
         c.fillStyle = bg; c.fillRect(0, 0, w, h);
@@ -925,11 +925,11 @@ const BEASTS = {
         c.restore(); c.filter = 'none'; c.fillStyle = '#060402'; c.beginPath(); c.ellipse(cx, cy, rx * .62, ry * .13, 0, 0, 6.3); c.fill();   // a long sideways pupil
       });
       const eyeM = new T.MeshStandardMaterial({ map: irisT, roughness: .15, metalness: .1, emissive: '#ffffff', emissiveIntensity: .32, emissiveMap: irisT });   // (it catches light of its own, like a wet eye in shade)
-      const orb = new T.Mesh(new T.SphereGeometry(1.15, 28, 18), eyeM); orb.rotation.y = -Math.PI / 2; orb.scale.set(1.3, .95, .9); ball.add(orb);   // (the texture's middle faces out)
+      const orb = new T.Mesh(new T.SphereGeometry(1.15, 28, 18), eyeM); orb.rotation.y = -Math.PI / 2; orb.scale.set(.9, .95, 1.3); ball.add(orb);   // (the texture's middle faces out; turned, so its depth is x and its width z)
       const lidUp = G(eyeG, [0, .15, .1]), lidLo = G(eyeG, [0, -.1, .1]);
       const lidM = new T.MeshStandardMaterial({ color: '#46562f', roughness: .95, flatShading: true });
-      P(lidUp, new T.SphereGeometry(1.45, 18, 8, 0, 6.283, 0, Math.PI / 2), lidM, [0, -.15, 0], { scale: [1.55, .9, .62], jitter: .06, cast: false });
-      P(lidLo, new T.SphereGeometry(1.45, 18, 8, 0, 6.283, Math.PI / 2, Math.PI / 2), lidM, [0, .1, 0], { scale: [1.55, .7, .6], jitter: .06, cast: false });
+      P(lidUp, new T.SphereGeometry(1.45, 18, 8, 0, 6.283, 0, Math.PI / 2), lidM, [0, -.15, 0], { scale: [1.55, .9, .8], jitter: .06, cast: false });
+      P(lidLo, new T.SphereGeometry(1.45, 18, 8, 0, 6.283, Math.PI / 2, Math.PI / 2), lidM, [0, .1, 0], { scale: [1.55, .7, .78], jitter: .06, cast: false });
       for (let k = 0; k < 7; k++) P(lidUp, new T.ConeGeometry(.07, .35, 4), leaf, [-1.6 + k * .5, .95, .3 + (k % 2) * .2], { cast: false });   // grass on the lid
       const eyeLight = softLight('#ffc46b', 0, 4.5); eyeLight.position.z = 1.2; eyeG.add(eyeLight);
       // dust falling when the lid tears open, and birds going up out of the trees when it moves
@@ -942,7 +942,7 @@ const BEASTS = {
       const live = !!root.userData.appearance?.id, C = live ? 400 : 64, off = live ? Math.random() * C : 0;
       return (t, dt = 1 / 60) => {
         dt = Math.min(dt, .1);
-        const k = (t + off) % C;
+        const k = (t + off) % C; root.userData.kt = k;                        // (for testing: where it is in its stirring)
         // breathing: a long slow swell
         const br = Math.sin(t * .52);
         // the tell: a ripple of paler grass runs over it, west to east; then it moves
