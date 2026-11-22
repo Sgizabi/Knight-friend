@@ -30,75 +30,74 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 35,
-    "last_wake": "2026-11-22T13:01:33+00:00",
+    "wakeups": 36,
+    "last_wake": "2026-11-22T15:01:34+00:00",
     "nights_slept_through": 12
   },
   "plan": {
-    "start": "2026-11-22T13:01:32+00:00",
-    "mood": "restless",
+    "start": "2026-11-22T15:01:34+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "workbench",
+        "place": "glasshouse",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "Add export feature",
+        "emote": "question",
+        "note": "",
         "thoughts": [
-          "CSV sounds useful"
+          "Why do seedlings grow so fast?",
+          "These shards are oddly sharp."
         ]
       },
       {
         "place": "forge",
-        "action": "stand",
+        "action": "work",
         "minutes": 20,
-        "emote": "exclaim",
-        "note": "Heat metal for hinge",
+        "emote": "dots",
+        "note": "",
         "thoughts": [
-          "Hope the iron holds"
+          "Need to sharpen the hammer again.",
+          "The bellows still sigh quietly."
         ]
       },
       {
-        "place": "woodshed",
-        "action": "sit",
+        "place": "desk",
+        "action": "write",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "Dry logs",
+        "emote": "heart",
+        "note": "",
         "thoughts": [
-          "Dry wood means warmer fire"
+          "List the broken things I found today.",
+          "Maybe add a line about the pot."
         ]
       },
       {
         "place": "fire",
-        "action": "vigil",
+        "action": "sit",
         "minutes": 20,
-        "emote": "heart",
-        "note": "Watch flames",
+        "emote": "zzz",
+        "note": "",
         "thoughts": [
-          "Stone still stubborn"
+          "Warmth is decent, not too hot.",
+          "Think about the bathhouse export feature."
         ]
       }
-    ],
-    "applied_until": "2026-11-22T14:30:23+00:00",
-    "live_thought": {
-      "text": "The fire crackles, stone cool, I could linger a bit longer.",
-      "time": "2026-11-22T14:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T15:00:30+00:00",
-    "place": "raise:3",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-22T15:01:34+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue raising the bathhouse structure in the courtyard",
-    "thought": "The bathhouse is half done. I need to get the walls up before the rain gets any ideas."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 88.7,
-    "warmth": 74.9,
+    "rest": 79.7,
+    "warmth": 79.3,
     "inspiration": 46.5,
-    "spirit": 70.8
+    "spirit": 73.7
   },
   "needs_prev": {
     "rest": 88.4,
@@ -106,7 +105,7 @@
     "inspiration": 46.5,
     "spirit": 71.3
   },
-  "needs_at": "2026-11-22T15:00:30+00:00",
+  "needs_at": "2026-11-22T15:01:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -681,7 +680,7 @@
         "about": "a timber hut with a wooden tub and a stove",
         "place": "bathhouse",
         "plot": 3,
-        "done": 2,
+        "done": 3,
         "needed": 4,
         "kind": null,
         "look": null,
@@ -730,8 +729,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T14:30:23+00:00",
-    "seen_until": "2026-11-22T12:55:25+00:00"
+    "updated": "2026-11-22T15:01:34+00:00",
+    "seen_until": "2026-11-22T14:55:28+00:00"
   },
   "gifts": [],
   "gate": [
@@ -876,5 +875,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T15:00:30+00:00"
+  "exported": "2026-11-22T15:01:34+00:00"
 }

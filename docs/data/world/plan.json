@@ -1,45 +1,49 @@
 {
-  "start": "2026-11-22T13:01:32+00:00",
-  "mood": "restless",
+  "start": "2026-11-22T15:01:34+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "workbench",
+      "place": "glasshouse",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "Add export feature",
+      "emote": "question",
+      "note": "",
       "thoughts": [
-        "CSV sounds useful"
+        "Why do seedlings grow so fast?",
+        "These shards are oddly sharp."
       ]
     },
     {
       "place": "forge",
-      "action": "stand",
+      "action": "work",
       "minutes": 20,
-      "emote": "exclaim",
-      "note": "Heat metal for hinge",
+      "emote": "dots",
+      "note": "",
       "thoughts": [
-        "Hope the iron holds"
+        "Need to sharpen the hammer again.",
+        "The bellows still sigh quietly."
       ]
     },
     {
-      "place": "woodshed",
-      "action": "sit",
+      "place": "desk",
+      "action": "write",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "Dry logs",
+      "emote": "heart",
+      "note": "",
       "thoughts": [
-        "Dry wood means warmer fire"
+        "List the broken things I found today.",
+        "Maybe add a line about the pot."
       ]
     },
     {
       "place": "fire",
-      "action": "vigil",
+      "action": "sit",
       "minutes": 20,
-      "emote": "heart",
-      "note": "Watch flames",
+      "emote": "zzz",
+      "note": "",
       "thoughts": [
-        "Stone still stubborn"
+        "Warmth is decent, not too hot.",
+        "Think about the bathhouse export feature."
       ]
     }
   ]
