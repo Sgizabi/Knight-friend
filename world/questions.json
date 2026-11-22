@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261120",
-      "items": [
-        {
-          "id": "t20261120-0",
-          "text": "Your thumb still throbs—what's the story?"
-        },
-        {
-          "id": "t20261120-1",
-          "text": "Did the fire ever finish nudging you?"
-        },
-        {
-          "id": "t20261120-2",
-          "text": "How's the east wall holding up now?"
-        },
-        {
-          "id": "t20261120-3",
-          "text": "What did you think of that glass shard?"
-        },
-        {
-          "id": "t20261120-4",
-          "text": "Is the forge finally feeling like home?"
-        },
-        {
-          "id": "t20261120-5",
-          "text": "Do you ever miss the roof’s warmth?"
-        }
-      ]
-    },
-    {
       "date": "20261121",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261121-5",
           "text": "Is the east wall whispering anything as you work?"
+        }
+      ]
+    },
+    {
+      "date": "20261122",
+      "items": [
+        {
+          "id": "t20261122-0",
+          "text": "Still fighting that stubborn rain?"
+        },
+        {
+          "id": "t20261122-1",
+          "text": "Did the shim finally settle in?"
+        },
+        {
+          "id": "t20261122-2",
+          "text": "How’s the new bathhouse roof holding up?"
+        },
+        {
+          "id": "t20261122-3",
+          "text": "Did the lantern oil ever run out?"
+        },
+        {
+          "id": "t20261122-4",
+          "text": "Got any new cracks in the east wall?"
+        },
+        {
+          "id": "t20261122-5",
+          "text": "What’s the oddest thing you’ve found in the woodshed?"
         }
       ]
     }

@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-22T13:00:26+00:00",
-  "place": "raise:3",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-22T13:01:33+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue constructing the bathhouse structure in the courtyard, focusing on framing and roof support",
-  "thought": "The bathhouse is only a quarter done. I need to keep adding the next beam and get the walls up before the rain seeps in."
+  "note": "",
+  "thought": ""
 }

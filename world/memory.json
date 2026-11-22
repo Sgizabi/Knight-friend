@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 18.759,
-    "craft": 18.759
+    "repair": 19.009,
+    "craft": 19.009
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 2,
+  "entries_since_condense": 3,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,7 +38,7 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 1,
-      "strength": 0.96,
+      "strength": 0.922,
       "last": "2026-11-22T02:42:43+00:00"
     }
   ],
@@ -58,7 +58,7 @@
     "The fire flickers, warm stone against my back."
   ],
   "last_glance": "2026-11-22T12:30:23+00:00",
-  "visits_seen_until": "2026-11-22T02:25:23+00:00",
+  "visits_seen_until": "2026-11-22T12:55:25+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},
@@ -67,13 +67,7 @@
     "answer": 1
   },
   "questions_waiting": [],
-  "questions_date": "20261121",
-  "beings_since": [
-    {
-      "time": "2026-11-22T06:00:23+00:00",
-      "kind": "fog",
-      "text": "It woke you in the night. The fog thickens in the courtyard. Something blinks in the mist. Then you see it: a bank of fog with eyes in it, opening and closing, edging toward the light. You chose to watch (I stay near the fire and watch the mist.). You watch. The fog thickens against the stone, pressing its many eyes flat against the cold wall. In this weather it doesn't work the way it should. You chose to hide (I bar the door with a broken plank and sit close to the fire.). You shelter, but outside it does as it likes. It thins at the shut window until only the eyes remain, watching the firelight from the rain. The eyes blink slowly, and the fog drifts down the hill, gone. In this weather it doesn't work the way it should."
-    }
-  ],
+  "questions_date": "20261122",
+  "beings_since": [],
   "last_encounter": "2026-11-22T06:01:48+00:00"
 }

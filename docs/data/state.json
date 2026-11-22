@@ -30,42 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 34,
-    "last_wake": "2026-11-22T11:00:32+00:00",
+    "wakeups": 35,
+    "last_wake": "2026-11-22T13:01:33+00:00",
     "nights_slept_through": 12
   },
   "plan": {
-    "start": "2026-11-22T11:00:32+00:00",
-    "mood": "content",
-    "applied_until": "2026-11-22T12:30:23+00:00",
+    "start": "2026-11-22T13:01:32+00:00",
+    "mood": "restless",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
-        "emote": "zzz",
-        "note": "asleep for the night"
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Add export feature",
+        "thoughts": [
+          "CSV sounds useful"
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "exclaim",
+        "note": "Heat metal for hinge",
+        "thoughts": [
+          "Hope the iron holds"
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "Dry logs",
+        "thoughts": [
+          "Dry wood means warmer fire"
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "vigil",
+        "minutes": 20,
+        "emote": "heart",
+        "note": "Watch flames",
+        "thoughts": [
+          "Stone still stubborn"
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "The fire flickers, warm stone against my back.",
-      "time": "2026-11-22T12:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T13:00:26+00:00",
-    "place": "raise:3",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-22T13:01:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue constructing the bathhouse structure in the courtyard, focusing on framing and roof support",
-    "thought": "The bathhouse is only a quarter done. I need to keep adding the next beam and get the walls up before the rain seeps in."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
-    "warmth": 61.9,
+    "rest": 91.0,
+    "warmth": 68.6,
     "inspiration": 46.5,
-    "spirit": 69.8
+    "spirit": 72.8
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +101,7 @@
     "inspiration": 44.3,
     "spirit": 64.8
   },
-  "needs_at": "2026-11-22T13:00:26+00:00",
+  "needs_at": "2026-11-22T13:01:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -648,7 +676,7 @@
         "about": "a timber hut with a wooden tub and a stove",
         "place": "bathhouse",
         "plot": 3,
-        "done": 1,
+        "done": 2,
         "needed": 4,
         "kind": null,
         "look": null,
@@ -697,8 +725,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T12:30:23+00:00",
-    "seen_until": "2026-11-22T02:25:23+00:00"
+    "updated": "2026-11-22T13:01:33+00:00",
+    "seen_until": "2026-11-22T12:55:25+00:00"
   },
   "gifts": [],
   "gate": [
@@ -843,5 +871,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T13:00:26+00:00"
+  "exported": "2026-11-22T13:01:33+00:00"
 }

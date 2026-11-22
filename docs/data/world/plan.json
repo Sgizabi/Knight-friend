@@ -1,38 +1,45 @@
 {
-  "start": "2026-11-22T02:43:45+00:00",
-  "mood": "content",
+  "start": "2026-11-22T13:01:32+00:00",
+  "mood": "restless",
   "steps": [
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "Need to note the shim reset warning.",
-        "Hope the tooltip doesn't look sloppy."
-      ]
-    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
-      "note": "",
+      "emote": "spark",
+      "note": "Add export feature",
       "thoughts": [
-        "Maybe add an export button.",
-        "Will the wood stay dry tonight?"
+        "CSV sounds useful"
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "exclaim",
+      "note": "Heat metal for hinge",
+      "thoughts": [
+        "Hope the iron holds"
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "Dry logs",
+      "thoughts": [
+        "Dry wood means warmer fire"
       ]
     },
     {
       "place": "fire",
-      "action": "sit",
+      "action": "vigil",
       "minutes": 20,
-      "emote": "zzz",
-      "note": "",
+      "emote": "heart",
+      "note": "Watch flames",
       "thoughts": [
-        "Rain's still loud, but the fire's steady.",
-        "Time for a short rest before more code."
+        "Stone still stubborn"
       ]
     }
   ]
