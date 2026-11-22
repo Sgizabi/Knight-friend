@@ -349,7 +349,8 @@ CHARACTERS = {
         traits=["quick", "careful", "many", "mapping"],
         drives=["mapping the land", "sweeping the plain with light", "watching him from a distance"],
         signs=["thin beams of light sweeping the plain", "three or four quick lights moving in a line across the hills"],
-        looks="three or four slim, quick beings of glassy light with light for eyes, sweeping the land with beams",
+        looks="three or four slim, quick beings of glassy light that come down a craft's beam and scatter over the land, running "
+              "on their toes from place to place and stopping to sweep the ground with beams from their faces",
         tell="their beams stop on whatever interests them", likes=["map", "show", "wave", "light", "gift"],
         danger=0, gifts=["a map of the keep drawn in light on the flagstones, gone by morning"], trace="lines of light on the plain, fading"),
     "glassy3": B(
@@ -362,8 +363,10 @@ CHARACTERS = {
     "glassy4": B(
         traits=["regal", "luminous", "curious", "calm"],
         drives=["to see the keep with its own eyes", "to meet whoever its people spoke of"],
-        signs=["the whole sky over the plain brightens", "a great craft settles slowly, with attendants already on the ground"],
-        looks="a tall, luminous being with a crest of light, attendants around it, walking toward the keep",
+        signs=["a vast craft eases into the sky over the plain, so big the stars go out behind it",
+               "beams of light come down from it onto the plain, one after another, and in each someone stands"],
+        looks="a tall, luminous being with a crest of light, walking toward the keep between two lines of waiting attendants, "
+              "a great craft settled behind it and a far vaster one hanging in the sky over the plain",
         tell="its crest brightens when it is pleased", likes=["welcome", "bow", "gift", "show", "respect"],
         danger=0, gifts=["a gift from their people"], trace="a great scorched circle on the plain"),
 }
