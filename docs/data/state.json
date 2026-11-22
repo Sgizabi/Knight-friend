@@ -91,18 +91,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-22T17:00:26+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-22T17:00:30+00:00",
+    "place": "raise:3",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "Add the export feature for the shim summary and confirm dialog for reset, then finish the remaining construction.",
+    "thought": "The rain's still tapping, the joint is firm, and the shim list needs that export button."
   },
   "needs": {
-    "rest": 77.3,
-    "warmth": 83.3,
+    "rest": 78.0,
+    "warmth": 83.8,
     "inspiration": 48.2,
-    "spirit": 72.1
+    "spirit": 71.6
   },
   "needs_prev": {
     "rest": 77.3,
@@ -110,7 +110,7 @@
     "inspiration": 48.2,
     "spirit": 72.1
   },
-  "needs_at": "2026-11-22T17:00:26+00:00",
+  "needs_at": "2026-11-22T17:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -880,5 +880,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T17:00:26+00:00"
+  "exported": "2026-11-22T17:00:30+00:00"
 }
