@@ -1,9 +1,9 @@
 {
-  "awake": false,
-  "since": "2026-11-22T05:00:24+00:00",
-  "place": "bedroll",
-  "action": "sleep",
-  "emote": "zzz",
-  "note": "asleep for the night",
-  "thought": ""
+  "awake": true,
+  "since": "2026-11-22T06:00:25+00:00",
+  "place": "window",
+  "action": "gaze",
+  "emote": "exclaim",
+  "note": "I stay near the fire and watch the mist.",
+  "thought": "Something flickers. I want to see what it is."
 }

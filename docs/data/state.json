@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 34,
-    "last_wake": "2026-11-22T02:43:45+00:00",
-    "nights_slept_through": 8
+    "last_wake": "2026-11-22T05:00:23+00:00",
+    "nights_slept_through": 9
   },
   "plan": {
     "start": "2026-11-22T05:00:23+00:00",
     "mood": "content",
-    "applied_until": "2026-11-22T05:00:23+00:00",
+    "applied_until": "2026-11-22T06:00:23+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -49,27 +49,27 @@
     ]
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-22T05:00:24+00:00",
-    "place": "bedroll",
-    "action": "sleep",
-    "emote": "zzz",
-    "note": "asleep for the night",
-    "thought": ""
+    "awake": true,
+    "since": "2026-11-22T06:00:25+00:00",
+    "place": "window",
+    "action": "gaze",
+    "emote": "exclaim",
+    "note": "I stay near the fire and watch the mist.",
+    "thought": "Something flickers. I want to see what it is."
   },
   "needs": {
+    "rest": 41.1,
+    "warmth": 82.9,
+    "inspiration": 16.3,
+    "spirit": 85.6
+  },
+  "needs_prev": {
     "rest": 26.1,
     "warmth": 85.9,
     "inspiration": 12.0,
     "spirit": 87.5
   },
-  "needs_prev": {
-    "rest": 24.9,
-    "warmth": 85.4,
-    "inspiration": 12.0,
-    "spirit": 88.5
-  },
-  "needs_at": "2026-11-22T05:00:24+00:00",
+  "needs_at": "2026-11-22T06:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -761,6 +761,12 @@
         "end": "2026-11-23T11:30:45+00:00",
         "kind": "fog",
         "intensity": 0.63
+      },
+      {
+        "start": "2026-11-23T11:30:45+00:00",
+        "end": "2026-11-23T13:26:22+00:00",
+        "kind": "storm",
+        "intensity": 0.7
       }
     ],
     "effects": {
@@ -842,5 +848,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T05:00:24+00:00"
+  "exported": "2026-11-22T06:00:25+00:00"
 }
