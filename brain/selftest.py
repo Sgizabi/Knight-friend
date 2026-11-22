@@ -213,6 +213,16 @@ __import__("os").environ.pop("KNIGHT_CREATURES")
 if _old is not None:
     __import__("os").environ["KNIGHT_CREATURES"] = _old
 
+# small life about the keep: fair, the same for anyone who asks, never out of season
+import animals  # noqa: E402
+_sch = {"periods": []}
+_h = _dt.datetime(2026, 7, 1, 23, tzinfo=_dt.timezone.utc)                # 6 pm in July
+assert animals.about(_sch, _h) == animals.about(_sch, _h + _dt.timedelta(minutes=40))
+assert all(not set(animals.about(_sch, _dt.datetime(2026, 1, 10, h, tzinfo=_dt.timezone.utc))) & {"butterflies", "bats", "songbirds"} for h in range(24))
+_seen = {k for d in range(60) for h in range(24) for k in animals.about(_sch, _dt.datetime(2026, 6, 1, tzinfo=_dt.timezone.utc) + _dt.timedelta(days=d, hours=h))}
+assert _seen == set(animals.KINDS), _seen                                  # in a summer, every one of them turns up
+assert len(animals.export(_sch, _h)) == animals.SLOTS and animals.line({"periods": [{"start": "2000-01-01T00:00:00+00:00", "end": "2100-01-01T00:00:00+00:00", "kind": "storm"}]}, _h) in ("", animals.line({"periods": [{"start": "2000-01-01T00:00:00+00:00", "end": "2100-01-01T00:00:00+00:00", "kind": "storm"}]}, _h))
+
 # encounters: fair rules, the floor, damage that never destroys, arcs and slow presences
 import beings  # noqa: E402
 import encounters  # noqa: E402

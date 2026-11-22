@@ -5452,6 +5452,24 @@ const BEASTS = {
       };
     },
   },
+
+  // ================================================================ SMALL LIFE (the animals: brain/animals.py says who is about)
+  animals: {
+    name: 'Small life', hour: 13,
+    blurb: 'The ordinary animals about the keep, decided hour by hour by the time of day, the season and the weather: crows on the walls, small birds in the dead tree, hares on the plain, deer at the forest edge, butterflies in summer, an owl and bats at night, a fox on the plain, fish in the lake, and now and then a stray cat. They shy away from anything big or hostile, and from the knight if he comes close.',
+    view: [[-6, 2.6, 6], [-11, 1.2, -2]],
+    variants: [['crows', 'crows'], ['songbirds', 'small birds'], ['hares', 'hares'], ['deer', 'deer'], ['butterflies', 'butterflies'], ['owl', 'an owl'], ['bats', 'bats'], ['fox', 'a fox'], ['fish', 'fish'], ['cat', 'a stray cat']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'dots', note: 'watching the animals' },
+    build(root) {
+      const kind = root.userData.appearance?.variant?.kind || 'crows';
+      const VIEW = { crows: [[-9, 2.4, 3], [-11, 1.4, -4]], songbirds: [[-6.6, 1.6, .6], [-8.8, 1.3, -1.6]], hares: [[-2, 2, 8.5], [2, .4, 15]], deer: [[-21, 2, 6], [-31, 1.1, 2]],
+        butterflies: [[-7.5, 1.6, 3], [-11, .9, 0]], owl: [[-7, 1.9, .2], [-8.85, 2.4, -2.15]], bats: [[-9, 1.6, 7], [-6, 5, 0]], fox: [[-12, 2.2, 3.5], [-10, .3, 9]], fish: [[18, 2.5, 13], [26, -.3, 22]], cat: [[-9.5, 1.9, -1.2], [-11, 1.3, -4.3]] };
+      const [[cx, cy, cz], [tx, ty, tz]] = VIEW[kind];                   // (heights above the ground there: the land is not flat)
+      this.view = [[cx, Math.max(cy, gy(cx, cz) + 1.6), cz], [tx, gy(tx, tz) + Math.max(.4, ty - gy(tx, tz) > 0 ? ty - Math.max(0, gy(tx, tz)) : .6), tz]];
+      this.hour = { owl: 22, bats: 18, fox: 22, deer: 18, hares: 18 }[kind] ?? 13;
+      return ANIMALS[kind](root, { scared: () => false });
+    },
+  },
 };
 // ------------------------------------------------------------------ the visiting peoples
 // THE TIDEKIN: smooth otter-and-newt folk of the lake, dark green-bronze with pale bellies, who carry
@@ -5748,6 +5766,261 @@ function abyssScatter(parent, pos, deep, seed) {
     halo.material.opacity = (deep ? .55 : .42) * (E.mood === 2 ? 1.25 : 1);
     if (sh) skin.opacity = .6 + .25 * Math.abs(Math.sin(t * 1.3 + Math.sin(t * 3.7)));
   } };
+}
+
+// ------------------------------------------------------------------ small life (brain/animals.py says who is about)
+// Ordinary animals, made like everything else here. Each kind is a few of them with simple habits;
+// all of them shy away (fly off, bolt into cover) when something big or hostile is about, or when
+// the knight comes close, and drift back once it is calm. o.scared() says whether to. Each build
+// returns a tick.
+function bird(parent, o = {}) {   // a small bird: body, head, beak, tail, two wings that fold or beat
+  const s = o.s || 1, body = A.mat(o.body || '#1a1a1d', 0, .8), belly = A.mat(o.belly || o.body || '#1a1a1d', 0, .8), beakM = A.mat(o.beak || '#2a2622', .2, .6);
+  const g = G(parent), b = G(g); b.scale.setScalar(s);
+  P(b, A.ico(.07, 1), body, [0, .07, 0], { scale: [.85, .8, 1.45], cast: false });
+  P(b, A.ico(.055, 0), belly, [0, .055, .03], { scale: [.8, .7, 1.1], cast: false });
+  const head = G(b, [0, .12, .08]); P(head, A.ico(.045, 1), body, [0, 0, 0], { cast: false });
+  P(head, new T.ConeGeometry(.014, o.long ? .07 : .045, 4), beakM, [0, -.004, .05], { rot: [Math.PI / 2, 0, 0], cast: false });
+  P(b, A.box(.05, .012, .09), body, [0, .08, -.11], { rot: [.3, 0, 0], cast: false });
+  const wings = [-1, 1].map(sx => { const w = G(b, [sx * .05, .1, 0]); P(w, A.box(.12, .008, .07), body, [sx * .06, 0, -.01], { cast: false }); return w; });
+  return { g, b, head, wings };
+}
+function beast(parent, o) {   // a four-legged animal: body, neck and head, ears, legs that swing, a tail
+  const k = o.k, coat = A.mat(o.coat, 0, .9), dark = A.mat(o.dark || o.coat, 0, .9), pale = A.mat(o.pale || o.coat, 0, .9);
+  const g = G(parent), body = G(g, [0, o.legH * k, 0]);
+  P(body, A.ico(.5 * k, 1), coat, [0, 0, 0], { scale: o.bodyS, jitter: .01 * k });
+  if (o.pale) P(body, A.ico(.42 * k, 1), pale, [0, -.08 * k, .05 * k], { scale: [o.bodyS[0] * .8, o.bodyS[1] * .6, o.bodyS[2] * .8], cast: false });
+  const neck = G(body, [0, o.neckAt[0] * k, o.neckAt[1] * k]), head = G(neck, [0, o.neckLen * k, .05 * k]);
+  if (o.neckLen > .05) bone(neck, [0, 0, 0], [0, o.neckLen * k, .05 * k], o.neckR * k, o.neckR * .8 * k, coat, 6, .003);
+  P(head, A.ico(o.headR * k, 1), coat, [0, 0, 0], { scale: o.headS, cast: false });
+  P(head, A.ico(o.headR * .55 * k, 0), dark, [0, -o.headR * .25 * k, o.headR * 1.1 * k], { scale: [.8, .75, 1.3], cast: false });   // muzzle
+  const ears = [-1, 1].map(sx => { const e = G(head, [sx * o.headR * .55 * k, o.headR * .7 * k, -o.headR * .1 * k]); P(e, new T.ConeGeometry(o.earW * k, o.earL * k, 4), o.earM ? A.mat(o.earM, 0, .9) : coat, [0, o.earL * .5 * k, 0], { scale: [1, 1, .45], cast: false }); e.rotation.z = -sx * (o.earOut || .2); return e; });
+  if (o.antlers) for (const sx of [-1, 1]) { bone(head, [sx * .06 * k, o.headR * .8 * k, 0], [sx * .2 * k, o.headR * 2.6 * k, -.08 * k], .015 * k, .01 * k, A.M.woodL, 4); bone(head, [sx * .14 * k, o.headR * 1.9 * k, -.05 * k], [sx * .27 * k, o.headR * 2.3 * k, .06 * k], .01 * k, .006 * k, A.M.woodL, 4); }
+  const legs = [[-1, 1], [1, 1], [-1, -1], [1, -1]].map(([sx, sz], i) => { const l = G(body, [sx * o.legX * k, -.05 * k, sz * o.legZ * k]); bone(l, [0, 0, 0], [0, -o.legH * k * 1.02, 0], o.legR * k, o.legR * .65 * k, i < 2 ? coat : dark, 5, .002); return l; });
+  const tail = G(body, [0, o.tailAt[0] * k, o.tailAt[1] * k]); bone(tail, [0, 0, 0], [0, o.tailV[0] * k, o.tailV[1] * k], o.tailR * k, o.tailR * .5 * k, o.tailM ? A.mat(o.tailM, 0, .9) : coat, 5, .003);
+  g.traverse(m => { if (m.isMesh) m.castShadow = o.k > .5; });
+  return { g, body, neck, head, ears, legs, tail, k };
+}
+// walking about on the ground: a little mover for the animals (speeds up, slows, turns, legs by distance)
+function critter(f, x, z, yaw = 0) {
+  const c = { f, x, z, yaw, v: 0, ph: Math.random() * 6, px: x, pz: z };
+  c.to = (tx, tz, vmax, dt, acc = 3) => { const dx = tx - c.x, dz = tz - c.z, d = Math.hypot(dx, dz), want = Math.min(vmax, Math.sqrt(2 * acc * Math.max(0, d - .02)));
+    c.v += Math.max(-acc * dt * 2, Math.min(acc * dt, want - c.v)); if (d > .02 && c.v > 0) { const st = Math.min(d, c.v * dt); c.x += dx / d * st; c.z += dz / d * st; }
+    if (d > .1) { let dy = Math.atan2(dx, dz) - c.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); c.yaw += dy * (1 - Math.exp(-dt * 6)); } return d; };
+  c.place = (dt, stride, swing, yOff = 0) => { const moved = Math.hypot(c.x - c.px, c.z - c.pz); c.px = c.x; c.pz = c.z; c.ph += moved / stride * Math.PI;
+    const amp = Math.min(1, moved / Math.max(dt, 1e-3) / 1.2); f.legs?.forEach((l, i) => { l.rotation.x = Math.sin(c.ph + (i === 0 || i === 3 ? 0 : Math.PI)) * swing * amp; });
+    f.g.position.set(c.x, gy(c.x, c.z) + yOff, c.z); f.g.rotation.y = c.yaw; return amp; };
+  return c;
+}
+const ANIMALS = {
+  // crows: hopping along the wall tops, pecking, cawing; up and away, circling, when scared
+  crows(root, o) {
+    const PERCH = [[-15.5, 1.22, -4.3], [-12.6, 1.22, -4.3], [-9.6, 1.22, -4.3], [-7, 1.22, -4.3], [-17.2, 1.12, -1.5], [-17.2, 1.12, 2.4], [-3.2, 4.22, -4.3], [1.4, 4.22, -4.3], [3.8, 4.22, 4.3]];
+    const n = 4 + Math.floor(Math.random() * 3);
+    const cs = Array.from({ length: n }, (_, i) => { const b = bird(root, { s: 1.7, body: '#141417', beak: '#1e1c1c' }); const p = PERCH[(i * 2) % PERCH.length]; return { b, at: p.slice(), from: p.slice(), to: null, fly: 0, next: 2 + Math.random() * 6, ph: Math.random() * 9, out: 0, x: p[0] + (Math.random() - .5), yaw: Math.random() * 6 }; });
+    return (t, dt) => {
+      const sc = o.scared();
+      for (const c of cs) {
+        c.out += ((sc ? 1 : 0) - c.out) * (1 - Math.exp(-dt * (sc ? 3 : .15)));
+        if (!c.to && t > c.next) { const p = PERCH[Math.floor(Math.random() * PERCH.length)]; c.from = [c.x, c.at[1], c.at[2]]; c.to = p; c.fly = 0; }
+        let x = c.x, y = c.at[1], z = c.at[2], flying = false;
+        if (c.to) { c.fly += dt / 2.2; const u = smooth(0, 1, c.fly); x = c.from[0] + (c.to[0] + (c.ph % 1 - .5) - c.from[0]) * u; z = c.from[2] + (c.to[2] - c.from[2]) * u; y = c.from[1] + (c.to[1] - c.from[1]) * u + Math.sin(u * Math.PI) * 2.5; flying = true;
+          if (c.fly >= 1) { c.at = c.to.slice(); c.x = x; c.to = null; c.next = t + 4 + Math.random() * 9; } c.yaw = Math.atan2(c.to ? c.to[0] - c.from[0] : 0, c.to ? c.to[2] - c.from[2] : 1); }
+        else { const hop = pulse(t + c.ph, 3.3, .25); c.x += Math.sin(c.yaw) * hop * dt * .6; x = c.x; y += hop * .05; if (pulse(t + c.ph, 7, .1) > .9) c.yaw += (Math.random() - .5) * 2; }
+        // scared: up and away in a wide circle, gone over the hills
+        const a = t * .5 + c.ph, R = 6 + c.out * 30;
+        x = x * (1 - c.out) + (-8 + Math.cos(a) * R) * c.out; z = z * (1 - c.out) + (Math.sin(a) * R) * c.out; y = y * (1 - c.out) + (8 + c.out * 10 + Math.sin(a * 2) * 2) * c.out;
+        if (c.out > .05) { flying = true; c.yaw = a + Math.PI / 2; }
+        c.b.g.position.set(x, y, z); c.b.g.rotation.y = c.yaw; c.b.g.visible = c.out < .97;
+        const flap = flying ? Math.sin(t * 22 + c.ph) * .9 : 0;
+        c.b.wings.forEach((w, s) => { w.rotation.z = (s ? -1 : 1) * flap; });
+        c.b.b.rotation.x = flying ? -.15 : pulse(t + c.ph * 2, 4.1, .35) * .7;        // pecking
+        c.b.head.rotation.x = !flying && pulse(t + c.ph, 9, .6) > .2 ? -.5 : 0;         // a caw: head up, beak to the sky
+      }
+    };
+  },
+  // songbirds: small and bright, flitting between the dead tree and the ground below it
+  songbirds(root, o) {
+    const TREE = [-8.8, -2.2], cols = [['#7a5a3a', '#c8562e'], ['#6a6a3a', '#d8c24a'], ['#5a5248', '#c9b8a0'], ['#4a5a6a', '#d0d8e0']];
+    const bs = Array.from({ length: 4 + Math.floor(Math.random() * 2) }, (_, i) => { const [b0, b1] = cols[i % cols.length]; const b = bird(root, { s: .8, body: b0, belly: b1, beak: '#3a3020' }); return { b, p: null, q: null, u: 1, next: Math.random() * 3, ph: Math.random() * 9 }; });
+    const spot = () => Math.random() < .55 ? [TREE[0] + (Math.random() - .5) * 1.4, 1.3 + Math.random() * 1.1, TREE[1] + (Math.random() - .5) * 1.4] : [TREE[0] + (Math.random() - .5) * 4, .02, TREE[1] + 1 + Math.random() * 2.2];
+    let gone = 0;
+    return (t, dt) => {
+      gone += ((o.scared() ? 1 : 0) - gone) * (1 - Math.exp(-dt * (o.scared() ? 4 : .2)));
+      for (const s of bs) {
+        if (!s.p) { s.p = spot(); s.q = s.p; }
+        if (s.u >= 1 && t > s.next) { s.p = s.q; s.q = spot(); s.u = 0; }
+        s.u = Math.min(1, s.u + dt / .7); const u = smooth(0, 1, s.u);
+        const x = s.p[0] + (s.q[0] - s.p[0]) * u, z = s.p[2] + (s.q[2] - s.p[2]) * u, y = s.p[1] + (s.q[1] - s.p[1]) * u + Math.sin(u * Math.PI) * .5;
+        if (s.u >= 1 && s.next < t) s.next = t + 1 + Math.random() * 4;
+        const fl = s.u < 1;
+        s.b.g.position.set(x + gone * 10, y + gone * 12, z - gone * 6); s.b.g.visible = gone < .95;
+        if (fl) s.b.g.rotation.y = Math.atan2(s.q[0] - s.p[0], s.q[2] - s.p[2]);
+        s.b.wings.forEach((w, k) => { w.rotation.z = (k ? -1 : 1) * (fl || gone > .05 ? Math.sin(t * 34 + s.ph) * 1 : 0); });
+        s.b.b.rotation.x = !fl && s.q[1] < .1 ? pulse(t + s.ph, 1.7, .2) * .8 : 0; s.b.head.rotation.y = Math.sin(t * 1.3 + s.ph) * .6 * (fl ? 0 : 1);
+      }
+    };
+  },
+  // hares: grazing on the plain, a few hops at a time, sitting up with ears high; bolting when scared
+  hares(root, o) {
+    const hs = Array.from({ length: 2 + Math.floor(Math.random() * 2) }, (_, i) => {
+      const f = beast(root, { k: .38, coat: '#8a7458', dark: '#6a5640', pale: '#cdbfa6', bodyS: [.62, .62, 1.05], legH: .28, legX: .16, legZ: .26, legR: .07, neckAt: [.18, .42], neckLen: .05, neckR: .1, headR: .26, headS: [.85, .9, 1.15], earW: .07, earL: .7, earOut: .1, tailAt: [.08, -.52], tailV: [.06, -.08], tailR: .1, tailM: '#efe8dc' });
+      const x = -4 + i * 5 + Math.random() * 3, z = 13 + Math.random() * 5;
+      return { f, c: critter(f, x, z, Math.random() * 6), home: [x, z], tx: x, tz: z, next: 0, sit: 0, ph: Math.random() * 9 };
+    });
+    return (t, dt) => {
+      const sc = o.scared(o.near?.(hs[0].c.x, hs[0].c.z, 7));
+      for (const h of hs) {
+        if (sc) { h.tx = h.home[0] + 30; h.tz = h.home[1] + 25; }
+        else if (t > h.next) { h.tx = h.home[0] + (Math.random() - .5) * 6; h.tz = h.home[1] + (Math.random() - .5) * 5; h.next = t + 3 + Math.random() * 6; h.sit = Math.random() < .35 ? t + 1.5 : 0; }
+        const d = h.c.to(h.tx, h.tz, sc ? 7 : 1.6, dt, sc ? 12 : 6);
+        const amp = h.c.place(dt, .5, 1.0), hop = Math.abs(Math.sin(h.c.ph)) * .12 * amp;
+        h.f.g.position.y += hop; h.f.body.rotation.x = -amp * .25;
+        const up = d < .1 && h.sit && t > h.sit && t < h.sit + 3 ? 1 : 0;           // sitting up to look about
+        h.f.body.rotation.x += -up * .7; h.f.head.rotation.x = up ? -.3 : d < .1 ? .5 + pulse(t + h.ph, 2.3, .6) * .3 : 0;   // or head down, grazing
+        h.f.ears.forEach(e => { e.rotation.x = up || sc ? -.1 : .5; });
+        h.f.g.visible = Math.hypot(h.c.x - h.home[0], h.c.z - h.home[1]) < 26;
+      }
+    };
+  },
+  // deer: at the forest edge at dawn and dusk; grazing, heads up to listen, a slow walk; into the trees when scared
+  deer(root, o) {
+    const n = 2 + Math.floor(Math.random() * 3), base = [-31, -2 + Math.random() * 8];
+    const ds = Array.from({ length: n }, (_, i) => {
+      const fawn = i === n - 1 && n > 2, stag = i === 0 && Math.random() < .4, k = fawn ? .5 : stag ? .95 : .85;
+      const f = beast(root, { k, coat: '#7a5a3a', dark: '#4a3826', pale: fawn ? '#a8845a' : '#c8b08a', bodyS: [.5, .62, 1.75], legH: .85, legX: .15, legZ: .62, legR: .065, neckAt: [.25, .78], neckLen: .62, neckR: .12, headR: .16, headS: [.8, .85, 1.6], earW: .06, earL: .2, earOut: .7, tailAt: [.12, -.58], tailV: [-.08, -.1], tailR: .06, tailM: '#efe8dc', antlers: stag });
+      const x = base[0] + (Math.random() - .5) * 5, z = base[1] + i * 1.8;
+      return { f, c: critter(f, x, z, Math.PI / 2 + (Math.random() - .5)), home: [x, z], tx: x, tz: z, next: 0, ph: Math.random() * 9, alert: 0 };
+    });
+    return (t, dt) => {
+      const sc = o.scared(o.near?.(ds[0].c.x, ds[0].c.z, 9));
+      for (const d of ds) {
+        if (sc) { d.tx = d.home[0] - 18; d.tz = d.home[1] + (d.ph - 4.5); }
+        else if (t > d.next) { d.tx = d.home[0] + (Math.random() - .5) * 5; d.tz = d.home[1] + (Math.random() - .5) * 4; d.next = t + 6 + Math.random() * 10; }
+        const dist = d.c.to(d.tx, d.tz, sc ? 6 : .7, dt, sc ? 8 : 2);
+        const amp = d.c.place(dt, sc ? 1.4 : .7, sc ? .8 : .45);
+        if (sc) d.f.g.position.y += Math.abs(Math.sin(d.c.ph)) * .25 * amp;
+        d.alert = pulse(t + d.ph, 13, 3.5);                                // now and then the head comes up to listen
+        d.f.neck.rotation.x = dist < .1 && !sc ? 1.3 * (1 - d.alert) : -.1;
+        d.f.head.rotation.y = d.alert * Math.sin(t * .8 + d.ph) * .6; d.f.ears.forEach((e, k) => { e.rotation.y = d.alert * (k ? -1 : 1) * .5; });
+        d.f.tail.rotation.x = sc ? -1 : Math.sin(t * 3 + d.ph) * .2;
+        d.f.g.visible = Math.hypot(d.c.x - d.home[0], d.c.z - d.home[1]) < 15;
+      }
+    };
+  },
+  // butterflies: a few, fluttering over the courtyard on wandering paths
+  butterflies(root, o) {
+    const cols = ['#e8c040', '#e0e0d8', '#d87830', '#8aa0e0', '#e8a0c0'];
+    const bs = Array.from({ length: 6 }, (_, i) => {
+      const g = G(root), m = new T.MeshStandardMaterial({ color: cols[i % cols.length], side: T.DoubleSide, roughness: .8, flatShading: true });
+      const wings = [-1, 1].map(sx => { const w = G(g); sheet(w, [[0, 0, -.03], [sx * .07, .01, -.05], [sx * .08, 0, .03], [0, 0, .02]], [[0, 1, 2], [0, 2, 3]], m); return w; });
+      P(g, A.cyl(.005, .005, .06, 4), A.mat('#1a1610'), [0, 0, 0], { rot: [Math.PI / 2, 0, 0], cast: false });
+      return { g, wings, ph: i * 1.7, cx: -16 + Math.random() * 10, cz: -3 + Math.random() * 6 };
+    });
+    return (t, dt) => {
+      const gone = o.scared() ? 1 : 0;
+      for (const b of bs) {
+        const a = t * .35 + b.ph, x = b.cx + Math.sin(a) * 2.5 + Math.sin(a * 2.3) * .8, z = b.cz + Math.cos(a * .8) * 2 + Math.sin(a * 1.7) * .6, y = .5 + Math.abs(Math.sin(a * 1.9)) * 1.2 + Math.sin(t * 6 + b.ph) * .05;
+        b.g.position.set(x, y, z); b.g.rotation.y = a + Math.PI / 2; b.g.visible = !gone;
+        b.wings.forEach((w, k) => { w.rotation.z = (k ? -1 : 1) * (.2 + Math.abs(Math.sin(t * 16 + b.ph)) * 1.1); });
+      }
+    };
+  },
+  // an owl in the dead tree at night: its head turning right round, slow blinks; now and then a silent circle out over the courtyard
+  owl(root, o) {
+    const b = bird(root, { s: 2.6, body: '#6a5a46', belly: '#b8a888', beak: '#2a2418' }), T0 = [-8.85, 2.25, -2.15];
+    b.b.scale.set(2.6, 3.1, 2.4);
+    const eyes = [-1, 1].map(sx => P(b.head, A.ico(.012, 1), glow('#f0c040', 1.4), [sx * .02, .005, .04], { cast: false, jitter: 0 }));
+    let fly = -1, next = 25 + Math.random() * 30;
+    return (t, dt) => {
+      const sc = o.scared();
+      if (fly < 0 && (t > next || sc)) fly = 0;
+      let x = T0[0], y = T0[1], z = T0[2];
+      if (fly >= 0) { fly += dt / 9; const a = fly * 6.283; x += Math.sin(a) * 7; z += (1 - Math.cos(a)) * 4; y += Math.sin(fly * Math.PI) * 3;
+        b.g.rotation.y = a + Math.PI / 2; if (fly >= 1 && !sc) { fly = -1; next = t + 40 + Math.random() * 40; } }
+      b.g.position.set(x, y, z); b.g.visible = !(sc && fly > .3 && fly < .7) || !sc;
+      b.wings.forEach((w, s) => { w.rotation.z = (s ? -1 : 1) * (fly >= 0 ? Math.sin(t * 5) * .8 + .2 : 0); });
+      if (fly < 0) { b.head.rotation.y = Math.sin(t * .23) * 1.6 + (pulse(t, 17, 1.5) > .5 ? 2.6 : 0) * .4; }   // the head turns, and turns, nearly right round
+      const blink = pulse(t, 5.3, .25) > .3; eyes.forEach(e => { e.scale.y = blink ? .1 : 1; });
+    };
+  },
+  // bats at dusk: quick, jinking flight over the keep and courtyard
+  bats(root, o) {
+    const m = A.mat('#1a1418', 0, .8);
+    const bs = Array.from({ length: 7 }, (_, i) => { const g = G(root); P(g, A.ico(.035, 0), m, [0, 0, 0], { scale: [1, .9, 1.4], cast: false });
+      const wings = [-1, 1].map(sx => { const w = G(g); sheet(w, [[0, 0, -.03], [sx * .12, .02, -.05], [sx * .16, 0, .02], [0, 0, .03]], [[0, 1, 2], [0, 2, 3]], m); return w; }); return { g, wings, ph: i * 2.3 }; });
+    return (t, dt) => {
+      const gone = o.scared();
+      for (const b of bs) {
+        const a = t * .9 + b.ph, j = Math.sin(t * 7 + b.ph) * .5;
+        b.g.position.set(-6 + Math.sin(a) * 8 + Math.sin(a * 3.1) * 1.5, 5 + Math.sin(a * 1.7) * 1.5 + j * .3, Math.cos(a * 1.3) * 5 + Math.cos(a * 2.7) * 1.2);
+        b.g.rotation.y = a * 1.3 + j; b.g.visible = !gone;
+        b.wings.forEach((w, k) => { w.rotation.z = (k ? -1 : 1) * Math.sin(t * 26 + b.ph) * 1.1; });
+      }
+    };
+  },
+  // a fox at night: out along the road and the plain, nose down, stopping to listen, sitting to look at the keep
+  fox(root, o) {
+    const f = beast(root, { k: .5, coat: '#b0602a', dark: '#2a1e18', pale: '#ece2d0', bodyS: [.5, .5, 1.25], legH: .42, legX: .14, legZ: .4, legR: .05, neckAt: [.12, .5], neckLen: .18, neckR: .14, headR: .2, headS: [.95, .85, 1.3], earW: .08, earL: .26, earOut: .15, tailAt: [.05, -.6], tailV: [0, -.95], tailR: .17 });
+    const ROUTE = [[-30, 8], [-20, 9.5], [-10, 8.8], [0, 9.4], [9, 13], [14, 18], [4, 20], [-8, 17], [-22, 14]];
+    const c = critter(f, ROUTE[0][0], ROUTE[0][1]); let i = 1, wait = 0, sitT = -9;
+    return (t, dt) => {
+      const sc = o.scared(o.near?.(c.x, c.z, 6));
+      const p = sc ? [c.x + Math.sin(c.yaw) * 30, c.z + Math.cos(c.yaw) * 30] : ROUTE[i % ROUTE.length];
+      if (!sc && t < wait) { c.to(c.x, c.z, 0, dt); } else { const d = c.to(p[0], p[1], sc ? 6 : 1.1, dt, sc ? 10 : 3); if (d < .3 && !sc) { i++; wait = t + (Math.random() < .5 ? 3 + Math.random() * 4 : 0); sitT = wait > t + 4 ? t : -9; } }
+      const amp = c.place(dt, .45, .6);
+      const sit = t - sitT < 6 ? smooth(0, .6, t - sitT) : 0;
+      f.body.rotation.x = -sit * .45; f.legs[2].rotation.x = f.legs[3].rotation.x = sit * -1.1 + (1 - sit) * f.legs[2].rotation.x;
+      f.neck.rotation.x = amp > .2 ? .5 : sit ? -.2 : .3; f.head.rotation.y = (1 - amp) * Math.sin(t * .7) * .7;
+      f.tail.rotation.x = -.35 + Math.sin(t * 2) * .1 - sit * .8;
+      f.g.visible = !sc || Math.hypot(c.x - p[0], c.z - p[1]) > 4;
+    };
+  },
+  // fish rising in the lake: rings spreading on the water, and now and then one jumps
+  fish(root, o) {
+    const LK = [27, 23], LV = -.35, m = A.mat('#8a9aa0', .4, .4), ringM = () => new T.MeshBasicMaterial({ color: '#dfeaf0', transparent: true, opacity: 0, depthWrite: false });
+    const rings = Array.from({ length: 6 }, () => { const r = new T.Mesh(new T.RingGeometry(.9, 1, 24), ringM()); r.rotation.x = -Math.PI / 2; root.add(r); return { r, born: -9 }; });
+    const fishG = G(root); P(fishG, A.ico(.12, 1), m, [0, 0, 0], { scale: [.5, .6, 1.8], cast: false }); P(fishG, A.box(.01, .12, .1), m, [0, 0, -.22], { cast: false }); fishG.visible = false;
+    let next = 2, ri = 0, jump = null;
+    return (t, dt) => {
+      if (t > next) {
+        const a = Math.random() * 6.28, rr = Math.random() * 6, x = LK[0] + Math.cos(a) * rr, z = LK[1] + Math.sin(a) * rr * .8;
+        const r = rings[ri++ % rings.length]; r.r.position.set(x, LV + .02, z); r.born = t;
+        if (Math.random() < .35) jump = { x, z, t0: t, yaw: Math.random() * 6 };
+        next = t + 1.5 + Math.random() * 5;
+      }
+      rings.forEach(r => { const k = (t - r.born) / 3; r.r.visible = k < 1; if (k < 1) { r.r.scale.setScalar(.1 + k * 1.4); r.r.material.opacity = .6 * (1 - k); } });
+      if (jump) { const k = (t - jump.t0) / .9; fishG.visible = k < 1; if (k < 1) { fishG.position.set(jump.x + Math.sin(jump.yaw) * k * .8, LV + Math.sin(k * Math.PI) * .7, jump.z + Math.cos(jump.yaw) * k * .8); fishG.rotation.set(-(k - .5) * 2.2, jump.yaw, 0); } else jump = null; }
+    };
+  },
+  // a stray cat: along the courtyard wall top, sitting to wash, curling up to sleep in the sun; it does not care much about anything
+  cat(root, o) {
+    const coats = [['#3a3330', '#c8c0b4'], ['#c87a3a', '#f0e0c8'], ['#8a8680', '#e0dcd4'], ['#1c1a1a', '#1c1a1a']], [c0, c1] = coats[Math.floor(Math.random() * coats.length)];
+    const f = beast(root, { k: .38, coat: c0, dark: c0, pale: c1, bodyS: [.5, .52, 1.15], legH: .5, legX: .14, legZ: .38, legR: .06, neckAt: [.15, .5], neckLen: .1, neckR: .14, headR: .25, headS: [1, .9, .95], earW: .09, earL: .22, earOut: .25, tailAt: [.12, -.55], tailV: [0, .9], tailR: .06 });
+    const WALL = [[-16.4, 1.2, -4.3], [-6.2, 1.2, -4.3]], c = critter(f, -11, -4.3, Math.PI / 2);
+    let goal = -8, mode = 'walk', until = 0;
+    return (t, dt) => {
+      const sc = o.scared();
+      if (t > until) { const r = Math.random(); mode = r < .4 ? 'walk' : r < .7 ? 'wash' : 'sleep'; goal = WALL[0][0] + Math.random() * (WALL[1][0] - WALL[0][0]); until = t + (mode === 'sleep' ? 25 : 8) + Math.random() * 8; }
+      const d = c.to(sc ? WALL[0][0] - 3 : mode === 'walk' ? goal : c.x, WALL[0][2], sc ? 3 : .5, dt, 3);
+      c.z = WALL[0][2]; const amp = c.place(dt, .3, .5, 1.2);
+      const sit = mode === 'wash' && d < .1 ? 1 : 0, sleep = mode === 'sleep' && d < .1 ? 1 : 0;
+      f.body.rotation.x = -sit * .5; f.body.position.y = f.legs[0].position.y + (.5 - sleep * .3) * f.k;
+      f.legs.forEach(l => { l.visible = !sleep; });
+      f.head.rotation.set(sit ? .5 + Math.sin(t * 6) * .15 : sleep ? .5 : 0, sleep ? .6 : Math.sin(t * .4) * .4, 0);
+      f.tail.rotation.set(Math.sin(t * 1.3) * .3 + (sleep ? 1.4 : 0), 0, Math.sin(t * 2.1) * (sleep ? .05 : .4));
+      f.g.visible = !(sc && c.x < WALL[0][0] - 2);
+    };
+  },
+};
+// For the live keep: one kind of animal while it is about. o: { scared(near) } (the page says when to shy away;
+// near: whether the knight is close to a given spot, for the ground animals).
+export function spawnAnimals(kind, api, o = {}) {
+  T = api.THREE; A = api; A.mat = api.mat;
+  const make = ANIMALS[kind]; if (!make) return null;
+  const root = new T.Group(); A.scene.add(root);
+  const tick = make(root, { scared: o.scared || (() => false), near: o.near });
+  A.onTick.push(tick);
+  return { root, tick, remove() { const i = A.onTick.indexOf(tick); if (i >= 0) A.onTick.splice(i, 1); A.scene.remove(root); root.traverse(m => { if (m.isMesh) m.geometry?.dispose(); }); } };
 }
 
 const ORDER = Object.keys(BEASTS);

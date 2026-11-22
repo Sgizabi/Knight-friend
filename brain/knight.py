@@ -30,6 +30,7 @@ import letterbox  # noqa: E402
 import site_builder  # noqa: E402
 import visitors as visits  # noqa: E402
 import weather  # noqa: E402
+import animals  # noqa: E402
 import creatures  # noqa: E402
 import encounters  # noqa: E402
 import minds  # noqa: E402
@@ -497,7 +498,7 @@ class Knight:
         return [e.get("activity") for e in self.diary[-count:] if e.get("activity")]
 
     def context(self, encounter, letter):
-        parts = [f"It is {part_of_day()}. {weather.describe(self.sky)}", life.describe_needs(self.needs),
+        parts = [f"It is {part_of_day()}. {weather.describe(self.sky)} {animals.line(self.sky)}".strip(), life.describe_needs(self.needs),
                  life.describe_keep(self.keep)]
         if self.body["injuries"]:
             parts.append(encounters.describe_body(self.body))
@@ -1545,7 +1546,7 @@ class Knight:
                   f"Your voice: {sheet.get('voice', '')}\nWrite like yourself: plain and specific; no "
                   "narrator, no fantasy flourishes, no objects acting like people.")
         prompt = (
-            f"TASK: glance\n\nIt is {part_of_day()}. {weather.describe(self.sky)} Right now you're {doing}. Still to come: {coming}.\n"
+            f"TASK: glance\n\nIt is {part_of_day()}. {weather.describe(self.sky)} {animals.line(self.sky)} Right now you're {doing}. Still to come: {coming}.\n"
             f"{life.describe_needs(self.needs)}\n{encounters.describe_body(self.body)}\nYour mood: {plan.get('mood', '')}.\n"
             f"The last thing you wrote in your diary: {(self.diary[-1]['text'] if self.diary else '')[:300]}\n"
             + (f"Thoughts you've had lately (don't repeat them): {'; '.join(lately)}\n" if lately else "")

@@ -1766,7 +1766,7 @@ function applyState(next, fetched = false) {
   showDoorstep();   // gifts it brought in at its last wake-up are no longer waiting outside
   showCandles();
   updateSky();      // the weather may have changed with the new state
-  showBeings();     // and someone may have come, or gone
+  showBeings(); showAnimals();     // and someone may have come, or gone
 }
 
 // =====================================================================================
@@ -2383,6 +2383,7 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog,
   updateSky, visitorArrived,
   setCreatures(list, traces = []) { state = { ...(state || {}), creatures: { seeing: 4, current: list, traces } }; return showBeings().then(() => beings.size); },   // testing
   get tracesHere() { return [...traceMarks.keys()]; },
+  setAnimals(kinds) { const now = Date.now(); state = { ...(state || {}), animals: [{ start: new Date(now - 6e4).toISOString(), end: new Date(now + 36e5).toISOString(), kinds }] }; return showAnimals().then(() => [...animalMarks.keys()]); },   // testing
   get beingsHere() { return [...beings.keys()]; },
   setCandles: n => { liveCandles = { n, at: Date.now() }; state = { ...(state || {}), visits: { candles_tonight: n } }; showCandles(); },
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
@@ -2438,7 +2439,23 @@ function beingCaption(now) {
   if (told) return told.caption;
   return list.find(a => a.stance_says)?.stance_says || '';
 }
-beingsReady = true; showBeings(); setInterval(showBeings, 30000);
+// Small life (state.animals: who is about, an hour at a time; the same for everyone): drawn while it is
+// about. They shy away from anything hostile or proud that is here, and the ground animals from the
+// knight if he comes close.
+const animalMarks = new Map(), _av = new THREE.Vector3();
+const animalsScared = () => { const now = Date.now(); return (state?.creatures?.current || []).some(a => Date.parse(a.start) <= now && now < Date.parse(a.end) && ['hostile', 'proud'].includes(a.nature)); };
+async function showAnimals() {
+  if (CREATURE || !beingsReady) return;
+  const now = Date.now(), slot = (state?.animals || []).find(s => Date.parse(s.start) <= now && now < Date.parse(s.end)), want = new Set(slot?.kinds || []);
+  for (const [k, m] of animalMarks) if (!want.has(k)) { m?.remove(); animalMarks.delete(k); }
+  if (!want.size) return;
+  if (!creatureMod) creatureMod = await loadCreatures().catch(() => null);
+  if (!creatureMod?.spawnAnimals) return;
+  for (const k of want) if (!animalMarks.has(k)) animalMarks.set(k, creatureMod.spawnAnimals(k, creatureApi(), {
+    scared: near => animalsScared() || !!near,
+    near: (x, z, r) => { K.J.hips.getWorldPosition(_av); return Math.hypot(_av.x - x, _av.z - z) < r; } }));
+}
+beingsReady = true; showBeings(); showAnimals(); setInterval(() => { showBeings(); showAnimals(); }, 30000);
 </script>
 </body>
 </html>
