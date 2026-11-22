@@ -1,41 +1,46 @@
 {
-  "start": "2026-11-22T19:01:34+00:00",
+  "start": "2026-11-22T21:01:31+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "question",
+      "note": "Sort bolts and set aside dented metal",
       "thoughts": [
-        "Need to check the hinge alignment again"
+        "These bolts look like they survived a siege."
       ]
     },
     {
       "place": "forge",
-      "action": "stand",
+      "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "dots",
+      "note": "Tend bellows and check support beam",
       "thoughts": [
-        "Wonder if the new beam will hold the roof longer"
+        "Bellows still sigh like a lazy cat."
       ]
     },
     {
-      "place": "bathhouse",
+      "place": "courtyard",
       "action": "sit",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "heart",
+      "note": "Rest by the fire",
       "thoughts": [
-        "Warm water still feels good after the upgrade"
+        "Fire's heat is a bit too polite today."
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "exclaim",
+      "note": "Update inventory list with new metal piece",
+      "thoughts": [
+        "Need to note the dented metal for future use."
       ]
     }
-  ],
-  "applied_until": "2026-11-22T20:30:22+00:00",
-  "live_thought": {
-    "text": "The fire crackles, stone cold, I could stare a bit longer.",
-    "time": "2026-11-22T20:30:22+00:00"
-  }
+  ]
 }
