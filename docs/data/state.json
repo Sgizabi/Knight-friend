@@ -35,9 +35,9 @@
     "nights_slept_through": 9
   },
   "plan": {
-    "start": "2026-11-22T05:00:23+00:00",
+    "start": "2026-11-22T07:00:24+00:00",
     "mood": "content",
-    "applied_until": "2026-11-22T06:00:23+00:00",
+    "applied_until": "2026-11-22T07:00:24+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -46,34 +46,30 @@
         "emote": "zzz",
         "note": "asleep for the night"
       }
-    ],
-    "live_thought": {
-      "text": "Fog eyes felt like broken glass staring back.",
-      "time": "2026-11-22T06:01:48+00:00"
-    }
+    ]
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T06:01:48+00:00",
+    "since": "2026-11-22T07:00:24+00:00",
     "place": "bedroll",
     "action": "sleep",
     "emote": "zzz",
-    "note": "back to sleep",
+    "note": "asleep for the night",
     "thought": ""
   },
   "needs": {
+    "rest": 56.1,
+    "warmth": 79.9,
+    "inspiration": 20.6,
+    "spirit": 68.7
+  },
+  "needs_prev": {
     "rest": 35.1,
     "warmth": 82.9,
     "inspiration": 16.3,
     "spirit": 69.6
   },
-  "needs_prev": {
-    "rest": 26.1,
-    "warmth": 85.9,
-    "inspiration": 12.0,
-    "spirit": 87.5
-  },
-  "needs_at": "2026-11-22T06:01:48+00:00",
+  "needs_at": "2026-11-22T07:00:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -697,7 +693,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T06:01:48+00:00",
+    "updated": "2026-11-22T07:00:24+00:00",
     "seen_until": "2026-11-22T02:25:23+00:00"
   },
   "gifts": [],
@@ -854,5 +850,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T06:01:48+00:00"
+  "exported": "2026-11-22T07:00:24+00:00"
 }
