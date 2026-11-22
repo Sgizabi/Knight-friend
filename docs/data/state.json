@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 34,
-    "last_wake": "2026-11-22T05:00:23+00:00",
-    "nights_slept_through": 9
+    "last_wake": "2026-11-22T07:00:24+00:00",
+    "nights_slept_through": 10
   },
   "plan": {
-    "start": "2026-11-22T07:00:24+00:00",
+    "start": "2026-11-22T09:00:23+00:00",
     "mood": "content",
-    "applied_until": "2026-11-22T07:00:24+00:00",
+    "applied_until": "2026-11-22T09:00:23+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -50,7 +50,7 @@
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T07:00:24+00:00",
+    "since": "2026-11-22T09:00:24+00:00",
     "place": "bedroll",
     "action": "sleep",
     "emote": "zzz",
@@ -58,18 +58,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 98.1,
+    "warmth": 73.9,
+    "inspiration": 29.2,
+    "spirit": 67.1
+  },
+  "needs_prev": {
     "rest": 56.1,
     "warmth": 79.9,
     "inspiration": 20.6,
     "spirit": 68.7
   },
-  "needs_prev": {
-    "rest": 35.1,
-    "warmth": 82.9,
-    "inspiration": 16.3,
-    "spirit": 69.6
-  },
-  "needs_at": "2026-11-22T07:00:24+00:00",
+  "needs_at": "2026-11-22T09:00:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -693,7 +693,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T07:00:24+00:00",
+    "updated": "2026-11-22T09:00:23+00:00",
     "seen_until": "2026-11-22T02:25:23+00:00"
   },
   "gifts": [],
@@ -767,6 +767,12 @@
         "end": "2026-11-23T13:26:22+00:00",
         "kind": "storm",
         "intensity": 0.7
+      },
+      {
+        "start": "2026-11-23T13:26:22+00:00",
+        "end": "2026-11-23T18:59:35+00:00",
+        "kind": "wind",
+        "intensity": 0.4
       }
     ],
     "effects": {
@@ -829,26 +835,9 @@
     }
   },
   "creatures": {
-    "current": [
-      {
-        "id": "fog-202611220614",
-        "kind": "fog",
-        "start": "2026-11-22T06:14:00+00:00",
-        "end": "2026-11-22T08:46:00+00:00",
-        "variant": {
-          "size": 1.13,
-          "hue": -0.002,
-          "mark": "",
-          "age": ""
-        },
-        "caption": "You shelter, but outside it does as it likes. It thins at the shut window until only the eyes remain, watching the firelight from the rain. The eyes blink slowly, and the fog drifts down the hill, gone. In this weather it doesn't work the w",
-        "caption_at": "2026-11-22T06:01:46+00:00",
-        "render": "fog",
-        "nature": "hostile"
-      }
-    ],
+    "current": [],
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T07:00:24+00:00"
+  "exported": "2026-11-22T09:00:24+00:00"
 }

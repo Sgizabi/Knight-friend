@@ -27,7 +27,8 @@
         "approach": "distant",
         "doing": "It rolls into the shadow of the keep's outer wall. The eyes in the mist open, facing the dark tower.",
         "says": ""
-      }
+      },
+      "witnessed": true
     },
     {
       "id": "golem-202611240100",

@@ -1,5 +1,5 @@
 {
-  "points": 0,
+  "points": 2,
   "step": 0,
   "kinds": {
     "fog": {
@@ -9,7 +9,10 @@
         "I bar the door with a broken plank and sit close to the fire."
       ],
       "name": "Fog-eyed mist",
-      "note": "It pressed flat against the stone, eyes blinking slow. It vanished after watching the fire."
+      "note": "It pressed flat against the stone, eyes blinking slow. It vanished after watching the fire.",
+      "first": "2026-11-22T06:14:00+00:00",
+      "count": 1,
+      "last": "2026-11-22T06:14:00+00:00"
     }
   }
 }
