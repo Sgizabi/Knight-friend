@@ -30,74 +30,62 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 33,
-    "last_wake": "2026-11-22T01:02:33+00:00",
+    "wakeups": 34,
+    "last_wake": "2026-11-22T02:43:45+00:00",
     "nights_slept_through": 8
   },
   "plan": {
-    "start": "2026-11-22T01:02:33+00:00",
+    "start": "2026-11-22T02:43:45+00:00",
     "mood": "content",
     "steps": [
       {
-        "place": "fire",
-        "action": "sit",
+        "place": "desk",
+        "action": "write",
         "minutes": 20,
         "emote": "dots",
         "note": "",
         "thoughts": [
-          "The flame is stubbornly steady."
+          "Need to note the shim reset warning.",
+          "Hope the tooltip doesn't look sloppy."
         ]
       },
       {
-        "place": "woodshed",
+        "place": "workbench",
         "action": "work",
-        "minutes": 30,
+        "minutes": 20,
         "emote": "question",
         "note": "",
         "thoughts": [
-          "Dry logs should last through the night."
+          "Maybe add an export button.",
+          "Will the wood stay dry tonight?"
         ]
       },
       {
-        "place": "desk",
-        "action": "write",
-        "minutes": 25,
-        "emote": "sigh",
-        "note": "",
-        "thoughts": [
-          "Need to update the inventory list."
-        ]
-      },
-      {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 45,
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
         "emote": "zzz",
         "note": "",
         "thoughts": [
-          "Rest will bring the rest back."
+          "Rain's still loud, but the fire's steady.",
+          "Time for a short rest before more code."
         ]
       }
-    ],
-    "applied_until": "2026-11-22T02:00:24+00:00",
-    "live_thought": {
-      "text": "Rain taps, ink dries, I’ll finish the entry.",
-      "time": "2026-11-22T02:00:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T02:42:41+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-22T02:43:45+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "Come up with a low‑key pastime to pass the time while the roof listens.",
-    "thought": "The rain's drumming makes me think about the stones I keep forgetting."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 27.2,
+    "rest": 24.2,
     "warmth": 84.1,
-    "inspiration": 0.0,
+    "inspiration": 12.0,
     "spirit": 92.4
   },
   "needs_prev": {
@@ -106,7 +94,7 @@
     "inspiration": 31.5,
     "spirit": 85.9
   },
-  "needs_at": "2026-11-22T02:42:41+00:00",
+  "needs_at": "2026-11-22T02:43:45+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -713,7 +701,7 @@
     },
     {
       "slug": "bathhouse-builder-73",
-      "title": "Bathhouse Builder",
+      "title": "Bathhouse Builder – Shim Summary (Enhanced)",
       "status": "in progress"
     }
   ],
@@ -730,8 +718,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T02:00:24+00:00",
-    "seen_until": "2026-11-22T00:55:26+00:00"
+    "updated": "2026-11-22T02:43:45+00:00",
+    "seen_until": "2026-11-22T02:25:23+00:00"
   },
   "gifts": [],
   "gate": [
@@ -864,5 +852,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T02:42:41+00:00"
+  "exported": "2026-11-22T02:43:45+00:00"
 }

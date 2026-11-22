@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 18.499,
-    "craft": 18.499
+    "repair": 18.759,
+    "craft": 18.759
   },
   "projects": [
     {
@@ -17,22 +17,33 @@
     },
     {
       "slug": "bathhouse-builder-73",
-      "title": "Bathhouse Builder",
+      "title": "Bathhouse Builder – Shim Summary (Enhanced)",
       "started": "2026-11-22T01:01:30+00:00",
       "status": "in progress",
-      "versions": 1,
-      "about": "A tiny tool to stack shims and test floor stability for the keep’s bathhouse.",
-      "updated": "2026-11-22T01:01:30+00:00",
-      "next": "Add a summary field that totals shims used for each floor section."
+      "versions": 4,
+      "about": "Added per‑section totals and an overall floor summary, plus a clear button for the log.",
+      "updated": "2026-11-22T02:39:40+00:00",
+      "next": "Add an export feature to download the shim summary as CSV and a confirmation dialog for the reset button."
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 1,
-  "pastimes": [],
-  "last_long": "2026-11-21T02:30:24+00:00",
+  "entries_since_condense": 2,
+  "pastimes": [
+    {
+      "slug": "stone-counting",
+      "name": "Stone Counting",
+      "about": "count the stones in the courtyard walls and note their sizes",
+      "place": "courtyard",
+      "action": "pace",
+      "kind": "thoughtful",
+      "invented": "2026-11-22T02:42:41+00:00",
+      "times": 1,
+      "strength": 0.96,
+      "last": "2026-11-22T02:42:43+00:00"
+    }
+  ],
+  "last_long": "2026-11-22T02:30:21+00:00",
   "recent_thoughts": [
-    "Rain drums on stone, I could shape a new handle.",
-    "Rain drums, fire cracks, I could shape a new handle.",
     "Rain drums, I’ll shape a new handle.",
     "Rain taps, the stone listens while I shape the next handle.",
     "Rain drums, fire hums, I could forge a new handle.",
@@ -42,10 +53,12 @@
     "Rain drums, fire hums, I’ll shape the next handle.",
     "Rain drums, stone watches; I’ll watch the seedlings sway.",
     "Rain drums, forge glows, I’ll keep hammering.",
-    "Rain drums, fire crackles, I’ll watch the flames awhile."
+    "Rain drums, fire crackles, I’ll watch the flames awhile.",
+    "Rain drums, wood smells, I’ll keep working.",
+    "Rain taps, ink dries, I’ll finish the entry."
   ],
-  "last_glance": "2026-11-22T00:30:27+00:00",
-  "visits_seen_until": "2026-11-22T00:55:26+00:00",
+  "last_glance": "2026-11-22T02:00:24+00:00",
+  "visits_seen_until": "2026-11-22T02:25:23+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

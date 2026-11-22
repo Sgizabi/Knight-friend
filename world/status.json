@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-22T02:42:41+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-22T02:43:45+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "Come up with a low‑key pastime to pass the time while the roof listens.",
-  "thought": "The rain's drumming makes me think about the stones I keep forgetting."
+  "note": "",
+  "thought": ""
 }
