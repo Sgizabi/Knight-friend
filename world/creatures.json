@@ -14,14 +14,54 @@
       },
       "drive": "the cold",
       "temper": "wary"
+    },
+    {
+      "id": "golem-202611240100",
+      "kind": "golem",
+      "day": "2026-11-23",
+      "start": "2026-11-24T00:41:00+00:00",
+      "end": "2026-11-24T01:15:00+00:00",
+      "variant": {
+        "size": 0.89,
+        "hue": -0.029,
+        "mark": "",
+        "age": ""
+      },
+      "drive": "to stretch after a long sleep",
+      "temper": "calm",
+      "companion": true,
+      "with": "bloom-202611240041",
+      "with_kind": "bloom",
+      "stance": "ignore"
+    },
+    {
+      "id": "bloom-202611240041",
+      "kind": "bloom",
+      "day": "2026-11-23",
+      "start": "2026-11-24T00:41:00+00:00",
+      "end": "2026-11-24T01:15:00+00:00",
+      "variant": {
+        "size": 0.98,
+        "hue": -0.03,
+        "mark": "scarred",
+        "age": ""
+      },
+      "drive": "to rest by the fire",
+      "temper": "calm",
+      "with": "golem-202611240100",
+      "with_kind": "golem",
+      "stance": "ignore"
     }
   ],
   "planned": [
     "2026-11-21",
-    "2026-11-22"
+    "2026-11-22",
+    "2026-11-23"
   ],
   "cooldowns": {
-    "fog": "2026-11-26T06:14:00+00:00"
+    "fog": "2026-11-26T06:14:00+00:00",
+    "golem": "2026-12-01T00:41:00+00:00",
+    "bloom": "2026-12-01T00:41:00+00:00"
   },
   "chains": {},
   "arcs": {
@@ -30,5 +70,6 @@
       "met": {},
       "regard": 0
     }
-  }
+  },
+  "relations": {}
 }

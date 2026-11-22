@@ -1,44 +1,14 @@
 {
-  "start": "2026-11-22T02:43:45+00:00",
+  "start": "2026-11-22T05:00:23+00:00",
   "mood": "content",
+  "applied_until": "2026-11-22T05:00:23+00:00",
   "steps": [
     {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "Need to note the shim reset warning.",
-        "Hope the tooltip doesn't look sloppy."
-      ]
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Maybe add an export button.",
-        "Will the wood stay dry tonight?"
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
+      "place": "bedroll",
+      "action": "sleep",
+      "minutes": 120,
       "emote": "zzz",
-      "note": "",
-      "thoughts": [
-        "Rain's still loud, but the fire's steady.",
-        "Time for a short rest before more code."
-      ]
+      "note": "asleep for the night"
     }
-  ],
-  "applied_until": "2026-11-22T04:30:22+00:00",
-  "live_thought": {
-    "text": "Rain drums, fire hums, I stare at the flames.",
-    "time": "2026-11-22T04:30:22+00:00"
-  }
+  ]
 }
