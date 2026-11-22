@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-22T21:30:25+00:00",
+    "applied_until": "2026-11-22T22:00:24+00:00",
     "live_thought": {
-      "text": "The fire roars, metal glows, I could hammer a bit longer.",
-      "time": "2026-11-22T21:30:25+00:00"
+      "text": "The fire's glow makes the stones feel less cold.",
+      "time": "2026-11-22T22:00:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T21:30:26+00:00",
+    "since": "2026-11-22T22:00:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 57.5,
+    "warmth": 86.2,
+    "inspiration": 48.2,
+    "spirit": 81.6
+  },
+  "needs_prev": {
     "rest": 59.1,
     "warmth": 87.1,
     "inspiration": 48.2,
     "spirit": 82.4
   },
-  "needs_prev": {
-    "rest": 61.1,
-    "warmth": 88.2,
-    "inspiration": 48.2,
-    "spirit": 83.2
-  },
-  "needs_at": "2026-11-22T21:30:26+00:00",
+  "needs_at": "2026-11-22T22:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -929,7 +929,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T21:30:25+00:00",
+    "updated": "2026-11-22T22:00:24+00:00",
     "seen_until": "2026-11-22T20:55:26+00:00"
   },
   "gifts": [],
@@ -1072,13 +1072,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-22T21:00:00+00:00",
-      "end": "2026-11-22T22:00:00+00:00",
-      "kinds": [
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-22T22:00:00+00:00",
       "end": "2026-11-22T23:00:00+00:00",
       "kinds": [
@@ -1132,6 +1125,14 @@
       "kinds": [
         "owl"
       ]
+    },
+    {
+      "start": "2026-11-23T05:00:00+00:00",
+      "end": "2026-11-23T06:00:00+00:00",
+      "kinds": [
+        "owl",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -1139,5 +1140,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T21:30:26+00:00"
+  "exported": "2026-11-22T22:00:25+00:00"
 }
