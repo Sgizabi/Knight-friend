@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 34,
-    "last_wake": "2026-11-22T07:00:24+00:00",
-    "nights_slept_through": 10
+    "last_wake": "2026-11-22T09:00:23+00:00",
+    "nights_slept_through": 11
   },
   "plan": {
-    "start": "2026-11-22T09:00:23+00:00",
+    "start": "2026-11-22T11:00:32+00:00",
     "mood": "content",
-    "applied_until": "2026-11-22T09:00:23+00:00",
+    "applied_until": "2026-11-22T11:00:32+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -50,7 +50,7 @@
   },
   "status": {
     "awake": false,
-    "since": "2026-11-22T09:00:24+00:00",
+    "since": "2026-11-22T11:00:32+00:00",
     "place": "bedroll",
     "action": "sleep",
     "emote": "zzz",
@@ -58,18 +58,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 100.0,
+    "warmth": 67.9,
+    "inspiration": 37.8,
+    "spirit": 65.7
+  },
+  "needs_prev": {
     "rest": 98.1,
     "warmth": 73.9,
     "inspiration": 29.2,
     "spirit": 67.1
   },
-  "needs_prev": {
-    "rest": 56.1,
-    "warmth": 79.9,
-    "inspiration": 20.6,
-    "spirit": 68.7
-  },
-  "needs_at": "2026-11-22T09:00:24+00:00",
+  "needs_at": "2026-11-22T11:00:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -693,7 +693,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T09:00:23+00:00",
+    "updated": "2026-11-22T11:00:32+00:00",
     "seen_until": "2026-11-22T02:25:23+00:00"
   },
   "gifts": [],
@@ -708,12 +708,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-21T00:30:24+00:00",
-        "end": "2026-11-21T08:16:58+00:00",
-        "kind": "cloudy",
-        "intensity": 0.68
-      },
       {
         "start": "2026-11-21T08:16:58+00:00",
         "end": "2026-11-21T16:19:39+00:00",
@@ -839,5 +833,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T09:00:24+00:00"
+  "exported": "2026-11-22T11:00:32+00:00"
 }
