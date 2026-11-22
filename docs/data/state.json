@@ -30,75 +30,60 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 37,
-    "last_wake": "2026-11-22T17:01:34+00:00",
+    "wakeups": 38,
+    "last_wake": "2026-11-22T19:01:34+00:00",
     "nights_slept_through": 12
   },
   "plan": {
-    "start": "2026-11-22T17:01:34+00:00",
+    "start": "2026-11-22T19:01:34+00:00",
     "mood": "content",
     "steps": [
-      {
-        "place": "bathhouse",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "heart",
-        "note": "warm soak",
-        "thoughts": [
-          "Stone finally behaves"
-        ]
-      },
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "question",
-        "note": "code export feature",
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "CSV export should be easy"
+          "Need to check the hinge alignment again"
         ]
       },
       {
-        "place": "woodshed",
+        "place": "forge",
         "action": "stand",
         "minutes": 20,
-        "emote": "dots",
-        "note": "stack dry logs",
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "Logs still a bit damp"
+          "Wonder if the new beam will hold the roof longer"
         ]
       },
       {
-        "place": "desk",
-        "action": "write",
+        "place": "bathhouse",
+        "action": "sit",
         "minutes": 20,
-        "emote": "music",
-        "note": "update inventory list",
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "Add new lantern oil seal entry"
+          "Warm water still feels good after the upgrade"
         ]
       }
-    ],
-    "applied_until": "2026-11-22T18:30:27+00:00",
-    "live_thought": {
-      "text": "The fire flickers, stone cold, I could stay a while.",
-      "time": "2026-11-22T18:30:27+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T19:00:27+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-22T19:01:34+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue",
-    "thought": "The lantern's beam still flickers a bit, could use a sturdier mount."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 68.5,
-    "warmth": 83.8,
-    "inspiration": 48.2,
-    "spirit": 83.5
+    "rest": 62.5,
+    "warmth": 85.5,
+    "inspiration": 36.2,
+    "spirit": 86.8
   },
   "needs_prev": {
     "rest": 67.5,
@@ -106,7 +91,7 @@
     "inspiration": 48.2,
     "spirit": 84.4
   },
-  "needs_at": "2026-11-22T19:00:27+00:00",
+  "needs_at": "2026-11-22T19:01:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -640,6 +625,200 @@
           }
         ],
         "made": "2026-11-19T09:00:30+00:00"
+      },
+      {
+        "name": "Portable Lantern Upgrade",
+        "about": "A compact lantern with a rechargeable battery and a foldable handle.",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.07,
+              0.07,
+              0.25
+            ],
+            "pos": [
+              0.0,
+              0.125,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#444444"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.03,
+              0.03,
+              0.18
+            ],
+            "pos": [
+              0.0,
+              0.22,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#222222"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.15
+            ],
+            "pos": [
+              0.0,
+              0.295,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.04
+            ],
+            "pos": [
+              0.09,
+              0.125,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.04
+            ],
+            "pos": [
+              -0.09,
+              0.125,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.12,
+              0.02,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.125,
+              0.07
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.02,
+              0.02,
+              0.1
+            ],
+            "pos": [
+              0.0,
+              0.125,
+              -0.07
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cone",
+            "size": [
+              0.03,
+              0.06
+            ],
+            "pos": [
+              0.0,
+              0.34,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#ffdd55"
+          },
+          {
+            "shape": "sphere",
+            "size": [
+              0.025
+            ],
+            "pos": [
+              0.0,
+              0.355,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#ffdd55"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.05,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.125,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              1.5708,
+              0.0
+            ],
+            "color": "#777777"
+          }
+        ],
+        "made": "2026-11-22T19:00:31+00:00"
       }
     ],
     "buildings": [
@@ -735,8 +914,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T18:30:27+00:00",
-    "seen_until": "2026-11-22T16:55:27+00:00"
+    "updated": "2026-11-22T19:01:34+00:00",
+    "seen_until": "2026-11-22T18:55:25+00:00"
   },
   "gifts": [],
   "gate": [
@@ -881,5 +1060,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T19:00:27+00:00"
+  "exported": "2026-11-22T19:01:34+00:00"
 }
