@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-21T23:02:38+00:00",
+  "start": "2026-11-22T01:02:33+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "heart",
-      "note": "let the fire warm me while I rest",
+      "emote": "dots",
+      "note": "",
       "thoughts": [
-        "The stone still feels cold under the hearth."
+        "The flame is stubbornly steady."
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "work",
+      "minutes": 30,
+      "emote": "question",
+      "note": "",
+      "thoughts": [
+        "Dry logs should last through the night."
       ]
     },
     {
       "place": "desk",
       "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "update inventory of glass shards",
+      "minutes": 25,
+      "emote": "sigh",
+      "note": "",
       "thoughts": [
-        "Need to count the shards before they roll away."
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "check bellows for rust and oil the hinges",
-      "thoughts": [
-        "The rain makes the metal sigh."
+        "Need to update the inventory list."
       ]
     },
     {
       "place": "bedroll",
       "action": "sleep",
-      "minutes": 20,
+      "minutes": 45,
       "emote": "zzz",
-      "note": "short nap to restore rest",
+      "note": "",
       "thoughts": [
-        "Hope the roof holds through the night."
+        "Rest will bring the rest back."
       ]
     }
   ]

@@ -30,75 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 32,
-    "last_wake": "2026-11-21T23:02:39+00:00",
+    "wakeups": 33,
+    "last_wake": "2026-11-22T01:02:33+00:00",
     "nights_slept_through": 8
   },
   "plan": {
-    "start": "2026-11-21T23:02:38+00:00",
+    "start": "2026-11-22T01:02:33+00:00",
     "mood": "content",
     "steps": [
       {
         "place": "fire",
         "action": "sit",
         "minutes": 20,
-        "emote": "heart",
-        "note": "let the fire warm me while I rest",
+        "emote": "dots",
+        "note": "",
         "thoughts": [
-          "The stone still feels cold under the hearth."
+          "The flame is stubbornly steady."
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "work",
+        "minutes": 30,
+        "emote": "question",
+        "note": "",
+        "thoughts": [
+          "Dry logs should last through the night."
         ]
       },
       {
         "place": "desk",
         "action": "write",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "update inventory of glass shards",
+        "minutes": 25,
+        "emote": "sigh",
+        "note": "",
         "thoughts": [
-          "Need to count the shards before they roll away."
-        ]
-      },
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "question",
-        "note": "check bellows for rust and oil the hinges",
-        "thoughts": [
-          "The rain makes the metal sigh."
+          "Need to update the inventory list."
         ]
       },
       {
         "place": "bedroll",
         "action": "sleep",
-        "minutes": 20,
+        "minutes": 45,
         "emote": "zzz",
-        "note": "short nap to restore rest",
+        "note": "",
         "thoughts": [
-          "Hope the roof holds through the night."
+          "Rest will bring the rest back."
         ]
       }
-    ],
-    "applied_until": "2026-11-22T00:30:27+00:00",
-    "live_thought": {
-      "text": "Rain drums, fire crackles, I’ll watch the flames awhile.",
-      "time": "2026-11-22T00:30:27+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-22T01:00:27+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-22T01:02:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue raising the bathhouse floor with another shim and check stability",
-    "thought": "The rain's steady tap makes the wood settle, so I’ll keep adding to the bathhouse floor."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 52.8,
+    "rest": 45.8,
     "warmth": 87.9,
-    "inspiration": 47.5,
-    "spirit": 84.7
+    "inspiration": 31.5,
+    "spirit": 87.8
   },
   "needs_prev": {
     "rest": 51.6,
@@ -106,7 +101,7 @@
     "inspiration": 47.5,
     "spirit": 85.6
   },
-  "needs_at": "2026-11-22T01:00:27+00:00",
+  "needs_at": "2026-11-22T01:02:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -710,6 +705,11 @@
       "slug": "bathhouse-builder",
       "title": "Bathhouse Builder – Updated with Final Verification",
       "status": "finished"
+    },
+    {
+      "slug": "bathhouse-builder-73",
+      "title": "Bathhouse Builder",
+      "status": "in progress"
     }
   ],
   "writings": [
@@ -725,8 +725,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-22T00:30:27+00:00",
-    "seen_until": "2026-11-21T22:55:27+00:00"
+    "updated": "2026-11-22T01:02:33+00:00",
+    "seen_until": "2026-11-22T00:55:26+00:00"
   },
   "gifts": [],
   "gate": [
@@ -853,5 +853,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T01:00:27+00:00"
+  "exported": "2026-11-22T01:02:34+00:00"
 }
