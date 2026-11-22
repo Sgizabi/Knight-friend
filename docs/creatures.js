@@ -295,6 +295,43 @@ function routeAround(a, b) {
   const path = []; for (let v = 1; v > 0; v = prev[v]) path.unshift(nodes[v]);
   return path;
 }
+let SOV_STARS = null;   // (the page's stars, while the Sovereign's mothership has set them further out)
+// Motes of light: a pool of points that are sent out, drift and fade (one draw for all of them).
+function motePool(parent, n = 160, color = '#cffaff', size = .07) {
+  const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), base = new T.Color(color), M = Array.from({ length: n }, () => ({ life: 0, max: 1, x: 0, y: -999, z: 0, vx: 0, vy: 0, vz: 0 }));
+  const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
+  const pts = new T.Points(geo, new T.PointsMaterial({ size: size * 1.8, map: puff(), vertexColors: true, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false }));   // (soft round dots)
+  pts.frustumCulled = false; parent.add(pts);
+  let next = 0;
+  return {
+    emit(x, y, z, vx = 0, vy = 0, vz = 0, life = 1) { const p = M[next++ % n]; p.x = x; p.y = y; p.z = z; p.vx = vx; p.vy = vy; p.vz = vz; p.life = p.max = life; },
+    tick(dt) {
+      M.forEach((p, i) => {
+        if (p.life > 0) { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; const a = Math.max(0, p.life / p.max); pos.set([p.x, p.y, p.z], i * 3); col.set([base.r * a, base.g * a, base.b * a], i * 3); }
+        else pos[i * 3 + 1] = -999;
+      });
+      geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+    },
+  };
+}
+// One of them coming down a beam (k: 0 at the top, 1 on the ground): it forms out of motes as it comes,
+// growing from a wisp to its full self, and lands in a crouch with a soft burst of light at its feet.
+// Going back up (k from 1 to 0) it comes apart into motes the same way. Call every frame.
+function beamArrive(st, f, m, k, motes, dt, fromY) {
+  const was = st.k ?? 0; st.k = k;
+  m.y = fromY * (1 - k * k * (3 - 2 * k));
+  const s = .25 + .75 * smooth(.1, .95, k); f.g.scale.setScalar(s);
+  if (k > 0 && k < 1) {                                                 // motes gathering in round it (or flying off, going up)
+    const P_ = f.g.position, up = k < was;
+    for (let i = 0; i < 2; i++) { const a = Math.random() * 6.28, r = .9 + Math.random() * .6, h = Math.random() * 2.2 * f.k;
+      motes.emit(P_.x + Math.cos(a) * r, P_.y + h, P_.z + Math.sin(a) * r, -Math.cos(a) * r * (up ? -1.4 : 1.6), (up ? .8 : -.2), -Math.sin(a) * r * (up ? -1.4 : 1.6), .55); }
+  }
+  if (was < 1 && k >= 1) {                                              // landed: a crouch, a ring of light going out over the grass
+    st.landT = 0; const P_ = f.g.position;
+    for (let i = 0; i < 26; i++) { const a = i / 26 * 6.28; motes.emit(P_.x, P_.y + .08, P_.z, Math.cos(a) * 2.2, .15, Math.sin(a) * 2.2, .9); }
+  }
+  if (st.landT != null) { st.landT += dt; m.crouch = st.landT < .45 ? .8 : 0; if (st.landT > .5) st.landT = null; }
+}
 // One of them. Two layers: a clear faceted shell of glass, and inside it a skeleton of light (a core in
 // the chest, a line of light up the spine) that brightens as they move. A smooth lens for a head with a
 // thin band of light round its front, and no face. Each kind its own build:
@@ -5101,7 +5138,7 @@ const BEASTS = {
       // where they may go: places worth a look, as near the keep as their regard allows (never inside its walls)
       const near = 12 - reg * 3, spots = SURVEY.filter(([x, z]) => Math.hypot(x + 5.5, z) >= near);
       const scouts = Array.from({ length: n }, (_, i) => { const f = glassFolk(root, 'scout', i), m = glassMover(f, CP.x, CP.z); return { f, m, i, path: [], at: null, mode: 'up', until: 0, ph: i * 1.7, scan: V() }; });
-      const kn = V(), tmp = V();
+      const kn = V(), tmp = V(), motes = motePool(root, 180, '#cffaff', .08);
       const pick = (s) => {                                               // somewhere new, away from where the others are going
         const others = scouts.filter(o => o !== s && o.at).map(o => o.at);
         const ok = spots.filter(p => p !== s.at && others.every(q => Math.hypot(p[0] - q[0], p[1] - q[1]) > 7));
@@ -5113,10 +5150,11 @@ const BEASTS = {
       return (t, dt = 1 / 60) => {
         dt = Math.min(dt, .1);
         const { since, left } = clock(t);
-        if (since < lastSince) for (const s of scouts) { s.mode = 'up'; s.path = []; s.at = null; s.m.x = s.m.px = CP.x; s.m.z = s.m.pz = CP.z; s.m.v = 0; s.m.crouch = 0; }   // (the preview's visit starts over: so do they)
+        if (since < lastSince) for (const s of scouts) { s.mode = 'up'; s.path = []; s.at = null; s.m.x = s.m.px = CP.x; s.m.z = s.m.pz = CP.z; s.m.v = 0; s.m.crouch = 0; s.k = 0; }   // (the preview's visit starts over: so do they)
         lastSince = since;
         const down = smooth(0, 6, since), leaving = 1 - smooth(2, 10, left);
-        craft.ship.position.set(CP.x, cy + (1 - down) * 40 + leaving * 40, CP.z); craft.ship.rotation.y = Math.sin(t * .2) * .3;
+        const lastLand = 5 + (n - 1) * 1.3, dip = Math.max(smooth(3, 5, since) * (1 - smooth(lastLand + 2, lastLand + 4, since)), smooth(15, 13, left) * smooth(2, 4, left));   // it dips low while they drop, and while they come back
+        craft.ship.position.set(CP.x, cy - dip * 2.3 + (1 - down) * 40 + leaving * 40, CP.z); craft.ship.rotation.y = Math.sin(t * .2) * .3;
         craft.beam.material.opacity = (since > 4 && since < 10 + n * 1.3) || (left > 6 && left < 20) ? .1 + .04 * Math.sin(t * 7) : 0;
         craft.lightM.emissiveIntensity = 2 + Math.sin(t * 3) * .6;
         A.K.J.hips.getWorldPosition(kn); kn.y += .8;
@@ -5125,7 +5163,7 @@ const BEASTS = {
           const { m, f } = s, landT = 5 + s.i * 1.3, upT = 9 - s.i * .9;
           if (first && since > landT + 12 && left > 22) { const p = pick(s); s.at = p; m.x = m.px = p[0] + (Math.random() - .5) * 2; m.z = m.pz = p[1] + (Math.random() - .5) * 2; m.yaw = Math.random() * 6.28; s.mode = 'look'; s.until = since + Math.random() * 4; }   // (someone looking in late finds them already out)
           // coming down the beam; going home at the end; going back up
-          m.y = Math.max(5 * (1 - smooth(landT, landT + 1.6, since)), 5 * smooth(upT, upT - 1.6, left));
+          beamArrive(s, f, m, Math.min(smooth(landT, landT + 1.6, since), 1 - smooth(upT, upT - 1.6, left)), motes, dt, 2.6);   // forming out of light as it drops; coming apart as it goes up
           f.g.visible = since > landT - .2 && left > upT - 1.7;
           if (s.mode === 'up' && since > landT + 1.6) { send(s, pick(s)); }
           if (left < 20 && s.mode !== 'home') { s.mode = 'home'; s.path = routeAround([m.x, m.z], [CP.x + (s.i - n / 2) * .6, CP.z]); }
@@ -5146,6 +5184,7 @@ const BEASTS = {
           f.beam.material.opacity = m.y > .05 ? 0 : tell ? .15 : s.mode === 'look' ? .11 : .05;
         }
         first = false;
+        motes.tick(dt);
       };
     },
   },
@@ -5234,88 +5273,182 @@ const BEASTS = {
   // ================================================================ THE GLASSY PEOPLE: THE SOVEREIGN (the last chapter)
   glassy4: {
     name: 'The glassy Sovereign', hour: 18,
-    blurb: 'Legendary, and the last chapter of the glassy people. A vast craft eases into the sky over the plain, so big the stars go out behind it. Beams come down from it, one after another, and in each an attendant, until two lines of them stand waiting on the plain like an avenue. Then a great seed-craft comes down out of it and settles at the avenue\'s end, and the one they serve steps out: tall, luminous, robed in panels of light, a crest of glass blades behind its head. It walks the avenue toward the keep, as near as its people think wise, and stands to look; its crest brightens when it is pleased, and it inclines its head.',
-    view: [[-4, 2.4, 5], [9, 9, 30]],
+    blurb: 'Legendary, and the last chapter of the glassy people. The stars go out across half the sky as something vast eases over the plain; pale curtains of light ripple down around it, and its underside opens like a splitting seed. The plain turns faintly teal and motes drift down like slow snow. Beams come down one after another, and in each an attendant forms out of the light, until ten stand in two lines and raise staffs of light into an arch. A great craft comes down out of it to the end of the avenue, and the one they serve steps out, its crest unfurling, a ring of light behind its head. It walks the arch toward the keep, the ground lighting under each step, as near as its people think wise. There it raises a hand, and a small light drifts to the keep and fades: a greeting. Its crest brightens when it is pleased, and it inclines its head. At the end it all goes back up, and the vast thing leaves in one silent ripple across the sky.',
+    view: [[-4, 2.4, 5], [9, 10, 30]],
     knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'standing as straight as he can' },
+    exit() { if (SOV_STARS) { SOV_STARS.o.scale.setScalar(1); SOV_STARS.o.material.size = SOV_STARS.size; SOV_STARS = null; } },
     build(root) {
-      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 190);
-      // ---- the mothership: a vast seed in the sky, high over the plain to the south, a slow ring of lights round it
+      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 270);
+      // the page's stars lie closer than the mothership will: while it is here they are set further out
+      // (same place in the sky, same size), so its hull truly hides them
+      let stars = null; A.scene.traverse(o => { if (!stars && o.isPoints && o.material?.size === .18) stars = o; });
+      if (stars) SOV_STARS = { o: stars, size: stars.material.size };
+      // ---- the mothership
       const MS = V(14, 88, 100), msG = G(root), FAR = V(0, 50, 230);
       const hullM = new T.MeshStandardMaterial({ color: '#a9b2bf', metalness: .6, roughness: .35, emissive: '#26384a', emissiveIntensity: .6, flatShading: true, fog: false });
       const seamM = new T.MeshStandardMaterial({ color: '#59616d', metalness: .6, roughness: .4, emissive: '#101820', emissiveIntensity: .5, flatShading: true, fog: false });
+      const petalM = hullM.clone(); petalM.side = T.DoubleSide; petalM.emissive = new T.Color('#3d7f86'); petalM.emissiveIntensity = 1.1;   // (lit from the glow inside)
       const lightM = new T.MeshBasicMaterial({ color: '#9ff6ee', fog: false });
       const prof = [[0, -16], [12, -15], [26, -11], [40, -5], [52, 0], [47, 5], [33, 10], [16, 14], [0, 16]].map(([r, y]) => new T.Vector2(r, y));
-      const hull = new T.Mesh(A.facet(new T.LatheGeometry(prof, 28), .8, 3), hullM); msG.add(hull);
+      msG.add(new T.Mesh(A.facet(new T.LatheGeometry(prof, 28), .8, 3), hullM));
       for (const [r, y, tb] of [[52.3, 0, .9], [40.5, -5, .5], [33.5, 10, .5], [26.5, -11, .4]]) { const ring = new T.Mesh(new T.TorusGeometry(r, tb, 4, 72), seamM); ring.rotation.x = Math.PI / 2; ring.position.y = y; msG.add(ring); }
       const under = new T.Mesh(new T.TorusGeometry(18, .9, 4, 60), lightM); under.rotation.x = Math.PI / 2; under.position.y = -13.6; msG.add(under);
-      const port = new T.Mesh(new T.CircleGeometry(8, 32), new T.MeshBasicMaterial({ color: '#d8fffb', fog: false })); port.rotation.x = Math.PI / 2; port.position.y = -15.9; msG.add(port);   // the opening things come down from
+      const portM = new T.MeshBasicMaterial({ color: '#d8fffb', transparent: true, opacity: .6, fog: false });
+      const port = new T.Mesh(new T.CircleGeometry(14.5, 40), portM); port.rotation.x = Math.PI / 2; port.position.y = -15.3; msG.add(port);   // the glow inside, where things come down from
+      const petals = [];                                                    // the underside: six petals that open like a seed splitting
+      for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283 + .26, pg = G(msG, [Math.cos(a) * 15.5, -15.8, Math.sin(a) * 15.5], [0, Math.PI - a, 0]), hinge = G(pg);
+        sheet(hinge, [[0, 0, -7.9], [0, 0, 7.9], [11.3, .3, -1.6], [11.3, .3, 1.6]], [[0, 2, 1], [1, 2, 3]], petalM); petals.push(hinge); }
       const outer = G(msG); { const o = new T.Mesh(new T.TorusGeometry(62, 1.4, 5, 96), seamM); o.rotation.x = Math.PI / 2; outer.add(o); for (let i = 0; i < 24; i++) { const a = i / 24 * 6.283; P(outer, A.box(4, 2.2, 3.2), seamM, [Math.cos(a) * 62, 0, Math.sin(a) * 62], { rot: [0, -a, 0], cast: false, jitter: .2 }); } merge(outer); }
       outer.rotation.x = .08;
       const NLt = 420, lp = new Float32Array(NLt * 3), lc = new Float32Array(NLt * 3), cc = new T.Color();
       for (let i = 0; i < NLt; i++) { const ring = i % 6, a = (i / NLt) * 6.283 * 7 + ring, r = [20, 28, 36, 44, 50, 62][ring], y = [-14, -12, -8, -4, -1, 0][ring];
         lp.set([Math.cos(a) * r, y - .6, Math.sin(a) * r], i * 3); cc.set(i % 9 ? '#9ff6ee' : '#ffffff'); lc.set([cc.r, cc.g, cc.b], i * 3); }
       const lg = new T.BufferGeometry(); lg.setAttribute('position', new T.BufferAttribute(lp, 3)); lg.setAttribute('color', new T.BufferAttribute(lc, 3));
-      const lights = new T.Points(lg, new T.PointsMaterial({ size: 1.4, vertexColors: true, transparent: true, opacity: .95, fog: false, depthWrite: false })); msG.add(lights);
+      msG.add(new T.Points(lg, new T.PointsMaterial({ size: 1.4, vertexColors: true, transparent: true, opacity: .95, fog: false, depthWrite: false })));
       const msGlow = softLight('#9ff6ee', 6, 150); msGlow.position.y = -22; msG.add(msGlow);
+      // curtains of light hanging round it, rippling (an aurora of its own)
+      const fadeDown = canvasTex(4, 64, (cx, w, h) => { const gr = cx.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.5, '#555555'); gr.addColorStop(1, '#000000'); cx.fillStyle = gr; cx.fillRect(0, 0, w, h); });
+      const NCc = 28, curtains = [0, 1, 2, 3].map(ci => {
+        const arr = new Float32Array(NCc * 2 * 3), uv = new Float32Array(NCc * 2 * 2), idx = [];
+        for (let c = 0; c < NCc; c++) { uv.set([c / (NCc - 1), 1, c / (NCc - 1), 0], c * 4); if (c < NCc - 1) { const a = c * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+        const gg = new T.BufferGeometry(); gg.setAttribute('position', new T.BufferAttribute(arr, 3)); gg.setAttribute('uv', new T.BufferAttribute(uv, 2)); gg.setIndex(idx);
+        const mm = new T.MeshBasicMaterial({ color: ci % 2 ? '#a88cff' : '#7ff0d8', alphaMap: fadeDown, transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false });
+        const mesh = new T.Mesh(gg, mm); mesh.frustumCulled = false; msG.add(mesh);
+        return { gg, arr, mm, a0: ci * 1.57 + .3, r: 56 + ci * 4 };
+      });
       msG.traverse(o => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; o.frustumCulled = false; } });
-      // ---- the avenue: the great craft settles at its far end; the attendants stand in two lines along it
+      // ---- the plain while it is here: washed faint teal, motes drifting down like slow snow
+      const radial = canvasTex(64, 64, (cx, w) => { const gr = cx.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#000000'); cx.fillStyle = gr; cx.fillRect(0, 0, w, w); });
+      const washG = new T.PlaneGeometry(70, 70, 28, 28); washG.rotateX(-Math.PI / 2);
+      { const wp = washG.attributes.position; for (let i = 0; i < wp.count; i++) { const x = wp.getX(i) + 7, z = wp.getZ(i) + 20; wp.setXYZ(i, x, gy(x, z) + .06, z); } }
+      const washM = new T.MeshBasicMaterial({ color: '#5fe0d0', alphaMap: radial, transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, fog: false });
+      const wash = new T.Mesh(washG, washM); wash.frustumCulled = false; root.add(wash);
+      const NSn = 260, snA = new Float32Array(NSn * 3), snow = Array.from({ length: NSn }, () => ({ x: -15 + Math.random() * 45, y: Math.random() * 40, z: 4 + Math.random() * 38, sp: .5 + Math.random() * .6, ph: Math.random() * 6 }));
+      const snG = new T.BufferGeometry(); snG.setAttribute('position', new T.BufferAttribute(snA, 3));
+      const snM = new T.PointsMaterial({ color: '#cffcf4', size: .22, map: puff(), transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, fog: false });
+      const snowP = new T.Points(snG, snM); snowP.frustumCulled = false; root.add(snowP);
+      const motes = motePool(root, 260, '#cffaff', .09);
+      // ---- the avenue: the great craft settles at its far end; ten attendants in two lines, with staffs of light
       const Sp = V(12, 0, 26), sy = gy(Sp.x, Sp.z) + 2.1, stop = reg >= 1 ? 10 : reg <= -1 ? 17.5 : 12.8, goal = V(2.5, 0, stop);
       const big = seedShip(root, 2.1); big.ship.position.set(Sp.x, sy, Sp.z);
       const dir = V(goal.x - Sp.x, 0, goal.z - Sp.z), len = dir.length(); dir.normalize(); const side = V(-dir.z, 0, dir.x);
       const SPOTS = [];
-      for (const u of [.22, .5, .78]) for (const sd of [-1, 1]) { const x = Sp.x + dir.x * len * u + side.x * sd * 1.8, z = Sp.z + dir.z * len * u + side.z * sd * 1.8; SPOTS.push({ x, z, face: Math.atan2(-side.x * sd, -side.z * sd), u }); }
-      const att = SPOTS.map((sp, i) => { const f = glassFolk(root, 'scout', 10 + i); f.beam.visible = false; const m = glassMover(f, sp.x, sp.z, sp.face); return { f, m, sp, i }; });
-      // the beams they come down (and go back up): from the mothership's underside to the ground
+      for (const u of [.15, .32, .49, .66, .83]) for (const sd of [-1, 1]) { const x = Sp.x + dir.x * len * u + side.x * sd * 1.9, z = Sp.z + dir.z * len * u + side.z * sd * 1.9; SPOTS.push({ x, z, face: Math.atan2(-side.x * sd, -side.z * sd), u }); }
+      const staffM = glow('#a8e8e0', 1.3, { fog: false });
+      const att = SPOTS.map((sp, i) => {
+        const f = glassFolk(root, 'scout', 10 + i); f.beam.visible = false; const m = glassMover(f, sp.x, sp.z, sp.face);
+        const staff = G(f.body, [0, .85 * f.k, .25 * f.k]); bone(staff, [0, -.6, 0], [0, 2.6, 0], .025, .02, staffM, 5, 0); P(staff, A.ico(.09, 1), staffM, [0, 2.65, 0], { cast: false, jitter: 0 }); merge(staff);
+        staff.traverse(o => { if (o.isMesh) o.castShadow = false; });
+        return { f, m, sp, i, staff, st: {} };
+      });
       const beamM = () => new T.MeshBasicMaterial({ color: '#bffaf4', transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false });
       const beams = [...SPOTS.map(sp => V(sp.x, gy(sp.x, sp.z), sp.z)), V(Sp.x, gy(Sp.x, Sp.z), Sp.z)].map(foot => { const b = new T.Mesh(new T.CylinderGeometry(.35, .95, 1, 12, 1, true), beamM()); b.frustumCulled = false; root.add(b); return { b, foot }; });
-      const top = V(), mid = V();
+      const top = V(), mid = V(), tmp = V();
       const placeBeam = ({ b, foot }, op, from) => { b.visible = op > .01; if (!b.visible) return; from.y -= 16; mid.copy(from).add(foot).multiplyScalar(.5); b.position.copy(mid); b.scale.set(1, from.distanceTo(foot), 1); b.quaternion.setFromUnitVectors(V(0, 1, 0), from.clone().sub(foot).normalize()); b.material.opacity = op; };
+      // ---- the Sovereign: its crest folded until it steps into the light; a ring of light behind its head
       const sov = glassFolk(root, 'sovereign', 7), S = glassMover(sov, Sp.x, Sp.z, Math.atan2(dir.x, dir.z));
-      const halo = softLight('#cfeeff', 0, 60); root.add(halo);
-      let first = true;
+      const halo = new T.Mesh(new T.TorusGeometry(.3 * sov.k, .005 * sov.k, 3, 48), new T.MeshBasicMaterial({ color: '#cfeff0', transparent: true, opacity: .55, depthWrite: false, blending: T.AdditiveBlending, fog: false })); halo.position.set(0, .12 * sov.k, -.2 * sov.k); sov.head.add(halo);   // (a thin, faint ring)
+      // its footsteps light the ground, and stay faintly lit behind it
+      const stepM = () => new T.MeshBasicMaterial({ color: '#bff8f0', transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, fog: false });
+      const steps = Array.from({ length: 44 }, () => { const m = new T.Mesh(new T.CircleGeometry(.2, 10), stepM()); m.rotation.x = -Math.PI / 2; m.visible = false; root.add(m); return { m, born: -99 }; });
+      let stepN = 0, lastStep = 0;
+      // the greeting: a small light from its raised hand, drifting to the keep and fading there
+      const greet = new T.Mesh(A.ico(.12, 1), glow('#f2fffc', 3, { fog: false })); greet.visible = false; root.add(greet);
+      const greetGlow = softLight('#cffcf4', 0, 2.2); greet.add(greetGlow);
+      const keepWall = V(-1, 3.3, 4.7), from = V(), skyGlow = softLight('#cfeeff', 0, 60); root.add(skyGlow);
+      const ripple = new T.Mesh(new T.RingGeometry(.82, 1, 64), new T.MeshBasicMaterial({ color: '#d8fff8', transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false }));
+      ripple.frustumCulled = false; root.add(ripple);
+      let first = true, lastSince = -1, greetT = -1, greeted = false;
       return (t, dt = 1 / 60) => {
         dt = Math.min(dt, .1);
         const { since, left } = clock(t);
-        // the mothership comes in out of the far sky, and goes back into it at the end
-        const inK = smooth(0, 18, since) * smooth(0, 14, left);
-        msG.position.copy(MS).addScaledVector(FAR, 1 - inK); msG.rotation.y = t * .01; outer.rotation.y = -t * .03;
+        if (since < lastSince) { greeted = false; greetT = -1; stepN = 0; steps.forEach(s => { s.m.visible = false; }); att.forEach(a => { a.st = {}; }); S.x = S.px = Sp.x; S.z = S.pz = Sp.z; }   // (the preview starts over)
+        lastSince = since;
+        // ---- the mothership: in slowly; at the very end, it pulls its light in and goes in one ripple
+        const inK = smooth(0, 22, since) * smooth(1.5, 6, left), gone = 1 - smooth(1.5, 6, left);
+        msG.position.copy(MS).addScaledVector(FAR, 1 - smooth(0, 22, since)); msG.position.y += gone * 120; msG.rotation.y = t * .01; outer.rotation.y = -t * .03;
+        msG.visible = inK > .002 || since < 22;
+        if (stars) { const far = inK > .002 ? 3.6 : 1; stars.scale.setScalar(far); stars.material.size = SOV_STARS.size * far; }
         under.material.color.setHSL(.47, .9, .7 + Math.sin(t * 1.3) * .08);
-        halo.position.set(MS.x * .6, 40, MS.z * .5); halo.intensity = 4 * inK;
-        // the attendants come down their beams, one after another; at the end they go back up
-        att.forEach(a => {
-          const dT = 15 + a.i * 2.4, uT = 14 - a.i * .9, down = smooth(dT, dT + 3.2, since), up = smooth(uT, uT - 3, left);
-          a.m.y = 70 * Math.max(1 - down, up);
-          a.f.g.visible = since > dT - .2 && left > uT - 3.2;
-          placeBeam(beams[a.i], (since > dT - 1 && since < dT + 4.5) || (left < uT + 1 && left > uT - 3.5) ? .085 : 0, top.copy(msG.position));
+        const pull = smooth(9, 6, left) * (1 - gone);                      // drawing its light in, just before it goes
+        portM.opacity = .35 + .5 * smooth(20, 30, since) + pull * .6; port.scale.setScalar(1 - pull * .6);
+        const open = smooth(20, 30, since) * smooth(12, 18, left);
+        petals.forEach((p, i) => { p.rotation.z = -open * (1.05 + Math.sin(i * 2.1) * .08); });
+        skyGlow.position.set(MS.x * .6, 40, MS.z * .5); skyGlow.intensity = 4 * inK + pull * 6;
+        const ripK = Math.min(1, Math.max(0, (6 - left) / 4.5));            // the ripple across the sky as it leaves
+        ripple.visible = ripK > 0 && ripK < 1; if (ripple.visible) { ripple.position.copy(MS).lerp(A.camera.position, .45); ripple.lookAt(A.camera.position); ripple.scale.setScalar(3 + ripK * 70); ripple.material.opacity = .85 * (1 - ripK) ** 1.5; }   // (in front of the hull, toward whoever watches)
+        // ---- curtains, the teal plain, the slow snow
+        const aur = smooth(8, 28, since) * smooth(10, 20, left);
+        curtains.forEach((c, ci) => {
+          c.mm.opacity = aur * .3;
+          for (let k = 0; k < NCc; k++) { const a = c.a0 + (k / (NCc - 1)) * 1.4, r = c.r + Math.sin(k * .45 + t * .35 + ci) * 3.2 + Math.sin(k * .17 - t * .2) * 2;
+            const x = Math.cos(a) * r, z = Math.sin(a) * r, sway = Math.sin(k * .3 + t * .5 + ci * 2) * 2.5; c.arr.set([x, -4, z, x + sway, -62, z + sway * .5], k * 6); }
+          c.gg.attributes.position.needsUpdate = true;
         });
-        // the great craft comes down the middle beam out of the mothership, and goes back up it at the end
-        const cd = smooth(31, 44, since), cu = smooth(30, 18, left);
-        big.ship.position.y = sy + (msG.position.y - 16 - sy) * Math.max(1 - cd, cu); big.ship.rotation.y = t * .05;
-        big.lid.rotation.z = smooth(44, 47, since) * smooth(32, 35, left) * 1.1; big.inner.intensity = big.lid.rotation.z * 6;
-        big.lightM.emissiveIntensity = 2.2 + Math.sin(t * 2) * .5;
-        placeBeam(beams[6], (since > 29 && since < 45) || (left < 32 && left > 16) ? .1 : 0, top.copy(msG.position));
-        // it walks the avenue to where it will stand; at the end, back to its craft
-        const out = since > 47 && left > 70;
-        if (first && out && since > 100) { S.x = S.px = goal.x; S.z = S.pz = goal.z; S.yaw = Math.PI; }   // (someone looking in late finds it already there)
-        first = false;
-        sov.g.visible = since > 46.5 && left > 33;
-        const tgt = out ? goal : Sp, d = S.toward(tgt.x, tgt.z, .55, dt, .5);
-        if (d < .3) S.face(out ? Math.PI : Math.atan2(dir.x, dir.z), dt, 1);
-        // standing before the keep: now and then it inclines its head, and its crest brightens (its tell)
-        const bow = out && d < .3 ? pulse(since, 32, 5) : 0;
-        S.lookAt(bow > .15 ? top.set(S.x + Math.sin(S.yaw) * 2.5, gy(S.x, S.z), S.z + Math.cos(S.yaw) * 2.5) : null, dt, 2);   // (bowing: its head inclines toward the ground before it)
-        S.pose(t, dt);
-        sov.body.rotation.x += bow * .14;
-        sov.crestM.emissiveIntensity = 1.4 + bow * 2.2 + Math.sin(t * 1.2) * .2; sov.crest.rotation.z = Math.sin(t * .4) * .03;
-        // the attendants stand facing across the avenue; their heads follow it as it passes, and each bows as it goes by
-        const sp = sov.g.position;
+        const plain = smooth(12, 30, since) * smooth(10, 20, left);
+        washM.opacity = plain * .16; snM.opacity = plain * .75;
+        if (plain > .01) { snow.forEach((q, i) => { q.y -= q.sp * dt; if (q.y < gy(q.x, q.z)) q.y += 40; snA.set([q.x + Math.sin(t * .5 + q.ph) * .4, q.y, q.z + Math.cos(t * .4 + q.ph) * .4], i * 3); }); snG.attributes.position.needsUpdate = true; }
+        // ---- the attendants: down the beams one by one, forming out of the light; staffs raised into an arch as the great craft comes
+        const raise = smooth(56, 62, since) * smooth(46, 50, left);
+        const sp = sov.g.position, msBottom = msG.position.y - 16;
         att.forEach(a => {
+          const dT = 26 + a.i * 2.4, uT = 30 - a.i * 1.2;
+          const k = Math.min(smooth(dT, dT + 4, since), 1 - smooth(uT, uT - 4, left));
+          beamArrive(a.st, a.f, a.m, k, motes, dt, Math.max(4, msBottom - gy(a.sp.x, a.sp.z)));
+          a.f.g.visible = since > dT - .1 && left > uT - 4.1;
+          placeBeam(beams[a.i], (since > dT - 1 && since < dT + 4.5) || (left < uT + 1 && left > uT - 4.5) ? .085 : 0, top.copy(msG.position));
           a.m.face(a.sp.face, dt, 2);
           const near = sov.g.visible ? smooth(4, 1.5, Math.hypot(sp.x - a.m.x, sp.z - a.m.z)) : 0;
           a.m.lookAt(sov.g.visible ? top.set(sp.x, sp.y + 2.5, sp.z) : null, dt, 2);
           a.m.pose(t, dt);
-          a.f.body.rotation.x += near * .3 + bow * .15;
+          a.f.body.rotation.x += near * .3;
+          a.staff.visible = a.f.g.visible && a.m.y < .1; a.staff.rotation.x = .12 + raise * .6; a.f.arms[0].sh.rotation.x = -.5 - raise * 1.0; a.f.arms[1].sh.rotation.x = -.5 - raise * 1.0;
         });
+        // ---- the great craft: down the middle beam out of the mothership, and back up at the end
+        const cd = smooth(52, 64, since), cu = smooth(42, 30, left);
+        big.ship.position.y = sy + (msBottom - sy) * Math.max(1 - cd, cu); big.ship.rotation.y = t * .05;
+        big.lid.rotation.z = smooth(64, 67, since) * smooth(43, 46, left) * 1.1; big.inner.intensity = big.lid.rotation.z * 6;
+        big.lightM.emissiveIntensity = 2.2 + Math.sin(t * 2) * .5;
+        placeBeam(beams[10], (since > 50 && since < 65) || (left < 43 && left > 29) ? .1 : 0, top.copy(msG.position));
+        // ---- the Sovereign
+        const out = since > 70 && left > 80;
+        if (first && out && since > 125) {                                 // (someone looking in late finds it already standing there)
+          S.x = S.px = goal.x; S.z = S.pz = goal.z; S.yaw = Math.PI; greeted = true;
+          for (let i = 0; i < 16; i++) { const u = i / 15, s = steps[stepN++ % steps.length], sd = i % 2 ? 1 : -1; s.m.position.set(Sp.x + (goal.x - Sp.x) * u + side.x * sd * .2, 0, Sp.z + (goal.z - Sp.z) * u + side.z * sd * .2); s.m.position.y = gy(s.m.position.x, s.m.position.z) + .04; s.m.visible = true; s.born = t - 20; }
+        }
+        first = false;
+        sov.g.visible = since > 66.5 && left > 46;
+        const tgt = out ? goal : Sp, d = S.toward(tgt.x, tgt.z, .55, dt, .5);
+        if (d < .3) S.face(out ? Math.PI : Math.atan2(dir.x, dir.z), dt, 1);
+        const unfurl = smooth(67, 71, since); sov.crest.scale.set(.15 + .85 * unfurl, .3 + .7 * unfurl, 1);
+        halo.scale.setScalar(Math.max(.001, smooth(70, 72.5, since))); halo.rotation.z = t * .2;
+        const arrived = out && d < .3;
+        if (arrived && !greeted && greetT < 0) greetT = 0;
+        let lift = 0;
+        if (greetT >= 0) {                                                 // the greeting: the hand rises, a small light goes to the keep
+          greetT += dt; lift = smooth(0, 1.5, greetT) * (1 - smooth(5, 6.5, greetT));
+          if (greetT > 1.5 && greetT < 9) {
+            const u = smooth(1.5, 8.5, greetT); sov.arms[1].el.getWorldPosition(from);
+            greet.visible = true; greet.position.copy(from).lerp(keepWall, u); greet.position.y += Math.sin(u * Math.PI) * 2.5;
+            greet.scale.setScalar(1 - smooth(7.8, 9, greetT) * .9); greetGlow.intensity = 2.5 * (1 - smooth(8, 9, greetT));
+            if (Math.random() < .5) motes.emit(greet.position.x, greet.position.y, greet.position.z, (Math.random() - .5) * .3, -.2, (Math.random() - .5) * .3, .8);
+          } else greet.visible = false;
+          if (greetT > 9) { greetT = -1; greeted = true; }
+        }
+        const bow = arrived && greeted ? pulse(since, 32, 5) : 0;
+        S.lookAt(bow > .15 ? top.set(S.x + Math.sin(S.yaw) * 2.5, gy(S.x, S.z), S.z + Math.cos(S.yaw) * 2.5) : lift > .1 ? keepWall : null, dt, 2);
+        S.pose(t, dt);
+        sov.body.rotation.x += bow * .14;
+        if (lift > 0) { sov.arms[1].sh.rotation.x = -1.35 * lift; sov.arms[1].el.rotation.x = -.25 * lift; }
+        sov.crestM.emissiveIntensity = 1.4 + bow * 2.2 + lift * 1.2 + (1 - unfurl) * 2 * smooth(66.5, 67, since) + Math.sin(t * 1.2) * .2; sov.crest.rotation.z = Math.sin(t * .4) * .03;
+        // footsteps: a mark of light where each foot comes down, fading to a faint glow that stays
+        if (sov.g.visible && S.spd > .1 && Math.floor(S.phase / Math.PI) !== lastStep) {
+          lastStep = Math.floor(S.phase / Math.PI); const s = steps[stepN++ % steps.length], sd = lastStep % 2 ? 1 : -1;
+          s.m.position.set(S.x + Math.cos(S.yaw) * sd * .2, 0, S.z - Math.sin(S.yaw) * sd * .2); s.m.position.y = gy(s.m.position.x, s.m.position.z) + .04; s.m.visible = true; s.born = t;
+        }
+        const keepLit = smooth(10, 20, left);
+        steps.forEach(s => { if (s.m.visible) { const age = t - s.born; s.m.material.opacity = (.25 + .65 * Math.exp(-age * .6)) * keepLit; } });
+        motes.tick(dt);
       };
     },
   },

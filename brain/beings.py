@@ -365,8 +365,9 @@ CHARACTERS = {
         drives=["to see the keep with its own eyes", "to meet whoever its people spoke of"],
         signs=["a vast craft eases into the sky over the plain, so big the stars go out behind it",
                "beams of light come down from it onto the plain, one after another, and in each someone stands"],
-        looks="a tall, luminous being with a crest of light, walking toward the keep between two lines of waiting attendants, "
-              "a great craft settled behind it and a far vaster one hanging in the sky over the plain",
+        looks="a tall, luminous being with a crest of glass blades and a faint ring of light behind its head, walking toward the "
+              "keep under an arch of staffs of light held up by two lines of attendants, the ground lighting under each step; a great "
+              "craft settled behind it, and a far vaster one hanging in the sky over the plain, the plain gone faintly teal beneath it",
         tell="its crest brightens when it is pleased", likes=["welcome", "bow", "gift", "show", "respect"],
         danger=0, gifts=["a gift from their people"], trace="a great scorched circle on the plain"),
 }
