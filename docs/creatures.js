@@ -5089,7 +5089,7 @@ const BEASTS = {
 
   // ================================================================ THE GLASSY PEOPLE: THE SCOUTS (their story's second chapter)
   glassy2: {
-    name: 'The glassy Scouts', hour: 19,
+    name: 'The glassy Scouts', hour: 18,
     blurb: 'The second chapter of the glassy people. A slim craft hangs low over the plain, and three or four quick, slender beings of glassy light come down its beam, then scatter across the land, running on their toes from one place to the next: the barrow, the lake shore, the forest edge, the road. At each they stop to look, sweeping the ground with the beams from their faces, crouching to look closer. When something interests them, every beam swings onto it at once, from wherever they are. The better they think of the knight, the nearer they range.',
     view: [[2, 15, 34], [-5, 0, 6]],
     knight: { place: 'courtyard', action: 'gaze', emote: 'question', note: 'watching the lights run about the land' },
@@ -5109,10 +5109,12 @@ const BEASTS = {
         let r = Math.random() * w.reduce((a, b) => a + b, 0); for (let j = 0; j < list.length; j++) { r -= w[j]; if (r <= 0) return list[j]; } return list[0];
       };
       const send = (s, p) => { s.at = p; s.path = routeAround([s.m.x, s.m.z], p); s.mode = 'go'; };
-      let first = true;
+      let first = true, lastSince = -1;
       return (t, dt = 1 / 60) => {
         dt = Math.min(dt, .1);
         const { since, left } = clock(t);
+        if (since < lastSince) for (const s of scouts) { s.mode = 'up'; s.path = []; s.at = null; s.m.x = s.m.px = CP.x; s.m.z = s.m.pz = CP.z; s.m.v = 0; s.m.crouch = 0; }   // (the preview's visit starts over: so do they)
+        lastSince = since;
         const down = smooth(0, 6, since), leaving = 1 - smooth(2, 10, left);
         craft.ship.position.set(CP.x, cy + (1 - down) * 40 + leaving * 40, CP.z); craft.ship.rotation.y = Math.sin(t * .2) * .3;
         craft.beam.material.opacity = (since > 4 && since < 10 + n * 1.3) || (left > 6 && left < 20) ? .1 + .04 * Math.sin(t * 7) : 0;
