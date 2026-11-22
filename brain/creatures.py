@@ -113,7 +113,8 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "whale", "moths", "barrow", "thorn", "lanternheads", "brood", "thincrowd", "doorway",    # wave 2
             "basilisk", "wyrm", "crawl", "golem", "well", "bloom", "warden", "larva",               # wave 3
             "listener", "cartographer", "moon2", "bentone", "watcher", "nightgrown", "glassy1",     # wave 4
-            "clockhead", "stranger", "ninefold", "leech", "seam", "stitched"}                         # last wave
+            "clockhead", "stranger", "ninefold", "leech", "seam", "stitched",                         # last wave
+            "manyjoint", "hill", "glassy2", "glassy3", "glassy4"}
 
 
 def nature_of(a):
@@ -539,7 +540,7 @@ def export(world: Path, now=None):
     state, best = load(world), load_bestiary(world)
     import encounters                              # (here, to keep the two modules from importing each other at load)
     shown = [{**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
-                                   "stance", "prevails", "caption", "caption_at") if k in a},
+                                   "stance", "prevails", "caption", "caption_at", "regard") if k in a},   # (regard: how near the glassy people dare come)
               **({"stance_says": encounters.STANCE_SAYS[a["stance"]]} if a.get("stance") in encounters.STANCE_SAYS
                  and not a.get("companion") else {}),
               "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}

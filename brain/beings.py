@@ -73,11 +73,12 @@ CHARACTERS = {
     "hill": B(
         traits=["vast", "slow", "ancient", "sleeping", "indifferent"],
         drives=["it stirs in its sleep", "it opens an eye to see the sky", "something woke it"],
-        signs=["the ground hums under your feet", "the trees on the south hill sway with no wind"],
-        looks="the whole south hill shifting, and an eye the size of a cottage opening in its side",
+        signs=["the ground hums under your feet", "trees out on the plain to the south sway with no wind"],
+        looks="a long green hill lying on the plain to the south that was not there before, trees and boulders on its back, "
+              "breathing so slowly you have to watch to be sure; now and then a fold in its side peels open on an eye the size of a cottage",
         tell="the grass ripples just before it moves", likes=["quiet", "song", "stillness"],
         voice=True, loud=True, danger=1, hurts=[], damages=["wall"], gifts=["a new spring of clear water at the hill's foot"],
-        trace="the south hill not quite where it was"),
+        trace="a long hollow pressed into the plain where a hill lay, the grass flattened and the turf torn"),
     "whale": B(
         traits=["gentle", "vast", "migrating", "musical"],
         drives=["passing over on its way somewhere", "following the clear night", "singing"],
@@ -211,7 +212,8 @@ CHARACTERS = {
         traits=["patient", "light-shy", "folding", "stalking"],
         drives=["a dark corner to fold into", "creeping in from the light", "hunting the sleeping"],
         signs=["a creak in the rafters with no wind", "the corner of the hall seems darker than it should"],
-        looks="something with far too many joints folded into the hall's high corner, unfolding slowly toward the light",
+        looks="something pale with far too many limbs, and far too many joints in each, folded into the hall's high corner, "
+              "unfolding slowly down the walls toward the room",
         tell="it unfolds only where the light doesn't reach", likes=[],
         weakness=B(words=["light", "lantern", "torch", "fire", "bright", "candle"], note="it can't bear light; it draws in from it"),
         danger=2, hurts=["a wrenched shoulder"], damages=[], trace="scratches high in the hall's corner"),

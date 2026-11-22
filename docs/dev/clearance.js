@@ -25,13 +25,14 @@ const OBSTACLES = [
   ['Rooken (courtyard)', -7.75, -7.05, -1, 1.9, .65, 1.35],
 ];
 // what a being is meant to touch (it perches on, or leans in at, or lives inside)
-const ALLOWED = { dragon2: ['courtyard west wall', 'courtyard north wall'], doorway: ['the lintel'], watcher: ['keep north wall'], well: ['the well'] };
+const ALLOWED = { dragon2: ['courtyard west wall', 'courtyard north wall'], doorway: ['the lintel'], watcher: ['keep north wall'], well: ['the well'],
+  manyjoint: ['keep north wall', 'keep west wall'] };   // (its fingertips press on the stone)
 const NATURE = { fog: 'hostile', axolotl: 'gentle', bellcrab: 'neutral', glassbeak: 'nuisance', ashwolves: 'hostile',
   dragon2: 'proud', longman2: 'hostile', whale: 'gentle', moths: 'nuisance', barrow: 'proud', thorn: 'neutral',
   lanternheads: 'gentle', brood: 'nuisance', thincrowd: 'hostile', doorway: 'hostile', basilisk: 'hostile', wyrm: 'hostile',
   crawl: 'hostile', golem: 'proud', well: 'proud', bloom: 'courteous', warden: 'courteous', larva: 'gentle',
   listener: 'neutral', cartographer: 'gentle', moon2: 'neutral', bentone: 'hostile', watcher: 'hostile', nightgrown: 'neutral', lander: 'neutral',
-  clockhead: 'neutral', stranger: 'hostile', ninefold: 'neutral', leech: 'neutral', seam: 'neutral', stitched: 'neutral' };
+  clockhead: 'neutral', stranger: 'hostile', ninefold: 'neutral', leech: 'neutral', seam: 'neutral', stitched: 'neutral', manyjoint: 'hostile', hill: 'neutral', glassy2: 'neutral', glassy3: 'neutral', glassy4: 'neutral' };
 // beings that come in forms that are not ages (brain/creatures.py KINDS forms): each is checked
 const FORMS = { clockhead: ['', 'clock', 'hourglass', 'metronome', 'galaxy', 'mask'], stranger: ['cape', 'woodsman', 'bark', 'traveller', 'bare'] };
 const AGED = ['axolotl', 'bellcrab', 'glassbeak', 'ashwolves', 'dragon2', 'whale', 'thorn', 'basilisk', 'wyrm', 'larva',

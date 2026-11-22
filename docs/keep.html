@@ -107,6 +107,7 @@ let skyHour = DEMO && params.has('hour') ? +params.get('hour') : null;   // prev
 let fireDim = 1;   // previews: something eating the light
 const onTick = [];   // previews: creatures animate here
 const beings = new Map();   // beings at the keep now: appearance id -> what spawn() returned
+const traceMarks = new Map();   // what arrivals left behind (a crater, scorched rings): trace id -> what spawnTrace() returned
 let creatureMod = null, beingsReady = false;   // (the loader runs once the page has started)
 const HOME = 'https://knight-friend.streamlit.app';   // its home page, where visitors knock, leave gifts and so on
 let injected = null;
@@ -2380,7 +2381,8 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog,
     const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ'); lookYaw = e.y; lookPitch = e.x; flyVel.set(0, 0, 0);
   },
   updateSky, visitorArrived,
-  setCreatures(list) { state = { ...(state || {}), creatures: { seeing: 4, current: list } }; return showBeings().then(() => beings.size); },   // testing
+  setCreatures(list, traces = []) { state = { ...(state || {}), creatures: { seeing: 4, current: list, traces } }; return showBeings().then(() => beings.size); },   // testing
+  get tracesHere() { return [...traceMarks.keys()]; },
   get beingsHere() { return [...beings.keys()]; },
   setCandles: n => { liveCandles = { n, at: Date.now() }; state = { ...(state || {}), visits: { candles_tonight: n } }; showCandles(); },
   setMood: m => { state = { ...(state || {}), plan: { ...(state?.plan || {}), mood: m } }; },
@@ -2400,10 +2402,14 @@ if (CREATURE) loadCreatures().then(m => m.start(CREATURE, creatureApi())).catch(
 async function showBeings() {
   if (CREATURE || !beingsReady) return;   // the preview shows its own
   const now = Date.now(), list = state?.creatures?.current || [];
-  if (list.length && !creatureMod) creatureMod = await loadCreatures().catch(() => null);   // fetched ahead, while it's still on its way
+  if ((list.length || state?.creatures?.traces?.length) && !creatureMod) creatureMod = await loadCreatures().catch(() => null);   // fetched ahead, while it's still on its way
   if (!creatureMod) return;
   const here = list.filter(a => Date.parse(a.start) <= now && now < Date.parse(a.end));
   for (const [id, b] of beings) if (!here.some(a => a.id === id)) { b?.remove(); beings.delete(id); }
+  // and what arrivals left behind: a crater from something that fell, scorched rings where a craft stood
+  const traces = state?.creatures?.traces || [];
+  for (const [id, m] of traceMarks) if (!traces.some(tr => tr.id === id)) { m?.remove(); traceMarks.delete(id); }
+  for (const tr of traces) if (!traceMarks.has(tr.id) && creatureMod.spawnTrace) traceMarks.set(tr.id, creatureMod.spawnTrace(tr, creatureApi()));
   for (const a of here) if (!beings.has(a.id)) {
     const b = creatureMod.spawn(a.render || a.kind, creatureApi(), { ...a, seeing: state?.creatures?.seeing ?? 0 });   // (it shows what he can see)
     beings.set(a.id, b);
