@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-22T15:00:27+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-22T15:00:30+00:00",
+  "place": "raise:3",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "continue raising the bathhouse structure in the courtyard",
+  "thought": "The bathhouse is half done. I need to get the walls up before the rain gets any ideas."
 }

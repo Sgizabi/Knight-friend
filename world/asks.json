@@ -1,16 +1,5 @@
 {
-  "current": {
-    "id": "a202611210101",
-    "time": "2026-11-21T01:01:31+00:00",
-    "text": "Which sealant works best for roof gaps?",
-    "options": [
-      "linseed oil",
-      "clay mix",
-      "pitch"
-    ],
-    "tally": {},
-    "said": []
-  },
+  "current": null,
   "past": [
     {
       "id": "a202611192101",
@@ -31,6 +20,19 @@
         "time": "2026-11-21T01:01:31+00:00"
       },
       "closed": "2026-11-21T01:01:31+00:00"
+    },
+    {
+      "id": "a202611210101",
+      "time": "2026-11-21T01:01:31+00:00",
+      "text": "Which sealant works best for roof gaps?",
+      "options": [
+        "linseed oil",
+        "clay mix",
+        "pitch"
+      ],
+      "tally": {},
+      "said": [],
+      "closed": "2026-11-22T15:00:29+00:00"
     }
   ]
 }

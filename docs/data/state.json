@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-22T15:00:27+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-22T15:00:30+00:00",
+    "place": "raise:3",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "continue raising the bathhouse structure in the courtyard",
+    "thought": "The bathhouse is half done. I need to get the walls up before the rain gets any ideas."
   },
   "needs": {
-    "rest": 88.4,
-    "warmth": 74.1,
+    "rest": 88.7,
+    "warmth": 74.9,
     "inspiration": 46.5,
-    "spirit": 71.3
+    "spirit": 70.8
   },
   "needs_prev": {
     "rest": 88.4,
@@ -106,7 +106,7 @@
     "inspiration": 46.5,
     "spirit": 71.3
   },
-  "needs_at": "2026-11-22T15:00:27+00:00",
+  "needs_at": "2026-11-22T15:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -876,5 +876,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T15:00:27+00:00"
+  "exported": "2026-11-22T15:00:30+00:00"
 }
