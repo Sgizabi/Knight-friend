@@ -267,6 +267,9 @@ def scene(a, entry, seeing, ph, history):
             own = beings.AGE_LOOKS.get(a["kind"], {}).get(age)
             lines.append(f"This one is {age}: {own}." if own else
                          {"old": "This one is old: bigger, worn, slower.", "young": "This one is young: small and quick."}[age])
+        form = beings.FORM_LOOKS.get(a["kind"], {}).get((a.get("variant") or {}).get("kind", ""))
+        if form:
+            lines.append(form)
         if mark == "scarred" and entry and entry.get("count"):
             lines.append("This one has an old scar.")
         if a.get("chain"):
@@ -425,7 +428,7 @@ def resolve(a, choice, how, ctx, rng=None):
     rng = rng or random.Random()
     kind = a["kind"]
     k, c = creatures.KINDS[kind], character(kind)
-    nature = k["nature"]
+    nature = creatures.nature_of(a)
     choice = choice if choice in ODDS[nature] else "watch"
     good, bad = ODDS[nature][choice]
     used = weakness_used(a, choice, how, ctx.get("entry"), ctx["now"], ctx.get("sky", ""))

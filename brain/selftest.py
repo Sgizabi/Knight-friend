@@ -181,7 +181,16 @@ assert all(not (a.get("variant") or {}).get("age") or a["kind"] in creatures.AGE
 import beings as _b  # noqa: E402
 assert set(_b.AGE_LOOKS) <= creatures.AGED and all(set(v) == {"young", "old"} for v in _b.AGE_LOOKS.values())   # each age its own shape
 assert any((a.get("variant") or {}).get("age") for a in _apps)
-_ids = {a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
+for _k, _kk in creatures.KINDS.items():                                  # forms (heads, disguises): each described, to him and to itself
+    assert not _kk.get("forms") or set(_b.FORM_LOOKS[_k]) == set(_kk["forms"]) == set(_b.FORM_MIND[_k]), _k
+    assert set(_kk.get("natures", [_kk["nature"]])) <= set(__import__("encounters").ODDS), _k
+_rs, _sv = __import__("random").Random(3), {"appearances": []}
+for _i in range(40):                                                     # the stranger: never the same disguise twice running
+    _x = creatures._appearance("stranger", _t0.date(), _t0, _rs, _sv); _sv["appearances"].append(_x)
+assert all(a["variant"]["kind"] != b["variant"]["kind"] for a, b in zip(_sv["appearances"], _sv["appearances"][1:]))
+assert {a["nature"] for a in _sv["appearances"]} == {"hostile", "neutral"} and len({a["variant"]["kind"] for a in _sv["appearances"]}) == 5
+assert creatures.nature_of({"kind": "stranger", "nature": "neutral"}) == "neutral" and creatures.nature_of({"kind": "fog"}) == "hostile"
+_ids ={a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
 _pairs = [(a, _ids.get(a["with"])) for a in _apps if a.get("companion")]
 assert 1 <= len(_pairs) <= len(_apps) // 4, len(_pairs)
 for _b, _a in _pairs:

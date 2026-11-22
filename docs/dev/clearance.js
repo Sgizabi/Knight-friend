@@ -30,9 +30,12 @@ const NATURE = { fog: 'hostile', axolotl: 'gentle', bellcrab: 'neutral', glassbe
   dragon2: 'proud', longman2: 'hostile', whale: 'gentle', moths: 'nuisance', barrow: 'proud', thorn: 'neutral',
   lanternheads: 'gentle', brood: 'nuisance', thincrowd: 'hostile', doorway: 'hostile', basilisk: 'hostile', wyrm: 'hostile',
   crawl: 'hostile', golem: 'proud', well: 'proud', bloom: 'courteous', warden: 'courteous', larva: 'gentle',
-  listener: 'neutral', cartographer: 'gentle', moon2: 'neutral', bentone: 'hostile', watcher: 'hostile', nightgrown: 'neutral', lander: 'neutral' };
+  listener: 'neutral', cartographer: 'gentle', moon2: 'neutral', bentone: 'hostile', watcher: 'hostile', nightgrown: 'neutral', lander: 'neutral',
+  clockhead: 'neutral', stranger: 'hostile', ninefold: 'neutral', leech: 'neutral', seam: 'neutral', stitched: 'neutral' };
+// beings that come in forms that are not ages (brain/creatures.py KINDS forms): each is checked
+const FORMS = { clockhead: ['', 'clock', 'hourglass', 'metronome', 'galaxy', 'mask'], stranger: ['cape', 'woodsman', 'bark', 'traveller', 'bare'] };
 const AGED = ['axolotl', 'bellcrab', 'glassbeak', 'ashwolves', 'dragon2', 'whale', 'thorn', 'basilisk', 'wyrm', 'larva',
-  'listener', 'cartographer', 'bentone', 'watcher', 'nightgrown'];
+  'listener', 'cartographer', 'bentone', 'watcher', 'nightgrown', 'leech'];
 
 function solidBoxes(root) {
   // each solid mesh's world box (skipping glows, smoke, water, rings: anything see-through)
@@ -84,8 +87,9 @@ export async function run({ kinds = Object.keys(NATURE), seconds = 150, step = 2
   const K = window.__keep, hits = [];
   let scene = K.camera.parent; while (scene.parent) scene = scene.parent;
   const iso = ms => new Date(ms).toISOString(), now = Date.now();
-  for (const kind of kinds) for (const age of AGED.includes(kind) ? ['', 'young', 'old'] : ['']) {
-    await K.setCreatures([{ id: `${kind}-${age}-check`, kind, render: kind, nature: NATURE[kind] || 'neutral', variant: { size: 1, age },
+  for (const kind of kinds) for (const age of AGED.includes(kind) ? ['', 'young', 'old'] : FORMS[kind] || ['']) {
+    const form = FORMS[kind] ? age : '';
+    await K.setCreatures([{ id: `${kind}-${age}-check`, kind, render: kind, nature: NATURE[kind] || 'neutral', variant: { size: 1, age: form ? '' : age, kind: form },
                             start: iso(now - 30000), end: iso(now + 3600e3), chain: 5, last: true }]);
     let root = null; scene.traverse(o => { if (!root && o.userData?.appearance?.id === `${kind}-${age}-check`) root = o; });
     if (!root) { hits.push({ being: kind, age, part: '-', obstacle: 'did not appear', t: 0 }); continue; }

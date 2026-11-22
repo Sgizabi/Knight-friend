@@ -153,7 +153,7 @@ CHARACTERS = {
         traits=["drifting", "dreaming", "indifferent"],
         drives=["passing over the sleeping", "feeding on dreams", "drifting with the night wind"],
         signs=["your eyes grow heavy all at once", "the air tastes of copper"],
-        looks="a long translucent shape drifting over the roof, dreams flickering inside it",
+        looks="a long clear shape swimming through the air over the roof, small stars and flickering dreams inside it, a round mouth and no face",
         tell="it lingers longest over the most vivid sleepers", likes=[],
         danger=0, gifts=["a dream not your own"], trace="that you had dreamed a dream that wasn't yours"),
     "seam": B(
@@ -309,12 +309,30 @@ CHARACTERS = {
         tell="they all reach up at once, then lower their arms together", likes=["stillness", "quiet", "light", "star"],
         danger=0, gifts=["a shard of dark glass with a star moving inside it"], trace="a smoking crater on the plain"),
     "clockhead": B(
-        traits=["wrong", "slow then sudden", "indifferent", "lost in time"],
-        drives=["walking somewhere only it knows", "time has slipped", "looking for the right hour"],
-        signs=["the fire flickers backward", "rain falling up for a moment", "you lose a minute you can't account for"],
-        looks="a very tall, thin figure with an old clock face for a head, its hands spinning the wrong way; it freezes, skips ahead, walks backward",
-        tell="its hands stop just before it moves", likes=["clock", "time", "bell", "wait", "stillness"],
-        danger=1, hurts=[], damages=[], gifts=["an hour you remember twice"], trace="footprints that walk backward into nothing"),
+        traits=["many-minded", "lost in time", "indifferent", "patient, then restless"],
+        drives=["walking somewhere only it knows", "looking for the right hour", "time has slipped here",
+                "to watch whoever keeps time here"],
+        signs=["the fire flickers backward", "a steady ticking, coming from no clock", "you lose a minute you can't account for"],
+        looks="a very tall, thin figure in a long coat with a high collar, and one head at a time: a clock, an hourglass, "
+              "a metronome, a galaxy turning under glass, or a gilded smiling mask",
+        tell="a head sinks into its collar and another rises just before its mood changes",
+        likes=["clock", "time", "bell", "wait", "stillness", "patience", "rhythm", "music", "stars"],
+        danger=1, hurts=[], damages=[], gifts=["an hour you remember twice"],
+        trace="a little spilled sand on the flagstones, and every candle burned down to the same height"),
+    # not of this world
+    "stranger": B(
+        traits=["not of this world", "watchful", "mimicking", "ever-adaptive", "unknowable"],
+        drives=["to watch him from the trees", "to come closer than last time, in a new shape", "to learn how the people here walk",
+                "to see whether it can pass for one of them", "something nobody could guess"],
+        signs=["a tree at the forest edge that wasn't there yesterday", "the birds go quiet all along the treeline",
+               "something tall leans out from behind a tree, and back again"],
+        looks="something far too tall at the forest edge, peering out from behind a tree: a pale smiling mask on a dark head",
+        tell="the moment it knows it has been noticed, it stops breathing and goes perfectly still", likes=[],
+        weakness=B(words=["i see you", "i know what you are", "not a tree", "you're not", "you are not", "call out", "point at it",
+                          "name it", "what it is", "unmask", "take off"],
+                   note="seen for what it is, and told so, it goes back into the trees"),
+        danger=2, hurts=["a wrenched arm", "a long scratch across the back of the hand"], damages=[],
+        trace="very long footprints at the forest edge, made by different boots, all the same length"),
     "glassy1": B(
         traits=["careful", "curious", "solitary", "scientific"],
         drives=["taking samples", "measuring the keep", "looking at him, a little"],
@@ -379,6 +397,9 @@ MORE_WEAKNESSES = {
                 "deep": [B(words=["wave", "greet", "nod", "say hello"], note="greeted, it seems embarrassed and goes")]},
     "doorway": {"alt": [B(words=["salt", "line across", "line of ash", "threshold"], note="a line across the threshold")],
                 "deep": [B(words=["ask its name", "what is your name", "its name"], note="asked its name, it has to leave to remember it")]},
+    "stranger": {"alt": [B(words=["lantern on it", "light on it", "torch on it", "shine", "lamp on it"], note="in a steady light its disguise doesn't hold")],
+                 "deep": [B(words=["play along", "pretend not to notice", "greet it as", "treat it as", "as if it were"],
+                            note="met as what it pretends to be, it doesn't know what to do, and leaves")]},
 }
 
 # Weather that blunts a being's main weakness (fire is hard to keep up in the rain, a steady
@@ -417,8 +438,49 @@ AGE_LOOKS = {
                 "old": "a face so long it runs past the top and bottom of the window, both hands spread on the glass, the pane fogging from outside"},
     "nightgrown": {"young": "a bed of knee-high seedlings of dark glass, growing out of the ground where the stars came down, swaying",
                    "old": "three of them, tall and cracked, so full of stars they shine white, stars leaking from the cracks, each with one arm raised"},
+    "leech": {"young": "a small one, no longer than a man, darting low over the roof, only a few dreams flickering inside it",
+              "old": "an old one, vast and slow, its clear skin clouded and scarred, so full of old dreams that they trail out behind it in a long wake of light"},
     "ashwolves": {"young": "the pack is mostly pups, tumbling and play-fighting in the ash, one grown wolf keeping watch",
                   "old": "an old pack, grey ash all through and their fire burned low, padding in a file behind a big old grey wolf with a limp and a mane of pale ash at its neck"},
+}
+
+# Beings that come in forms that are not ages (creatures.KINDS forms): what he sees this time (said after
+# `looks`), and what the being's own mind is told about itself. Every form is listed, so nothing is left out.
+FORM_LOOKS = {
+    "clockhead": {"": "Its heads change while you watch: one sinks into the collar and another rises.",
+                  "clock": "This one is smaller, with only one head: a clock, its hands creeping. It walks slowly and stops often.",
+                  "hourglass": "This one is smaller, with only one head: an hourglass, the sand running. It paces, restless.",
+                  "metronome": "This one is smaller, with only one head: a metronome, ticking. It walks in step with its own ticking.",
+                  "galaxy": "This one is smaller, with only one head: a galaxy turning under a glass globe. It stands looking up at the sky, "
+                            "far away, and the fire flickers.",
+                  "mask": "This one is smaller, with only one head: a gilded smiling mask. It stands and watches whoever is watching it."},
+    "stranger": {"cape": "This time it comes out in a long hooded cape, gliding over the grass and stopping dead, far too tall for whoever "
+                         "that cape was made for.",
+                 "woodsman": "This time it is dressed as a woodsman, in a hat, coat and scarf with a bundle of sticks, but it swings "
+                             "the same arm as the leg, lifts its knees too high and bobs its head like a bird.",
+                 "bark": "This time it is dressed in bark and branches, arms held up like boughs and leaves for a crown, standing "
+                         "among the trees as one of them, then lurching forward.",
+                 "traveller": "This time it comes as a traveller, in a patched cloak and cowl with a pack and a staff, limping, "
+                              "though the limp keeps changing legs.",
+                 "bare": "This time it wears nothing over itself: a far too tall, thin dark body and the smiling mask, walking out "
+                         "into the open as if it thinks nobody can see it."},
+}
+_DISGUISES = {"cape": "a long hooded cape", "woodsman": "a woodsman's hat, coat, scarf and sticks",
+              "bark": "bark and branches, as if you were a tree", "traveller": "a traveller's cloak, pack and staff"}
+FORM_MIND = {
+    "clockhead": {"": "You have five heads and wear one at a time, each a mood: the clock patient, the hourglass restless, "
+                      "the metronome focused, the galaxy far away, the mask unreadable. When your mood changes, the head "
+                      "sinks into your collar and another rises.",
+                  "clock": "You have only one head, a clock: you are patient, and slow to move.",
+                  "hourglass": "You have only one head, an hourglass: you are restless, until the sand runs out.",
+                  "metronome": "You have only one head, a metronome: you are focused, and keep to your own beat.",
+                  "galaxy": "You have only one head, a galaxy under glass: your thoughts are far away, among the stars.",
+                  "mask": "You have only one head, a gilded mask: nobody can read you, and you watch whoever watches you."},
+    "stranger": {**{f: f"This time you wear a disguise you have never worn here before ({d}). You believe it makes you pass "
+                       "for someone from here; you do not know that you move wrongly in it. You never speak."
+                    for f, d in _DISGUISES.items()},
+                 "bare": "This time you wear no disguise, and you believe nobody can see you. If anything notices you, you "
+                         "realise, look back at it, and go back into the trees. You never speak."},
 }
 
 # How quickly each being gets used to a trick he keeps using (0: never; a third is quick). It
@@ -427,7 +489,7 @@ AGE_LOOKS = {
 # stay dependable puzzles.
 LEARNS = {"dragon": .3, "glassbeak": .3, "barrow": .3, "longman": .3, "well": .25, "doorway": .25, "watcher": .25,
           "bentone": .25, "thincrowd": .2, "basilisk": .15, "ashwolves": .2, "brood": .15, "manyjoint": .15,
-          "golem": .15, "fog": .05, "wyrm": .05, "crawl": 0, "moths": .05}
+          "golem": .15, "fog": .05, "wyrm": .05, "crawl": 0, "moths": .05, "stranger": .3}
 
 # How each one answers him, in plain words: (when it goes well, when it goes badly). The rules
 # pick which; these say what that looks like for this being (its behaviour mind, from session 6,
@@ -506,6 +568,8 @@ REACTS = {
                    "Their seams of light all turn to you at once, and the air goes thin and cold."),
     "clockhead": ("Its hands stop, and for a moment everything is perfectly ordinary. Then it walks on.",
                   "Its hands spin wildly, and you lose a stretch of time you can't account for."),
+    "stranger": ("It goes as still as a tree, and when you look again there is only the forest edge.",
+                 "It comes out of the trees all at once, far too fast for something so tall, and the smile is right in front of you."),
     "glassy1": ("It tilts its head; its light flickers, curious, and it holds something up to look at.",
                 "Its light flares and it hurries back into its craft."),
     "glassy2": ("Their beams stop on you, linger, and move on without hurry.",

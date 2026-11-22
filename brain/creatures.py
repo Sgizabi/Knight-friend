@@ -23,6 +23,8 @@ import weather
 # what each being is. when: day (8-17 ET), dusk (17-20), night (20-5), dark (dusk or night), any.
 # likes: weather that draws it (three times as likely then). needs: what must be true for it to come.
 # render: the keep page's name for how it looks. arrives: it comes by meteor or ship (and leaves a trace).
+# forms: shapes it can come in that are not ages (which heads, which disguise), weighted; fresh: never
+# the same form twice running. natures: its nature is drawn for each visit (KINDS nature is what the caps count).
 # arc: a chapter of a longer story (ARCS). Some, once started, come back on their own slow clock (CHAINS).
 KINDS = {
     "dragon":       dict(name="the dragon", nature="proud", rarity="legendary", step=0, when="any", minutes=(40, 90), render="dragon2"),
@@ -61,7 +63,13 @@ KINDS = {
     "doorway":      dict(name="the Doorway Figure", nature="hostile", rarity="rare", step=1, when="night", minutes=(30, 60)),
     # otherworldly
     "nightgrown":   dict(name="the Night-Grown", nature="neutral", rarity="rare", step=2, when="night", needs="clear", likes=["starfall"], minutes=(40, 120), arrives="meteor"),
-    "clockhead":    dict(name="the clock-headed figure", nature="neutral", rarity="rare", step=3, when="dark", minutes=(20, 45)),
+    "clockhead":    dict(name="the Five Hours", nature="neutral", rarity="rare", step=3, when="dark", minutes=(20, 45),
+                         forms={"": 60, "clock": 8, "hourglass": 8, "metronome": 8, "galaxy": 8, "mask": 8}),
+    # not of this world: tree-tall, a smiling mask, nearly always in a disguise it has never worn here before.
+    # Each visit it is either hostile or merely neutral (never harmless); the caps count it as hostile.
+    "stranger":     dict(name="the stranger in the trees", nature="hostile", rarity="rare", step=2, when="dusk", minutes=(30, 60),
+                         forms={"cape": 21, "woodsman": 21, "bark": 21, "traveller": 21, "bare": 16}, fresh=True,
+                         natures=["hostile", "hostile", "neutral"]),
     # the glassy people: one story told over many months (ARCS)
     "glassy1":      dict(name="the glassy Gardener", nature="neutral", rarity="rare", step=2, when="dusk", minutes=(30, 60), arrives="ship", arc="glassy", stage=1, render="lander"),
     "glassy2":      dict(name="the glassy Scouts", nature="neutral", rarity="rare", step=3, when="dark", minutes=(30, 60), arrives="ship", arc="glassy", stage=2),
@@ -93,7 +101,7 @@ MEET_CHANCE = .125
 # Folk, a swarm), and some whose age is left a mystery for now (the well, the glassy people).
 AGED = {"axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "whale", "thorn", "basilisk", "wyrm", "larva",
         # (later waves, once their three ages are designed)
-        "listener", "cartographer", "bentone", "watcher", "nightgrown"}
+        "listener", "cartographer", "bentone", "watcher", "nightgrown", "leech"}
 AGELESS = set(KINDS) - AGED
 STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off", "follow", "compete",
            "steal from", "uneasy truce", "size up"]
@@ -104,7 +112,13 @@ STANCES = ["team up", "rival", "squabble", "ignore", "avoid", "flee", "chase off
 RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "longman",       # wave 1
             "whale", "moths", "barrow", "thorn", "lanternheads", "brood", "thincrowd", "doorway",    # wave 2
             "basilisk", "wyrm", "crawl", "golem", "well", "bloom", "warden", "larva",               # wave 3
-            "listener", "cartographer", "moon2", "bentone", "watcher", "nightgrown", "glassy1"}     # wave 4
+            "listener", "cartographer", "moon2", "bentone", "watcher", "nightgrown", "glassy1",     # wave 4
+            "clockhead", "stranger"}                                                                 # last wave
+
+
+def nature_of(a):
+    """This visit's nature (some beings differ from visit to visit; most are always what their kind is)."""
+    return a.get("nature") or KINDS[a["kind"]]["nature"]
 
 
 def released(kind):
@@ -296,11 +310,17 @@ def _appearance(kind, day, t, rng, state, chain=None):
     variant = {"size": round(rng.uniform(.88, 1.15), 2), "hue": round(rng.uniform(-.06, .06), 3),
                "mark": rng.choice(["", "", "", "", "", "scarred"]),
                "age": "" if kind in AGELESS else rng.choices(["young", "", "old"], [15, 70, 15])[0]}
+    if k.get("forms"):                             # which heads, which disguise (fresh: not the one it wore last time)
+        last = next((x.get("variant", {}).get("kind") for x in reversed(state.get("appearances", [])) if x["kind"] == kind), None)
+        forms = {f: w for f, w in k["forms"].items() if not (k.get("fresh") and f == last)}
+        variant["kind"] = rng.choices(list(forms), list(forms.values()))[0]
     drives = beings.CHARACTERS.get(kind, {}).get("drives") or [""]
     a = {"id": f"{kind}-{begin.strftime('%Y%m%d%H%M')}", "kind": kind, "day": day.isoformat(),   # its evening, even past midnight
          "start": _iso(begin), "end": _iso(end), "variant": variant,
          "drive": rng.choice(drives),                              # why it came this time
          "temper": rng.choice(["calm", "calm", "wary", "bold"])}   # its mood this visit
+    if k.get("natures"):
+        a["nature"] = rng.choice(k["natures"])
     if k.get("arrives") and rng.random() < k.get("arrive_chance", 1):
         a["arrival"] = k["arrives"]
     if chain:
@@ -522,7 +542,7 @@ def export(world: Path, now=None):
                                    "stance", "prevails", "caption", "caption_at") if k in a},
               **({"stance_says": encounters.STANCE_SAYS[a["stance"]]} if a.get("stance") in encounters.STANCE_SAYS
                  and not a.get("companion") else {}),
-              "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": KINDS[a["kind"]]["nature"]}
+              "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
              for a in current(state, now, ahead_minutes=120) if a["kind"] in KINDS]
     traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
               if a.get("arrival") and _parse(a["start"]) and

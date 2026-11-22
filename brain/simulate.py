@@ -110,7 +110,7 @@ def run(years, policy, seed=1, detail=False):
                     continue
                 changed = True
                 kind = a["kind"]
-                nature = creatures.KINDS[kind]["nature"]
+                nature = creatures.nature_of(a)
                 week = [e for e in log if start - e["time"] < dt.timedelta(days=7)]
                 if asleep_at(start):
                     wakes = sum(1 for e in week if e.get("woke"))

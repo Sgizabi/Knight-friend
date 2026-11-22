@@ -78,7 +78,7 @@ def _who(a):
                  "cannot see yet: describe only what he can see."]
     else:
         lines = [f"You are {k['name']}: {c.get('looks_seeing') or c['looks']}."]
-    lines += [f"Your nature: {k['nature']}. Your traits: {', '.join(c['traits'])}.",
+    lines += [f"Your nature: {creatures.nature_of(a)}. Your traits: {', '.join(c['traits'])}.",
              f"This time you came for: {a.get('drive', '')}."]
     age, mark = encounters.age_of(a), (a.get("variant") or {}).get("mark")
     if age == "young":
@@ -88,6 +88,9 @@ def _who(a):
         lines.append("You are old: big, worn and slow, patient and hard to fool; you remember a great deal.")
     if beings.AGE_LOOKS.get(a["kind"], {}).get(age):
         lines.append(f"How you look: {beings.AGE_LOOKS[a['kind']][age]}.")
+    form = (a.get("variant") or {}).get("kind", "")
+    if beings.FORM_MIND.get(a["kind"], {}).get(form):
+        lines.append(beings.FORM_MIND[a["kind"]][form])
     if mark == "scarred":
         lines.append("You carry an old scar.")
     if c.get("likes"):
