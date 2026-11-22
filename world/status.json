@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-22T23:00:30+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-22T23:00:32+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "add export feature and confirmation dialog to the shim summary project",
+  "thought": "The forge floor is clear, but the bathhouse shim summary still needs that export button."
 }
