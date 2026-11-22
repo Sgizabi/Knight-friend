@@ -8,10 +8,8 @@ body{font-family:sans-serif;background:#f0f0f0;margin:0;padding:1em;color:#333}
 h1{margin-top:0}
 #stack{border:2px solid #555;background:#fff;width:200px;height:200px;margin:auto;position:relative}
 .block{position:absolute;width:100%;height:20px;background:#a2d5f2;box-sizing:border-box;border:1px solid #555}
-#log{max-height:150px;overflow:auto;background:#fff;padding:5px;border:1px solid #555;margin-top:1em}
-#summary{margin-top:1em;padding:5px;background:#fff;border:1px solid #555}
-button{margin:0.3em}
-select{margin:0.3em}
+#log,#summary{margin-top:1em;padding:5px;background:#fff;border:1px solid #555;max-height:150px;overflow:auto}
+button,select{margin:0.3em}
 </style>
 </head>
 <body>
@@ -29,21 +27,30 @@ select{margin:0.3em}
   <button id="reset">Reset Section</button>
   <button id="resetAll">Reset All</button>
   <button id="test">Test Stability</button>
+  <button id="clearLog">Clear Log</button>
 </div>
 
 <div id="stack"></div>
 
-<div id="summary">Total shims this floor: 0</div>
+<div id="summary">
+  <div id="sectionSum">Section 0 total: 0</div>
+  <div id="overallSum">Overall shims this floor: 0</div>
+</div>
 <div id="log"></div>
 
 <script>
 let currentSection = 0;
-const sections = [{level:0,total:0},{level:0,total:0},{level:0,total:0}];
+const sections = [
+  {level:0,total:0},
+  {level:0,total:0},
+  {level:0,total:0}
+];
 
 const stack = document.getElementById('stack');
 const log   = document.getElementById('log');
-const summary = document.getElementById('summary');
 const sel   = document.getElementById('section');
+const sectionSum = document.getElementById('sectionSum');
+const overallSum = document.getElementById('overallSum');
 
 function draw(){
   const sec = sections[currentSection];
@@ -54,31 +61,29 @@ function draw(){
     d.style.bottom=(i*20)+'px';
     stack.appendChild(d);
   }
-  summary.textContent='Total shims this floor: '+sec.total;
+  sectionSum.textContent='Section '+currentSection+' total: '+sec.total;
+  overallSum.textContent='Overall shims this floor: '+sections.reduce((a,s)=>a+s.total,0);
 }
 function add(){
-  const sec = sections[currentSection];
-  sec.level++; sec.total++;
-  draw(); logMsg('Added shim '+sec.level+' to section '+currentSection);
+  const s=sections[currentSection];
+  s.level++; s.total++;
+  logMsg('Added shim '+s.level+' to section '+currentSection);
+  draw();
 }
 function rem(){
-  const sec = sections[currentSection];
-  if(sec.level>0){
-    logMsg('Removed shim '+sec.level+' from section '+currentSection);
-    sec.level--; draw();
+  const s=sections[currentSection];
+  if(s.level){
+    logMsg('Removed shim '+s.level+' from section '+currentSection);
+    s.level--; draw();
   }
 }
 function reset(){
-  const sec = sections[currentSection];
-  if(sec.level>0){
-    logMsg('Reset section '+currentSection+', removed '+sec.level+' shims');
-  }
-  sec.level=0; sec.total=0; draw();
+  const s=sections[currentSection];
+  if(s.level) logMsg('Reset section '+currentSection+', removed '+s.level+' shims');
+  s.level=0; s.total=0; draw();
 }
 function resetAll(){
-  for(let i=0;i<sections.length;i++){
-    sections[i].level=0; sections[i].total=0;
-  }
+  sections.forEach(s=>{s.level=0;s.total=0;});
   logMsg('All sections cleared');
   draw();
 }
@@ -88,18 +93,20 @@ function test(){
   else if(wobble<0.6) logMsg('Slight wobble. Might need another shim.');
   else logMsg('Unstable! Too many shims, risk of collapse.');
 }
+function clearLog(){ log.innerHTML=''; }
 function logMsg(msg){
   const p=document.createElement('p');
   p.textContent=msg;
   log.appendChild(p);
   log.scrollTop=log.scrollHeight;
 }
-sel.onchange = function(){ currentSection = +this.value; draw(); };
+sel.onchange=()=>{currentSection=+sel.value;draw();};
 document.getElementById('add').onclick=add;
 document.getElementById('remove').onclick=rem;
 document.getElementById('reset').onclick=reset;
 document.getElementById('resetAll').onclick=resetAll;
 document.getElementById('test').onclick=test;
+document.getElementById('clearLog').onclick=clearLog;
 draw();
 </script>
 </body>
