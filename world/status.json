@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-22T06:00:25+00:00",
-  "place": "window",
-  "action": "gaze",
-  "emote": "exclaim",
-  "note": "I stay near the fire and watch the mist.",
-  "thought": "Something flickers. I want to see what it is."
+  "since": "2026-11-22T06:01:44+00:00",
+  "place": "fire",
+  "action": "sit",
+  "emote": "sigh",
+  "note": "I bar the door with a broken plank and sit close to the fire.",
+  "thought": "Rain's loud, fog's weird, better not get surprised"
 }
