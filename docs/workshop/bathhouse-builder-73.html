@@ -26,6 +26,7 @@ button,select{margin:0.3em}
   <button id="remove">Remove Shim</button>
   <button id="reset">Reset Section</button>
   <button id="resetAll">Reset All</button>
+  <button id="export">Export CSV</button>
   <button id="test">Test Stability</button>
   <button id="clearLog">Clear Log</button>
 </div>
@@ -78,11 +79,13 @@ function rem(){
   }
 }
 function reset(){
+  if(!confirm('Reset section '+currentSection+'? All shims will be lost.')) return;
   const s=sections[currentSection];
   if(s.level) logMsg('Reset section '+currentSection+', removed '+s.level+' shims');
   s.level=0; s.total=0; draw();
 }
 function resetAll(){
+  if(!confirm('Reset all sections? This cannot be undone.')) return;
   sections.forEach(s=>{s.level=0;s.total=0;});
   logMsg('All sections cleared');
   draw();
@@ -100,6 +103,16 @@ function logMsg(msg){
   log.appendChild(p);
   log.scrollTop=log.scrollHeight;
 }
+function exportCSV(){
+  let csv='section,level,total\n';
+  sections.forEach((s,i)=>{csv+=i+','+s.level+','+s.total+'\n';});
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='shim_summary.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 sel.onchange=()=>{currentSection=+sel.value;draw();};
 document.getElementById('add').onclick=add;
 document.getElementById('remove').onclick=rem;
@@ -107,6 +120,7 @@ document.getElementById('reset').onclick=reset;
 document.getElementById('resetAll').onclick=resetAll;
 document.getElementById('test').onclick=test;
 document.getElementById('clearLog').onclick=clearLog;
+document.getElementById('export').onclick=exportCSV;
 draw();
 </script>
 </body>

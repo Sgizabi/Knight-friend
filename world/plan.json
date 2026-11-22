@@ -1,51 +1,46 @@
 {
-  "start": "2026-11-22T21:01:31+00:00",
+  "start": "2026-11-22T23:02:40+00:00",
   "mood": "content",
   "steps": [
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "heart",
+      "note": "",
+      "thoughts": [
+        "The fire's still humming, like a lazy coworker."
+      ]
+    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
-      "note": "Sort bolts and set aside dented metal",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "These bolts look like they survived a siege."
+        "Need to test the CSV on a real sheet of paper."
       ]
     },
     {
       "place": "forge",
-      "action": "work",
+      "action": "pace",
       "minutes": 20,
-      "emote": "dots",
-      "note": "Tend bellows and check support beam",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "Bellows still sigh like a lazy cat."
+        "The bellows are quiet; maybe I should oil them."
       ]
     },
     {
-      "place": "courtyard",
-      "action": "sit",
+      "place": "bedroll",
+      "action": "sleep",
       "minutes": 20,
-      "emote": "heart",
-      "note": "Rest by the fire",
+      "emote": "zzz",
+      "note": "",
       "thoughts": [
-        "Fire's heat is a bit too polite today."
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "exclaim",
-      "note": "Update inventory list with new metal piece",
-      "thoughts": [
-        "Need to note the dented metal for future use."
+        "Warmth's good, but I’ll set an alarm for the next shift."
       ]
     }
-  ],
-  "applied_until": "2026-11-22T22:30:24+00:00",
-  "live_thought": {
-    "text": "The fire's warmth keeps the cold stones at bay",
-    "time": "2026-11-22T22:30:24+00:00"
-  }
+  ]
 }

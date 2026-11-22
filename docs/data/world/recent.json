@@ -330,5 +330,15 @@
     "emote": "spark",
     "text": "I cleared the forge floor and sorted the leftover bolts. Found a dented piece of metal and set it aside for later. The fire kept its steady hum while I measured a new plank with my thumb. Noticed a loose stone by the doorway; tapped it back into place.",
     "creations": []
+  },
+  {
+    "time": "2026-11-22T23:02:40+00:00",
+    "activity": "build",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I opened the shim page and clicked the new Export button. It downloaded a CSV, but the header line is all lower‑case. I fixed the case and added a quick sanity check. The reset dialog now asks me to confirm, which feels safer.",
+    "creations": [
+      "workshop/bathhouse-builder-73.html"
+    ]
   }
 ]
