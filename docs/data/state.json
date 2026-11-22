@@ -54,18 +54,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-22T13:00:23+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-22T13:00:26+00:00",
+    "place": "raise:3",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "continue constructing the bathhouse structure in the courtyard, focusing on framing and roof support",
+    "thought": "The bathhouse is only a quarter done. I need to keep adding the next beam and get the walls up before the rain seeps in."
   },
   "needs": {
     "rest": 100.0,
-    "warmth": 63.4,
-    "inspiration": 44.3,
-    "spirit": 64.8
+    "warmth": 61.9,
+    "inspiration": 46.5,
+    "spirit": 69.8
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +73,7 @@
     "inspiration": 44.3,
     "spirit": 64.8
   },
-  "needs_at": "2026-11-22T13:00:23+00:00",
+  "needs_at": "2026-11-22T13:00:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -843,5 +843,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-22T13:00:23+00:00"
+  "exported": "2026-11-22T13:00:26+00:00"
 }
