@@ -71,11 +71,16 @@
           "quiet is nice"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-23T19:30:27+00:00",
+    "live_thought": {
+      "text": "The steel sings, the stone watches.",
+      "time": "2026-11-23T19:30:27+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T19:01:37+00:00",
+    "since": "2026-11-23T19:30:27+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -83,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 69.5,
+    "warmth": 81.3,
+    "inspiration": 53.9,
+    "spirit": 80.8
+  },
+  "needs_prev": {
     "rest": 71.5,
     "warmth": 82.2,
     "inspiration": 53.9,
     "spirit": 81.6
   },
-  "needs_prev": {
-    "rest": 76.8,
-    "warmth": 79.5,
-    "inspiration": 65.9,
-    "spirit": 77.7
-  },
-  "needs_at": "2026-11-23T19:01:37+00:00",
+  "needs_at": "2026-11-23T19:30:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1300,7 +1305,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T19:01:37+00:00",
+    "updated": "2026-11-23T19:30:27+00:00",
     "seen_until": "2026-11-23T18:55:29+00:00"
   },
   "gifts": [],
@@ -1529,5 +1534,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T19:01:37+00:00"
+  "exported": "2026-11-23T19:30:27+00:00"
 }
