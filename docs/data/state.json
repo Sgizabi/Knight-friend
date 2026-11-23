@@ -30,74 +30,62 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 40,
-    "last_wake": "2026-11-22T23:03:43+00:00",
+    "wakeups": 41,
+    "last_wake": "2026-11-23T01:01:33+00:00",
     "nights_slept_through": 12
   },
   "plan": {
-    "start": "2026-11-22T23:02:40+00:00",
+    "start": "2026-11-23T01:01:33+00:00",
     "mood": "content",
     "steps": [
       {
-        "place": "fire",
-        "action": "sit",
+        "place": "courtyard",
+        "action": "pace",
         "minutes": 20,
-        "emote": "heart",
-        "note": "",
+        "emote": "exclaim",
+        "note": "check wall",
         "thoughts": [
-          "The fire's still humming, like a lazy coworker."
+          "That low stone looks like it wants to stay loose.",
+          "Maybe I should mark it."
         ]
       },
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "",
+        "emote": "exclaim",
+        "note": "organize bolts",
         "thoughts": [
-          "Need to test the CSV on a real sheet of paper."
+          "Bolt drawer is full, need to sort later.",
+          "The new lantern upgrade sits nearby, still bright."
         ]
       },
       {
-        "place": "forge",
-        "action": "pace",
+        "place": "fire",
+        "action": "sit",
         "minutes": 20,
-        "emote": "spark",
-        "note": "",
+        "emote": "exclaim",
+        "note": "warm up",
         "thoughts": [
-          "The bellows are quiet; maybe I should oil them."
-        ]
-      },
-      {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 20,
-        "emote": "zzz",
-        "note": "",
-        "thoughts": [
-          "Warmth's good, but I’ll set an alarm for the next shift."
+          "Fire is still humming, like a lazy coworker.",
+          "Warmth is good before I sleep."
         ]
       }
-    ],
-    "applied_until": "2026-11-23T00:30:24+00:00",
-    "live_thought": {
-      "text": "Stone's warm, fire's crackle.",
-      "time": "2026-11-23T00:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-23T01:00:30+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-23T01:01:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "count the stones in the courtyard walls and note their sizes",
-    "thought": "The fire hums, the lantern glows steady. I could use the quiet to get a better handle on the stone sizes before the night gets too cold."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 58.6,
+    "rest": 55.6,
     "warmth": 87.1,
-    "inspiration": 33.6,
+    "inspiration": 45.6,
     "spirit": 80.7
   },
   "needs_prev": {
@@ -106,7 +94,7 @@
     "inspiration": 33.6,
     "spirit": 81.5
   },
-  "needs_at": "2026-11-23T01:00:30+00:00",
+  "needs_at": "2026-11-23T01:01:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -929,8 +917,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T00:30:24+00:00",
-    "seen_until": "2026-11-22T22:55:31+00:00"
+    "updated": "2026-11-23T01:01:33+00:00",
+    "seen_until": "2026-11-23T00:55:28+00:00"
   },
   "gifts": [],
   "gate": [
@@ -1144,5 +1132,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T01:00:30+00:00"
+  "exported": "2026-11-23T01:01:34+00:00"
 }

@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 20.116,
-    "craft": 20.116
+    "repair": 20.311,
+    "craft": 20.311
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 0,
+  "entries_since_condense": 1,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -37,16 +37,13 @@
       "action": "pace",
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
-      "times": 2,
-      "strength": 1.673,
-      "last": "2026-11-22T21:00:29+00:00"
+      "times": 3,
+      "strength": 2.566,
+      "last": "2026-11-23T01:00:31+00:00"
     }
   ],
   "last_long": "2026-11-22T02:30:21+00:00",
   "recent_thoughts": [
-    "The iron heats, waiting for my hammer.",
-    "Stone is cold, fire warm, I’ll write a few lines.",
-    "The fire hums, stone cold, I could stay a while.",
     "Stone under my hands feels solid, I can finish this piece.",
     "Dry logs stare back, cold as old jokes.",
     "The fire flickers, stone cold, I could stay a while.",
@@ -55,10 +52,13 @@
     "The fire crackles, stone cold, I could stare a bit longer.",
     "The fire roars, metal glows, I could hammer a bit longer.",
     "The fire's glow makes the stones feel less cold.",
-    "The fire's warmth keeps the cold stones at bay"
+    "The fire's warmth keeps the cold stones at bay",
+    "Stone feels warm under my hands.",
+    "The forge hums, iron waits, I’ll keep at it.",
+    "Stone's warm, fire's crackle."
   ],
-  "last_glance": "2026-11-22T22:30:24+00:00",
-  "visits_seen_until": "2026-11-22T22:55:31+00:00",
+  "last_glance": "2026-11-23T00:30:24+00:00",
+  "visits_seen_until": "2026-11-23T00:55:28+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

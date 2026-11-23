@@ -1,45 +1,38 @@
 {
-  "start": "2026-11-22T23:02:40+00:00",
+  "start": "2026-11-23T01:01:33+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "fire",
-      "action": "sit",
+      "place": "courtyard",
+      "action": "pace",
       "minutes": 20,
-      "emote": "heart",
-      "note": "",
+      "emote": "exclaim",
+      "note": "check wall",
       "thoughts": [
-        "The fire's still humming, like a lazy coworker."
+        "That low stone looks like it wants to stay loose.",
+        "Maybe I should mark it."
       ]
     },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "exclaim",
+      "note": "organize bolts",
       "thoughts": [
-        "Need to test the CSV on a real sheet of paper."
+        "Bolt drawer is full, need to sort later.",
+        "The new lantern upgrade sits nearby, still bright."
       ]
     },
     {
-      "place": "forge",
-      "action": "pace",
+      "place": "fire",
+      "action": "sit",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "exclaim",
+      "note": "warm up",
       "thoughts": [
-        "The bellows are quiet; maybe I should oil them."
-      ]
-    },
-    {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 20,
-      "emote": "zzz",
-      "note": "",
-      "thoughts": [
-        "Warmth's good, but I’ll set an alarm for the next shift."
+        "Fire is still humming, like a lazy coworker.",
+        "Warmth is good before I sleep."
       ]
     }
   ]
