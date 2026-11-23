@@ -5815,7 +5815,7 @@ const ANIMALS = {
   // crows: hopping along the wall tops, pecking, cawing; up and away, circling, when scared
   crows(root, o) {
     const PERCH = [[-15.5, 1.22, -4.3], [-12.6, 1.22, -4.3], [-9.6, 1.22, -4.3], [-7, 1.22, -4.3], [-17.2, 1.12, -1.5], [-17.2, 1.12, 2.4], [-3.2, 4.22, -4.3], [1.4, 4.22, -4.3], [3.8, 4.22, 4.3]];
-    const n = 4 + Math.floor(Math.random() * 3);
+    const n = 6 + Math.floor(Math.random() * 4);
     const cs = Array.from({ length: n }, (_, i) => { const b = bird(root, { s: 1.7, body: '#141417', beak: '#1e1c1c' }); const p = PERCH[(i * 2) % PERCH.length]; return { b, at: p.slice(), from: p.slice(), to: null, fly: 0, next: 2 + Math.random() * 6, ph: Math.random() * 9, out: 0, x: p[0] + (Math.random() - .5), yaw: Math.random() * 6 }; });
     return (t, dt) => {
       const sc = o.scared();
@@ -5841,7 +5841,7 @@ const ANIMALS = {
   // songbirds: small and bright, flitting between the dead tree and the ground below it
   songbirds(root, o) {
     const TREE = [-8.8, -2.2], cols = [['#7a5a3a', '#c8562e'], ['#6a6a3a', '#d8c24a'], ['#5a5248', '#c9b8a0'], ['#4a5a6a', '#d0d8e0']];
-    const bs = Array.from({ length: 4 + Math.floor(Math.random() * 2) }, (_, i) => { const [b0, b1] = cols[i % cols.length]; const b = bird(root, { s: .8, body: b0, belly: b1, beak: '#3a3020' }); return { b, p: null, q: null, u: 1, next: Math.random() * 3, ph: Math.random() * 9 }; });
+    const bs = Array.from({ length: 5 + Math.floor(Math.random() * 3) }, (_, i) => { const [b0, b1] = cols[i % cols.length]; const b = bird(root, { s: .8, body: b0, belly: b1, beak: '#3a3020' }); return { b, p: null, q: null, u: 1, next: Math.random() * 3, ph: Math.random() * 9 }; });
     const spot = () => Math.random() < .55 ? [TREE[0] + (Math.random() - .5) * 1.4, 1.3 + Math.random() * 1.1, TREE[1] + (Math.random() - .5) * 1.4] : [TREE[0] + (Math.random() - .5) * 4, .02, TREE[1] + 1 + Math.random() * 2.2];
     let gone = 0;
     return (t, dt) => {
@@ -5862,9 +5862,9 @@ const ANIMALS = {
   },
   // hares: grazing on the plain, a few hops at a time, sitting up with ears high; bolting when scared
   hares(root, o) {
-    const hs = Array.from({ length: 2 + Math.floor(Math.random() * 2) }, (_, i) => {
+    const hs = Array.from({ length: 3 + Math.floor(Math.random() * 3) }, (_, i) => {
       const f = beast(root, { k: .38, coat: '#8a7458', dark: '#6a5640', pale: '#cdbfa6', bodyS: [.62, .62, 1.05], legH: .28, legX: .16, legZ: .26, legR: .07, neckAt: [.18, .42], neckLen: .05, neckR: .1, headR: .26, headS: [.85, .9, 1.15], earW: .07, earL: .7, earOut: .1, tailAt: [.08, -.52], tailV: [.06, -.08], tailR: .1, tailM: '#efe8dc' });
-      const x = -4 + i * 5 + Math.random() * 3, z = 13 + Math.random() * 5;
+      const x = -8 + i * 4.5 + Math.random() * 3, z = 11 + Math.random() * 8;
       return { f, c: critter(f, x, z, Math.random() * 6), home: [x, z], tx: x, tz: z, next: 0, sit: 0, ph: Math.random() * 9 };
     });
     return (t, dt) => {
@@ -5884,7 +5884,7 @@ const ANIMALS = {
   },
   // deer: at the forest edge at dawn and dusk; grazing, heads up to listen, a slow walk; into the trees when scared
   deer(root, o) {
-    const n = 2 + Math.floor(Math.random() * 3), base = [-31, -2 + Math.random() * 8];
+    const n = 3 + Math.floor(Math.random() * 3), base = [-31, -2 + Math.random() * 8];
     const ds = Array.from({ length: n }, (_, i) => {
       const fawn = i === n - 1 && n > 2, stag = i === 0 && Math.random() < .4, k = fawn ? .5 : stag ? .95 : .85;
       const f = beast(root, { k, coat: '#7a5a3a', dark: '#4a3826', pale: fawn ? '#a8845a' : '#c8b08a', bodyS: [.5, .62, 1.75], legH: .85, legX: .15, legZ: .62, legR: .065, neckAt: [.25, .78], neckLen: .62, neckR: .12, headR: .16, headS: [.8, .85, 1.6], earW: .06, earL: .2, earOut: .7, tailAt: [.12, -.58], tailV: [-.08, -.1], tailR: .06, tailM: '#efe8dc', antlers: stag });
@@ -5946,7 +5946,7 @@ const ANIMALS = {
   // bats at dusk: quick, jinking flight over the keep and courtyard
   bats(root, o) {
     const m = A.mat('#1a1418', 0, .8);
-    const bs = Array.from({ length: 7 }, (_, i) => { const g = G(root); P(g, A.ico(.035, 0), m, [0, 0, 0], { scale: [1, .9, 1.4], cast: false });
+    const bs = Array.from({ length: 10 }, (_, i) => { const g = G(root); P(g, A.ico(.045, 0), m, [0, 0, 0], { scale: [1, .9, 1.4], cast: false });
       const wings = [-1, 1].map(sx => { const w = G(g); sheet(w, [[0, 0, -.03], [sx * .12, .02, -.05], [sx * .16, 0, .02], [0, 0, .03]], [[0, 1, 2], [0, 2, 3]], m); return w; }); return { g, wings, ph: i * 2.3 }; });
     return (t, dt) => {
       const gone = o.scared();

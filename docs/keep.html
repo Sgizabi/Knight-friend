@@ -50,6 +50,15 @@
   #card small { display:block; color:var(--dim); font-size:16px; }
   #crosshair { position:fixed; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%;
                background:rgba(255,230,190,.85); box-shadow:0 0 0 1px rgba(0,0,0,.6); display:none; pointer-events:none; }
+  #placesMenu { position:fixed; top:52px; right:10px; padding:6px; display:none; flex-direction:column; gap:4px; z-index:6; }
+  #placesMenu button { font:inherit; font-size:17px; color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:8px; padding:3px 10px; cursor:pointer; text-align:left; }
+  #placesMenu button:hover { border-color:#b8742c; }
+  #stick { position:fixed; left:14px; bottom:96px; width:112px; height:112px; border-radius:50%; background:rgba(20,16,14,.35); border:1px solid var(--line); display:none; touch-action:none; z-index:5; }
+  #knob { position:absolute; left:36px; top:36px; width:40px; height:40px; border-radius:50%; background:rgba(240,226,196,.35); border:1px solid var(--line); pointer-events:none; }
+  #updown { position:fixed; left:14px; bottom:218px; display:none; flex-direction:row; gap:8px; z-index:5; }
+  #updown button { width:46px; height:46px; font-size:18px; color:var(--ink); background:rgba(20,16,14,.45); border:1px solid var(--line); border-radius:10px; touch-action:none; }
+  body.touch #stick { display:block; } body.touch #updown { display:flex; }
+  @media (max-width:640px) { #placesMenu { top:auto; bottom:196px; } }
   #toast { position:fixed; top:52px; right:10px; color:var(--ember); font-size:17px; opacity:0; transition:opacity .4s; pointer-events:none; }
   @media (max-width: 560px) {
     #who { transform:scale(.85); transform-origin:top left; }
@@ -69,6 +78,7 @@
 <div id="top">
   <span id="wx"></span>
   <span id="badge"></span>
+  <button id="places" title="Go somewhere, or find what is about">📍</button>
   <button id="cam" title="Follow the knight or roam freely (F)"></button>
   <select id="quality" title="Graphics quality">
     <option value="auto">Auto</option><option value="high">High</option>
@@ -78,6 +88,9 @@
   <button id="helpbtn" title="Controls">?</button>
 </div>
 <div id="help" class="panel"></div>
+<div id="placesMenu" class="panel"></div>
+<div id="stick"><div id="knob"></div></div>
+<div id="updown"><button id="up" title="Up">▲</button><button id="dn" title="Down">▼</button></div>
 <div id="toast"></div>
 <div id="crosshair"></div>
 <div id="card" class="panel"></div>
@@ -1839,7 +1852,8 @@ function setCam(mode, note) {
     : '<b>Free camera.</b> WASD flies where you look; hold Shift to go faster; Q / E (or C / Space) '
       + 'straight down / up. Drag to look around, or click empty space to lock the mouse (Esc to '
       + 'release). Scroll to glide forward or back.')
-    + '<br>Press <b>F</b> to switch. Click things to learn what they are.'
+    + '<br>Press <b>F</b> to switch. Click things to learn what they are. 📍 goes somewhere, or finds what is about; double-click (or double-tap) the ground to go there.'
+    + (touchy ? '<br>On a phone: the stick at the bottom left flies, ▲ ▼ go up and down, drag anywhere else to look.' : '')
     + '<br>Click Rooken to say hello. 🪵 tosses a log on the fire. (Both just for you: they don\'t reach Rooken.)'
     + (injected ? '<br>To knock, leave a gift, light a candle or leave a question (these do reach it), use the <b>Visit</b> tab below.'
                 : `<br>To knock, leave a gift, light a candle or leave a question (these do reach it), visit <a href="${HOME}" target="_blank">its home page</a>.`);
@@ -1895,6 +1909,15 @@ function updateCamera(dt) {
     if (keys.has('e') || keys.has(' ')) want.y += 1;
     if (keys.has('q') || keys.has('c')) want.y -= 1;
     if (want.lengthSq()) want.normalize().multiplyScalar(keys.has('shift') ? 7 : 2.8);
+    const sm = Math.hypot(stick.x, stick.y);                  // the thumb-stick (and up / down) on touch screens
+    if (sm > .08 || upDown) { want.addScaledVector(fwd, -stick.y * (sm > .9 ? 7 : 3)).addScaledVector(right, stick.x * (sm > .9 ? 7 : 3)); want.y += upDown * 2.8; glide = null; }
+    if (glide) {                                              // gliding to a chosen view: there smoothly, turning to look at it
+      camera.position.lerp(glide.pos, 1 - Math.exp(-dt * 2.2));
+      const d = glide.look.clone().sub(camera.position), wy = Math.atan2(-d.x, -d.z), wp = Math.atan2(d.y, Math.hypot(d.x, d.z));
+      let dy = wy - lookYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+      lookYaw += dy * (1 - Math.exp(-dt * 3)); lookPitch += (wp - lookPitch) * (1 - Math.exp(-dt * 3));
+      if (camera.position.distanceTo(glide.pos) < .08 && Math.abs(dy) < .01) glide = null;
+    }
     flyVel.lerp(want, 1 - Math.exp(-dt * 10));              // quick, smooth starts and stops
     camera.position.addScaledVector(flyVel, dt);
     if (Math.abs(scrollGlide) > 1e-3) {                     // scroll glides forward / back
@@ -1918,13 +1941,14 @@ addEventListener('keydown', ev => {
     if (camMode === 'follow' && !STARTS_FREE.includes(k)) return;   // Shift, Space etc. do nothing while following
     ev.preventDefault();
     if (camMode === 'follow') setCam('free', 'Free camera (F to follow again)');
-    keys.add(k);
+    keys.add(k); glide = null;
   }
 });
 
 // looking around in free mode: drag, or lock the mouse like a game (click empty space; Esc releases)
 const locked = () => document.pointerLockElement === renderer.domElement;
 function turnHead(dx, dy) {
+  glide = null;
   lookYaw -= dx * .0045;
   lookPitch = THREE.MathUtils.clamp(lookPitch - dy * .0045, -1.5, 1.5);
 }
@@ -1949,14 +1973,77 @@ renderer.domElement.addEventListener('wheel', e => {
 addEventListener('keyup', ev => keys.delete(ev.key.toLowerCase()));
 addEventListener('blur', () => keys.clear());
 $('cam').onclick = e => { setCam(camMode === 'follow' ? 'free' : 'follow'); e.currentTarget.blur(); };
+// ---- getting about: places to glide to, what is about, and flying by touch
+let glide = null;
+function glideTo(pos, look, note) {
+  if (camMode !== 'free') setCam('free');
+  pos.y = Math.max(pos.y, Math.max(groundAt(pos.x, pos.z), landHeight(pos.x, pos.z)) + .6);
+  glide = { pos, look }; flyVel.set(0, 0, 0); scrollGlide = 0;
+  if (note) toast(note);
+}
+const onLand = (x, h, z) => new THREE.Vector3(x, Math.max(groundAt(x, z), landHeight(x, z)) + h, z);
+const PLACES = [['The keep', [7, 5, 11], [0, 1.4, 0]], ['The courtyard', [-6.5, 3.2, 6.5], [-11.5, .6, 0]], ['The plain', [-4, 4.5, 7], [3, 0, 21]],
+  ['The lake', [14, 4, 12], [27, 0, 23]], ['The forest edge', [-20, 3.5, 9], [-32, 1.5, 1]], ['The barrow', [-16.5, 3, 5.5], [-24.5, .8, -1.5]],
+  ['High above', [10, 20, 32], [-4, 0, 2]]];
+const ANIMAL_NAMES = { crows: 'Crows', songbirds: 'Small birds', hares: 'Hares', deer: 'Deer', butterflies: 'Butterflies', owl: 'An owl', bats: 'Bats', fox: 'A fox', fish: 'Fish in the lake', cat: 'A stray cat' };
+let hereI = 0;
+function whatsHere() {
+  const list = [];
+  for (const [, b] of beings) if (b?.root) list.push([b.root, 'Something is here']);
+  for (const [k, m] of animalMarks) if (m?.root) list.push([m.root, ANIMAL_NAMES[k] || k]);
+  for (const [, m] of traceMarks) if (m?.root) list.push([m.root, 'Something left a mark here']);
+  for (let n = 0; n < list.length; n++) {
+    const [obj, name] = list[hereI++ % list.length], box = new THREE.Box3();
+    obj.updateMatrixWorld(true);
+    obj.traverse(o => { if (!o.isMesh || o.isSprite) return; let v = o, shown = true; while (v) { if (!v.visible) shown = false; v = v.parent; } if (shown) box.union(new THREE.Box3().setFromObject(o)); });
+    if (box.isEmpty()) continue;
+    const c = box.getCenter(new THREE.Vector3()), size = Math.min(60, box.getSize(new THREE.Vector3()).length());
+    const dir = c.clone().sub(new THREE.Vector3(-5, c.y, 0)); dir.y = 0; if (dir.lengthSq() < 1) dir.set(0, 0, 1); dir.normalize();
+    const dist = THREE.MathUtils.clamp(size * .8, 4, 32);
+    return glideTo(c.clone().addScaledVector(dir, -dist).add(new THREE.Vector3(0, 1.2 + dist * .3, 0)), c, list.length > 1 ? `${name} (📍 again for the next)` : name);
+  }
+  toast('Nothing much about just now');
+}
+{ const menu = $('placesMenu');
+  menu.innerHTML = `<button data-i="here">✨ What is about?</button>` + PLACES.map(([n], i) => `<button data-i="${i}">${n}</button>`).join('');
+  menu.querySelectorAll('button').forEach(b => b.onclick = () => {
+    menu.style.display = 'none';
+    if (b.dataset.i === 'here') return whatsHere();
+    const [name, [x, h, z], [lx, lh, lz]] = PLACES[+b.dataset.i]; glideTo(onLand(x, h, z), onLand(lx, lh, lz), name);
+  });
+  $('places').onclick = e => { menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex'; e.currentTarget.blur(); };
+  for (const ev of ['pointerdown', 'wheel']) menu.addEventListener(ev, e => e.stopPropagation()); }
+// touch screens: a thumb-stick to fly (it switches to the free camera), and up and down buttons
+const touchy = matchMedia('(pointer: coarse)').matches, stick = { x: 0, y: 0, id: null };
+let upDown = 0;
+if (touchy) { document.body.classList.add('touch'); controls.maxDistance = 20; }   // (on a phone you can also stand further back from him)
+{ const el = $('stick'), knob = $('knob');
+  const move = e => { const r = el.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), m = Math.min(1, Math.hypot(dx, dy) / 46), a = Math.atan2(dy, dx);
+    stick.x = Math.cos(a) * m; stick.y = Math.sin(a) * m; knob.style.transform = `translate(${stick.x * 36}px, ${stick.y * 36}px)`; };
+  el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); stick.id = e.pointerId; if (camMode === 'follow') setCam('free', 'Free camera: the stick flies, drag to look'); move(e); try { el.setPointerCapture(e.pointerId); } catch {} });
+  el.addEventListener('pointermove', e => { if (e.pointerId === stick.id) move(e); });
+  const end = e => { if (e.pointerId !== stick.id) return; stick.id = null; stick.x = stick.y = 0; knob.style.transform = ''; };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  for (const [id, v] of [['up', 1], ['dn', -1]]) { const b = $(id);
+    b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (camMode === 'follow') setCam('free'); upDown = v; });
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => { upDown = 0; }); } }
 $('helpbtn').onclick = () => { const h = $('help'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
 
 // click on something to learn what it is
 const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
 let downAt = null, cardTimer = 0;
 renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+let lastTap = { t: 0, x: 0, y: 0 };
 renderer.domElement.addEventListener('pointerup', e => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+  const nowTap = performance.now(), dbl = nowTap - lastTap.t < 330 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
+  lastTap = { t: dbl ? 0 : nowTap, x: e.clientX, y: e.clientY };
+  if (dbl && !locked()) {                                     // double-tap / double-click: go there
+    pointer.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(pointer, camera);
+    const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && h.object.visible && h.object.material?.visible !== false && !h.object.material?.transparent);
+    if (hit) { const q = hit.point, d = q.clone().sub(camera.position); d.y = 0; d.normalize(); glideTo(q.clone().addScaledVector(d, -5).add(new THREE.Vector3(0, 2.4, 0)), q.clone().add(new THREE.Vector3(0, .6, 0))); }
+    return;
+  }
   if (locked()) pointer.set(0, 0);   // mouse locked: you're pointing at the dot in the middle
   else pointer.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(pointer, camera);
@@ -2383,6 +2470,8 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog,
   updateSky, visitorArrived,
   setCreatures(list, traces = []) { state = { ...(state || {}), creatures: { seeing: 4, current: list, traces } }; return showBeings().then(() => beings.size); },   // testing
   get tracesHere() { return [...traceMarks.keys()]; },
+  get glide() { return glide && { pos: glide.pos.toArray().map(v => +v.toFixed(2)), look: glide.look.toArray().map(v => +v.toFixed(2)) }; },   // testing
+  stepCamera(seconds, step = 1 / 30) { for (let s = 0; s < seconds; s += step) updateCamera(step); return camera.position.toArray().map(v => +v.toFixed(2)); },   // testing (works in a hidden tab)
   setAnimals(kinds) { const now = Date.now(); state = { ...(state || {}), animals: [{ start: new Date(now - 6e4).toISOString(), end: new Date(now + 36e5).toISOString(), kinds }] }; return showAnimals().then(() => [...animalMarks.keys()]); },   // testing
   get beingsHere() { return [...beings.keys()]; },
   setCandles: n => { liveCandles = { n, at: Date.now() }; state = { ...(state || {}), visits: { candles_tonight: n } }; showCandles(); },

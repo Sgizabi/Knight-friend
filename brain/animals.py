@@ -17,17 +17,17 @@ WILD = {"storm", "glass_hail", "ash"}
 
 # hours are the keeper's (US Eastern); chance: how often it is about in an hour that suits it
 KINDS = {
-    "crows":      dict(hours=range(7, 19), seasons=ALL, avoid=WILD, chance=.55, says="crows on the walls"),
-    "songbirds":  dict(hours=range(6, 19), seasons=WARM, avoid=WET | WILD | {"fog"}, chance=.5, says="small birds in the dead tree"),
-    "hares":      dict(hours=[6, 7, 8, 16, 17, 18, 19], seasons=ALL, avoid=WILD | {"rain"}, chance=.45, says="hares on the plain"),
-    "deer":       dict(hours=[5, 6, 7, 17, 18, 19], seasons=ALL, avoid=WILD, chance=.35, says="deer at the forest edge"),
-    "butterflies": dict(hours=range(9, 18), seasons={"spring", "summer"}, avoid=WET | WILD | {"fog", "wind", "cloudy"}, chance=.6,
+    "crows":      dict(hours=range(6, 20), seasons=ALL, avoid=WILD, chance=.85, says="crows on the walls"),
+    "songbirds":  dict(hours=range(5, 20), seasons=WARM, avoid=WET | WILD, chance=.8, says="small birds in the dead tree"),
+    "hares":      dict(hours=[5, 6, 7, 8, 9, 10, 15, 16, 17, 18, 19, 20, 21], seasons=ALL, avoid=WILD | {"rain"}, chance=.75, says="hares on the plain"),
+    "deer":       dict(hours=[5, 6, 7, 8, 9, 16, 17, 18, 19, 20, 21], seasons=ALL, avoid=WILD, chance=.6, says="deer at the forest edge"),
+    "butterflies": dict(hours=range(8, 19), seasons={"spring", "summer"}, avoid=WET | WILD | {"fog"}, chance=.8,
                         says="butterflies over the courtyard"),
-    "owl":        dict(hours=[20, 21, 22, 23, 0, 1, 2, 3, 4], seasons=ALL, avoid=WILD | {"rain"}, chance=.4, says="an owl in the dead tree"),
-    "bats":       dict(hours=[18, 19, 20, 21], seasons=WARM, avoid=WET | WILD, chance=.5, says="bats over the keep"),
-    "fox":        dict(hours=[21, 22, 23, 0, 1, 2, 3], seasons=ALL, avoid=WILD, chance=.25, says="a fox out on the plain"),
-    "fish":       dict(hours=range(6, 21), seasons=WARM, avoid=WILD | {"snow"}, chance=.5, says="fish rising in the lake"),
-    "cat":        dict(hours=range(7, 23), seasons=ALL, avoid=WET | WILD, chance=.12, says="a stray cat on the wall"),
+    "owl":        dict(hours=[19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], seasons=ALL, avoid=WILD, chance=.75, says="an owl in the dead tree"),
+    "bats":       dict(hours=[17, 18, 19, 20, 21, 22], seasons=WARM, avoid=WET | WILD, chance=.8, says="bats over the keep"),
+    "fox":        dict(hours=[19, 20, 21, 22, 23, 0, 1, 2, 3, 4], seasons=ALL, avoid=WILD, chance=.5, says="a fox out on the plain"),
+    "fish":       dict(hours=range(5, 22), seasons=WARM, avoid=WILD | {"snow"}, chance=.8, says="fish rising in the lake"),
+    "cat":        dict(hours=range(6, 24), seasons=ALL, avoid=WET | WILD, chance=.3, says="a stray cat on the wall"),
 }
 SLOTS = 8    # hours ahead the keep page is given (it fetches new state at least every half hour)
 
