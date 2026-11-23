@@ -30,75 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 43,
-    "last_wake": "2026-11-23T13:01:49+00:00",
+    "wakeups": 44,
+    "last_wake": "2026-11-23T15:01:38+00:00",
     "nights_slept_through": 16
   },
   "plan": {
-    "start": "2026-11-23T13:01:48+00:00",
+    "start": "2026-11-23T15:01:38+00:00",
     "mood": "content",
     "steps": [
       {
         "place": "fire",
         "action": "sit",
         "minutes": 20,
-        "emote": "dots",
-        "note": "Warm up",
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "Rain drums on roof, fire stays stubbornly warm."
-        ]
-      },
-      {
-        "place": "desk",
-        "action": "write",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "Update inventory",
-        "thoughts": [
-          "Note the two short slabs for later wall work."
+          "The fire needs more wood, it’s complaining."
         ]
       },
       {
         "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "dots",
-        "note": "Sharpen tools",
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "Hammer feels dull, need to file it."
+          "Bolt stash looks tidy, could use a new hammer."
         ]
       },
       {
-        "place": "woodshed",
-        "action": "stand",
+        "place": "tower",
+        "action": "pace",
         "minutes": 20,
-        "emote": "dots",
-        "note": "Check logs",
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "Logs dry now, but storm might soak them later."
+          "Roof board feels tighter, hope the wind stays away."
+        ]
+      },
+      {
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "Need to update the stone size log with today’s findings."
         ]
       }
-    ],
-    "applied_until": "2026-11-23T14:30:23+00:00",
-    "live_thought": {
-      "text": "Stone warm, fire steady, mind drifts to the half‑height slabs.",
-      "time": "2026-11-23T14:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-23T15:00:32+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-23T15:01:38+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "make a handle that won’t wobble, using spare metal and a bit of leather, then test it by the forge",
-    "thought": "The fire hums, my pocket rattles with shards, I think the lantern could use a sturdier grip."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 94.6,
-    "warmth": 74.5,
-    "inspiration": 89.9,
-    "spirit": 71.8
+    "rest": 88.6,
+    "warmth": 77.2,
+    "inspiration": 77.9,
+    "spirit": 77.4
   },
   "needs_prev": {
     "rest": 94.3,
@@ -106,7 +101,7 @@
     "inspiration": 89.9,
     "spirit": 72.3
   },
-  "needs_at": "2026-11-23T15:00:32+00:00",
+  "needs_at": "2026-11-23T15:01:39+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -834,6 +829,127 @@
           }
         ],
         "made": "2026-11-22T19:00:31+00:00"
+      },
+      {
+        "name": "Reinforced Lantern Handle",
+        "about": "A sturdy grip for the keep's lanterns.",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.025,
+              0.025,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.06,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.04
+            ],
+            "pos": [
+              0.0,
+              0.12,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.08,
+              0.02,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.14,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#444444"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.06
+            ],
+            "pos": [
+              0.04,
+              0.14,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.06
+            ],
+            "pos": [
+              -0.04,
+              0.14,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.03,
+              0.008
+            ],
+            "pos": [
+              0.0,
+              0.145,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#666666"
+          }
+        ],
+        "made": "2026-11-23T15:00:35+00:00"
       }
     ],
     "buildings": [
@@ -929,8 +1045,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T14:30:23+00:00",
-    "seen_until": "2026-11-23T12:55:38+00:00"
+    "updated": "2026-11-23T15:01:38+00:00",
+    "seen_until": "2026-11-23T14:55:30+00:00"
   },
   "gifts": [],
   "gate": [
@@ -1149,5 +1265,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T15:00:32+00:00"
+  "exported": "2026-11-23T15:01:39+00:00"
 }
