@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-23T16:00:31+00:00",
+    "applied_until": "2026-11-23T16:30:27+00:00",
     "live_thought": {
-      "text": "The tower wind rattles, but my mind stays steady",
-      "time": "2026-11-23T16:00:31+00:00"
+      "text": "The fire's glow feels like a stone's quiet laugh.",
+      "time": "2026-11-23T16:30:27+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T16:00:31+00:00",
+    "since": "2026-11-23T16:30:27+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 86.0,
+    "warmth": 79.8,
+    "inspiration": 77.9,
+    "spirit": 75.4
+  },
+  "needs_prev": {
     "rest": 86.7,
     "warmth": 81.3,
     "inspiration": 77.9,
     "spirit": 76.0
   },
-  "needs_prev": {
-    "rest": 88.3,
-    "warmth": 82.5,
-    "inspiration": 77.9,
-    "spirit": 76.7
-  },
-  "needs_at": "2026-11-23T16:00:31+00:00",
+  "needs_at": "2026-11-23T16:30:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1050,7 +1050,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T16:00:31+00:00",
+    "updated": "2026-11-23T16:30:27+00:00",
     "seen_until": "2026-11-23T14:55:30+00:00"
   },
   "gifts": [],
@@ -1271,5 +1271,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T16:00:31+00:00"
+  "exported": "2026-11-23T16:30:27+00:00"
 }
