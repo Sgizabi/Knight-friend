@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-23T17:00:30+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-23T17:01:36+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "Improve the lantern's oil seal to stop leaks and extend burn time.",
-  "thought": "The fire's hum is steady and the glass shards still clink in my pouch. I think the lantern could use a better seal."
+  "note": "",
+  "thought": ""
 }

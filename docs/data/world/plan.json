@@ -1,15 +1,15 @@
 {
-  "start": "2026-11-23T15:01:38+00:00",
+  "start": "2026-11-23T17:01:36+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "fire",
-      "action": "sit",
+      "place": "workbench",
+      "action": "work",
       "minutes": 20,
       "emote": "spark",
       "note": "",
       "thoughts": [
-        "The fire needs more wood, it’s complaining."
+        "The new seal feels tight enough."
       ]
     },
     {
@@ -19,27 +19,27 @@
       "emote": "spark",
       "note": "",
       "thoughts": [
-        "Bolt stash looks tidy, could use a new hammer."
+        "Heating metal for the next handle."
       ]
     },
     {
-      "place": "tower",
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "Logs are dry, fire will stay warm longer."
+      ]
+    },
+    {
+      "place": "courtyard",
       "action": "pace",
-      "minutes": 20,
+      "minutes": 10,
       "emote": "spark",
       "note": "",
       "thoughts": [
-        "Roof board feels tighter, hope the wind stays away."
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Need to update the stone size log with today’s findings."
+        "Scanning stones, hoping none are half height again."
       ]
     }
   ]

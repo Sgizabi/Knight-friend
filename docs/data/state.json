@@ -30,22 +30,22 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 44,
-    "last_wake": "2026-11-23T15:01:38+00:00",
+    "wakeups": 45,
+    "last_wake": "2026-11-23T17:01:36+00:00",
     "nights_slept_through": 16
   },
   "plan": {
-    "start": "2026-11-23T15:01:38+00:00",
+    "start": "2026-11-23T17:01:36+00:00",
     "mood": "content",
     "steps": [
       {
-        "place": "fire",
-        "action": "sit",
+        "place": "workbench",
+        "action": "work",
         "minutes": 20,
         "emote": "spark",
         "note": "",
         "thoughts": [
-          "The fire needs more wood, it’s complaining."
+          "The new seal feels tight enough."
         ]
       },
       {
@@ -55,50 +55,45 @@
         "emote": "spark",
         "note": "",
         "thoughts": [
-          "Bolt stash looks tidy, could use a new hammer."
+          "Heating metal for the next handle."
         ]
       },
       {
-        "place": "tower",
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "Logs are dry, fire will stay warm longer."
+        ]
+      },
+      {
+        "place": "courtyard",
         "action": "pace",
-        "minutes": 20,
+        "minutes": 10,
         "emote": "spark",
         "note": "",
         "thoughts": [
-          "Roof board feels tighter, hope the wind stays away."
-        ]
-      },
-      {
-        "place": "desk",
-        "action": "write",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "Need to update the stone size log with today’s findings."
+          "Scanning stones, hoping none are half height again."
         ]
       }
-    ],
-    "applied_until": "2026-11-23T16:30:27+00:00",
-    "live_thought": {
-      "text": "The fire's glow feels like a stone's quiet laugh.",
-      "time": "2026-11-23T16:30:27+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-23T17:00:30+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-23T17:01:36+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "Improve the lantern's oil seal to stop leaks and extend burn time.",
-    "thought": "The fire's hum is steady and the glass shards still clink in my pouch. I think the lantern could use a better seal."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 86.4,
-    "warmth": 80.4,
-    "inspiration": 77.9,
-    "spirit": 74.8
+    "rest": 80.4,
+    "warmth": 82.5,
+    "inspiration": 65.9,
+    "spirit": 79.8
   },
   "needs_prev": {
     "rest": 86.0,
@@ -106,7 +101,7 @@
     "inspiration": 77.9,
     "spirit": 75.4
   },
-  "needs_at": "2026-11-23T17:00:30+00:00",
+  "needs_at": "2026-11-23T17:01:37+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -955,6 +950,108 @@
           }
         ],
         "made": "2026-11-23T15:00:35+00:00"
+      },
+      {
+        "name": "Lantern Oil Seal",
+        "about": "A small metal seal for a lantern oil vial",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.06,
+              0.06,
+              0.015
+            ],
+            "pos": [
+              0.0,
+              0.0075,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.055,
+              0.055,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.016,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.058,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.018,
+              0.0
+            ],
+            "rot": [
+              1.5708,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.02,
+              0.005,
+              0.01
+            ],
+            "pos": [
+              0.03,
+              0.0185,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.02,
+              0.005,
+              0.01
+            ],
+            "pos": [
+              -0.03,
+              0.0185,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          }
+        ],
+        "made": "2026-11-23T17:00:33+00:00"
       }
     ],
     "buildings": [
@@ -1050,8 +1147,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T16:30:27+00:00",
-    "seen_until": "2026-11-23T14:55:30+00:00"
+    "updated": "2026-11-23T17:01:36+00:00",
+    "seen_until": "2026-11-23T16:55:29+00:00"
   },
   "gifts": [],
   "gate": [
@@ -1279,5 +1376,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T17:00:30+00:00"
+  "exported": "2026-11-23T17:01:37+00:00"
 }
