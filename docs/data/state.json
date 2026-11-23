@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-23T15:00:28+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-23T15:00:32+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "make a handle that won’t wobble, using spare metal and a bit of leather, then test it by the forge",
+    "thought": "The fire hums, my pocket rattles with shards, I think the lantern could use a sturdier grip."
   },
   "needs": {
-    "rest": 94.3,
-    "warmth": 73.7,
+    "rest": 94.6,
+    "warmth": 74.5,
     "inspiration": 89.9,
-    "spirit": 72.3
+    "spirit": 71.8
   },
   "needs_prev": {
     "rest": 94.3,
@@ -106,7 +106,7 @@
     "inspiration": 89.9,
     "spirit": 72.3
   },
-  "needs_at": "2026-11-23T15:00:28+00:00",
+  "needs_at": "2026-11-23T15:00:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1149,5 +1149,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T15:00:28+00:00"
+  "exported": "2026-11-23T15:00:32+00:00"
 }
