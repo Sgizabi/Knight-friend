@@ -78,11 +78,16 @@
           "Need to update the stone size log with today’s findings."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-23T15:30:26+00:00",
+    "live_thought": {
+      "text": "The hammer sings, stone listens, I keep shaping.",
+      "time": "2026-11-23T15:30:26+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T15:01:38+00:00",
+    "since": "2026-11-23T15:30:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 88.3,
+    "warmth": 82.5,
+    "inspiration": 77.9,
+    "spirit": 76.7
+  },
+  "needs_prev": {
     "rest": 88.6,
     "warmth": 77.2,
     "inspiration": 77.9,
     "spirit": 77.4
   },
-  "needs_prev": {
-    "rest": 94.3,
-    "warmth": 73.7,
-    "inspiration": 89.9,
-    "spirit": 72.3
-  },
-  "needs_at": "2026-11-23T15:01:39+00:00",
+  "needs_at": "2026-11-23T15:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1045,7 +1050,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T15:01:38+00:00",
+    "updated": "2026-11-23T15:30:26+00:00",
     "seen_until": "2026-11-23T14:55:30+00:00"
   },
   "gifts": [],
@@ -1265,5 +1270,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T15:01:39+00:00"
+  "exported": "2026-11-23T15:30:26+00:00"
 }
