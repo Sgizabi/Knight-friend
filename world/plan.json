@@ -1,15 +1,15 @@
 {
-  "start": "2026-11-23T21:02:40+00:00",
+  "start": "2026-11-23T23:01:32+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "spark",
       "note": "",
       "thoughts": [
-        "The logs settle slower than I like."
+        "The fire needs a push again."
       ]
     },
     {
@@ -19,7 +19,7 @@
       "emote": "question",
       "note": "",
       "thoughts": [
-        "Need to tighten the lantern handle again?"
+        "Those thick slabs might need extra mortar."
       ]
     },
     {
@@ -29,33 +29,18 @@
       "emote": "dots",
       "note": "",
       "thoughts": [
-        "Wonder if the bellows need a new leather strip."
+        "Check the bellows while I think about the next repair."
       ]
     },
     {
-      "place": "glasshouse",
-      "action": "gaze",
+      "place": "bedroll",
+      "action": "sit",
       "minutes": 20,
-      "emote": "heart",
+      "emote": "zzz",
       "note": "",
       "thoughts": [
-        "Seedlings look greener after the last rain."
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "music",
-      "note": "",
-      "thoughts": [
-        "Update the stone size log before night."
+        "A short nap before the night gets colder."
       ]
     }
-  ],
-  "applied_until": "2026-11-23T22:30:23+00:00",
-  "live_thought": {
-    "text": "The ink drips slow, like rain on stone.",
-    "time": "2026-11-23T22:30:23+00:00"
-  }
+  ]
 }

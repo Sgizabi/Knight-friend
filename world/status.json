@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-23T23:00:28+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-23T23:01:33+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "record sizes and note any irregularities",
-  "thought": "The stones still have patterns I haven't logged yet."
+  "note": "",
+  "thought": ""
 }
