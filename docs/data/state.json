@@ -78,11 +78,16 @@
           "Scanning stones, hoping none are half height again."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-23T17:30:30+00:00",
+    "live_thought": {
+      "text": "The iron glows, waiting for my next strike.",
+      "time": "2026-11-23T17:30:30+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T17:01:36+00:00",
+    "since": "2026-11-23T17:30:30+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 78.4,
+    "warmth": 81.6,
+    "inspiration": 65.9,
+    "spirit": 79.1
+  },
+  "needs_prev": {
     "rest": 80.4,
     "warmth": 82.5,
     "inspiration": 65.9,
     "spirit": 79.8
   },
-  "needs_prev": {
-    "rest": 86.0,
-    "warmth": 79.8,
-    "inspiration": 77.9,
-    "spirit": 75.4
-  },
-  "needs_at": "2026-11-23T17:01:37+00:00",
+  "needs_at": "2026-11-23T17:30:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1147,7 +1152,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T17:01:36+00:00",
+    "updated": "2026-11-23T17:30:30+00:00",
     "seen_until": "2026-11-23T16:55:29+00:00"
   },
   "gifts": [],
@@ -1376,5 +1381,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T17:01:37+00:00"
+  "exported": "2026-11-23T17:30:30+00:00"
 }
