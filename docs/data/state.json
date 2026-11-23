@@ -80,17 +80,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-23T02:30:23+00:00",
+    "since": "2026-11-23T02:33:25+00:00",
     "place": "courtyard",
     "action": "pace",
     "emote": "dots",
-    "note": "count the courtyard stones and note any odd sizes",
-    "thought": "The fire hums, the stones are still out of place, I could get a better count before bed."
+    "note": "count and note any odd stones along the wall",
+    "thought": "The fire hums, the stones feel steady. I have a few glass shards rattling, but the courtyard wall needs another look."
   },
   "needs": {
-    "rest": 55.6,
+    "rest": 52.6,
     "warmth": 87.5,
-    "inspiration": 45.6,
+    "inspiration": 57.6,
     "spirit": 78.4
   },
   "needs_prev": {
@@ -99,7 +99,7 @@
     "inspiration": 45.6,
     "spirit": 79.1
   },
-  "needs_at": "2026-11-23T02:30:23+00:00",
+  "needs_at": "2026-11-23T02:33:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1133,5 +1133,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T02:30:23+00:00"
+  "exported": "2026-11-23T02:33:25+00:00"
 }
