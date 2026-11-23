@@ -96,12 +96,12 @@
     }
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-23T22:30:23+00:00",
+    "awake": true,
+    "since": "2026-11-23T23:00:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": "",
+    "note": "stirring by the fire",
     "thought": ""
   },
   "needs": {
@@ -111,12 +111,12 @@
     "spirit": 80.4
   },
   "needs_prev": {
-    "rest": 63.0,
-    "warmth": 88.6,
-    "inspiration": 37.9,
-    "spirit": 81.2
+    "rest": 62.2,
+    "warmth": 87.5,
+    "inspiration": 41.0,
+    "spirit": 80.4
   },
-  "needs_at": "2026-11-23T22:30:23+00:00",
+  "needs_at": "2026-11-23T23:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1465,18 +1465,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-23T22:00:00+00:00",
-      "end": "2026-11-23T23:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "bats",
-        "fish",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-23T23:00:00+00:00",
       "end": "2026-11-24T00:00:00+00:00",
       "kinds": [
@@ -1543,12 +1531,53 @@
       "kinds": [
         "owl"
       ]
+    },
+    {
+      "start": "2026-11-24T06:00:00+00:00",
+      "end": "2026-11-24T07:00:00+00:00",
+      "kinds": [
+        "owl"
+      ]
     }
   ],
   "creatures": {
-    "current": [],
+    "current": [
+      {
+        "id": "golem-202611240100",
+        "kind": "golem",
+        "start": "2026-11-24T00:41:00+00:00",
+        "end": "2026-11-24T01:15:00+00:00",
+        "variant": {
+          "size": 0.89,
+          "hue": -0.029,
+          "mark": "",
+          "age": ""
+        },
+        "with": "bloom-202611240041",
+        "stance": "ignore",
+        "render": "golem",
+        "nature": "proud"
+      },
+      {
+        "id": "bloom-202611240041",
+        "kind": "bloom",
+        "start": "2026-11-24T00:41:00+00:00",
+        "end": "2026-11-24T01:15:00+00:00",
+        "variant": {
+          "size": 0.98,
+          "hue": -0.03,
+          "mark": "scarred",
+          "age": ""
+        },
+        "with": "golem-202611240100",
+        "stance": "ignore",
+        "stance_says": "Neither pays the other any mind.",
+        "render": "bloom",
+        "nature": "courteous"
+      }
+    ],
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T22:30:23+00:00"
+  "exported": "2026-11-23T23:00:25+00:00"
 }
