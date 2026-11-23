@@ -72,15 +72,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-23T20:00:26+00:00",
+    "applied_until": "2026-11-23T20:30:27+00:00",
     "live_thought": {
-      "text": "The flame dances, my mind follows its quiet rhythm.",
-      "time": "2026-11-23T20:00:26+00:00"
+      "text": "The fire crackles, like stone laughing.",
+      "time": "2026-11-23T20:30:27+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T20:00:26+00:00",
+    "since": "2026-11-23T20:30:28+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -88,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 70.3,
+    "warmth": 86.2,
+    "inspiration": 53.9,
+    "spirit": 79.2
+  },
+  "needs_prev": {
     "rest": 69.4,
     "warmth": 85.6,
     "inspiration": 53.9,
     "spirit": 80.0
   },
-  "needs_prev": {
-    "rest": 69.5,
-    "warmth": 81.3,
-    "inspiration": 53.9,
-    "spirit": 80.8
-  },
-  "needs_at": "2026-11-23T20:00:26+00:00",
+  "needs_at": "2026-11-23T20:30:28+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1305,7 +1305,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T20:00:26+00:00",
+    "updated": "2026-11-23T20:30:27+00:00",
     "seen_until": "2026-11-23T18:55:29+00:00"
   },
   "gifts": [],
@@ -1532,5 +1532,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T20:00:26+00:00"
+  "exported": "2026-11-23T20:30:28+00:00"
 }
