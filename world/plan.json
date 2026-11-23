@@ -42,5 +42,10 @@
         "Logs dry now, but storm might soak them later."
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-23T13:30:29+00:00",
+  "live_thought": {
+    "text": "Stone cold, but the desk feels steady.",
+    "time": "2026-11-23T13:30:29+00:00"
+  }
 }
