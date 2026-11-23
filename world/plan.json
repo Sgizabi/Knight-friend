@@ -35,5 +35,10 @@
         "Should I stack more logs for the night?"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-23T03:30:21+00:00",
+  "live_thought": {
+    "text": "The flame flickers, shadows dance on the stone walls.",
+    "time": "2026-11-23T03:30:21+00:00"
+  }
 }
