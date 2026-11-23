@@ -37,7 +37,7 @@
   "plan": {
     "start": "2026-11-23T11:00:27+00:00",
     "mood": "content",
-    "applied_until": "2026-11-23T12:00:27+00:00",
+    "applied_until": "2026-11-23T12:30:24+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -48,13 +48,13 @@
       }
     ],
     "live_thought": {
-      "text": "Storm rattles the stone, but I feel fine.",
-      "time": "2026-11-23T12:00:27+00:00"
+      "text": "Storm rattles the stones, but the bedroll keeps me snug.",
+      "time": "2026-11-23T12:30:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T12:00:28+00:00",
+    "since": "2026-11-23T12:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -63,17 +63,17 @@
   },
   "needs": {
     "rest": 100.0,
+    "warmth": 70.6,
+    "inspiration": 84.8,
+    "spirit": 69.9
+  },
+  "needs_prev": {
+    "rest": 100.0,
     "warmth": 72.1,
     "inspiration": 83.9,
     "spirit": 70.4
   },
-  "needs_prev": {
-    "rest": 100.0,
-    "warmth": 75.1,
-    "inspiration": 82.0,
-    "spirit": 71.4
-  },
-  "needs_at": "2026-11-23T12:00:28+00:00",
+  "needs_at": "2026-11-23T12:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -896,7 +896,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T12:00:27+00:00",
+    "updated": "2026-11-23T12:30:24+00:00",
     "seen_until": "2026-11-23T02:25:22+00:00"
   },
   "gifts": [],
@@ -1104,5 +1104,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T12:00:28+00:00"
+  "exported": "2026-11-23T12:30:24+00:00"
 }
