@@ -659,10 +659,17 @@ function weatherLook(night, dusk) {
   const grey = { cloudy: .3 * i, rain: .55 * Math.max(.5, i), storm: .8, snow: .45, fog: .35, ash: .5, glass_hail: .45, upward_rain: .35, wind: .12 }[k] || 0;
   const tint = new THREE.Color(k === 'ash' ? (night ? '#1a1410' : '#8a7868') : night ? '#0e1118' : dusk ? '#4a4450' : k === 'snow' || k === 'fog' ? '#a9b2bc' : '#6f7884');
   scene.background.lerp(tint, grey); scene.fog.color.lerp(tint, grey);
-  if (k === 'fog') scene.fog.density *= 1 + 2.6 * i;
-  if (k === 'rain' || k === 'storm' || k === 'snow' || k === 'glass_hail') scene.fog.density *= 1.5 + i;
-  if (k === 'still') { scene.fog.color.lerp(new THREE.Color(night ? '#121008' : '#a59c7a'), .25); }
-  sky.intensity *= 1 - grey * .65; hemi.intensity *= 1 - grey * .3;
+  if (night) {
+    if (k === 'fog') scene.fog.density = Math.min(.052, scene.fog.density * (1 + 1.4 * i));
+    if (k === 'rain' || k === 'storm' || k === 'snow' || k === 'glass_hail') scene.fog.density = Math.min(.044, scene.fog.density * (1.25 + .5 * i));
+    if (k === 'still') { scene.fog.color.lerp(new THREE.Color('#181610'), .2); }
+    sky.intensity *= 1 - grey * .35; hemi.intensity *= 1 - grey * .14;
+  } else {
+    if (k === 'fog') scene.fog.density *= 1 + 2.6 * i;
+    if (k === 'rain' || k === 'storm' || k === 'snow' || k === 'glass_hail') scene.fog.density *= 1.5 + i;
+    if (k === 'still') { scene.fog.color.lerp(new THREE.Color('#a59c7a'), .25); }
+    sky.intensity *= 1 - grey * .65; hemi.intensity *= 1 - grey * .3;
+  }
   wxBaseBg.copy(scene.background);
   const cloudCol = new THREE.Color(night ? '#2a2f3c' : dusk ? '#8a7480' : k === 'storm' ? '#7d8590' : k === 'ash' ? '#9a8a7a' : '#f2f4f7');
   clouds.forEach((c, n) => { c.material.color.copy(cloudCol); c.material.opacity = Math.max(0, Math.min(.85, cover * (.6 + hash(n, 5, 5) * .5))); c.visible = cover > .05; });
@@ -1348,7 +1355,7 @@ moon.position.set(-14, 26, -30); scene.add(moon);
 function updateSky() {   // follows the viewer's own clock
   const h = skyHour ?? (new Date().getHours() + new Date().getMinutes() / 60);
   const night = h < 5 || h >= 20, dusk = !night && (h < 7 || h >= 17);
-  const look = night ? { bg: '#0a0d16', fog: '#0a0b10', d: .03, hs: '#2a3550', hg: '#2a1e16', hi: .75, sc: '#7088c0', si: .5, fi: .35 }
+  const look = night ? { bg: '#13192a', fog: '#131928', d: .022, hs: '#566f9e', hg: '#3e3128', hi: 1.08, sc: '#94aee0', si: .78, fi: .62 }
              : dusk  ? { bg: '#4a3f5c', fog: '#3a3040', d: .022, hs: '#8a6a80', hg: '#3a2a1e', hi: 1.05, sc: '#ff9a5a', si: 1.0, fi: .45 }
                      : { bg: '#8aa4bf', fog: '#7a8a99', d: .013, hs: '#b9cbe0', hg: '#4a3a2a', hi: 1.1, sc: '#fff1d6', si: 1.8, fi: .3 };
   fill.intensity = look.fi;
