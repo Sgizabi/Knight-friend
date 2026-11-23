@@ -136,6 +136,7 @@ letters = read_lines("world/letters.jsonl")
 if not letters:
     letters = read_lines("world/replies.jsonl")
 needs_history = read_lines("world/needs_history.jsonl")
+bestiary = read_json("world/bestiary.json", {"points": 0, "step": 0, "kinds": {}})
 pages_url = ""
 if META.get("repo"):
     owner, repo = META["repo"].split("/", 1)
@@ -308,7 +309,7 @@ links = f" · <a href='{pages_url}keep.html' target='_blank'>open it full screen
 st.markdown(f"<p class='muted' style='text-align:center'>{escape(fresh)} · Click the keep to use the "
             f"keyboard{links}</p>", unsafe_allow_html=True)
 
-tabs = st.tabs(["Diary", "Visit", "Gallery", "Workshop", "Writings", "Mind", "Letters", "About"])
+tabs = st.tabs(["Diary", "Visit", "Gallery", "Workshop", "Writings", "Mind", "Bestiary", "Letters", "About"])
 
 # ------------------------------------------------------------------ diary
 with tabs[0]:
@@ -610,6 +611,49 @@ with tabs[5]:
     if pages_url:
         st.markdown(f"It also keeps [its own website]({pages_url}).")
 
+# ------------------------------------------------------------------ bestiary
+SEEING_STEPS = ("anyone", "unsettled", "wary", "seeing", "beyond")
+
+with tabs[6]:
+    name = identity.get("name") or "The knight"
+    kinds = bestiary.get("kinds") or {}
+    step = int(bestiary.get("step", 0) or 0)
+    step_label = SEEING_STEPS[min(max(step, 0), len(SEEING_STEPS) - 1)]
+    st.markdown(f"Beings {escape(name)} has witnessed at the keep, recorded in its own words.")
+    if kinds:
+        cols = st.columns(2)
+        cols[0].metric("Beings recorded", len(kinds))
+        cols[1].metric("Seeing", f"Step {step} · {step_label}")
+        ordered = sorted(kinds.items(), key=lambda kv: kv[1].get("last") or kv[1].get("first") or "", reverse=True)
+        for kind, entry in ordered:
+            title = entry.get("name") or kind.replace("_", " ").title()
+            count = int(entry.get("count", 0) or 0)
+            last_seen = when(entry.get("last") or entry.get("first") or "")
+            meta = []
+            if last_seen:
+                meta.append(f"last seen {last_seen}")
+            if count:
+                meta.append(f"seen {count} time{'s' if count != 1 else ''}")
+            first_seen = when(entry.get("first") or "")
+            if count > 1 and first_seen:
+                meta.append(f"first seen {first_seen}")
+            parts = [f"<div class='when'>{' · '.join(escape(m) for m in meta)}</div>" if meta else "",
+                     f"<strong>{escape(title)}</strong>"]
+            if entry.get("note"):
+                parts.append(f"<div style='margin-top:6px'>{escape(entry['note'])}</div>")
+            details = []
+            if entry.get("tells"):
+                details.append("Noticed: " + "; ".join(entry["tells"][-3:]))
+            if entry.get("worked"):
+                details.append("What worked: " + "; ".join(entry["worked"][-3:]))
+            if entry.get("failed"):
+                details.append("What hasn't: " + "; ".join(entry["failed"][-3:]))
+            if details:
+                parts.append(f"<div class='when' style='margin-top:8px'>{'<br>'.join(escape(d) for d in details)}</div>")
+            st.markdown(f"<div class='entry'>{''.join(parts)}</div>", unsafe_allow_html=True)
+    else:
+        st.markdown("<p class='muted'>No beings recorded in the bestiary yet.</p>", unsafe_allow_html=True)
+
 # ------------------------------------------------------------------ letters
 def mailbox_settings():
     """The friends' mailbox opens once the keeper has put its passcode and key in Streamlit's
@@ -689,7 +733,7 @@ def letter_form(settings):
         st.error("The mailbox couldn't post your letter just now. Please try again later.")
 
 
-with tabs[6]:
+with tabs[7]:
     st.markdown("Friends of the keeper can leave Rooken a letter here. It reads new letters when it "
                 "next wakes and may write back, or may not: it's a knight, not a chatbot. Letters "
                 "and replies are public, like everything here.")
@@ -718,7 +762,7 @@ with tabs[6]:
                    f"(https://github.com/{META['repo']}/edit/{META.get('branch', 'main')}/world/letters.md)")
 
 # ------------------------------------------------------------------ about
-with tabs[7]:
+with tabs[8]:
     name = identity.get("name") or "the knight"
     epithet = identity.get("epithet") or ""
     keep_link = f"{pages_url}keep.html" if pages_url else ""
