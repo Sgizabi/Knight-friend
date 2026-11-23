@@ -4311,11 +4311,13 @@ const BEASTS = {
       if (trunks) { const m = new T.Matrix4(); for (let i = 0; i < trunks.count; i++) { trunks.getMatrixAt(i, m); const e = m.elements; trees.push([e[12], e[14], Math.hypot(e[0], e[1], e[2])]); } }
       let room = 1;   // how much room it wants round other trees (eased off if no tree has that much)
       const clearOf = (x0, z0, x1, z1, skip) => trees.every(([x, z, s], i) => { if (i === skip) return true; const dx = x1 - x0, dz = z1 - z0, u = Math.max(0, Math.min(1, ((x - x0) * dx + (z - z0) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - x0 - dx * u, z - z0 - dz * u) > (.5 + s * .8) * room; });
-      // its tree: on the keep side of a stand of trees, with open ground beyond it. It hides behind the
-      // tree (as seen from the preview's camera, off to one side), leans out to look, then steps out
-      // round it and walks east into the open, across the camera's view, toward the keep.
-      const route = (x, z, side) => { const H = [x, z - side * 1.3], S = [x + 2.3, z - side * 1.3];
-        return { HIDE: H, SIDE: S, OUT: [x + 8.5, z - side * 1.0], OUTB: [x + 6.6, z - side * 1.1], side }; };
+      // its tree: on the keep side of a stand of trees, with open ground between it and the keep. It hides
+      // behind the tree as seen from the keep, leans out round the trunk to watch the keep (and him), then
+      // steps out round it and walks into the open toward the keep.
+      const KP = [-6, 0];                                                 // the keep, which it watches
+      const route = (x, z, side) => { const kl = Math.hypot(KP[0] - x, KP[1] - z), ux = (KP[0] - x) / kl, uz = (KP[1] - z) / kl, px = -uz * side, pz = ux * side;
+        const at = (a, c) => [x + ux * a + px * c, z + uz * a + pz * c];
+        return { HIDE: at(-1.2, 0), SIDE: at(.3, 1.5), OUT: at(8.5, 1.1), OUTB: at(6.6, 1.2), side, at, u: [ux, uz], p: [px, pz] }; };
       // the camera must see the whole walk with no tree crown in the way (crowns are wide: a generous margin)
       const sight = (cx, cz, px, pz, skip) => trees.every(([x, z, s], i) => { if (i === skip) return true; const dx = px - cx, dz = pz - cz, u = Math.max(0, Math.min(1, ((x - cx) * dx + (z - cz) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - cx - dx * u, z - cz - dz * u) > .4 + s * 1.05; });
       const behind = ([x, z]) => trees.reduce((n, [X, Z]) => n + (X < x + .5 && Math.hypot(X - x, Z - z) < 9 ? 1 : 0), 0);
@@ -4325,9 +4327,9 @@ const BEASTS = {
         for (const [[x, z], i] of cands) for (const side of [1, -1]) {
           const r = route(x, z, side);
           if (!clearOf(...r.HIDE, ...r.SIDE, i) || !clearOf(...r.SIDE, ...r.OUT, i)) continue;
-          for (const [cx, cd] of [[4, 11], [5, 9], [3, 13], [6, 8], [4, 15]]) {
-            const C = [x + cx, z + side * cd];
-            if (trees.every(([X, Z]) => Math.hypot(X - C[0], Z - C[1]) > 2.5) && [r.SIDE, [x + 4.5, z - side * 1.2], r.OUTB, r.OUT].every(q => sight(...C, ...q, i))) { r.CAM = C; best = [x, z, i, side, C]; break; }
+          for (const [cd, cl] of [[11, 4], [9, 5], [13, 3.5], [8, 6], [15, 4]]) {   // (the preview's camera: toward the keep, off to the side it leans)
+            const C = r.at(cd, cl);
+            if (trees.every(([X, Z]) => Math.hypot(X - C[0], Z - C[1]) > 2.5) && [r.at(.1, .9), r.SIDE, r.at(4.5, 1.2), r.OUTB, r.OUT].every(q => sight(...C, ...q, i))) { r.CAM = C; best = [x, z, i, side, C]; break; }
           }
           if (best) break;
           if (best) break;
@@ -4335,9 +4337,10 @@ const BEASTS = {
         if (best) break;
       }
       const [tx, tz, pick, side, CAM] = best || [-36, 8, -1, 1, [-32, 19]];
-      const { HIDE, SIDE, OUT, OUTB } = route(tx, tz, side);
-      const PEER = Math.atan2(CAM[0] - HIDE[0], CAM[1] - HIDE[1]), LS = -Math.sign(Math.cos(PEER)) || 1;   // it peers toward the open, leaning out east
-      this.view = [[CAM[0], gy(...CAM) + 2.4, CAM[1]], [tx + 4, gy(tx + 4, tz - side) + 3.0, tz - side]];
+      const RT = route(tx, tz, side), { HIDE, SIDE, OUT, OUTB } = RT, [ux, uz] = RT.u, [px, pz] = RT.p;
+      const PEER = Math.atan2(ux, uz), LS = Math.sign(-px * Math.cos(PEER) + pz * Math.sin(PEER)) || 1;   // it faces the keep, and leans out round the trunk to the side
+      const PK = RT.at(.2, .9);
+      this.view = [[CAM[0], gy(...CAM) + 2.4, CAM[1]], [PK[0], gy(...PK) + 3.4, PK[1]]];
 
       // ---- the body. It is not made the way everything else here is made: smooth where the world is
       // faceted, untouched by the mist, lit faintly from a direction where there is no light (a matcap:
@@ -4508,7 +4511,7 @@ const BEASTS = {
         const b = G(root), body = G(b);
         P(body, A.ico(.06, 0), birdM, [0, .06, 0], { scale: [.9, .8, 1.6], cast: false });
         const wings = [-1, 1].map(sx => { const w = G(body, [sx * .04, .08, 0]); P(w, A.box(.16, .006, .08), birdM, [sx * .08, 0, 0], { cast: false }); return w; });
-        const at = [OUTB[0] + 1.2 + nz(i) * 2.6, OUTB[1] - .6 + nz(i + 9) * 2.4];
+        const a1 = 1.2 + nz(i) * 2.6, a2 = (nz(i + 9) - .5) * 2.4, at = [OUTB[0] + ux * a1 + px * a2, OUTB[1] + uz * a1 + pz * a2];
         birds.push({ b, body, wings, at, ph: nz(i + 20) * 6, dir: nz(i + 30) * 1.2 - .6 });
       }
 
@@ -4516,7 +4519,7 @@ const BEASTS = {
       const C = 44, SEQ = ['cape', 'woodsman', 'bare', 'bark', 'traveller', 'bare'];
       const path = (pts, u) => { const L = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); L.push(l); tot += l; }
         let d = Math.max(0, Math.min(1, u)) * tot; for (let i = 0; i < L.length; i++) { if (d <= L[i] || i === L.length - 1) { const f = Math.min(1, d / L[i]); return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f, Math.atan2(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]), tot]; } d -= L[i]; } };
-      let yaw = Math.PI / 2, lastKind = '', walked = 0, lastPos = null, breath = 0, scanAt = 0, scanN = 0, scanFrom = [0, 0, 0], scanTo = [0, 0, 0], scanT = -9;
+      let yaw = PEER, lastKind = '', walked = 0, lastPos = null, breath = 0, scanAt = 0, scanN = 0, scanFrom = [0, 0, 0], scanTo = [0, 0, 0], scanT = -9;
       const sides = ['L', 'R'], J = R.J;
       // smooth noise (-1..1), so that nothing it does ever quite repeats; the world around it loops, it does not
       const vn = (sd, x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return (nz(sd * 57.3 + i) * (1 - u) + nz(sd * 57.3 + i + 1) * u) * 2 - 1; };
@@ -4584,13 +4587,17 @@ const BEASTS = {
         if (kt < 11.5) {
           lean = -.12 + peer * .75;
           if (peer > .02) scan(t, peer, n * 31);
+          if (peer > .5 && pulse(t + n * 7, 11, 2.6) > .3) {               // now and then it looks straight at him, and holds
+            A.K.J.hips.getWorldPosition(camW); const rel = Math.atan2(Math.sin(Math.atan2(camW.x - g.position.x, camW.z - g.position.z) - yaw), Math.cos(Math.atan2(camW.x - g.position.x, camW.z - g.position.z) - yaw));
+            R.want('head', .08, Math.max(-1, Math.min(1, rel)) * .9, 0);
+          }
           const lh = LS > 0 ? 'L' : 'R'; R.want('sh' + lh, -1.15 * peer, 0, -LS * .35 * peer); R.want('el' + lh, -.6 * peer); R.want('wr' + lh, -.2 * peer);
         }
         // before it steps out, it gathers itself: a small dip, a lean back
         const gather = bump(kt, 10.9, 11.75); drop += gather * .12 * k; for (const sx of sides) add('kn' + sx, gather * .3); add('spine', -gather * .1);
         const out = bare ? OUTB : OUT, back = [out, SIDE, HIDE];
-        if (kt >= 11.5 && kt < 13.5) { const u = smooth(11.5, 13.5, kt); x = HIDE[0] + (SIDE[0] - HIDE[0]) * u; z = HIDE[1] + (SIDE[1] - HIDE[1]) * u; face = Math.PI / 2; moving = 1; }   // stepping out from behind it
-        if (kt >= 13.5) { x = SIDE[0]; z = SIDE[1]; face = Math.PI / 2; }
+        if (kt >= 11.5 && kt < 13.5) { const u = smooth(11.5, 13.5, kt); x = HIDE[0] + (SIDE[0] - HIDE[0]) * u; z = HIDE[1] + (SIDE[1] - HIDE[1]) * u; face = PEER; moving = 1; }   // stepping out from behind it
+        if (kt >= 13.5) { x = SIDE[0]; z = SIDE[1]; face = PEER; }
         if (!bare) {
           if (kt >= 13.5 && kt < 23) {
             let u = (kt - 13.5) / 9.5;
@@ -4598,7 +4605,7 @@ const BEASTS = {
             if (kind === 'bark') u = (Math.floor(u * 5) + smooth(.55, 1, (u * 5) % 1)) / 5;      // the bark: still as a tree, then a few lurching steps
             const [px, pz, a] = path([SIDE, out], u); x = px; z = pz; face = a; moving = kind === 'bark' ? ((u * 5) % 1 > .5 ? 1 : 0) : 1;
           } else if (kt >= 23 && kt < 28.5) {                                                    // stands and looks at the keep
-            x = out[0]; z = out[1]; face = Math.PI / 2; scan(t, .4, 200 + n * 17);
+            x = out[0]; z = out[1]; face = PEER; scan(t, .4, 200 + n * 17);
           } else if (kt >= 28.5 && kt < 38.5) {
             const u = (kt - 28.5) / 10; const [px, pz, a] = path(back, u); x = px; z = pz; face = a; moving = 1;
           } else if (kt >= 38.5) { x = HIDE[0]; z = HIDE[1]; }
@@ -4606,7 +4613,7 @@ const BEASTS = {
         } else {
           if (kt >= 13.5 && kt < 18.2) { const [px, pz, a] = path([SIDE, out], (kt - 13.5) / 4.7); x = px; z = pz; face = a; moving = 1; }
           else if (kt >= 18.2 && kt < 21.9) {
-            x = out[0]; z = out[1]; face = Math.PI / 2 + .15;
+            x = out[0]; z = out[1]; face = PEER + .15;
             // noticed: it freezes mid-step, turns its head slowly to the birds, then lifts a hand to its own face
             R.want('head', .1, -.55, .25);
             const pre = bump(kt, 19.2, 19.65), lift = smooth(19.6, 20.6, kt);   // (the arm draws back a little before it rises)
