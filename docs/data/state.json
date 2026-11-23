@@ -71,11 +71,16 @@
           "Warmth is good before I sleep."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-23T01:30:22+00:00",
+    "live_thought": {
+      "text": "The bolts are neat, like tiny soldiers on a parade.",
+      "time": "2026-11-23T01:30:22+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T01:01:33+00:00",
+    "since": "2026-11-23T01:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -83,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 54.2,
+    "warmth": 84.8,
+    "inspiration": 45.6,
+    "spirit": 79.9
+  },
+  "needs_prev": {
     "rest": 55.6,
     "warmth": 87.1,
     "inspiration": 45.6,
     "spirit": 80.7
   },
-  "needs_prev": {
-    "rest": 57.4,
-    "warmth": 86.7,
-    "inspiration": 33.6,
-    "spirit": 81.5
-  },
-  "needs_at": "2026-11-23T01:01:34+00:00",
+  "needs_at": "2026-11-23T01:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -917,7 +922,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T01:01:33+00:00",
+    "updated": "2026-11-23T01:30:22+00:00",
     "seen_until": "2026-11-23T00:55:28+00:00"
   },
   "gifts": [],
@@ -932,12 +937,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-21T16:19:39+00:00",
-        "end": "2026-11-21T23:04:20+00:00",
-        "kind": "rain",
-        "intensity": 0.88
-      },
       {
         "start": "2026-11-21T23:04:20+00:00",
         "end": "2026-11-22T03:48:18+00:00",
@@ -1132,5 +1131,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T01:01:34+00:00"
+  "exported": "2026-11-23T01:30:23+00:00"
 }
