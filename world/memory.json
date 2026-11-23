@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 21.177,
-    "craft": 21.177
+    "repair": 21.33,
+    "craft": 21.33
   },
   "projects": [
     {
@@ -20,14 +20,14 @@
       "title": "Bathhouse Builder – Shim Summary (Enhanced)",
       "started": "2026-11-22T01:01:30+00:00",
       "status": "in progress",
-      "versions": 6,
-      "about": "Added a column‑order check, a preview of the CSV, and streamlined the UI while staying under 6 000 characters.",
-      "updated": "2026-11-23T02:40:34+00:00",
-      "next": "Run the remaining export tests on the Bathhouse Builder page and verify column order across all data sets."
+      "versions": 7,
+      "about": "Added automated export test that checks CSV column order and validates data, plus a small UI for running the test and sh",
+      "updated": "2026-11-23T21:01:37+00:00",
+      "next": "Next I will run the full suite of export tests and tidy the UI layout before marking the page done."
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 6,
+  "entries_since_condense": 7,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,7 +38,7 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 7,
-      "strength": 5.387,
+      "strength": 5.172,
       "last": "2026-11-23T13:00:41+00:00"
     }
   ],
@@ -58,7 +58,7 @@
     "The fire crackles, like stone laughing."
   ],
   "last_glance": "2026-11-23T20:30:27+00:00",
-  "visits_seen_until": "2026-11-23T18:55:29+00:00",
+  "visits_seen_until": "2026-11-23T20:55:29+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

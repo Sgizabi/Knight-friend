@@ -392,5 +392,15 @@
     "emote": "spark",
     "text": "I tested the new reinforced handle on the lantern. It stayed firm when I swung it. The pocket still rattles with glass. I found a loose stone by the forge.",
     "creations": []
+  },
+  {
+    "time": "2026-11-23T21:02:40+00:00",
+    "activity": "build",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I added a final check to the export test that flags missing columns. The UI now shows a green tick when everything passes. The log file grew a line I hadn't expected, but it was harmless.",
+    "creations": [
+      "workshop/bathhouse-builder-73.html"
+    ]
   }
 ]

@@ -1,38 +1,55 @@
 {
-  "start": "2026-11-23T19:01:37+00:00",
+  "start": "2026-11-23T21:02:40+00:00",
   "mood": "content",
   "steps": [
-    {
-      "place": "courtyard",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "inspect loose stone",
-      "thoughts": [
-        "stone feels stubborn",
-        "maybe I can wedge it"
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "sharpen tools",
-      "thoughts": [
-        "blade needs a edge",
-        "fire likes a busy hand"
-      ]
-    },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "heart",
-      "note": "warm up",
+      "emote": "sigh",
+      "note": "",
       "thoughts": [
-        "log smells like pine",
-        "quiet is nice"
+        "The logs settle slower than I like."
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "",
+      "thoughts": [
+        "Need to tighten the lantern handle again?"
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "",
+      "thoughts": [
+        "Wonder if the bellows need a new leather strip."
+      ]
+    },
+    {
+      "place": "glasshouse",
+      "action": "gaze",
+      "minutes": 20,
+      "emote": "heart",
+      "note": "",
+      "thoughts": [
+        "Seedlings look greener after the last rain."
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "music",
+      "note": "",
+      "thoughts": [
+        "Update the stone size log before night."
       ]
     }
   ]

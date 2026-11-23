@@ -16,15 +16,14 @@ button,select{margin:0.3em}
 <h1>Bathhouse Floor Shim Stacker</h1>
 <div>
   <label for="section">Section:</label>
-  <select id="section">
-    <option value="0">0</option><option value="1">1</option><option value="2">2</option>
-  </select>
+  <select id="section"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select>
   <button id="add">Add Shim</button>
   <button id="remove">Remove Shim</button>
   <button id="reset">Reset Section</button>
   <button id="resetAll">Reset All</button>
   <button id="export">Export CSV</button>
   <button id="test">Test Stability</button>
+  <button id="exportTest">Export Test</button>
   <button id="clearLog">Clear Log</button>
 </div>
 
@@ -63,15 +62,12 @@ function draw(){
   overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.total,0);
   updateCSVPreview();
 }
-function logMsg(m){
-  const p=document.createElement('p');p.textContent=m;log.appendChild(p);
-  log.scrollTop=log.scrollHeight;
-}
-function add(){ const s=sections[cur]; s.level++; s.total++; logMsg('Added shim '+s.level+' to section '+cur); draw();}
-function rem(){ const s=sections[cur]; if(s.level){logMsg('Removed shim '+s.level+' from section '+cur); s.level--; draw();}}
-function reset(){ if(!confirm('Reset section '+cur+'?'))return; const s=sections[cur]; if(s.level)logMsg('Reset section '+cur+', removed '+s.level+' shims'); s.level=0;s.total=0;draw();}
-function resetAll(){ if(!confirm('Reset all sections?'))return; sections.forEach(s=>{s.level=0;s.total=0;});logMsg('All sections cleared');draw();}
-function test(){ const w=Math.random(); logMsg(w<0.2?'Floor stable.':'Unstable! Too many shims.');}
+function logMsg(m){const p=document.createElement('p');p.textContent=m;log.appendChild(p);log.scrollTop=log.scrollHeight;}
+function add(){const s=sections[cur];s.level++;s.total++;logMsg('Added shim '+s.level+' to section '+cur);draw();}
+function rem(){const s=sections[cur];if(s.level){logMsg('Removed shim '+s.level+' from section '+cur);s.level--;draw();}}
+function reset(){if(!confirm('Reset section '+cur+'?'))return;const s=sections[cur];if(s.level)logMsg('Reset section '+cur+', removed '+s.level+' shims');s.level=0;s.total=0;draw();}
+function resetAll(){if(!confirm('Reset all sections?'))return;sections.forEach(s=>{s.level=0;s.total=0;});logMsg('All sections cleared');draw();}
+function test(){logMsg(Math.random()<0.2?'Floor stable.':'Unstable! Too many shims.');}
 function clearLog(){log.innerHTML='';}
 function exportCSV(){
   const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n')+'\n';
@@ -80,8 +76,21 @@ function exportCSV(){
   a.download='shim_summary.csv';a.click();URL.revokeObjectURL(a.href);
 }
 function updateCSVPreview(){
-  const txt='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n');
-  preview.textContent=txt;
+  preview.textContent='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n');
+}
+function exportTest(){
+  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n')+'\n';
+  const rows=csv.trim().split('\n');
+  const header=rows[0].split(',');
+  const expected=['section','level','total'];
+  const ok=header.length===3 && header.every((v,i)=>v===expected[i]);
+  if(!ok){logMsg('Export test failed: header mismatch');return;}
+  for(let i=1;i<rows.length;i++){
+    const cols=rows[i].split(',');
+    if(cols.length!==3){logMsg('Export test failed: row '+i+' column count');return;}
+    if(+cols[0]!==i-1){logMsg('Export test failed: section index '+i);return;}
+  }
+  logMsg('Export test passed. Column order correct.');
 }
 sel.onchange=()=>{cur=+sel.value;draw();};
 document.getElementById('add').onclick=add;
@@ -91,6 +100,7 @@ document.getElementById('resetAll').onclick=resetAll;
 document.getElementById('test').onclick=test;
 document.getElementById('clearLog').onclick=clearLog;
 document.getElementById('export').onclick=exportCSV;
+document.getElementById('exportTest').onclick=exportTest;
 draw();
 </script>
 </body>
