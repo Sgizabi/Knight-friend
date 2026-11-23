@@ -30,41 +30,69 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 42,
-    "last_wake": "2026-11-23T11:00:27+00:00",
+    "wakeups": 43,
+    "last_wake": "2026-11-23T13:01:49+00:00",
     "nights_slept_through": 16
   },
   "plan": {
-    "start": "2026-11-23T11:00:27+00:00",
+    "start": "2026-11-23T13:01:48+00:00",
     "mood": "content",
-    "applied_until": "2026-11-23T12:30:24+00:00",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
-        "emote": "zzz",
-        "note": "asleep for the night"
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "Warm up",
+        "thoughts": [
+          "Rain drums on roof, fire stays stubbornly warm."
+        ]
+      },
+      {
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "Update inventory",
+        "thoughts": [
+          "Note the two short slabs for later wall work."
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "Sharpen tools",
+        "thoughts": [
+          "Hammer feels dull, need to file it."
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "Check logs",
+        "thoughts": [
+          "Logs dry now, but storm might soak them later."
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "Storm rattles the stones, but the bedroll keeps me snug.",
-      "time": "2026-11-23T12:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-23T13:00:39+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-23T13:01:49+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "update my stone size log and note any irregular stones",
-    "thought": "The thunder rolls but the fire keeps humming, the stone seems stubborn as ever."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
+    "rest": 97.0,
     "warmth": 69.1,
-    "inspiration": 85.6,
+    "inspiration": 89.9,
     "spirit": 74.0
   },
   "needs_prev": {
@@ -73,7 +101,7 @@
     "inspiration": 84.8,
     "spirit": 69.9
   },
-  "needs_at": "2026-11-23T13:00:39+00:00",
+  "needs_at": "2026-11-23T13:01:49+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -896,8 +924,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T12:30:24+00:00",
-    "seen_until": "2026-11-23T02:25:22+00:00"
+    "updated": "2026-11-23T13:01:49+00:00",
+    "seen_until": "2026-11-23T12:55:38+00:00"
   },
   "gifts": [],
   "gate": [
@@ -1108,5 +1136,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T13:00:39+00:00"
+  "exported": "2026-11-23T13:01:49+00:00"
 }

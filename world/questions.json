@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261121",
-      "items": [
-        {
-          "id": "t20261121-0",
-          "text": "That cracked stone—do you think it'll hold?"
-        },
-        {
-          "id": "t20261121-1",
-          "text": "Why does the fire stay so quiet now?"
-        },
-        {
-          "id": "t20261121-2",
-          "text": "Did the new roof board sing when you nailed it?"
-        },
-        {
-          "id": "t20261121-3",
-          "text": "How's the glasshouse vibe with those seedlings?"
-        },
-        {
-          "id": "t20261121-4",
-          "text": "Do the woodshed logs ever argue with each other?"
-        },
-        {
-          "id": "t20261121-5",
-          "text": "Is the east wall whispering anything as you work?"
-        }
-      ]
-    },
-    {
       "date": "20261122",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261122-5",
           "text": "What’s the oddest thing you’ve found in the woodshed?"
+        }
+      ]
+    },
+    {
+      "date": "20261123",
+      "items": [
+        {
+          "id": "t20261123-0",
+          "text": "Did the lantern upgrade finally stop wobbling?"
+        },
+        {
+          "id": "t20261123-1",
+          "text": "What’s the story behind those half‑height stones?"
+        },
+        {
+          "id": "t20261123-2",
+          "text": "Why do you keep glass shards jingling in your pocket?"
+        },
+        {
+          "id": "t20261123-3",
+          "text": "Is the fire in the hearth feeling sluggish lately?"
+        },
+        {
+          "id": "t20261123-4",
+          "text": "Do you enjoy the new bathhouse more than the forge?"
+        },
+        {
+          "id": "t20261123-5",
+          "text": "How’s the window view now that it’s all mended?"
         }
       ]
     }

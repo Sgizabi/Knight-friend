@@ -1,38 +1,45 @@
 {
-  "start": "2026-11-23T02:41:37+00:00",
+  "start": "2026-11-23T13:01:48+00:00",
   "mood": "content",
   "steps": [
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Warm up",
+      "thoughts": [
+        "Rain drums on roof, fire stays stubbornly warm."
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Update inventory",
+      "thoughts": [
+        "Note the two short slabs for later wall work."
+      ]
+    },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "dots",
+      "note": "Sharpen tools",
       "thoughts": [
-        "Need to sort the dented metal piece.",
-        "Wonder if I can repurpose it."
+        "Hammer feels dull, need to file it."
       ]
     },
     {
-      "place": "bathhouse",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Hot water still holds.",
-        "Maybe add a few more stones."
-      ]
-    },
-    {
-      "place": "fire",
+      "place": "woodshed",
       "action": "stand",
       "minutes": 20,
-      "emote": "spark",
-      "note": "",
+      "emote": "dots",
+      "note": "Check logs",
       "thoughts": [
-        "Fire's hum is oddly comforting.",
-        "Should I stack more logs for the night?"
+        "Logs dry now, but storm might soak them later."
       ]
     }
   ]

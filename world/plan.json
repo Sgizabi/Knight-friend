@@ -1,18 +1,46 @@
 {
-  "start": "2026-11-23T11:00:27+00:00",
+  "start": "2026-11-23T13:01:48+00:00",
   "mood": "content",
-  "applied_until": "2026-11-23T12:30:24+00:00",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 120,
-      "emote": "zzz",
-      "note": "asleep for the night"
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Warm up",
+      "thoughts": [
+        "Rain drums on roof, fire stays stubbornly warm."
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Update inventory",
+      "thoughts": [
+        "Note the two short slabs for later wall work."
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Sharpen tools",
+      "thoughts": [
+        "Hammer feels dull, need to file it."
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Check logs",
+      "thoughts": [
+        "Logs dry now, but storm might soak them later."
+      ]
     }
-  ],
-  "live_thought": {
-    "text": "Storm rattles the stones, but the bedroll keeps me snug.",
-    "time": "2026-11-23T12:30:24+00:00"
-  }
+  ]
 }

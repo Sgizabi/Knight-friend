@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-23T13:00:39+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-23T13:01:49+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "update my stone size log and note any irregular stones",
-  "thought": "The thunder rolls but the fire keeps humming, the stone seems stubborn as ever."
+  "note": "",
+  "thought": ""
 }
