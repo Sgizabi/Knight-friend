@@ -1,7 +1,7 @@
 {
   "start": "2026-11-23T11:00:27+00:00",
   "mood": "content",
-  "applied_until": "2026-11-23T11:00:27+00:00",
+  "applied_until": "2026-11-23T12:00:27+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -10,5 +10,9 @@
       "emote": "zzz",
       "note": "asleep for the night"
     }
-  ]
+  ],
+  "live_thought": {
+    "text": "Storm rattles the stone, but I feel fine.",
+    "time": "2026-11-23T12:00:27+00:00"
+  }
 }

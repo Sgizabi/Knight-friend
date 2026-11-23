@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 42,
-    "last_wake": "2026-11-23T09:00:31+00:00",
-    "nights_slept_through": 15
+    "last_wake": "2026-11-23T11:00:27+00:00",
+    "nights_slept_through": 16
   },
   "plan": {
     "start": "2026-11-23T11:00:27+00:00",
     "mood": "content",
-    "applied_until": "2026-11-23T11:00:27+00:00",
+    "applied_until": "2026-11-23T12:00:27+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -46,30 +46,34 @@
         "emote": "zzz",
         "note": "asleep for the night"
       }
-    ]
+    ],
+    "live_thought": {
+      "text": "Storm rattles the stone, but I feel fine.",
+      "time": "2026-11-23T12:00:27+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T11:00:27+00:00",
-    "place": "bedroll",
-    "action": "sleep",
-    "emote": "zzz",
-    "note": "asleep for the night",
+    "since": "2026-11-23T12:00:28+00:00",
+    "place": "fire",
+    "action": "sit",
+    "emote": "dots",
+    "note": "",
     "thought": ""
   },
   "needs": {
+    "rest": 100.0,
+    "warmth": 72.1,
+    "inspiration": 83.9,
+    "spirit": 70.4
+  },
+  "needs_prev": {
     "rest": 100.0,
     "warmth": 75.1,
     "inspiration": 82.0,
     "spirit": 71.4
   },
-  "needs_prev": {
-    "rest": 100.0,
-    "warmth": 81.1,
-    "inspiration": 77.1,
-    "spirit": 73.6
-  },
-  "needs_at": "2026-11-23T11:00:27+00:00",
+  "needs_at": "2026-11-23T12:00:28+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -892,7 +896,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T11:00:27+00:00",
+    "updated": "2026-11-23T12:00:27+00:00",
     "seen_until": "2026-11-23T02:25:22+00:00"
   },
   "gifts": [],
@@ -1029,16 +1033,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-23T11:00:00+00:00",
-      "end": "2026-11-23T12:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-23T12:00:00+00:00",
       "end": "2026-11-23T13:00:00+00:00",
       "kinds": []
@@ -1093,6 +1087,16 @@
         "crows",
         "songbirds"
       ]
+    },
+    {
+      "start": "2026-11-23T19:00:00+00:00",
+      "end": "2026-11-23T20:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "fish",
+        "cat"
+      ]
     }
   ],
   "creatures": {
@@ -1100,5 +1104,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T11:00:27+00:00"
+  "exported": "2026-11-23T12:00:28+00:00"
 }
