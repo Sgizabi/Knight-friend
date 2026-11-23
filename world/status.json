@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-23T21:00:27+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-23T21:00:31+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "run remaining export tests and verify column order",
+  "thought": "The forge is humming, the lantern feels solid. I should get back to the Bathhouse Builder tests."
 }

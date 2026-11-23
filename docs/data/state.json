@@ -80,18 +80,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-23T21:00:27+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-23T21:00:31+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "run remaining export tests and verify column order",
+    "thought": "The forge is humming, the lantern feels solid. I should get back to the Bathhouse Builder tests."
   },
   "needs": {
-    "rest": 70.3,
-    "warmth": 86.2,
+    "rest": 71.2,
+    "warmth": 86.6,
     "inspiration": 53.9,
-    "spirit": 79.2
+    "spirit": 78.5
   },
   "needs_prev": {
     "rest": 70.3,
@@ -99,7 +99,7 @@
     "inspiration": 53.9,
     "spirit": 79.2
   },
-  "needs_at": "2026-11-23T21:00:27+00:00",
+  "needs_at": "2026-11-23T21:00:31+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1531,5 +1531,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T21:00:27+00:00"
+  "exported": "2026-11-23T21:00:31+00:00"
 }
