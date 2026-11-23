@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-23T01:00:27+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-23T01:00:30+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "count the stones in the courtyard walls and note their sizes",
+    "thought": "The fire hums, the lantern glows steady. I could use the quiet to get a better handle on the stone sizes before the night gets too cold."
   },
   "needs": {
-    "rest": 57.4,
-    "warmth": 86.7,
+    "rest": 58.6,
+    "warmth": 87.1,
     "inspiration": 33.6,
-    "spirit": 81.5
+    "spirit": 80.7
   },
   "needs_prev": {
     "rest": 57.4,
@@ -106,7 +106,7 @@
     "inspiration": 33.6,
     "spirit": 81.5
   },
-  "needs_at": "2026-11-23T01:00:27+00:00",
+  "needs_at": "2026-11-23T01:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1144,5 +1144,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T01:00:27+00:00"
+  "exported": "2026-11-23T01:00:30+00:00"
 }
