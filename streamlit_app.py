@@ -642,12 +642,13 @@ with tabs[6]:
             if entry.get("note"):
                 parts.append(f"<div style='margin-top:6px'>{escape(entry['note'])}</div>")
             details = []
+            clean_join = lambda items: " · ".join(str(x).strip().rstrip(".") for x in items[-3:] if str(x).strip())
             if entry.get("tells"):
-                details.append("Noticed: " + "; ".join(entry["tells"][-3:]))
+                details.append("Noticed: " + clean_join(entry["tells"]))
             if entry.get("worked"):
-                details.append("What worked: " + "; ".join(entry["worked"][-3:]))
+                details.append("What worked: " + clean_join(entry["worked"]))
             if entry.get("failed"):
-                details.append("What hasn't: " + "; ".join(entry["failed"][-3:]))
+                details.append("What didn't work: " + clean_join(entry["failed"]))
             if details:
                 parts.append(f"<div class='when' style='margin-top:8px'>{'<br>'.join(escape(d) for d in details)}</div>")
             st.markdown(f"<div class='entry'>{''.join(parts)}</div>", unsafe_allow_html=True)
