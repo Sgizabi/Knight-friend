@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I plan. I measure wood and stone with my thumb and keep cracked glass shards in my pockets. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 21.018,
-    "craft": 21.018
+    "repair": 21.177,
+    "craft": 21.177
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 5,
+  "entries_since_condense": 6,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,15 +38,12 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 7,
-      "strength": 5.611,
+      "strength": 5.387,
       "last": "2026-11-23T13:00:41+00:00"
     }
   ],
   "last_long": "2026-11-23T02:30:20+00:00",
   "recent_thoughts": [
-    "The fire's crackle keeps the night at bay",
-    "The flame flickers, shadows dance on the stone walls.",
-    "The flame flickers, stones warm my boots",
     "The fire crackles, stone warm, fox out there.",
     "Storm rattles the stone, but I feel fine.",
     "Storm rattles the stones, but the bedroll keeps me snug.",
@@ -55,10 +52,13 @@
     "Stone warm, fire steady, mind drifts to the half‑height slabs.",
     "The hammer sings, stone listens, I keep shaping.",
     "The tower wind rattles, but my mind stays steady",
-    "The fire's glow feels like a stone's quiet laugh."
+    "The fire's glow feels like a stone's quiet laugh.",
+    "The iron glows, waiting for my next strike.",
+    "The old shed smells of pine, ready for a quick tune‑up.",
+    "Stone flickers, heat steadies my mind."
   ],
-  "last_glance": "2026-11-23T16:30:27+00:00",
-  "visits_seen_until": "2026-11-23T16:55:29+00:00",
+  "last_glance": "2026-11-23T18:30:31+00:00",
+  "visits_seen_until": "2026-11-23T18:55:29+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

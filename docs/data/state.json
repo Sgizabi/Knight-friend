@@ -30,75 +30,63 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 45,
-    "last_wake": "2026-11-23T17:01:36+00:00",
+    "wakeups": 46,
+    "last_wake": "2026-11-23T19:01:37+00:00",
     "nights_slept_through": 16
   },
   "plan": {
-    "start": "2026-11-23T17:01:36+00:00",
+    "start": "2026-11-23T19:01:37+00:00",
     "mood": "content",
     "steps": [
       {
-        "place": "workbench",
+        "place": "courtyard",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "",
+        "emote": "question",
+        "note": "inspect loose stone",
         "thoughts": [
-          "The new seal feels tight enough."
+          "stone feels stubborn",
+          "maybe I can wedge it"
         ]
       },
       {
         "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "",
+        "emote": "dots",
+        "note": "sharpen tools",
         "thoughts": [
-          "Heating metal for the next handle."
+          "blade needs a edge",
+          "fire likes a busy hand"
         ]
       },
       {
-        "place": "woodshed",
-        "action": "stand",
+        "place": "fire",
+        "action": "sit",
         "minutes": 20,
-        "emote": "spark",
-        "note": "",
+        "emote": "heart",
+        "note": "warm up",
         "thoughts": [
-          "Logs are dry, fire will stay warm longer."
-        ]
-      },
-      {
-        "place": "courtyard",
-        "action": "pace",
-        "minutes": 10,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "Scanning stones, hoping none are half height again."
+          "log smells like pine",
+          "quiet is nice"
         ]
       }
-    ],
-    "applied_until": "2026-11-23T18:30:31+00:00",
-    "live_thought": {
-      "text": "Stone flickers, heat steadies my mind.",
-      "time": "2026-11-23T18:30:31+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-23T19:00:30+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-23T19:01:37+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "make the grip solid and test for wobble",
-    "thought": "The fire is humming, the lantern is steady. I feel like tightening up the lantern handle again."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 77.5,
-    "warmth": 80.1,
-    "inspiration": 65.9,
-    "spirit": 77.0
+    "rest": 71.5,
+    "warmth": 82.2,
+    "inspiration": 53.9,
+    "spirit": 81.6
   },
   "needs_prev": {
     "rest": 76.8,
@@ -106,7 +94,7 @@
     "inspiration": 65.9,
     "spirit": 77.7
   },
-  "needs_at": "2026-11-23T19:00:30+00:00",
+  "needs_at": "2026-11-23T19:01:37+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1057,6 +1045,166 @@
           }
         ],
         "made": "2026-11-23T17:00:33+00:00"
+      },
+      {
+        "name": "Reinforced Lantern Handle",
+        "about": "A sturdy grip for the keep's lanterns, built from metal rods and a wooden core",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.15
+            ],
+            "pos": [
+              0.0,
+              0.075,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.12,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.04,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#8B4513"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.02,
+              0.04,
+              0.02
+            ],
+            "pos": [
+              0.018,
+              0.04,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#8B4513"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.02,
+              0.04,
+              0.02
+            ],
+            "pos": [
+              -0.018,
+              0.04,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#8B4513"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.005,
+              0.005,
+              0.03
+            ],
+            "pos": [
+              0.0,
+              0.155,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.005,
+              0.005,
+              0.03
+            ],
+            "pos": [
+              0.02,
+              0.155,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.005,
+              0.005,
+              0.03
+            ],
+            "pos": [
+              -0.02,
+              0.155,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          }
+        ],
+        "made": "2026-11-23T19:00:33+00:00"
       }
     ],
     "buildings": [
@@ -1152,8 +1300,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T18:30:31+00:00",
-    "seen_until": "2026-11-23T16:55:29+00:00"
+    "updated": "2026-11-23T19:01:37+00:00",
+    "seen_until": "2026-11-23T18:55:29+00:00"
   },
   "gifts": [],
   "gate": [
@@ -1381,5 +1529,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T19:00:30+00:00"
+  "exported": "2026-11-23T19:01:37+00:00"
 }
