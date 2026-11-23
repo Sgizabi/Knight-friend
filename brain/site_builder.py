@@ -47,7 +47,7 @@ PAGE = """<!DOCTYPE html>
 # it falls back to its own copy of the repository, which may be hours old.
 MIRRORED = ["identity.json", "memory.json", "plan.json", "status.json", "usage.json",
             "recent.json", "gallery.json", "writings.jsonl", "letters.jsonl", "replies.jsonl",
-            "needs_history.jsonl"]
+            "needs_history.jsonl", "bestiary.json"]
 
 
 def mirror_world(world: Path, docs: Path):
