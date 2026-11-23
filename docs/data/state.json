@@ -72,15 +72,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-23T04:00:27+00:00",
+    "applied_until": "2026-11-23T04:30:22+00:00",
     "live_thought": {
-      "text": "The flame flickers, stones warm my boots",
-      "time": "2026-11-23T04:00:27+00:00"
+      "text": "The fire crackles, stone warm, fox out there.",
+      "time": "2026-11-23T04:30:22+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T04:00:27+00:00",
+    "since": "2026-11-23T04:30:22+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -88,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 42.8,
+    "warmth": 92.8,
+    "inspiration": 62.7,
+    "spirit": 79.7
+  },
+  "needs_prev": {
     "rest": 41.6,
     "warmth": 92.5,
     "inspiration": 62.7,
     "spirit": 80.5
   },
-  "needs_prev": {
-    "rest": 40.2,
-    "warmth": 91.2,
-    "inspiration": 62.7,
-    "spirit": 81.3
-  },
-  "needs_at": "2026-11-23T04:00:27+00:00",
+  "needs_at": "2026-11-23T04:30:22+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -922,7 +922,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T04:00:27+00:00",
+    "updated": "2026-11-23T04:30:22+00:00",
     "seen_until": "2026-11-23T02:25:22+00:00"
   },
   "gifts": [],
@@ -1134,5 +1134,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T04:00:27+00:00"
+  "exported": "2026-11-23T04:30:22+00:00"
 }
