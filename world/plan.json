@@ -1,44 +1,39 @@
 {
-  "start": "2026-11-23T01:01:33+00:00",
+  "start": "2026-11-23T02:41:37+00:00",
   "mood": "content",
   "steps": [
     {
-      "place": "courtyard",
-      "action": "pace",
+      "place": "forge",
+      "action": "work",
       "minutes": 20,
-      "emote": "exclaim",
-      "note": "check wall",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "That low stone looks like it wants to stay loose.",
-        "Maybe I should mark it."
+        "Need to sort the dented metal piece.",
+        "Wonder if I can repurpose it."
       ]
     },
     {
-      "place": "workbench",
-      "action": "work",
+      "place": "bathhouse",
+      "action": "sit",
       "minutes": 20,
-      "emote": "exclaim",
-      "note": "organize bolts",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "Bolt drawer is full, need to sort later.",
-        "The new lantern upgrade sits nearby, still bright."
+        "Hot water still holds.",
+        "Maybe add a few more stones."
       ]
     },
     {
       "place": "fire",
-      "action": "sit",
+      "action": "stand",
       "minutes": 20,
-      "emote": "exclaim",
-      "note": "warm up",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "Fire is still humming, like a lazy coworker.",
-        "Warmth is good before I sleep."
+        "Fire's hum is oddly comforting.",
+        "Should I stack more logs for the night?"
       ]
     }
-  ],
-  "applied_until": "2026-11-23T02:00:25+00:00",
-  "live_thought": {
-    "text": "The fire's crackle keeps the night at bay",
-    "time": "2026-11-23T02:00:25+00:00"
-  }
+  ]
 }

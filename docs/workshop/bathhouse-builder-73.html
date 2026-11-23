@@ -8,19 +8,16 @@ body{font-family:sans-serif;background:#f0f0f0;margin:0;padding:1em;color:#333}
 h1{margin-top:0}
 #stack{border:2px solid #555;background:#fff;width:200px;height:200px;margin:auto;position:relative}
 .block{position:absolute;width:100%;height:20px;background:#a2d5f2;box-sizing:border-box;border:1px solid #555}
-#log,#summary{margin-top:1em;padding:5px;background:#fff;border:1px solid #555;max-height:150px;overflow:auto}
+#log,#summary,#preview{margin-top:1em;padding:5px;background:#fff;border:1px solid #555;max-height:150px;overflow:auto}
 button,select{margin:0.3em}
 </style>
 </head>
 <body>
 <h1>Bathhouse Floor Shim Stacker</h1>
-
 <div>
   <label for="section">Section:</label>
   <select id="section">
-    <option value="0">0</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
+    <option value="0">0</option><option value="1">1</option><option value="2">2</option>
   </select>
   <button id="add">Add Shim</button>
   <button id="remove">Remove Shim</button>
@@ -37,83 +34,56 @@ button,select{margin:0.3em}
   <div id="sectionSum">Section 0 total: 0</div>
   <div id="overallSum">Overall shims this floor: 0</div>
 </div>
+
+<div id="preview"><strong>CSV preview:</strong><pre id="csvPreview"></pre></div>
+
 <div id="log"></div>
 
 <script>
-let currentSection = 0;
-const sections = [
+let cur=0;
+const sections=[
   {level:0,total:0},
   {level:0,total:0},
   {level:0,total:0}
 ];
-
-const stack = document.getElementById('stack');
-const log   = document.getElementById('log');
-const sel   = document.getElementById('section');
-const sectionSum = document.getElementById('sectionSum');
-const overallSum = document.getElementById('overallSum');
+const stack=document.getElementById('stack'),log=document.getElementById('log'),
+ sel=document.getElementById('section'),secSum=document.getElementById('sectionSum'),
+ overall=document.getElementById('overallSum'),preview=document.getElementById('csvPreview');
 
 function draw(){
-  const sec = sections[currentSection];
+  const s=sections[cur];
   stack.innerHTML='';
-  for(let i=0;i<sec.level;i++){
+  for(let i=0;i<s.level;i++){
     const d=document.createElement('div');
     d.className='block';
-    d.style.bottom=(i*20)+'px';
+    d.style.bottom=i*20+'px';
     stack.appendChild(d);
   }
-  sectionSum.textContent='Section '+currentSection+' total: '+sec.total;
-  overallSum.textContent='Overall shims this floor: '+sections.reduce((a,s)=>a+s.total,0);
+  secSum.textContent='Section '+cur+' total: '+s.total;
+  overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.total,0);
+  updateCSVPreview();
 }
-function add(){
-  const s=sections[currentSection];
-  s.level++; s.total++;
-  logMsg('Added shim '+s.level+' to section '+currentSection);
-  draw();
-}
-function rem(){
-  const s=sections[currentSection];
-  if(s.level){
-    logMsg('Removed shim '+s.level+' from section '+currentSection);
-    s.level--; draw();
-  }
-}
-function reset(){
-  if(!confirm('Reset section '+currentSection+'? All shims will be lost.')) return;
-  const s=sections[currentSection];
-  if(s.level) logMsg('Reset section '+currentSection+', removed '+s.level+' shims');
-  s.level=0; s.total=0; draw();
-}
-function resetAll(){
-  if(!confirm('Reset all sections? This cannot be undone.')) return;
-  sections.forEach(s=>{s.level=0;s.total=0;});
-  logMsg('All sections cleared');
-  draw();
-}
-function test(){
-  const wobble=Math.random();
-  if(wobble<0.2) logMsg('Floor stable. No wobble.');
-  else if(wobble<0.6) logMsg('Slight wobble. Might need another shim.');
-  else logMsg('Unstable! Too many shims, risk of collapse.');
-}
-function clearLog(){ log.innerHTML=''; }
-function logMsg(msg){
-  const p=document.createElement('p');
-  p.textContent=msg;
-  log.appendChild(p);
+function logMsg(m){
+  const p=document.createElement('p');p.textContent=m;log.appendChild(p);
   log.scrollTop=log.scrollHeight;
 }
+function add(){ const s=sections[cur]; s.level++; s.total++; logMsg('Added shim '+s.level+' to section '+cur); draw();}
+function rem(){ const s=sections[cur]; if(s.level){logMsg('Removed shim '+s.level+' from section '+cur); s.level--; draw();}}
+function reset(){ if(!confirm('Reset section '+cur+'?'))return; const s=sections[cur]; if(s.level)logMsg('Reset section '+cur+', removed '+s.level+' shims'); s.level=0;s.total=0;draw();}
+function resetAll(){ if(!confirm('Reset all sections?'))return; sections.forEach(s=>{s.level=0;s.total=0;});logMsg('All sections cleared');draw();}
+function test(){ const w=Math.random(); logMsg(w<0.2?'Floor stable.':'Unstable! Too many shims.');}
+function clearLog(){log.innerHTML='';}
 function exportCSV(){
-  let csv='section,level,total\n';
-  sections.forEach((s,i)=>{csv+=i+','+s.level+','+s.total+'\n';});
-  const blob=new Blob([csv],{type:'text/csv'});
+  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n')+'\n';
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='shim_summary.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='shim_summary.csv';a.click();URL.revokeObjectURL(a.href);
 }
-sel.onchange=()=>{currentSection=+sel.value;draw();};
+function updateCSVPreview(){
+  const txt='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n');
+  preview.textContent=txt;
+}
+sel.onchange=()=>{cur=+sel.value;draw();};
 document.getElementById('add').onclick=add;
 document.getElementById('remove').onclick=rem;
 document.getElementById('reset').onclick=reset;
