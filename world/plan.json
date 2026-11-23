@@ -52,5 +52,10 @@
         "Update the stone size log before night."
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-23T21:30:24+00:00",
+  "live_thought": {
+    "text": "Stone under my tools feels cooler than the air",
+    "time": "2026-11-23T21:30:24+00:00"
+  }
 }

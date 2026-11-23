@@ -88,11 +88,16 @@
           "Update the stone size log before night."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-23T21:30:24+00:00",
+    "live_thought": {
+      "text": "Stone under my tools feels cooler than the air",
+      "time": "2026-11-23T21:30:24+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T21:02:40+00:00",
+    "since": "2026-11-23T21:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -100,18 +105,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 64.6,
+    "warmth": 88.7,
+    "inspiration": 37.9,
+    "spirit": 82.0
+  },
+  "needs_prev": {
     "rest": 64.2,
     "warmth": 86.6,
     "inspiration": 37.9,
     "spirit": 82.8
   },
-  "needs_prev": {
-    "rest": 70.3,
-    "warmth": 86.2,
-    "inspiration": 53.9,
-    "spirit": 79.2
-  },
-  "needs_at": "2026-11-23T21:02:40+00:00",
+  "needs_at": "2026-11-23T21:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1317,7 +1322,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T21:02:40+00:00",
+    "updated": "2026-11-23T21:30:24+00:00",
     "seen_until": "2026-11-23T20:55:29+00:00"
   },
   "gifts": [],
@@ -1543,5 +1548,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T21:02:40+00:00"
+  "exported": "2026-11-23T21:30:25+00:00"
 }
