@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-23T00:00:27+00:00",
+    "applied_until": "2026-11-23T00:30:24+00:00",
     "live_thought": {
-      "text": "The forge hums, iron waits, I’ll keep at it.",
-      "time": "2026-11-23T00:00:27+00:00"
+      "text": "Stone's warm, fire's crackle.",
+      "time": "2026-11-23T00:30:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T00:00:28+00:00",
+    "since": "2026-11-23T00:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 57.4,
+    "warmth": 86.7,
+    "inspiration": 33.6,
+    "spirit": 81.5
+  },
+  "needs_prev": {
     "rest": 50.2,
     "warmth": 87.5,
     "inspiration": 32.2,
     "spirit": 82.3
   },
-  "needs_prev": {
-    "rest": 51.8,
-    "warmth": 87.5,
-    "inspiration": 32.2,
-    "spirit": 83.2
-  },
-  "needs_at": "2026-11-23T00:00:28+00:00",
+  "needs_at": "2026-11-23T00:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -929,7 +929,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T00:00:27+00:00",
+    "updated": "2026-11-23T00:30:24+00:00",
     "seen_until": "2026-11-22T22:55:31+00:00"
   },
   "gifts": [],
@@ -1075,7 +1075,10 @@
       "start": "2026-11-23T00:00:00+00:00",
       "end": "2026-11-23T01:00:00+00:00",
       "kinds": [
+        "crows",
+        "owl",
         "bats",
+        "fox",
         "fish"
       ]
     },
@@ -1083,7 +1086,11 @@
       "start": "2026-11-23T01:00:00+00:00",
       "end": "2026-11-23T02:00:00+00:00",
       "kinds": [
+        "hares",
         "owl",
+        "bats",
+        "fox",
+        "fish",
         "cat"
       ]
     },
@@ -1091,6 +1098,8 @@
       "start": "2026-11-23T02:00:00+00:00",
       "end": "2026-11-23T03:00:00+00:00",
       "kinds": [
+        "hares",
+        "deer",
         "owl",
         "bats"
       ]
@@ -1099,14 +1108,17 @@
       "start": "2026-11-23T03:00:00+00:00",
       "end": "2026-11-23T04:00:00+00:00",
       "kinds": [
-        "owl"
+        "owl",
+        "bats",
+        "cat"
       ]
     },
     {
       "start": "2026-11-23T04:00:00+00:00",
       "end": "2026-11-23T05:00:00+00:00",
       "kinds": [
-        "owl"
+        "owl",
+        "fox"
       ]
     },
     {
@@ -1127,7 +1139,10 @@
     {
       "start": "2026-11-23T07:00:00+00:00",
       "end": "2026-11-23T08:00:00+00:00",
-      "kinds": []
+      "kinds": [
+        "owl",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -1135,5 +1150,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T00:00:28+00:00"
+  "exported": "2026-11-23T00:30:24+00:00"
 }
