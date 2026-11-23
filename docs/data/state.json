@@ -89,15 +89,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-23T22:00:27+00:00",
+    "applied_until": "2026-11-23T22:30:23+00:00",
     "live_thought": {
-      "text": "The forge hums, stone jokes in the heat.",
-      "time": "2026-11-23T22:00:27+00:00"
+      "text": "The ink drips slow, like rain on stone.",
+      "time": "2026-11-23T22:30:23+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-23T22:00:27+00:00",
+    "since": "2026-11-23T22:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -105,18 +105,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 62.2,
+    "warmth": 87.5,
+    "inspiration": 41.0,
+    "spirit": 80.4
+  },
+  "needs_prev": {
     "rest": 63.0,
     "warmth": 88.6,
     "inspiration": 37.9,
     "spirit": 81.2
   },
-  "needs_prev": {
-    "rest": 64.6,
-    "warmth": 88.7,
-    "inspiration": 37.9,
-    "spirit": 82.0
-  },
-  "needs_at": "2026-11-23T22:00:27+00:00",
+  "needs_at": "2026-11-23T22:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1322,7 +1322,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-23T22:00:27+00:00",
+    "updated": "2026-11-23T22:30:23+00:00",
     "seen_until": "2026-11-23T20:55:29+00:00"
   },
   "gifts": [],
@@ -1396,6 +1396,12 @@
         "end": "2026-11-25T04:01:47+00:00",
         "kind": "fog",
         "intensity": 0.87
+      },
+      {
+        "start": "2026-11-25T04:01:47+00:00",
+        "end": "2026-11-25T09:19:23+00:00",
+        "kind": "cloudy",
+        "intensity": 0.42
       }
     ],
     "effects": {
@@ -1544,5 +1550,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T22:00:27+00:00"
+  "exported": "2026-11-23T22:30:23+00:00"
 }
