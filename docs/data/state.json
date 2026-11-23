@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-23T17:00:27+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-23T17:00:30+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "Improve the lantern's oil seal to stop leaks and extend burn time.",
+    "thought": "The fire's hum is steady and the glass shards still clink in my pouch. I think the lantern could use a better seal."
   },
   "needs": {
-    "rest": 86.0,
-    "warmth": 79.8,
+    "rest": 86.4,
+    "warmth": 80.4,
     "inspiration": 77.9,
-    "spirit": 75.4
+    "spirit": 74.8
   },
   "needs_prev": {
     "rest": 86.0,
@@ -106,7 +106,7 @@
     "inspiration": 77.9,
     "spirit": 75.4
   },
-  "needs_at": "2026-11-23T17:00:27+00:00",
+  "needs_at": "2026-11-23T17:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1279,5 +1279,5 @@
     "seeing": 0,
     "traces": []
   },
-  "exported": "2026-11-23T17:00:27+00:00"
+  "exported": "2026-11-23T17:00:30+00:00"
 }
