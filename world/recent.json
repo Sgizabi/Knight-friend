@@ -468,5 +468,14 @@
     "emote": "question",
     "text": "Did another stone count. Got to forty slabs this time. One slab has green moss on the top, so I set it aside for cleaning later. The pocket shards clinked louder as I moved, but the fire stayed steady. I noted the moss and wondered if it will spread.",
     "creations": []
+  },
+  {
+    "time": "2026-11-24T23:01:34+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I cleared the mossy slab and set it on the workbench. The shards in my pocket rattled louder when I nudged the slab, so I put the shards back in my pouch. The fire kept its heat, no surprise there.",
+    "creations": []
   }
 ]

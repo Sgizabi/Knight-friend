@@ -1,45 +1,35 @@
 {
-  "start": "2026-11-24T21:01:33+00:00",
-  "mood": "curious",
+  "start": "2026-11-24T23:01:34+00:00",
+  "mood": "content",
   "steps": [
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Moss might need a scrape later."
-      ]
-    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
+      "emote": "spark",
       "note": "",
       "thoughts": [
-        "Glass shards still annoy me."
+        "Moss feels squishy, like old bread."
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "Bellows sigh, could use a tighter seal."
       ]
     },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "question",
+      "emote": "spark",
       "note": "",
       "thoughts": [
-        "Fire is a good coworker today."
-      ]
-    },
-    {
-      "place": "courtyard",
-      "action": "pace",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Counted stones, still more to go."
+        "Warmth is decent, fog makes the night feel close."
       ]
     }
   ]
