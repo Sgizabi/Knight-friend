@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-24T19:30:24+00:00",
+    "applied_until": "2026-11-24T20:01:35+00:00",
     "live_thought": {
-      "text": "The forge heat hums, iron waits.",
-      "time": "2026-11-24T19:30:24+00:00"
+      "text": "The wood's dry, the stone's cold, I can hear the crows outside.",
+      "time": "2026-11-24T20:01:35+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T19:30:24+00:00",
+    "since": "2026-11-24T20:01:36+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 67.5,
+    "warmth": 82.4,
+    "inspiration": 28.9,
+    "spirit": 82.5
+  },
+  "needs_prev": {
     "rest": 69.7,
     "warmth": 84.1,
     "inspiration": 28.9,
     "spirit": 83.4
   },
-  "needs_prev": {
-    "rest": 71.7,
-    "warmth": 85.1,
-    "inspiration": 28.9,
-    "spirit": 84.3
-  },
-  "needs_at": "2026-11-24T19:30:24+00:00",
+  "needs_at": "2026-11-24T20:01:36+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2028,7 +2028,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T19:30:24+00:00",
+    "updated": "2026-11-24T20:01:35+00:00",
     "seen_until": "2026-11-24T18:55:27+00:00"
   },
   "gifts": [],
@@ -2171,14 +2171,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T19:00:00+00:00",
-      "end": "2026-11-24T20:00:00+00:00",
-      "kinds": [
-        "crows",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-24T20:00:00+00:00",
       "end": "2026-11-24T21:00:00+00:00",
       "kinds": [
@@ -2248,6 +2240,14 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-25T03:00:00+00:00",
+      "end": "2026-11-25T04:00:00+00:00",
+      "kinds": [
+        "bats",
+        "cat"
+      ]
     }
   ],
   "creatures": {
@@ -2255,5 +2255,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T19:30:24+00:00"
+  "exported": "2026-11-24T20:01:36+00:00"
 }
