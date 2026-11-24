@@ -72,15 +72,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-24T01:30:23+00:00",
+    "applied_until": "2026-11-24T02:00:27+00:00",
     "live_thought": {
-      "text": "Stone feels cool under my hands",
-      "time": "2026-11-24T01:30:23+00:00"
+      "text": "The flame flickers, stone jokes quietly.",
+      "time": "2026-11-24T02:00:27+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T01:30:23+00:00",
+    "since": "2026-11-24T02:00:27+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -88,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 51.8,
+    "warmth": 88.2,
+    "inspiration": 44.6,
+    "spirit": 83.2
+  },
+  "needs_prev": {
     "rest": 53.4,
     "warmth": 90.6,
     "inspiration": 44.6,
     "spirit": 84.1
   },
-  "needs_prev": {
-    "rest": 53.0,
-    "warmth": 89.1,
-    "inspiration": 44.6,
-    "spirit": 85.0
-  },
-  "needs_at": "2026-11-24T01:30:23+00:00",
+  "needs_at": "2026-11-24T02:00:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1388,7 +1388,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T01:30:23+00:00",
+    "updated": "2026-11-24T02:00:27+00:00",
     "seen_until": "2026-11-24T00:55:26+00:00"
   },
   "gifts": [],
@@ -1525,18 +1525,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T01:00:00+00:00",
-      "end": "2026-11-24T02:00:00+00:00",
-      "kinds": [
-        "hares",
-        "deer",
-        "owl",
-        "bats",
-        "fox",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-24T02:00:00+00:00",
       "end": "2026-11-24T03:00:00+00:00",
       "kinds": [
@@ -1589,6 +1577,14 @@
       "start": "2026-11-24T08:00:00+00:00",
       "end": "2026-11-24T09:00:00+00:00",
       "kinds": []
+    },
+    {
+      "start": "2026-11-24T09:00:00+00:00",
+      "end": "2026-11-24T10:00:00+00:00",
+      "kinds": [
+        "owl",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -1596,5 +1592,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T01:30:23+00:00"
+  "exported": "2026-11-24T02:00:27+00:00"
 }
