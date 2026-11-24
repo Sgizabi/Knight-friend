@@ -35,68 +35,41 @@
     "nights_slept_through": 16
   },
   "plan": {
-    "start": "2026-11-24T02:40:36+00:00",
+    "start": "2026-11-24T05:00:26+00:00",
     "mood": "restless",
+    "applied_until": "2026-11-24T05:00:26+00:00",
     "steps": [
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "",
-        "thoughts": [
-          "Need to test the bellows after the new handle."
-        ]
-      },
-      {
-        "place": "woodshed",
-        "action": "stand",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "",
-        "thoughts": [
-          "Logs look dry enough for tonight."
-        ]
-      },
       {
         "place": "bedroll",
         "action": "sleep",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "",
-        "thoughts": [
-          "Hope the roof holds through the wind."
-        ]
+        "minutes": 120,
+        "emote": "zzz",
+        "note": "asleep for the night"
       }
-    ],
-    "applied_until": "2026-11-24T04:30:25+00:00",
-    "live_thought": {
-      "text": "The fire's crackle feels like a stone joke today.",
-      "time": "2026-11-24T04:30:25+00:00"
-    }
+    ]
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T04:30:25+00:00",
-    "place": "fire",
-    "action": "sit",
-    "emote": "dots",
-    "note": "",
+    "since": "2026-11-24T05:00:26+00:00",
+    "place": "bedroll",
+    "action": "sleep",
+    "emote": "zzz",
+    "note": "asleep for the night",
     "thought": ""
   },
   "needs": {
+    "rest": 43.0,
+    "warmth": 89.2,
+    "inspiration": 46.0,
+    "spirit": 84.1
+  },
+  "needs_prev": {
     "rest": 41.8,
     "warmth": 88.8,
     "inspiration": 46.0,
     "spirit": 85.0
   },
-  "needs_prev": {
-    "rest": 40.6,
-    "warmth": 88.4,
-    "inspiration": 46.0,
-    "spirit": 85.9
-  },
-  "needs_at": "2026-11-24T04:30:25+00:00",
+  "needs_at": "2026-11-24T05:00:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1589,7 +1562,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T04:30:25+00:00",
+    "updated": "2026-11-24T05:00:26+00:00",
     "seen_until": "2026-11-24T02:25:22+00:00"
   },
   "gifts": [],
@@ -1732,14 +1705,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T04:00:00+00:00",
-      "end": "2026-11-24T05:00:00+00:00",
-      "kinds": [
-        "owl",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-24T05:00:00+00:00",
       "end": "2026-11-24T06:00:00+00:00",
       "kinds": [
@@ -1791,6 +1756,18 @@
         "hares",
         "fish"
       ]
+    },
+    {
+      "start": "2026-11-24T12:00:00+00:00",
+      "end": "2026-11-24T13:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares",
+        "deer",
+        "fish",
+        "cat"
+      ]
     }
   ],
   "creatures": {
@@ -1798,5 +1775,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T04:30:25+00:00"
+  "exported": "2026-11-24T05:00:26+00:00"
 }
