@@ -72,15 +72,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-24T16:00:36+00:00",
+    "applied_until": "2026-11-24T16:30:32+00:00",
     "live_thought": {
-      "text": "Log's dry, stone's cold, but crows keep me company",
-      "time": "2026-11-24T16:00:36+00:00"
+      "text": "The fire crackles, stone jokes on repeat.",
+      "time": "2026-11-24T16:30:32+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T16:00:37+00:00",
+    "since": "2026-11-24T16:30:33+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -88,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 84.7,
+    "warmth": 77.8,
+    "inspiration": 52.9,
+    "spirit": 80.3
+  },
+  "needs_prev": {
     "rest": 84.4,
     "warmth": 77.3,
     "inspiration": 52.9,
     "spirit": 81.1
   },
-  "needs_prev": {
-    "rest": 85.6,
-    "warmth": 80.4,
-    "inspiration": 52.9,
-    "spirit": 81.9
-  },
-  "needs_at": "2026-11-24T16:00:37+00:00",
+  "needs_at": "2026-11-24T16:30:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1797,7 +1797,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T16:00:36+00:00",
+    "updated": "2026-11-24T16:30:32+00:00",
     "seen_until": "2026-11-24T14:55:49+00:00"
   },
   "gifts": [],
@@ -2008,5 +2008,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T16:00:37+00:00"
+  "exported": "2026-11-24T16:30:33+00:00"
 }
