@@ -1,18 +1,46 @@
 {
-  "start": "2026-11-24T11:00:31+00:00",
-  "mood": "restless",
-  "applied_until": "2026-11-24T12:30:24+00:00",
+  "start": "2026-11-24T13:02:39+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 120,
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "tighten bellows",
+      "thoughts": [
+        "bellows still squeak, why?"
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "stack dry logs",
+      "thoughts": [
+        "need one more log for afternoon"
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "update inventory",
+      "thoughts": [
+        "glass shards still rattling"
+      ]
+    },
+    {
+      "place": "bathhouse",
+      "action": "sit",
+      "minutes": 20,
       "emote": "zzz",
-      "note": "asleep for the night"
+      "note": "warm soak",
+      "thoughts": [
+        "warmth eases the cold in my bones"
+      ]
     }
-  ],
-  "live_thought": {
-    "text": "The sunrise paints the stone, a quiet grin.",
-    "time": "2026-11-24T12:30:24+00:00"
-  }
+  ]
 }

@@ -30,42 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 50,
-    "last_wake": "2026-11-24T11:00:31+00:00",
+    "wakeups": 51,
+    "last_wake": "2026-11-24T13:02:40+00:00",
     "nights_slept_through": 20
   },
   "plan": {
-    "start": "2026-11-24T11:00:31+00:00",
-    "mood": "restless",
-    "applied_until": "2026-11-24T12:30:24+00:00",
+    "start": "2026-11-24T13:02:39+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "question",
+        "note": "tighten bellows",
+        "thoughts": [
+          "bellows still squeak, why?"
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "stack dry logs",
+        "thoughts": [
+          "need one more log for afternoon"
+        ]
+      },
+      {
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "update inventory",
+        "thoughts": [
+          "glass shards still rattling"
+        ]
+      },
+      {
+        "place": "bathhouse",
+        "action": "sit",
+        "minutes": 20,
         "emote": "zzz",
-        "note": "asleep for the night"
+        "note": "warm soak",
+        "thoughts": [
+          "warmth eases the cold in my bones"
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "The sunrise paints the stone, a quiet grin.",
-      "time": "2026-11-24T12:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-24T13:00:30+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-24T13:02:40+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "Finish polishing and attach the new seal, then try it in the hearth.",
-    "thought": "The fire is humming and the lantern handle feels ready for another test."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
-    "warmth": 65.2,
-    "inspiration": 76.9,
-    "spirit": 76.8
+    "rest": 94.0,
+    "warmth": 68.9,
+    "inspiration": 64.9,
+    "spirit": 81.4
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +101,7 @@
     "inspiration": 75.6,
     "spirit": 73.3
   },
-  "needs_at": "2026-11-24T13:00:30+00:00",
+  "needs_at": "2026-11-24T13:02:40+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1471,6 +1499,128 @@
           }
         ],
         "made": "2026-11-24T02:36:32+00:00"
+      },
+      {
+        "name": "Reinforced Lantern Handle",
+        "about": "A sturdy handle for a lantern, easy to grip and attach to the metal frame.",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.03,
+              0.03,
+              0.2
+            ],
+            "pos": [
+              0.0,
+              0.1,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.06,
+              0.02,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.2,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.04
+            ],
+            "pos": [
+              0.0,
+              0.22,
+              0.03
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.04
+            ],
+            "pos": [
+              0.0,
+              0.22,
+              -0.03
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.04,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.18,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.03
+            ],
+            "pos": [
+              0.0,
+              0.12,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          }
+        ],
+        "made": "2026-11-24T13:00:34+00:00"
       }
     ],
     "buildings": [
@@ -1566,8 +1716,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T12:30:24+00:00",
-    "seen_until": "2026-11-24T02:25:22+00:00"
+    "updated": "2026-11-24T13:02:40+00:00",
+    "seen_until": "2026-11-24T12:55:29+00:00"
   },
   "gifts": [],
   "gate": [
@@ -1786,5 +1936,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T13:00:30+00:00"
+  "exported": "2026-11-24T13:02:40+00:00"
 }

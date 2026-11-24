@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261122",
-      "items": [
-        {
-          "id": "t20261122-0",
-          "text": "Still fighting that stubborn rain?"
-        },
-        {
-          "id": "t20261122-1",
-          "text": "Did the shim finally settle in?"
-        },
-        {
-          "id": "t20261122-2",
-          "text": "How’s the new bathhouse roof holding up?"
-        },
-        {
-          "id": "t20261122-3",
-          "text": "Did the lantern oil ever run out?"
-        },
-        {
-          "id": "t20261122-4",
-          "text": "Got any new cracks in the east wall?"
-        },
-        {
-          "id": "t20261122-5",
-          "text": "What’s the oddest thing you’ve found in the woodshed?"
-        }
-      ]
-    },
-    {
       "date": "20261123",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261123-5",
           "text": "How’s the window view now that it’s all mended?"
+        }
+      ]
+    },
+    {
+      "date": "20261124",
+      "items": [
+        {
+          "id": "t20261124-0",
+          "text": "Did the new lantern handle finally stop the rattling?"
+        },
+        {
+          "id": "t20261124-1",
+          "text": "How's the fire now—still needing more logs?"
+        },
+        {
+          "id": "t20261124-2",
+          "text": "Did you spot any more foxes sneaking around?"
+        },
+        {
+          "id": "t20261124-3",
+          "text": "What do you think of the repaired east wall’s view?"
+        },
+        {
+          "id": "t20261124-4",
+          "text": "Got any funny stories from counting those thick slabs?"
+        },
+        {
+          "id": "t20261124-5",
+          "text": "Do you enjoy the bathhouse after a long day?"
         }
       ]
     }

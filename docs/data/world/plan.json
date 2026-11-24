@@ -1,15 +1,15 @@
 {
-  "start": "2026-11-24T02:40:36+00:00",
-  "mood": "restless",
+  "start": "2026-11-24T13:02:39+00:00",
+  "mood": "content",
   "steps": [
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "question",
+      "note": "tighten bellows",
       "thoughts": [
-        "Need to test the bellows after the new handle."
+        "bellows still squeak, why?"
       ]
     },
     {
@@ -17,19 +17,29 @@
       "action": "stand",
       "minutes": 20,
       "emote": "sigh",
-      "note": "",
+      "note": "stack dry logs",
       "thoughts": [
-        "Logs look dry enough for tonight."
+        "need one more log for afternoon"
       ]
     },
     {
-      "place": "bedroll",
-      "action": "sleep",
+      "place": "desk",
+      "action": "write",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "dots",
+      "note": "update inventory",
       "thoughts": [
-        "Hope the roof holds through the wind."
+        "glass shards still rattling"
+      ]
+    },
+    {
+      "place": "bathhouse",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "zzz",
+      "note": "warm soak",
+      "thoughts": [
+        "warmth eases the cold in my bones"
       ]
     }
   ]
