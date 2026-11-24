@@ -52,7 +52,8 @@
         "outcome": "with",
         "time": "2026-11-24T00:31:49+00:00"
       },
-      "seen": true
+      "seen": true,
+      "witnessed": true
     },
     {
       "id": "bloom-202611240041",
@@ -84,7 +85,8 @@
         "approach": "friendly",
         "doing": "It steps over the threshold, the wide hat casting a shadow over a face that seems only half-formed in the dim light. The old coat rustles softly, and it lowers itself onto a spare log near the fire, keeping still.",
         "says": ""
-      }
+      },
+      "witnessed": true
     }
   ],
   "planned": [

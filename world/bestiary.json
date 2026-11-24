@@ -1,6 +1,6 @@
 {
-  "points": 2,
-  "step": 0,
+  "points": 10,
+  "step": 1,
   "kinds": {
     "fog": {
       "regard": 0,
@@ -20,7 +20,15 @@
         "I set a bowl of stew on the table and tell the figure I have warm broth."
       ],
       "name": "Coated Wanderer",
-      "note": "It sat by the hearth, drank broth, and said the warmth was adequate. It seemed harmless and just needed a break."
+      "note": "It sat by the hearth, drank broth, and said the warmth was adequate. It seemed harmless and just needed a break.",
+      "first": "2026-11-24T00:41:00+00:00",
+      "count": 1,
+      "last": "2026-11-24T00:41:00+00:00"
+    },
+    "golem": {
+      "first": "2026-11-24T00:41:00+00:00",
+      "count": 1,
+      "last": "2026-11-24T00:41:00+00:00"
     }
   }
 }
