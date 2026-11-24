@@ -69,15 +69,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-24T04:00:26+00:00",
+    "applied_until": "2026-11-24T04:30:25+00:00",
     "live_thought": {
-      "text": "Stone's warmth holds the night still.",
-      "time": "2026-11-24T04:00:26+00:00"
+      "text": "The fire's crackle feels like a stone joke today.",
+      "time": "2026-11-24T04:30:25+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T04:00:26+00:00",
+    "since": "2026-11-24T04:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -85,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 41.8,
+    "warmth": 88.8,
+    "inspiration": 46.0,
+    "spirit": 85.0
+  },
+  "needs_prev": {
     "rest": 40.6,
     "warmth": 88.4,
     "inspiration": 46.0,
     "spirit": 85.9
   },
-  "needs_prev": {
-    "rest": 36.2,
-    "warmth": 88.7,
-    "inspiration": 45.3,
-    "spirit": 86.9
-  },
-  "needs_at": "2026-11-24T04:00:26+00:00",
+  "needs_at": "2026-11-24T04:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1589,7 +1589,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T04:00:26+00:00",
+    "updated": "2026-11-24T04:30:25+00:00",
     "seen_until": "2026-11-24T02:25:22+00:00"
   },
   "gifts": [],
@@ -1798,5 +1798,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T04:00:26+00:00"
+  "exported": "2026-11-24T04:30:25+00:00"
 }
