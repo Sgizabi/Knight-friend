@@ -30,68 +30,74 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 52,
-    "last_wake": "2026-11-24T15:01:57+00:00",
+    "wakeups": 53,
+    "last_wake": "2026-11-24T17:01:39+00:00",
     "nights_slept_through": 20
   },
   "plan": {
-    "start": "2026-11-24T15:01:57+00:00",
-    "mood": "amused",
+    "start": "2026-11-24T17:01:39+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "fire",
+        "place": "forge",
         "action": "work",
         "minutes": 20,
         "emote": "spark",
-        "note": "tighten lantern handle on the table",
+        "note": "tighten bellows",
         "thoughts": [
-          "The ring is sharper than I thought",
-          "Stone on boot is a nice surprise"
-        ]
-      },
-      {
-        "place": "courtyard",
-        "action": "stand",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "inspect roof boards for loose nails",
-        "thoughts": [
-          "Hope the roof stays put today",
-          "Counting boards feels oddly satisfying"
+          "Bellows still squeak more than they should",
+          "Hope this board holds longer"
         ]
       },
       {
         "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "stack logs",
+        "thoughts": [
+          "Logs are damp, need drying",
+          "Stone floor cold under boots"
+        ]
+      },
+      {
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "update inventory list",
+        "thoughts": [
+          "Glass shards still jingle in pocket",
+          "Need to label the new handle"
+        ]
+      },
+      {
+        "place": "fire",
         "action": "sit",
         "minutes": 20,
         "emote": "spark",
-        "note": "gather dry logs for the fire",
+        "note": "rest",
         "thoughts": [
-          "Logs smell like promise",
-          "Maybe the crow will bring more stones"
+          "Warmth feels good",
+          "Fog outside looks thick"
         ]
       }
-    ],
-    "applied_until": "2026-11-24T16:30:32+00:00",
-    "live_thought": {
-      "text": "The fire crackles, stone jokes on repeat.",
-      "time": "2026-11-24T16:30:32+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-24T17:00:33+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-24T17:01:39+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "fit and test the handle on the lantern frame",
-    "thought": "The lantern handle feels right now. I want to get it solid and tidy."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 85.2,
-    "warmth": 78.5,
-    "inspiration": 52.9,
-    "spirit": 79.5
+    "rest": 79.2,
+    "warmth": 80.8,
+    "inspiration": 40.9,
+    "spirit": 83.6
   },
   "needs_prev": {
     "rest": 84.7,
@@ -99,7 +105,7 @@
     "inspiration": 52.9,
     "spirit": 80.3
   },
-  "needs_at": "2026-11-24T17:00:33+00:00",
+  "needs_at": "2026-11-24T17:01:40+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1702,6 +1708,108 @@
           }
         ],
         "made": "2026-11-24T15:00:53+00:00"
+      },
+      {
+        "name": "Reinforced Lantern Handle",
+        "about": "A sturdy grip for the keep's lanterns, built from metal rods and a metal ring",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.25
+            ],
+            "pos": [
+              0.0,
+              0.125,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.2
+            ],
+            "pos": [
+              0.0,
+              0.025,
+              0.12
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.2
+            ],
+            "pos": [
+              0.0,
+              0.025,
+              -0.12
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.06,
+              0.015
+            ],
+            "pos": [
+              0.0,
+              0.225,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.12,
+              0.02,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.24,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          }
+        ],
+        "made": "2026-11-24T17:00:36+00:00"
       }
     ],
     "buildings": [
@@ -1797,8 +1905,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T16:30:32+00:00",
-    "seen_until": "2026-11-24T14:55:49+00:00"
+    "updated": "2026-11-24T17:01:39+00:00",
+    "seen_until": "2026-11-24T16:55:31+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2010,5 +2118,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T17:00:33+00:00"
+  "exported": "2026-11-24T17:01:40+00:00"
 }

@@ -1,38 +1,49 @@
 {
-  "start": "2026-11-24T15:01:57+00:00",
-  "mood": "amused",
+  "start": "2026-11-24T17:01:39+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "fire",
+      "place": "forge",
       "action": "work",
       "minutes": 20,
       "emote": "spark",
-      "note": "tighten lantern handle on the table",
+      "note": "tighten bellows",
       "thoughts": [
-        "The ring is sharper than I thought",
-        "Stone on boot is a nice surprise"
-      ]
-    },
-    {
-      "place": "courtyard",
-      "action": "stand",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "inspect roof boards for loose nails",
-      "thoughts": [
-        "Hope the roof stays put today",
-        "Counting boards feels oddly satisfying"
+        "Bellows still squeak more than they should",
+        "Hope this board holds longer"
       ]
     },
     {
       "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "stack logs",
+      "thoughts": [
+        "Logs are damp, need drying",
+        "Stone floor cold under boots"
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "update inventory list",
+      "thoughts": [
+        "Glass shards still jingle in pocket",
+        "Need to label the new handle"
+      ]
+    },
+    {
+      "place": "fire",
       "action": "sit",
       "minutes": 20,
       "emote": "spark",
-      "note": "gather dry logs for the fire",
+      "note": "rest",
       "thoughts": [
-        "Logs smell like promise",
-        "Maybe the crow will bring more stones"
+        "Warmth feels good",
+        "Fog outside looks thick"
       ]
     }
   ]
