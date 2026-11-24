@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 50,
-    "last_wake": "2026-11-24T02:40:36+00:00",
-    "nights_slept_through": 16
+    "last_wake": "2026-11-24T05:00:26+00:00",
+    "nights_slept_through": 17
   },
   "plan": {
-    "start": "2026-11-24T05:00:26+00:00",
+    "start": "2026-11-24T07:00:27+00:00",
     "mood": "restless",
-    "applied_until": "2026-11-24T05:00:26+00:00",
+    "applied_until": "2026-11-24T07:00:27+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -50,7 +50,7 @@
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T05:00:26+00:00",
+    "since": "2026-11-24T07:00:28+00:00",
     "place": "bedroll",
     "action": "sleep",
     "emote": "zzz",
@@ -58,18 +58,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 85.0,
+    "warmth": 83.2,
+    "inspiration": 54.6,
+    "spirit": 80.7
+  },
+  "needs_prev": {
     "rest": 43.0,
     "warmth": 89.2,
     "inspiration": 46.0,
     "spirit": 84.1
   },
-  "needs_prev": {
-    "rest": 41.8,
-    "warmth": 88.8,
-    "inspiration": 46.0,
-    "spirit": 85.0
-  },
-  "needs_at": "2026-11-24T05:00:26+00:00",
+  "needs_at": "2026-11-24T07:00:28+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1562,7 +1562,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T05:00:26+00:00",
+    "updated": "2026-11-24T07:00:27+00:00",
     "seen_until": "2026-11-24T02:25:22+00:00"
   },
   "gifts": [],
@@ -1705,20 +1705,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T05:00:00+00:00",
-      "end": "2026-11-24T06:00:00+00:00",
-      "kinds": [
-        "owl"
-      ]
-    },
-    {
-      "start": "2026-11-24T06:00:00+00:00",
-      "end": "2026-11-24T07:00:00+00:00",
-      "kinds": [
-        "owl"
-      ]
-    },
-    {
       "start": "2026-11-24T07:00:00+00:00",
       "end": "2026-11-24T08:00:00+00:00",
       "kinds": [
@@ -1768,6 +1754,27 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-24T13:00:00+00:00",
+      "end": "2026-11-24T14:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares",
+        "deer",
+        "fish"
+      ]
+    },
+    {
+      "start": "2026-11-24T14:00:00+00:00",
+      "end": "2026-11-24T15:00:00+00:00",
+      "kinds": [
+        "crows",
+        "hares",
+        "deer",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -1775,5 +1782,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T05:00:26+00:00"
+  "exported": "2026-11-24T07:00:28+00:00"
 }
