@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-24T00:31:44+00:00",
-  "place": "courtyard",
-  "action": "stand",
-  "emote": "heart",
-  "note": "I set a bowl of stew on the table and tell the figure I have warm broth.",
-  "thought": "A stranger needs a seat, maybe some stew."
+  "awake": false,
+  "since": "2026-11-24T00:31:49+00:00",
+  "place": "fire",
+  "action": "sit",
+  "emote": "dots",
+  "note": "",
+  "thought": ""
 }

@@ -44,7 +44,6 @@
   ],
   "last_long": "2026-11-23T02:30:20+00:00",
   "recent_thoughts": [
-    "The fire's glow feels like a stone's quiet laugh.",
     "The iron glows, waiting for my next strike.",
     "The old shed smells of pine, ready for a quick tune‑up.",
     "Stone flickers, heat steadies my mind.",
@@ -55,7 +54,8 @@
     "The forge hums, stone jokes in the heat.",
     "The ink drips slow, like rain on stone.",
     "Stone under my hands feels cool, like a quiet joke.",
-    "The fire's glow steadies the stone's jokes."
+    "The fire's glow steadies the stone's jokes.",
+    "Another quiet guest, likes broth and fire."
   ],
   "last_glance": "2026-11-24T00:00:28+00:00",
   "visits_seen_until": "2026-11-23T22:55:27+00:00",
@@ -68,6 +68,12 @@
   },
   "questions_waiting": [],
   "questions_date": "20261123",
-  "beings_since": [],
-  "last_encounter": "2026-11-22T06:01:48+00:00"
+  "beings_since": [
+    {
+      "time": "2026-11-24T00:30:22+00:00",
+      "kind": "bloom",
+      "text": "A sweet smell, like too many flowers. Footsteps on the road, unhurried. Then you see it: a traveller in a long coat with a wide hat, polite and soft-spoken. It looks as if it could talk. And it is not alone: the east wall's stones heaving up into a shape like a giant, magma glowing in the seams between them. Neither pays the other any mind. You chose to watch (I stay where I am and watch the approaching shape. I keep my lantern ready.). You watch. It goes on with whatever it came for. The figure in the wide hat walks past the heaving stone giant with a slow, steady gait, the long coat brushing the cold floorboards as it approaches the firelight. It lowers itself into the chair nearest the hearth, hands resting quietly on its knees. It says: \"The warmth here is a kindness the wind has forgotten to offer. Thank you for the seat.\" What it seems to want: to rest by the fire. You chose to off"
+    }
+  ],
+  "last_encounter": "2026-11-24T00:31:49+00:00"
 }

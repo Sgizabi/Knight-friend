@@ -47,7 +47,12 @@
       "companion": true,
       "with": "bloom-202611240041",
       "with_kind": "bloom",
-      "stance": "ignore"
+      "stance": "ignore",
+      "met": {
+        "outcome": "with",
+        "time": "2026-11-24T00:31:49+00:00"
+      },
+      "seen": true
     },
     {
       "id": "bloom-202611240041",
@@ -67,7 +72,19 @@
       "with_kind": "golem",
       "stance": "ignore",
       "caption": "It seems to accept what you offer. The coat-hooded figure settles into the chair, hands closing loosely around the bowl, and remains still as the steam rises toward the rafters. It says: \"The warmth is adequate, and the silence before it is",
-      "caption_at": "2026-11-24T00:31:46+00:00"
+      "caption_at": "2026-11-24T00:31:46+00:00",
+      "met": {
+        "outcome": "good",
+        "steps": 2,
+        "time": "2026-11-24T00:31:49+00:00"
+      },
+      "seen": true,
+      "mind": {
+        "why": "The cold bit too deep, and it craved the warmth of the hearth.",
+        "approach": "friendly",
+        "doing": "It steps over the threshold, the wide hat casting a shadow over a face that seems only half-formed in the dim light. The old coat rustles softly, and it lowers itself onto a spare log near the fire, keeping still.",
+        "says": ""
+      }
     }
   ],
   "planned": [
@@ -89,5 +106,7 @@
       "regard": 0
     }
   },
-  "relations": {}
+  "relations": {
+    "bloom|golem": 0
+  }
 }
