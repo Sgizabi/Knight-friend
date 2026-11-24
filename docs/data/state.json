@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-24T17:30:26+00:00",
+    "applied_until": "2026-11-24T18:00:13+00:00",
     "live_thought": {
-      "text": "Logs stack tall, stone cool, I could start the fire soon.",
-      "time": "2026-11-24T17:30:26+00:00"
+      "text": "Stone under my quill feels colder than the ink.",
+      "time": "2026-11-24T18:00:13+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T17:30:26+00:00",
+    "since": "2026-11-24T18:00:14+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 76.3,
+    "warmth": 78.5,
+    "inspiration": 40.9,
+    "spirit": 82.0
+  },
+  "needs_prev": {
     "rest": 77.4,
     "warmth": 81.3,
     "inspiration": 40.9,
     "spirit": 82.8
   },
-  "needs_prev": {
-    "rest": 79.2,
-    "warmth": 80.8,
-    "inspiration": 40.9,
-    "spirit": 83.6
-  },
-  "needs_at": "2026-11-24T17:30:26+00:00",
+  "needs_at": "2026-11-24T18:00:14+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1910,7 +1910,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T17:30:26+00:00",
+    "updated": "2026-11-24T18:00:13+00:00",
     "seen_until": "2026-11-24T16:55:31+00:00"
   },
   "gifts": [],
@@ -2047,11 +2047,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T17:00:00+00:00",
-      "end": "2026-11-24T18:00:00+00:00",
-      "kinds": []
-    },
-    {
       "start": "2026-11-24T18:00:00+00:00",
       "end": "2026-11-24T19:00:00+00:00",
       "kinds": [
@@ -2116,6 +2111,16 @@
         "bats",
         "fox"
       ]
+    },
+    {
+      "start": "2026-11-25T01:00:00+00:00",
+      "end": "2026-11-25T02:00:00+00:00",
+      "kinds": [
+        "hares",
+        "deer",
+        "owl",
+        "bats"
+      ]
     }
   ],
   "creatures": {
@@ -2123,5 +2128,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T17:30:26+00:00"
+  "exported": "2026-11-24T18:00:14+00:00"
 }
