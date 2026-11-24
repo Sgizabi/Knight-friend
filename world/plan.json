@@ -1,51 +1,39 @@
 {
-  "start": "2026-11-24T13:02:39+00:00",
-  "mood": "content",
+  "start": "2026-11-24T15:01:57+00:00",
+  "mood": "amused",
   "steps": [
     {
-      "place": "forge",
+      "place": "fire",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
-      "note": "tighten bellows",
+      "emote": "spark",
+      "note": "tighten lantern handle on the table",
       "thoughts": [
-        "bellows still squeak, why?"
+        "The ring is sharper than I thought",
+        "Stone on boot is a nice surprise"
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "inspect roof boards for loose nails",
+      "thoughts": [
+        "Hope the roof stays put today",
+        "Counting boards feels oddly satisfying"
       ]
     },
     {
       "place": "woodshed",
-      "action": "stand",
-      "minutes": 20,
-      "emote": "sigh",
-      "note": "stack dry logs",
-      "thoughts": [
-        "need one more log for afternoon"
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "update inventory",
-      "thoughts": [
-        "glass shards still rattling"
-      ]
-    },
-    {
-      "place": "bathhouse",
       "action": "sit",
       "minutes": 20,
-      "emote": "zzz",
-      "note": "warm soak",
+      "emote": "spark",
+      "note": "gather dry logs for the fire",
       "thoughts": [
-        "warmth eases the cold in my bones"
+        "Logs smell like promise",
+        "Maybe the crow will bring more stones"
       ]
     }
-  ],
-  "applied_until": "2026-11-24T14:30:25+00:00",
-  "live_thought": {
-    "text": "Stone warms my back, fire keeps the cold at bay.",
-    "time": "2026-11-24T14:30:25+00:00"
-  }
+  ]
 }

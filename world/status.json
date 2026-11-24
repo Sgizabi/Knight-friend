@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-24T15:00:50+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-24T15:01:57+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue refining the handle and test it again near the hearth",
-  "thought": "The fire is humming, the lantern handles are ready, and the stone walls feel solid enough for a bit of tinkering."
+  "note": "",
+  "thought": ""
 }
