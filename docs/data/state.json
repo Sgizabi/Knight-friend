@@ -80,18 +80,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-24T02:36:29+00:00",
-    "place": "workbench",
-    "action": "work",
+    "since": "2026-11-24T02:39:33+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "Improve the lantern’s reliability so the fire can keep warm without interruption",
-    "thought": "I’m restless after hours of fiddling with lantern parts. The stones in the wall still need checking, but I want to finish a useful piece before the fire dies do"
+    "note": "continue stone counting in the courtyard",
+    "thought": "The fire's low. My pocket still jingles with glass. I’m restless from all the crafting. I’ll keep counting stones."
   },
   "needs": {
-    "rest": 44.0,
-    "warmth": 89.7,
-    "inspiration": 44.6,
-    "spirit": 85.8
+    "rest": 38.0,
+    "warmth": 90.8,
+    "inspiration": 32.6,
+    "spirit": 88.6
   },
   "needs_prev": {
     "rest": 51.8,
@@ -99,7 +99,7 @@
     "inspiration": 44.6,
     "spirit": 83.2
   },
-  "needs_at": "2026-11-24T02:36:29+00:00",
+  "needs_at": "2026-11-24T02:39:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1357,6 +1357,146 @@
           }
         ],
         "made": "2026-11-24T02:30:26+00:00"
+      },
+      {
+        "name": "DualSeal Lantern Oil Container",
+        "about": "A small double‑seal oil pot to stop leaks",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.06,
+              0.06,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.06,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#7f7f7f"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.045,
+              0.045,
+              0.025
+            ],
+            "pos": [
+              0.0,
+              0.12,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#b5651d"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.045,
+              0.045,
+              0.015
+            ],
+            "pos": [
+              0.0,
+              0.145,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#c2c2c2"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.05,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.16,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.12,
+              0.015,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.165,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#8b4513"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.17,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#c0c0c0"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.018,
+              0.018,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.173,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#ffcc00"
+          }
+        ],
+        "made": "2026-11-24T02:36:32+00:00"
       }
     ],
     "buildings": [
@@ -1656,5 +1796,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T02:36:29+00:00"
+  "exported": "2026-11-24T02:39:33+00:00"
 }
