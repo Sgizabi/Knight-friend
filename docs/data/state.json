@@ -91,18 +91,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-24T19:00:26+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-24T19:00:29+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "complete the reinforced lantern handle and test it at the forge",
+    "thought": "I've been on the lantern handle loop all day. It feels like a good time to finish it and try it out properly."
   },
   "needs": {
-    "rest": 76.3,
-    "warmth": 78.5,
+    "rest": 77.7,
+    "warmth": 83.4,
     "inspiration": 40.9,
-    "spirit": 82.0
+    "spirit": 80.4
   },
   "needs_prev": {
     "rest": 76.3,
@@ -110,7 +110,7 @@
     "inspiration": 40.9,
     "spirit": 82.0
   },
-  "needs_at": "2026-11-24T19:00:26+00:00",
+  "needs_at": "2026-11-24T19:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2137,5 +2137,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T19:00:26+00:00"
+  "exported": "2026-11-24T19:00:29+00:00"
 }
