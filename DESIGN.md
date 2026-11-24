@@ -103,7 +103,11 @@ All together, about **three notable beings a week** (simulated over whole years)
 ambient life (animals, wanderers) on top once it is built. With forty kinds, each one on its
 own comes less often than the overall rhythm suggests; that is what keeps them varied.
 
-At most **one big being a day**, plus small ambient life. The odds shift with time of day,
+At most **two notable beings a day**, plus small ambient life. The first is planned as
+before; a second is rarer (about one notable day in five) and its time is usually biased to
+overlap the first's stay, so two beings can be about at once — one at five, another at
+twenty past, while the first is still there — without doubling how often he meets something
+on its own. The odds shift with time of day,
 weather, season, the moon, what he has built (the forge draws fire-lovers), what visitors do,
 and other creatures (a dragon nearby scares off the Glassbeak; the wyrm stirs after the hill
 shifts).
@@ -284,10 +288,16 @@ what they left behind.
   (the Wanderer stays a hatted traveller until he can see it bloom), have a cap of 60,000
   tokens a day (about 1,000 to 1,500 a meeting in tests), and fall quiet, leaving the rules'
   own words, if anything fails or Rooken ever has to move onto their model.
-- **Meetings (session 6b):** on about one notable day in eight, a second being is about at
-  the same time (never two legendary ones; two hostile ones together count as one dangerous
+- **Meetings (session 6b):** a second being is about at the same time in two ways: as a
+  companion (about one notable day in eight, at the same time as the first) or as an
+  independent second spawn (about one notable day in five, usually timed to overlap the
+  first's stay). Never two legendary ones; two hostile ones together count as one dangerous
   event; a hostile one may come alongside a gentle or neutral one, 3 to 6 times a year, within
-  the quiet spell and weekly limit, and then it is the one he faces, perhaps chasing the other).
+  the quiet spell and weekly limit, and then it is the one he faces, perhaps chasing the other.
+  He meets the two one after the other, in start order, on successive check-ins; a being that
+  was due while he was busy with the first gets a twenty-minute grace window before it is
+  called merely glimpsed. A companion is met with the lead and never gets its own meeting;
+  an independent second always does.
   **Age:** about 15% of visits are young and 15% old (ageless beings excepted). The young are
   small and quick, impulsive, know little of his tricks and forget fast; the old are bigger and
   slower, carry more of their kind's history, remember twice as long and more readily come
@@ -297,7 +307,15 @@ what they left behind.
   team-up, a grudge after a fight). Fair rules say who prevails (the mightier, usually), and the
   loser leaves early. Rooken sees what is going on between them and can use it: a squabble
   makes things easier for him, a team-up harder. Each being's mind knows its stance and acts
-  on it (the stance itself is chosen by the rules, which costs nothing).
+  on it (the stance itself is chosen by the rules, which costs nothing). A stance is only
+  shown on the keep page while both of the pair are actually here.
+  **The arrival exchange:** when the second being arrives while the first is still here,
+  the two get exactly two lines between them, at arrival only — the first reacts once, the
+  second replies once — and then it is back to Rooken. The exchange settles nothing and adds
+  no harm, gift or loss; his choices still drive every outcome, and each being's own mind
+  still answers his steps in its own meeting. It costs at most 800 tokens per overlap, on
+  the beings' allowance, never his. (KNIGHT_MIND_MODE=medium keeps only the first's reaction;
+  full per-step turns for both minds are not built.)
 - **Ecology:** the timid stay away for a couple of days after something big; light-eaters
   follow lanterns; fire-lovers like the forge; scavengers come after a meteor or a landing;
   the wyrm stirs after the hill.
@@ -410,7 +428,10 @@ them. Each kind of mind gets its own lane:
 **Behaviour minds** (every creature): when a being appears, one short thought decides *why it
 is here this time* (hunting, curious, injured, returning a gift, fleeing something bigger) and
 a loose plan of 3 to 5 beats that the animation plays out. When Rooken acts, the being gets a
-short turn to respond, from its nature and its history with him. Its bestiary record carries
+short turn to respond, from its nature and its history with him. When a second being arrives
+while the first is still here, the two also get one bounded exchange at arrival only — the
+first reacts once, the second replies once, at most 800 tokens between them — and then it is
+back to Rooken. Its bestiary record carries
 over between visits, so relationships build: wary, tolerant, maybe trust, or a grudge.
 
 **Rooken always comes first.** If his model is ever retired and his backup list moves him to
@@ -444,11 +465,14 @@ comes from four building blocks:
    scavengers come after a meteor's embers. The old hand-written examples (the dragon keeping
    the Glassbeak away) become *results* of traits, not rules of their own.
 2. **Meetings**: now and then two beings are present at once (about one notable day in
-   eight), usually one big and one small; two big ones only rarely, sharing the light budget.
-3. **Stances**: when beings meet, each one's mind chooses how to treat the other: team up,
-   rival, squabble, ignore, avoid, flee, chase off, follow, compete for the same prize, steal,
-   an uneasy truce, size each other up. Two hostile beings might hunt together, or argue over
-   who gets the keep, or one might decide the other is the bigger problem.
+   eight as a companion, about one notable day in five as an independent second spawn),
+   usually one big and one small; two big ones only rarely, sharing the light budget.
+3. **Stances**: when beings meet, the rules choose each one's opening attitude toward the
+   other: team up, rival, squabble, ignore, avoid, flee, chase off, follow, compete for the
+   same prize, steal, an uneasy truce, size each other up. Two hostile beings might hunt
+   together, or argue over who gets the keep, or one might decide the other is the bigger
+   problem. Their minds may shift how that attitude plays out during the visit, and what
+   passed between their kinds is remembered for next time.
 4. **A shared set of actions** plays it out on screen (approach, circle, posture, push,
    chase, flee, follow, guard, share, snatch, call out, retreat), combined with who, where and
    what for. A small vocabulary times many beings and reasons gives far more variety than
