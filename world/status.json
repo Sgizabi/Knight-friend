@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-24T21:00:27+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-24T21:00:29+00:00",
+  "place": "courtyard",
+  "action": "pace",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "count the stones in the courtyard walls and note their sizes",
+  "thought": "I’ve been swapping lantern handles all day. My mind is buzzing for a change."
 }

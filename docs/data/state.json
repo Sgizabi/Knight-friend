@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-24T21:00:27+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-24T21:00:29+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "count the stones in the courtyard walls and note their sizes",
+    "thought": "I’ve been swapping lantern handles all day. My mind is buzzing for a change."
   },
   "needs": {
-    "rest": 67.0,
-    "warmth": 81.0,
+    "rest": 68.0,
+    "warmth": 81.6,
     "inspiration": 28.9,
-    "spirit": 81.7
+    "spirit": 80.9
   },
   "needs_prev": {
     "rest": 67.0,
@@ -106,7 +106,7 @@
     "inspiration": 28.9,
     "spirit": 81.7
   },
-  "needs_at": "2026-11-24T21:00:27+00:00",
+  "needs_at": "2026-11-24T21:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2246,5 +2246,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T21:00:27+00:00"
+  "exported": "2026-11-24T21:00:29+00:00"
 }
