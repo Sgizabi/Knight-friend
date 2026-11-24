@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-24T02:39:33+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-24T02:40:36+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue stone counting in the courtyard",
-  "thought": "The fire's low. My pocket still jingles with glass. I’m restless from all the crafting. I’ll keep counting stones."
+  "note": "",
+  "thought": ""
 }
