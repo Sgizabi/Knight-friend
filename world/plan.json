@@ -1,55 +1,46 @@
 {
-  "start": "2026-11-24T17:01:39+00:00",
-  "mood": "content",
+  "start": "2026-11-24T19:01:35+00:00",
+  "mood": "restless",
   "steps": [
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "Need a tighter grip on this handle."
+      ]
+    },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "tighten bellows",
+      "emote": "sigh",
+      "note": "",
       "thoughts": [
-        "Bellows still squeak more than they should",
-        "Hope this board holds longer"
+        "Fire's not lazy today."
       ]
     },
     {
       "place": "woodshed",
-      "action": "stand",
+      "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "stack logs",
+      "emote": "sigh",
+      "note": "",
       "thoughts": [
-        "Logs are damp, need drying",
-        "Stone floor cold under boots"
+        "Logs still a bit damp."
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "spark",
-      "note": "update inventory list",
+      "emote": "sigh",
+      "note": "",
       "thoughts": [
-        "Glass shards still jingle in pocket",
-        "Need to label the new handle"
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "rest",
-      "thoughts": [
-        "Warmth feels good",
-        "Fog outside looks thick"
+        "Counting shards again feels endless."
       ]
     }
-  ],
-  "applied_until": "2026-11-24T18:00:13+00:00",
-  "live_thought": {
-    "text": "Stone under my quill feels colder than the ink.",
-    "time": "2026-11-24T18:00:13+00:00"
-  }
+  ]
 }

@@ -30,79 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 53,
-    "last_wake": "2026-11-24T17:01:39+00:00",
+    "wakeups": 54,
+    "last_wake": "2026-11-24T19:01:35+00:00",
     "nights_slept_through": 20
   },
   "plan": {
-    "start": "2026-11-24T17:01:39+00:00",
-    "mood": "content",
+    "start": "2026-11-24T19:01:35+00:00",
+    "mood": "restless",
     "steps": [
+      {
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "",
+        "thoughts": [
+          "Need a tighter grip on this handle."
+        ]
+      },
       {
         "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "tighten bellows",
+        "emote": "sigh",
+        "note": "",
         "thoughts": [
-          "Bellows still squeak more than they should",
-          "Hope this board holds longer"
+          "Fire's not lazy today."
         ]
       },
       {
         "place": "woodshed",
-        "action": "stand",
+        "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "stack logs",
+        "emote": "sigh",
+        "note": "",
         "thoughts": [
-          "Logs are damp, need drying",
-          "Stone floor cold under boots"
+          "Logs still a bit damp."
         ]
       },
       {
         "place": "desk",
         "action": "write",
         "minutes": 20,
-        "emote": "spark",
-        "note": "update inventory list",
+        "emote": "sigh",
+        "note": "",
         "thoughts": [
-          "Glass shards still jingle in pocket",
-          "Need to label the new handle"
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "rest",
-        "thoughts": [
-          "Warmth feels good",
-          "Fog outside looks thick"
+          "Counting shards again feels endless."
         ]
       }
-    ],
-    "applied_until": "2026-11-24T18:00:13+00:00",
-    "live_thought": {
-      "text": "Stone under my quill feels colder than the ink.",
-      "time": "2026-11-24T18:00:13+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-24T19:00:29+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-24T19:01:35+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "complete the reinforced lantern handle and test it at the forge",
-    "thought": "I've been on the lantern handle loop all day. It feels like a good time to finish it and try it out properly."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 77.7,
-    "warmth": 83.4,
-    "inspiration": 40.9,
-    "spirit": 80.4
+    "rest": 71.7,
+    "warmth": 85.1,
+    "inspiration": 28.9,
+    "spirit": 84.3
   },
   "needs_prev": {
     "rest": 76.3,
@@ -110,7 +101,7 @@
     "inspiration": 40.9,
     "spirit": 82.0
   },
-  "needs_at": "2026-11-24T19:00:29+00:00",
+  "needs_at": "2026-11-24T19:01:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1815,6 +1806,128 @@
           }
         ],
         "made": "2026-11-24T17:00:36+00:00"
+      },
+      {
+        "name": "Reinforced Lantern Handle",
+        "about": "A sturdy handle for a lantern, easy to grip and mount on the wall.",
+        "placement": "wall",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.15
+            ],
+            "pos": [
+              0.0,
+              0.075,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.15,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.01,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.225,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#444444"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.01,
+              0.01,
+              0.07
+            ],
+            "pos": [
+              0.018,
+              0.225,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              1.5708
+            ],
+            "color": "#333333"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.01,
+              0.01,
+              0.07
+            ],
+            "pos": [
+              -0.018,
+              0.225,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              1.5708
+            ],
+            "color": "#333333"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.005,
+              0.02,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.26,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#222222"
+          }
+        ],
+        "made": "2026-11-24T19:00:32+00:00"
       }
     ],
     "buildings": [
@@ -1910,8 +2023,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T18:00:13+00:00",
-    "seen_until": "2026-11-24T16:55:31+00:00"
+    "updated": "2026-11-24T19:01:35+00:00",
+    "seen_until": "2026-11-24T18:55:27+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2137,5 +2250,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T19:00:29+00:00"
+  "exported": "2026-11-24T19:01:35+00:00"
 }
