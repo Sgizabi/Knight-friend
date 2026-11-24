@@ -68,11 +68,16 @@
           "Hope the roof holds through the wind."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-24T03:30:22+00:00",
+    "live_thought": {
+      "text": "The fox's eyes linger on the dark stone, a quiet joke.",
+      "time": "2026-11-24T03:30:22+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T02:40:36+00:00",
+    "since": "2026-11-24T03:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -80,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 36.2,
+    "warmth": 88.7,
+    "inspiration": 45.3,
+    "spirit": 86.9
+  },
+  "needs_prev": {
     "rest": 35.0,
     "warmth": 90.8,
     "inspiration": 44.6,
     "spirit": 88.6
   },
-  "needs_prev": {
-    "rest": 51.8,
-    "warmth": 88.2,
-    "inspiration": 44.6,
-    "spirit": 83.2
-  },
-  "needs_at": "2026-11-24T02:40:36+00:00",
+  "needs_at": "2026-11-24T03:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1584,7 +1589,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T02:40:36+00:00",
+    "updated": "2026-11-24T03:30:22+00:00",
     "seen_until": "2026-11-24T02:25:22+00:00"
   },
   "gifts": [],
@@ -1658,6 +1663,12 @@
         "end": "2026-11-25T09:19:23+00:00",
         "kind": "cloudy",
         "intensity": 0.42
+      },
+      {
+        "start": "2026-11-25T09:19:23+00:00",
+        "end": "2026-11-25T14:18:23+00:00",
+        "kind": "cloudy",
+        "intensity": 0.37
       }
     ],
     "effects": {
@@ -1721,17 +1732,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T02:00:00+00:00",
-      "end": "2026-11-24T03:00:00+00:00",
-      "kinds": [
-        "deer",
-        "owl",
-        "bats",
-        "fox",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-24T03:00:00+00:00",
       "end": "2026-11-24T04:00:00+00:00",
       "kinds": [
@@ -1781,6 +1781,15 @@
         "owl",
         "fox"
       ]
+    },
+    {
+      "start": "2026-11-24T10:00:00+00:00",
+      "end": "2026-11-24T11:00:00+00:00",
+      "kinds": [
+        "songbirds",
+        "deer",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -1788,5 +1797,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T02:40:36+00:00"
+  "exported": "2026-11-24T03:30:23+00:00"
 }
