@@ -79,12 +79,12 @@
     }
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-24T16:30:33+00:00",
+    "awake": true,
+    "since": "2026-11-24T17:00:29+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": "",
+    "note": "stirring by the fire",
     "thought": ""
   },
   "needs": {
@@ -94,12 +94,12 @@
     "spirit": 80.3
   },
   "needs_prev": {
-    "rest": 84.4,
-    "warmth": 77.3,
+    "rest": 84.7,
+    "warmth": 77.8,
     "inspiration": 52.9,
-    "spirit": 81.1
+    "spirit": 80.3
   },
-  "needs_at": "2026-11-24T16:30:33+00:00",
+  "needs_at": "2026-11-24T17:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1934,14 +1934,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T16:00:00+00:00",
-      "end": "2026-11-24T17:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds"
-      ]
-    },
-    {
       "start": "2026-11-24T17:00:00+00:00",
       "end": "2026-11-24T18:00:00+00:00",
       "kinds": []
@@ -2001,6 +1993,16 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-25T00:00:00+00:00",
+      "end": "2026-11-25T01:00:00+00:00",
+      "kinds": [
+        "crows",
+        "owl",
+        "bats",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -2008,5 +2010,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T16:30:33+00:00"
+  "exported": "2026-11-24T17:00:29+00:00"
 }
