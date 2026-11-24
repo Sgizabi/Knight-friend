@@ -71,11 +71,16 @@
           "Maybe the crow will bring more stones"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-24T15:30:30+00:00",
+    "live_thought": {
+      "text": "Loose nail, stone joke ready, keep eyes on the board.",
+      "time": "2026-11-24T15:30:30+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T15:01:57+00:00",
+    "since": "2026-11-24T15:30:31+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -83,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 85.6,
+    "warmth": 80.4,
+    "inspiration": 52.9,
+    "spirit": 81.9
+  },
+  "needs_prev": {
     "rest": 85.8,
     "warmth": 76.4,
     "inspiration": 52.9,
     "spirit": 82.7
   },
-  "needs_prev": {
-    "rest": 91.5,
-    "warmth": 72.7,
-    "inspiration": 64.9,
-    "spirit": 79.1
-  },
-  "needs_at": "2026-11-24T15:01:57+00:00",
+  "needs_at": "2026-11-24T15:30:31+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -1792,7 +1797,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T15:01:57+00:00",
+    "updated": "2026-11-24T15:30:30+00:00",
     "seen_until": "2026-11-24T14:55:49+00:00"
   },
   "gifts": [],
@@ -1807,12 +1812,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-23T11:30:45+00:00",
-        "end": "2026-11-23T13:26:22+00:00",
-        "kind": "storm",
-        "intensity": 0.7
-      },
       {
         "start": "2026-11-23T13:26:22+00:00",
         "end": "2026-11-23T18:59:35+00:00",
@@ -2008,5 +2007,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T15:01:57+00:00"
+  "exported": "2026-11-24T15:30:31+00:00"
 }
