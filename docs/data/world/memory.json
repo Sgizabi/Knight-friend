@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone, armor clanking, and count each step on the broken stair before I climb. I talk to the fire like a coworker; it hums while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones, and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows, and repaired roofs with fresh boards. I keep a leaky lantern, a rusted dagger, and a half‑full ink bottle on the desk. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work, and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 22.243,
-    "craft": 22.243
+    "repair": 22.353,
+    "craft": 22.353
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 6,
+  "entries_since_condense": 7,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -37,16 +37,13 @@
       "action": "pace",
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
-      "times": 10,
-      "strength": 6.269,
-      "last": "2026-11-24T02:39:34+00:00"
+      "times": 11,
+      "strength": 6.978,
+      "last": "2026-11-24T21:00:31+00:00"
     }
   ],
   "last_long": "2026-11-24T02:30:21+00:00",
   "recent_thoughts": [
-    "Stone's warmth holds the night still.",
-    "The fire's crackle feels like a stone joke today.",
-    "The stone wall seems to grin at sunrise.",
     "The sunrise paints the stone, a quiet grin.",
     "The logs smell dry, ready for the fire.",
     "The ink drips slow, like rain on stone.",
@@ -55,10 +52,13 @@
     "Log's dry, stone's cold, but crows keep me company",
     "The fire crackles, stone jokes on repeat.",
     "Logs stack tall, stone cool, I could start the fire soon.",
-    "Stone under my quill feels colder than the ink."
+    "Stone under my quill feels colder than the ink.",
+    "The forge heat hums, iron waits.",
+    "The wood's dry, the stone's cold, I can hear the crows outside.",
+    "The fire's crackle feels louder than my own thoughts."
   ],
-  "last_glance": "2026-11-24T18:00:13+00:00",
-  "visits_seen_until": "2026-11-24T18:55:27+00:00",
+  "last_glance": "2026-11-24T20:30:25+00:00",
+  "visits_seen_until": "2026-11-24T20:55:28+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

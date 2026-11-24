@@ -1,51 +1,46 @@
 {
-  "start": "2026-11-24T19:01:35+00:00",
-  "mood": "restless",
+  "start": "2026-11-24T21:01:33+00:00",
+  "mood": "curious",
   "steps": [
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "sigh",
-      "note": "",
-      "thoughts": [
-        "Need a tighter grip on this handle."
-      ]
-    },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "question",
       "note": "",
       "thoughts": [
-        "Fire's not lazy today."
+        "Moss might need a scrape later."
       ]
     },
     {
-      "place": "woodshed",
+      "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "question",
       "note": "",
       "thoughts": [
-        "Logs still a bit damp."
+        "Glass shards still annoy me."
       ]
     },
     {
-      "place": "desk",
-      "action": "write",
+      "place": "fire",
+      "action": "sit",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "question",
       "note": "",
       "thoughts": [
-        "Counting shards again feels endless."
+        "Fire is a good coworker today."
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "question",
+      "note": "",
+      "thoughts": [
+        "Counted stones, still more to go."
       ]
     }
-  ],
-  "applied_until": "2026-11-24T20:30:25+00:00",
-  "live_thought": {
-    "text": "The fire's crackle feels louder than my own thoughts.",
-    "time": "2026-11-24T20:30:25+00:00"
-  }
+  ]
 }

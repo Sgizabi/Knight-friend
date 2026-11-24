@@ -30,74 +30,69 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 54,
-    "last_wake": "2026-11-24T19:01:35+00:00",
+    "wakeups": 55,
+    "last_wake": "2026-11-24T21:01:33+00:00",
     "nights_slept_through": 20
   },
   "plan": {
-    "start": "2026-11-24T19:01:35+00:00",
-    "mood": "restless",
+    "start": "2026-11-24T21:01:33+00:00",
+    "mood": "curious",
     "steps": [
-      {
-        "place": "workbench",
-        "action": "work",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "",
-        "thoughts": [
-          "Need a tighter grip on this handle."
-        ]
-      },
       {
         "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "question",
         "note": "",
         "thoughts": [
-          "Fire's not lazy today."
+          "Moss might need a scrape later."
         ]
       },
       {
-        "place": "woodshed",
+        "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "question",
         "note": "",
         "thoughts": [
-          "Logs still a bit damp."
+          "Glass shards still annoy me."
         ]
       },
       {
-        "place": "desk",
-        "action": "write",
+        "place": "fire",
+        "action": "sit",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "question",
         "note": "",
         "thoughts": [
-          "Counting shards again feels endless."
+          "Fire is a good coworker today."
+        ]
+      },
+      {
+        "place": "courtyard",
+        "action": "pace",
+        "minutes": 20,
+        "emote": "question",
+        "note": "",
+        "thoughts": [
+          "Counted stones, still more to go."
         ]
       }
-    ],
-    "applied_until": "2026-11-24T20:30:25+00:00",
-    "live_thought": {
-      "text": "The fire's crackle feels louder than my own thoughts.",
-      "time": "2026-11-24T20:30:25+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-24T21:00:29+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-24T21:01:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "count the stones in the courtyard walls and note their sizes",
-    "thought": "I’ve been swapping lantern handles all day. My mind is buzzing for a change."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 68.0,
+    "rest": 65.0,
     "warmth": 81.6,
-    "inspiration": 28.9,
+    "inspiration": 40.9,
     "spirit": 80.9
   },
   "needs_prev": {
@@ -106,7 +101,7 @@
     "inspiration": 28.9,
     "spirit": 81.7
   },
-  "needs_at": "2026-11-24T21:00:29+00:00",
+  "needs_at": "2026-11-24T21:01:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2028,8 +2023,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T20:30:25+00:00",
-    "seen_until": "2026-11-24T18:55:27+00:00"
+    "updated": "2026-11-24T21:01:33+00:00",
+    "seen_until": "2026-11-24T20:55:28+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2246,5 +2241,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T21:00:29+00:00"
+  "exported": "2026-11-24T21:01:33+00:00"
 }
