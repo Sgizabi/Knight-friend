@@ -1,11 +1,14 @@
 """The beings that come to the keep: who they are, and when they come. No AI here: fair rules.
 
 The spawner plans each day (in the keeper's calendar) a day ahead, like the weather: at most
-one notable being a day, chosen by rarity, by what can come at that hour and in that weather,
-and by what Rooken can perceive (the seeing ladder). Cooldowns keep any one kind from coming
-back too soon; after anything hostile there is a quiet spell; across a week gentle and neutral
-beings outnumber hostile ones; and now and then a strange week (more stirring) or a quiet week
-(almost nothing) breaks the rhythm. All the numbers are starting dials (DESIGN.md).
+two notable beings a day, chosen by rarity, by what can come at that hour and in that weather,
+and by what Rooken can perceive (the seeing ladder). A second being is rarer than the first
+and its time is usually biased to overlap the first's stay, so two beings can be about at
+once (one at five, another at twenty past, while the first is still there). Cooldowns keep
+any one kind from coming back too soon; after anything hostile there is a quiet spell; across
+a week gentle and neutral beings outnumber hostile ones; and now and then a strange week
+(more stirring) or a quiet week (almost nothing) breaks the rhythm. All the numbers are
+starting dials (DESIGN.md).
 
 It is switched off in the real world until wave 1 (KNIGHT_CREATURES=on), so nothing appears
 that Rooken can't yet meet. Everything can be tested on copies with the switch on.
@@ -96,6 +99,12 @@ TRACE_DAYS = {"meteor": 4, "ship": 3}
 # dangerous event). How they treat each other (their stance) comes from who they are and what
 # has passed between their kinds before; fair rules say who prevails.
 MEET_CHANCE = .125
+# A second notable being, planned on its own (not as a companion): rarer than the first, and
+# usually timed to overlap it, so two beings can be about at once without doubling how often
+# he meets something on his own. At most two notable beings a day in all.
+MAX_NOTABLE_PER_DAY = 2
+SECOND_CHANCE = .18
+SECOND_OVERLAP_BIAS = .7      # this share of second spawns start inside the first one's stay
 # Beings with no young or old: things that are never born or never age (the Seam, the fog, the Long
 # Man...), things not alive in the usual way (the barrow lord, the wall that woke, the Lantern
 # Folk, a swarm), and some whose age is left a mystery for now (the well, the glassy people).
@@ -250,18 +259,33 @@ def arc_open(state, kind, start):
 
 def counts_as_danger(a):
     """A hostile visit that counts toward the quiet spell and the weekly limit: not a slow
-    presence's return, and not a hostile being that came along with another hostile one."""
-    return bool(KINDS.get(a["kind"], {}).get("nature") == "hostile" and a.get("chain", 1) == 1
-            and (not a.get("companion") or a.get("counts")))
+    presence's return, and exactly one of a pair counts. A pair's members carry an explicit
+    "counts" flag (set when the pair is linked); a lone hostile visit counts on its own.
+    Beings planned before pairs carried the flag fall back to the old rule."""
+    if KINDS.get(a["kind"], {}).get("nature") != "hostile" or a.get("chain", 1) != 1:
+        return False
+    if "counts" in a:
+        return bool(a["counts"])
+    return not a.get("companion") or a.get("counts")
 
 
 def hostile_allowed(state, start):
-    """Whether a hostile being may come at this time: a quiet spell after the last, and a weekly limit."""
-    recent = [a for a in state["appearances"] if _parse(a["start"]) and start - dt.timedelta(days=7) < _parse(a["start"]) <= start]
-    last = max((_parse(a["start"]) for a in recent if KINDS.get(a["kind"], {}).get("nature") == "hostile"), default=None)
+    """Whether a hostile being may come at this time: a quiet spell after the last, and a weekly limit.
+    Judged against the schedule as it stands, both ways: a hostile already planned within three
+    days either side of this time blocks it, and so does a week that already has its two."""
+    hostiles = [a for a in state["appearances"]
+                if _parse(a["start"]) and KINDS.get(a["kind"], {}).get("nature") == "hostile"
+                and counts_as_danger(a)]
+    before = [ _parse(a["start"]) for a in hostiles if _parse(a["start"]) <= start]
+    after = [_parse(a["start"]) for a in hostiles if _parse(a["start"]) > start]
+    if before and start - max(before) < dt.timedelta(days=HOSTILE_QUIET_DAYS):
+        return False
+    if after and min(after) - start < dt.timedelta(days=HOSTILE_QUIET_DAYS):
+        return False
     week_start = start - dt.timedelta(days=weather.keeper_time(start).weekday())
-    this_week = sum(1 for a in recent if counts_as_danger(a) and _parse(a["start"]) >= week_start)
-    return (last is None or start - last >= dt.timedelta(days=HOSTILE_QUIET_DAYS)) and this_week < HOSTILE_PER_WEEK
+    this_week = sum(1 for a in hostiles
+                    if week_start <= _parse(a["start"]) < week_start + dt.timedelta(days=7))
+    return this_week < HOSTILE_PER_WEEK
 
 
 def plan_day(state, day, sched, step, rng=None, keep=None):
@@ -270,7 +294,6 @@ def plan_day(state, day, sched, step, rng=None, keep=None):
     if rng.random() >= DAY_CHANCE[week_mode(day)]:
         return None
     start = _day_start(day)
-    hostile_ok = hostile_allowed(state, start)
     choices = []
     for kind, k in KINDS.items():
         if k["step"] > step or not arc_open(state, kind, start) or not released(kind):
@@ -280,16 +303,17 @@ def plan_day(state, day, sched, step, rng=None, keep=None):
         until = _parse(state["cooldowns"].get(kind))
         if until and until > start:
             continue
-        if k["nature"] == "hostile" and not hostile_ok:
-            continue
         fits = []
         for h in HOURS[k["when"]]:
             t = start + dt.timedelta(hours=h + (24 if h < 5 else 0)) if k["when"] in ("night", "dark") else start + dt.timedelta(hours=h)
             fits.append((_possible(kind, t, sched), t))
         best = max(f for f, _ in fits)
         if best:   # any of the best-fitting hours, fairly
+            t = rng.choice([t for f, t in fits if f == best])
+            if k["nature"] == "hostile" and not hostile_allowed(state, t):
+                continue                           # the quiet spell is judged at when it would come, not at midnight
             weight = RARITY_WEIGHT[k["rarity"]] * best * ecology(kind, state, start, keep)
-            choices.append((kind, weight, rng.choice([t for f, t in fits if f == best])))
+            choices.append((kind, weight, t))
     if not choices:
         return None
     kind, _, t = rng.choices(choices, [w for _, w, _ in choices])[0]
@@ -403,6 +427,32 @@ def stance(k1, k2, relations, rng):
     return rng.choice(options)
 
 
+def link_pair(state, a, b, rng):
+    """Tie two appearances together as a pair that is about at the same time: each knows the
+    other, each has a stance toward the other (opening attitude only; minds may shift how it
+    plays out), and fair rules say who prevails. Exactly one of the pair counts as the
+    dangerous event if either is hostile: the hostile one, or the first of them if both are.
+    (Whether either one leads its own meeting is decided separately, in encounters.leads:
+    companions have one leader, independent seconds both lead.)"""
+    rel = state.setdefault("relations", {})
+    a["with"], b["with"] = b["id"], a["id"]
+    a["with_kind"], b["with_kind"] = b["kind"], a["kind"]
+    a["stance"], b["stance"] = stance(a["kind"], b["kind"], rel, rng), stance(b["kind"], a["kind"], rel, rng)
+    ha, hb = (KINDS[a["kind"]]["nature"] == "hostile", KINDS[b["kind"]]["nature"] == "hostile")
+    # (by kind, as the safeguards count it — a stranger's visit nature may be drawn neutral,
+    # but the caps still count its kind as hostile)
+    a["counts"], b["counts"] = (True, False) if ha else (False, True) if hb else (False, False)
+    if {a["stance"], b["stance"]} & {"chase off", "rival", "compete", "squabble", "steal from"}:
+        ma, mb = might(a["kind"], a), might(b["kind"], b)
+        a["prevails"] = a["id"] if rng.random() < ma / (ma + mb) else b["id"]   # fair: the mightier usually
+        b["prevails"] = a["prevails"]
+        loser = b if a["prevails"] == a["id"] else a
+        loser["end"] = _iso(min(_parse(loser["end"]), _parse(loser["start"]) + dt.timedelta(minutes=25)))
+    if a["stance"] == "flee" or b["stance"] == "flee":
+        runner = a if a["stance"] == "flee" else b
+        runner["end"] = _iso(min(_parse(runner["end"]), _parse(runner["start"]) + dt.timedelta(minutes=15)))
+
+
 def companion(state, a, sched, step, rng, keep=None):
     """A second being about at the same time as a, or None."""
     k = KINDS[a["kind"]]
@@ -430,22 +480,63 @@ def companion(state, a, sched, step, rng, keep=None):
     b["start"] = _iso(t)
     b["end"] = _iso(min(end, t + dt.timedelta(minutes=rng.randint(*KINDS[kind]["minutes"]) or 30)))
     b["companion"] = True
-    if KINDS[kind]["nature"] == "hostile" and k["nature"] != "hostile":
-        b["counts"] = True                         # it is the danger in this meeting: it leads, and it counts
-    rel = state.setdefault("relations", {})
-    a["with"], b["with"] = b["id"], a["id"]
-    a["with_kind"], b["with_kind"] = kind, a["kind"]
-    a["stance"], b["stance"] = stance(a["kind"], kind, rel, rng), stance(kind, a["kind"], rel, rng)
-    if {a["stance"], b["stance"]} & {"chase off", "rival", "compete", "squabble", "steal from"}:
-        ma, mb = might(a["kind"], a), might(kind, b)
-        a["prevails"] = a["id"] if rng.random() < ma / (ma + mb) else b["id"]   # fair: the mightier usually
-        b["prevails"] = a["prevails"]
-        loser = b if a["prevails"] == a["id"] else a
-        loser["end"] = _iso(min(_parse(loser["end"]), _parse(loser["start"]) + dt.timedelta(minutes=25)))
-    if a["stance"] == "flee" or b["stance"] == "flee":
-        runner = a if a["stance"] == "flee" else b
-        runner["end"] = _iso(min(_parse(runner["end"]), _parse(runner["start"]) + dt.timedelta(minutes=15)))
+    link_pair(state, a, b, rng)
     return b
+
+
+def _keeper_hour(kind_day_start, t):
+    """The keeper's hour of day for a UTC time (0-23; night hours past midnight count as 0-4)."""
+    return int((t - kind_day_start).total_seconds() // 3600) % 24
+
+
+def _fits_hour(kind, t, day):
+    """Whether this kind may come at this hour of the keeper's day."""
+    return _keeper_hour(_day_start(day), t) in HOURS[KINDS[kind]["when"]]
+
+
+def second_spawn(state, lead, sched, step, rng, keep=None):
+    """A second notable being planned on its own for the same day, or None. Rarer than the
+    first, and usually timed to start inside the first one's stay, so the two can be about
+    at once (the 5pm / 5:20 case) without doubling how often he meets something alone.
+    Returns the appearance, linked to the lead as a pair when their stays overlap."""
+    if rng.random() >= SECOND_CHANCE:
+        return None
+    day = dt.date.fromisoformat(lead["day"])
+    start, end = _parse(lead["start"]), _parse(lead["end"])
+    lead_minutes = max(1.0, (end - start).total_seconds() / 60)
+    candidates = []
+    if rng.random() < SECOND_OVERLAP_BIAS:
+        candidates.append(start + dt.timedelta(minutes=lead_minutes * rng.uniform(.25, .85)))
+    hours = list(range(8, 26))   # keeper hours 8-23, then 0-1 past midnight
+    rng.shuffle(hours)
+    candidates += [_day_start(day) + dt.timedelta(hours=h) for h in hours]
+    for t in candidates:
+        choices = []
+        for kind, kk in KINDS.items():
+            if kind == lead["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or not released(kind):
+                continue
+            if kk["rarity"] == "legendary" and KINDS[lead["kind"]]["rarity"] == "legendary":
+                continue
+            if not _fits_hour(kind, t, day) or not _possible(kind, t, sched):
+                continue
+            until = _parse(state["cooldowns"].get(kind))
+            if until and until > t:
+                continue
+            if kk["nature"] == "hostile" and not hostile_allowed(state, t):
+                continue
+            choices.append((kind, RARITY_WEIGHT[kk["rarity"]] * _possible(kind, t, sched) * ecology(kind, state, t, keep)))
+        if not choices:
+            continue
+        kind = rng.choices([c for c, _ in choices], [w for _, w in choices])[0]
+        b = _appearance(kind, day, t, rng, state)
+        duration = _parse(b["end"]) - _parse(b["start"])
+        b["start"] = _iso(t)
+        b["end"] = _iso(t + duration)
+        b["second"] = True
+        if _parse(b["start"]) < end and start < _parse(b["end"]):
+            link_pair(state, lead, b, rng)
+        return b
+    return None
 
 
 def note_relation(state, k1, k2, stance1, stance2=""):
@@ -472,12 +563,6 @@ def update(world: Path, sched=None, now=None, keep=None):
             continue
         state["planned"] = (state["planned"] + [key])[-10:]
         a = follow_up(state, day, sched) or plan_day(state, day, sched, best["step"], keep=keep)
-        if a and not a.get("chain"):                # now and then, another being is about at the same time
-            mrng = random.Random(day.toordinal() * 13 + 5)
-            b = companion(state, a, sched, best["step"], mrng, keep) if mrng.random() < MEET_CHANCE else None
-            if b:
-                state["appearances"].append(b)
-                state["cooldowns"][b["kind"]] = _iso(_parse(b["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[b["kind"]]["rarity"]]))
         if a:
             state["appearances"].append(a)
             k = KINDS[a["kind"]]
@@ -485,6 +570,17 @@ def update(world: Path, sched=None, now=None, keep=None):
             if a["kind"] in CHAINS and "chain" not in a:          # the first of a slow approach
                 a["chain"] = 1
                 state["chains"][a["kind"]] = {"n": 1, "next": (day + dt.timedelta(days=CHAINS[a["kind"]]["every"])).isoformat()}
+        if a and not a.get("chain"):                # a second being for the same day, on its own
+            mrng = random.Random(day.toordinal() * 13 + 5)
+            second = second_spawn(state, a, sched, best["step"], mrng, keep)
+            if second:
+                state["appearances"].append(second)
+                state["cooldowns"][second["kind"]] = _iso(_parse(second["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[second["kind"]]["rarity"]]))
+            else:                                    # or, now and then, another being about at the same time
+                b = companion(state, a, sched, best["step"], mrng, keep) if mrng.random() < MEET_CHANCE else None
+                if b:
+                    state["appearances"].append(b)
+                    state["cooldowns"][b["kind"]] = _iso(_parse(b["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[b["kind"]]["rarity"]]))
     state["appearances"] = state["appearances"][-60:]
     (world / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
     (world / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -539,12 +635,22 @@ def export(world: Path, now=None):
     now = now or _now()
     state, best = load(world), load_bestiary(world)
     import encounters                              # (here, to keep the two modules from importing each other at load)
-    shown = [{**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
-                                   "stance", "prevails", "caption", "caption_at", "regard") if k in a},   # (regard: how near the glassy people dare come)
-              **({"stance_says": encounters.STANCE_SAYS[a["stance"]]} if a.get("stance") in encounters.STANCE_SAYS
-                 and not a.get("companion") else {}),
-              "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
-             for a in current(state, now, ahead_minutes=120) if a["kind"] in KINDS]
+    here = current(state, now, ahead_minutes=120)
+    here_ids = {a["id"] for a in here}
+    shown = []
+    for a in here:
+        if a["kind"] not in KINDS:
+            continue
+        both_here = bool(a.get("with") in here_ids)   # a stance is only shown while both of them are here
+        item = {**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
+                                     "with_met", "prevails", "caption", "caption_at", "regard") if k in a},
+                "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
+        if both_here:
+            if a.get("stance"):
+                item["stance"] = a["stance"]
+            if a.get("stance") in encounters.STANCE_SAYS:
+                item["stance_says"] = encounters.STANCE_SAYS[a["stance"]]
+        shown.append(item)
     traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
               if a.get("arrival") and _parse(a["start"]) and
               _parse(a["start"]) <= now < _parse(a["start"]) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]

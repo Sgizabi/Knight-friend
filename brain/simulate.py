@@ -94,19 +94,28 @@ def run(years, policy, seed=1, detail=False):
     year = collections.Counter()
     per_kind = collections.defaultdict(collections.Counter)
     damaged_at = {}
+    exchanged_pairs = set()     # pairs whose arrival exchange has already been counted
+    danger_times = []           # when a counting hostile visit happened, for the safeguards
+    day_tokens = collections.defaultdict(lambda: {"enc": 0, "mind": 0})   # per-day token estimates
+    max_notable_day = 0
     for d in range(int(365 * years)):
         for h in (0, 9):
             now = t0 + dt.timedelta(days=d, hours=h)
             sched = weather.update(w, now)
             creatures.update(w, sched, now, keep=keep)
             state, best = creatures.load(w), creatures.load_bestiary(w)
+            today = creatures._keeper_day(now)
+            notable_today = len({a["id"] for a in state["appearances"]
+                                 if a.get("day") == today.isoformat() and not a.get("companion")})
+            max_notable_day = max(max_notable_day, notable_today)
             changed = False
-            for a in state["appearances"]:
+            for a in sorted(state["appearances"],
+                            key=lambda x: creatures._parse(x["start"]) or dt.datetime.min.replace(tzinfo=dt.timezone.utc)):
                 start = creatures._parse(a["start"])
                 if a.get("met") or a.get("slept") or a.get("cancelled") or start > now:
                     continue
                 if not encounters.leads(a, {x["id"]: x for x in state["appearances"]}):   # met with the one that leads
-                    a["met"], changed = {"outcome": "with"}, True
+                    a["met"], a["with_met"], changed = {"outcome": "with"}, True, True
                     continue
                 changed = True
                 kind = a["kind"]
@@ -123,8 +132,19 @@ def run(years, policy, seed=1, detail=False):
                 mem = memory[kind]
                 needs = {"rest": rng.uniform(30, 85), "warmth": rng.uniform(40, 85), "inspiration": 60, "spirit": 55}
                 said, prepared, rec = [], False, {"time": start, "woke": asleep_at(start)}
+                day_key = now.date().isoformat()             # his caps run by the day, as in the real code
+                if day_tokens[day_key]["enc"] + 10000 > 25000:   # his encounter cap: no more meetings today
+                    a["met"], a["seen"] = {"outcome": "capped"}, True
+                    year["capped"] += 1
+                    changed = True
+                    continue
                 year["encounters"] += 1
+                year["seconds"] += bool(a.get("second"))
+                year["companions"] += bool(a.get("companion"))
                 year[f"n_{nature}"] += 1
+                day_tokens[day_key]["enc"] += 10000          # DESIGN's planning figure: ~10,000 Rooken tokens an encounter
+                day_tokens[day_key]["mind"] += 600           # its mind arriving (up to 600 tokens)
+                steps_done = 0
                 for step in range(1, encounters.STEPS_MOST + 1):
                     choice, how = decide(policy, kind, nature, mem, rng)
                     known = (choice, how) in mem["worked"]
@@ -170,11 +190,23 @@ def run(years, policy, seed=1, detail=False):
                     if out["turned_back"]:
                         creatures.turn_back(state, kind, start)
                     creatures.note_arc(state, kind, out["regard"], start)
+                    steps_done += 1
+                    day_tokens[day_key]["mind"] += 400       # its mind answering his step (up to 400 tokens)
                     if out["ends"]:
                         break
+                year["mind_est"] += 600 + 400 * steps_done
                 log.append(rec)
                 log[:] = log[-60:]
                 a["met"], a["seen"] = {"outcome": out["result"]}, True
+                if creatures.counts_as_danger(a):            # the safeguards, checked as they happen
+                    prev = [t for t in danger_times if t <= start]
+                    if prev and start - prev[-1] < dt.timedelta(days=creatures.HOSTILE_QUIET_DAYS):
+                        year["danger_violations"] += 1
+                    week_start = start - dt.timedelta(days=weather.keeper_time(start).weekday())
+                    if sum(1 for t in prev if t >= week_start) >= creatures.HOSTILE_PER_WEEK:
+                        year["danger_violations"] += 1
+                    danger_times.append(start)
+                    danger_times.sort()
                 for key, when in list(damaged_at.items()):          # he mends what was harmed in a couple of days
                     if start - when > dt.timedelta(days=2):
                         while life.damaged(keep, key):
@@ -182,6 +214,23 @@ def run(years, policy, seed=1, detail=False):
                         del damaged_at[key]
                 if d % 12 == 0:
                     keep["objects"].append({"name": f"Made thing {d}"})
+            # pairs both met by now: one arrival exchange each (react + reply, 2 lines, 800 tokens)
+            by_id = {x["id"]: x for x in state["appearances"]}
+            for a in state["appearances"]:
+                partner = by_id.get(a.get("with") or "")
+                if not partner or a["id"] >= partner["id"]:
+                    continue
+                key = (a["id"], partner["id"])
+                if key in exchanged_pairs:
+                    continue
+                both_met = a.get("met") and partner.get("met") and a["met"].get("outcome") != "glimpsed" \
+                    and partner["met"].get("outcome") != "glimpsed"
+                if both_met:
+                    exchanged_pairs.add(key)
+                    year["overlaps"] += 1
+                    year["exchanges"] += 1
+                    year["mind_est"] += 800
+                    day_tokens[now.date().isoformat()]["mind"] += 800
             if changed:
                 (w / "creatures.json").write_text(json.dumps(state), encoding="utf-8")
                 (w / "bestiary.json").write_text(json.dumps(best), encoding="utf-8")
@@ -190,7 +239,10 @@ def run(years, policy, seed=1, detail=False):
             solved = [k for k, c in per_kind.items() if c["reuse"] >= 4 and c["reuse_ok"] / c["reuse"] >= .95]
             hopeless = [k for k, c in per_kind.items() if c["meet"] >= 3 and c["good"] == 0]
             years_out.append({"year": len(years_out) + 1, **year, "solved": solved, "hopeless": hopeless,
-                              "seeing": best["step"], "arc": creatures.load(w)["arcs"]["glassy"].get("stage")})
+                              "seeing": best["step"], "arc": creatures.load(w)["arcs"]["glassy"].get("stage"),
+                              "max_notable_day": max_notable_day,
+                              "max_enc_day": max(v["enc"] for v in day_tokens.values()),
+                              "max_mind_day": max(v["mind"] for v in day_tokens.values())})
             if detail:
                 print(len(years_out), dict(per_kind))
             for k, c in per_kind.items():
@@ -220,6 +272,15 @@ def report(policy, ys):
               f"{works:>11.0%}  {y.get('stale', 0):>5}  {y.get('found', 0):>5}({y.get('found_deep', 0)})    "
               f"{y.get('injury', 0) / 12:>11.2f}  {y.get('damage', 0) / 12:>9.2f}  {y.get('loss', 0) / 12:>9.2f}  "
               f"{','.join(y['solved']) or '-':>6}  {','.join(y['hopeless']) or '-':>8}  {y['seeing']:>6} {y['arc']}")
+    tot = {k: sum(y.get(k, 0) for y in ys) for k in
+           ("encounters", "seconds", "companions", "overlaps", "exchanges", "slept", "capped", "danger_violations")}
+    print(f"  totals over {len(ys)}y: encounters {tot['encounters']}, second spawns met {tot['seconds']}, "
+          f"companions {tot['companions']}, overlaps met {tot['overlaps']}, arrival exchanges {tot['exchanges']} "
+          f"(2 lines each), slept through {tot['slept']}, capped by the encounter budget {tot['capped']}, "
+          f"hostile-cap violations {tot['danger_violations']}")
+    print(f"  caps: max notable beings in a day {max(y.get('max_notable_day', 0) for y in ys)} (limit 2), "
+          f"max encounter tokens in a day {max(y.get('max_enc_day', 0) for y in ys)} (limit 25,000), "
+          f"max mind tokens in a day {max(y.get('max_mind_day', 0) for y in ys)} (limit 60,000)")
 
 
 def main():

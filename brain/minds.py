@@ -7,6 +7,11 @@ about things and what that looks like, so neither side's AI ever writes itself a
 being that has been driven off the same way before may come ready for it ("cunning"), which
 blunts that answer a little, fairly and only for the quick learners.
 
+When a second being arrives while the first is still here, the two get one bounded exchange
+at arrival only: the first reacts once (react), the second replies once (reply), and then it
+is back to Rooken. That is the whole of their talk to each other; nothing they say settles
+anything, and neither gets a turn on Rooken's steps.
+
 Minds run on their own model and allowance (llm.LADDER["beings"]), never Rooken's. They fall
 silent, and the rules' own words stand in, when their daily cap is spent, a call fails, or Rooken
 himself has had to move onto their model: he always comes first.
@@ -14,6 +19,7 @@ himself has had to move onto their model: he always comes first.
 
 import datetime as dt
 import json
+import os
 import re
 
 import beings
@@ -22,6 +28,14 @@ import encounters
 import llm
 
 MIND_BUDGET = 60000         # tokens a day for every being's mind together (of the model's ~200,000)
+# How much the beings' minds talk to each other. "arrival" (the default): when a second
+# being arrives while the first is present, the first reacts once and the second replies
+# once — exactly two lines, at arrival only, then it is back to Rooken. "medium": the
+# first's reaction only, no reply. "full" is not built yet: it would give both minds a
+# turn on every one of Rooken's steps, and needs a transcript and a per-step budget of its
+# own before it is switched on. Set KNIGHT_MIND_MODE=medium to dial back, or =full only
+# once that exists (it falls back to the arrival exchange, and says so).
+MIND_MODE = os.environ.get("KNIGHT_MIND_MODE", "arrival").strip().lower()
 HISTORY = 4                 # past visits a being remembers in detail
 APPROACHES = ["careful", "bold", "curious", "cunning", "distant", "friendly"]
 TEMPER = {"careful": "wary", "bold": "bold", "curious": "calm", "cunning": "wary", "distant": "wary", "friendly": "calm"}
@@ -36,6 +50,13 @@ SYSTEM = (
     "Stay in character: what you are, your traits, why you came. Peril, never gore; nothing religious; "
     "nothing cruel for its own sake. Write what someone watching would see, in plain short sentences, "
     "present tense, calling yourself 'it' (or 'they' for many). No narrator flourishes. Reply in English, as JSON only.")
+
+
+def mind_mode():
+    """Which mind-interaction mode is on: "arrival" (one reaction plus one reply per
+    overlap, at arrival only), "medium" (the reaction only), or "full" (not built yet;
+    falls back to the arrival exchange, and says so, rather than pretending)."""
+    return MIND_MODE if MIND_MODE in ("arrival", "medium", "full") else "arrival"
 
 
 def can_think(brain, usage, world):
@@ -182,6 +203,52 @@ def turn(brain, a, choice, how, out):
         return None
     t = {"does": _clean(data.get("does"), 260),
          "says": _clean(data.get("says"), 160) if beings.CHARACTERS[a["kind"]].get("voice") else ""}
+    return t if t["does"] else None
+
+
+def react(brain, a, b, world, setting):
+    """The first being's one reaction to the second arriving while it is here. Returns
+    {does, says} or None. A reaction only: it settles nothing, changes no outcome, and
+    adds no harm, gift or loss — Rooken has not acted yet, and the rules have not spoken."""
+    other = beings.CHARACTERS.get(b["kind"], {})
+    prompt = (f"{_who(a)}\n\n{setting}\n\n"
+              f"Another being has just arrived while you are here: {other.get('looks', 'something else')}. "
+              f"Toward it you mean to: {a.get('stance', 'size up')}.\n"
+              "Describe what you do now, as he would see it, in one or two short sentences: add no harm, "
+              "gift or loss, and decide nothing for the knight. says: only the words you speak aloud to "
+              "it, if you can talk and want to (no actions, no quotation marks); otherwise empty.\n"
+              'Reply as JSON: {"does": "", "says": ""}')
+    try:
+        data = _ask(brain, "being_react", prompt, 400)
+    except llm.LLMError as err:
+        print(f"  [its mind is quiet: {err}]")
+        return None
+    t = {"does": _clean(data.get("does"), 260),
+         "says": _clean(data.get("says"), 160) if beings.CHARACTERS[a["kind"]].get("voice") else ""}
+    return t if t["does"] else None
+
+
+def reply(brain, b, a, reaction, world, setting):
+    """The second being's one reply to the first's reaction — the second and last line of
+    the arrival exchange. Returns {does, says} or None. Like react: a reply only, it
+    settles nothing and adds no harm, gift or loss; after it, the exchange is over and
+    it is back to Rooken."""
+    other = beings.CHARACTERS.get(a["kind"], {})
+    prompt = (f"{_who(b)}\n\n{setting}\n\n"
+              f"The being that was already here, {other.get('looks', 'something else')}, has just reacted "
+              f"to your arrival: {told(reaction.get('does', ''), reaction.get('says', ''))} "
+              f"Toward it you mean to: {b.get('stance', 'size up')}.\n"
+              "Answer it, in one or two short sentences as he would see it: add no harm, gift or loss, "
+              "and decide nothing for the knight. says: only the words you speak aloud to it, if you can "
+              "talk and want to (no actions, no quotation marks); otherwise empty.\n"
+              'Reply as JSON: {"does": "", "says": ""}')
+    try:
+        data = _ask(brain, "being_reply", prompt, 400)
+    except llm.LLMError as err:
+        print(f"  [its mind is quiet: {err}]")
+        return None
+    t = {"does": _clean(data.get("does"), 260),
+         "says": _clean(data.get("says"), 160) if beings.CHARACTERS[b["kind"]].get("voice") else ""}
     return t if t["does"] else None
 
 

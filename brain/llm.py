@@ -374,6 +374,14 @@ class FakeBrain(Brain):
             self.tokens_by_role["beings"] = self.tokens_by_role.get("beings", 0) + 300
             return json.dumps({"does": "It pauses, weighing him up, then does as the outcome says.",
                                "says": "We will see." if "can talk" in prompt else ""})
+        if task == "being_react":
+            self.tokens_by_role["beings"] = self.tokens_by_role.get("beings", 0) + 300
+            return json.dumps({"does": "It turns toward the newcomer, sizing it up.",
+                               "says": "Another one." if "can talk" in prompt else ""})
+        if task == "being_reply":
+            self.tokens_by_role["beings"] = self.tokens_by_role.get("beings", 0) + 300
+            return json.dumps({"does": "It answers with a short nod, and keeps its distance.",
+                               "says": "So it seems." if "can talk" in prompt else ""})
         if task == "encounter_after":
             return json.dumps({"thought": "Well. That happened.", "name": "the odd visitor",
                                "note": "It came, it looked about, it went. I kept still."})

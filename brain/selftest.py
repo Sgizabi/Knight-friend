@@ -159,8 +159,13 @@ for _d in range(120):
 _st, _be = creatures.load(_cw), creatures.load_bestiary(_cw)
 _apps = _st["appearances"]
 _days = [a["day"] for a in _apps if not a.get("companion")]   # (a companion comes with the day's being)
-assert len(_days) == len(set(_days))                                     # at most one notable being a day
+assert max(_days.count(d) for d in set(_days)) <= creatures.MAX_NOTABLE_PER_DAY   # at most two notable beings a day
 assert 25 <= len(_apps) <= 60, len(_apps)                                # an encounter every few days (60 kept)
+_seconds = [a for a in _apps if a.get("second")]
+assert 1 <= len(_seconds) <= len(_days), len(_seconds)                  # second spawns happen, rarer than leads
+assert all(a.get("day") in _days for a in _seconds)
+_overlapping = [a for a in _seconds if a.get("with")]
+assert len(_overlapping) >= len(_seconds) // 2                          # most seconds overlap the lead's stay
 _host = sorted(creatures._parse(a["start"]) for a in _apps if creatures.counts_as_danger(a))   # (returns and pairs: one event)
 assert all(b - a >= _dt.timedelta(days=creatures.HOSTILE_QUIET_DAYS) for a, b in zip(_host, _host[1:]))   # quiet after danger
 for _a in _apps:
@@ -190,17 +195,33 @@ for _i in range(40):                                                     # the s
 assert all(a["variant"]["kind"] != b["variant"]["kind"] for a, b in zip(_sv["appearances"], _sv["appearances"][1:]))
 assert {a["nature"] for a in _sv["appearances"]} == {"hostile", "neutral"} and len({a["variant"]["kind"] for a in _sv["appearances"]}) == 5
 assert creatures.nature_of({"kind": "stranger", "nature": "neutral"}) == "neutral" and creatures.nature_of({"kind": "fog"}) == "hostile"
-_ids ={a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
-_pairs = [(a, _ids.get(a["with"])) for a in _apps if a.get("companion")]
-assert 1 <= len(_pairs) <= len(_apps) // 4, len(_pairs)
+_ids = {a["id"]: a for a in _apps}                                       # meetings: now and then, fairly paired
+_seen_pairs = set()
+_pairs = []
+for _a in _apps:
+    if not _a.get("with") or _a["with"] not in _ids:
+        continue
+    _key = tuple(sorted([_a["id"], _a["with"]]))
+    if _key in _seen_pairs:
+        continue
+    _seen_pairs.add(_key)
+    _pairs.append((_a, _ids[_a["with"]]))
+assert 1 <= len(_pairs) <= len(_apps) // 3, len(_pairs)
 for _b, _a in _pairs:
-    assert _a is None or (_a["with"] == _b["id"] and _a["stance"] in creatures.STANCES and _b["stance"] in creatures.STANCES)
-    assert not (creatures.KINDS[_b["kind"]]["rarity"] == "legendary" and _a and creatures.KINDS[_a["kind"]]["rarity"] == "legendary")
-    assert creatures.KINDS[_b["kind"]]["nature"] != "hostile" or _b.get("counts") or (_a and creatures.KINDS[_a["kind"]]["nature"] == "hostile")
-    assert not _b.get("counts") or __import__("encounters").leads(_b, _ids)   # a hostile one alongside a gentler one leads
+    assert _a["with"] == _b["id"] and _a["stance"] in creatures.STANCES and _b["stance"] in creatures.STANCES
+    assert not (creatures.KINDS[_b["kind"]]["rarity"] == "legendary" and creatures.KINDS[_a["kind"]]["rarity"] == "legendary")
+    _hostile = [x for x in (_a, _b) if creatures.KINDS[x["kind"]]["nature"] == "hostile"]
+    assert sum(1 for x in (_a, _b) if creatures.counts_as_danger(x)) == (1 if _hostile else 0)   # exactly one counts
+    if _a.get("companion") or _b.get("companion"):
+        assert sum(1 for x in (_a, _b) if __import__("encounters").leads(x, _ids)) == 1   # a companion pair has one leader
+    else:
+        assert all(__import__("encounters").leads(x, _ids) for x in (_a, _b))            # a second spawn: both lead
 _rel = {}
 creatures.note_relation({"relations": _rel}, "fog", "ashwolves", "rival")
 assert _rel == {"ashwolves|fog": -1}                                     # their kinds remember
+assert creatures.counts_as_danger({"kind": "fog", "chain": 1, "with": "x", "counts": True})
+assert not creatures.counts_as_danger({"kind": "fog", "chain": 1, "with": "x", "counts": False})
+assert creatures.counts_as_danger({"kind": "fog", "chain": 1}) and not creatures.counts_as_danger({"kind": "fog", "chain": 2})
 _fresh = Path(tempfile.mkdtemp())
 _s0 = creatures.update(_fresh, weather.update(_fresh, _t0), _t0)
 assert all(creatures.KINDS[a["kind"]]["step"] == 0 for a in _s0["appearances"])   # at first, only what anyone can see
@@ -320,6 +341,15 @@ assert minds.arrive(_Quiet(), {"id": "x", "kind": "dragon", "drive": "rest"}, _w
 assert minds.turn(_Quiet(), {"kind": "dragon"}, "speak", "hello", {"result": "good", "said": "", "extra": []}) is None
 assert not minds.can_think(None, {}, _w) and not minds.can_think(_Quiet(), {"mind_tokens": minds.MIND_BUDGET}, _w)
 assert minds._clean("It bares its teeth, blood on them", 200) == "" and minds._clean("It waits.", 200) == "It waits."
+assert minds.mind_mode() == "arrival"                                     # the arrival exchange, by default
+_r = minds.react(FakeBrain(), {"id": "g", "kind": "golem", "drive": "rest", "stance": "size up"},
+                 {"kind": "bloom"}, _w, "dusk")
+assert _r and _r["does"] and minds.told(_r["does"], _r["says"])
+_rp = minds.reply(FakeBrain(), {"id": "b", "kind": "bloom", "drive": "rest", "stance": "size up"},
+                  {"kind": "golem"}, _r, _w, "dusk")
+assert _rp and _rp["does"]                                                # one reaction, one reply, and no more
+assert minds.react(_Quiet(), {"kind": "golem"}, {"kind": "bloom"}, _w, "dusk") is None   # quiet minds stay quiet
+assert minds.reply(_Quiet(), {"kind": "bloom"}, {"kind": "golem"}, _r, _w, "dusk") is None
 _ca = {"kind": "glassbeak"}
 minds.settle_in(_ca, {"approach": "cunning", "why": "", "doing": "x", "says": ""}, {"wise": {"main": {"level": .3, "at": "2026-01-01"}}})
 assert _ca["avoid"] == "main" and _ca["temper"] == "wary"
@@ -336,6 +366,33 @@ _news = encounters.settle(_sw, lambda t: t.hour < 12, _t0 + _dt.timedelta(days=1
 assert len(_news) == 2 and "morning" in _news[0]["text"] and "glimpsed" in _news[1]["text"]
 _ss = creatures.load(_sw)["appearances"]
 assert _ss[0]["seen"] is False and _ss[1]["met"]["outcome"] == "glimpsed"
+# sequential encounters: due() is earliest first, and a queued being gets grace, not a glimpse
+_dw = Path(tempfile.mkdtemp())
+(_dw / "creatures.json").write_text(__import__("json").dumps({"appearances": [
+    {"id": "b", "kind": "golem", "day": "2026-11-21", "start": "2026-11-21T17:20:00+00:00", "end": "2026-11-21T18:20:00+00:00"},
+    {"id": "a", "kind": "bloom", "day": "2026-11-21", "start": "2026-11-21T17:00:00+00:00", "end": "2026-11-21T18:00:00+00:00"}]}))
+_t21 = _dt.datetime(2026, 11, 21, 17, 5, tzinfo=_dt.timezone.utc)
+assert encounters.due(_dw, now=_t21)["id"] == "a"                        # earliest first, not list order
+_st = creatures.load(_dw)
+next(x for x in _st["appearances"] if x["id"] == "a")["met"] = {"outcome": "good", "time": "2026-11-21T17:10:00+00:00"}
+(_dw / "creatures.json").write_text(__import__("json").dumps(_st))
+assert encounters.due(_dw, now=_t21 + _dt.timedelta(minutes=25))["id"] == "b"   # the second, next, in order
+_news = encounters.settle(_dw, lambda t: False, _t21 + _dt.timedelta(hours=1, minutes=21))
+assert not _news and creatures.load(_dw)["appearances"][0]["end"] == "2026-11-21T18:40:00+00:00"  # queued: grace, not glimpsed
+_news = encounters.settle(_dw, lambda t: False, _t21 + _dt.timedelta(hours=1, minutes=41))
+assert len(_news) == 1 and creatures.load(_dw)["appearances"][0]["met"]["outcome"] == "glimpsed"
+# export: a stance is only shown while both of the pair are here
+_ew = Path(tempfile.mkdtemp())
+(_ew / "creatures.json").write_text(__import__("json").dumps({"appearances": [
+    {"id": "a", "kind": "bloom", "day": "2026-11-21", "start": "2026-11-21T17:00:00+00:00", "end": "2026-11-21T18:00:00+00:00",
+     "with": "b", "with_kind": "golem", "stance": "size up"},
+    {"id": "b", "kind": "golem", "day": "2026-11-21", "start": "2026-11-21T17:20:00+00:00", "end": "2026-11-21T18:20:00+00:00",
+     "with": "a", "with_kind": "bloom", "stance": "ignore"}]}))
+(_ew / "bestiary.json").write_text(__import__("json").dumps({"points": 0, "step": 0, "kinds": {}}))
+_both = creatures.export(_ew, _t21 + _dt.timedelta(minutes=25))
+assert all("stance_says" in c for c in _both["current"]), _both
+_one = creatures.export(_ew, _t21 + _dt.timedelta(minutes=65))
+assert all("stance_says" not in c and "stance" not in c for c in _one["current"]), _one
 __import__("os").environ.pop("KNIGHT_CREATURES")
 if _old is not None:
     __import__("os").environ["KNIGHT_CREATURES"] = _old

@@ -27,6 +27,7 @@ DAMAGE_PER_WEEK = 1         # damaging visits in seven days (and so never more t
 LOSSES_PER_WEEK = 1         # things taken in seven days
 NIGHT_WAKES_PER_WEEK = 2    # nights a week a being may wake him
 STEPS_MOST = 3              # decisions in one encounter
+GRACE_MINUTES = 20          # a queued being's stay is stretched by this long, once, before it is glimpsed
 NOTICE_BEFORE = 20          # minutes before it arrives that the signs begin
 GIFT_CHANCE = .35
 WIN_BACK_CHANCE = .6
@@ -201,12 +202,16 @@ def is_loud(kind):
 
 def due(world: Path, asleep=False, now=None):
     """The being he should meet at this check-in, if any: one that is here or whose signs have
-    begun, not yet met. Asleep, only a loud or hostile one wakes him, and only so many nights a week."""
+    begun, not yet met. The earliest one first, so a second being is met after the first, in
+    order, on the next check. Asleep, only a loud or hostile one wakes him, and only so many
+    nights a week. A being that is due is marked queued, so settle() gives it a grace window
+    instead of calling it merely glimpsed while it waits for him."""
     if not creatures.enabled():
         return None
     now = now or _now()
     state = creatures.load(world)
     by_id = {x["id"]: x for x in state["appearances"]}
+    waiting = []
     for a in creatures.current(state, now, ahead_minutes=NOTICE_BEFORE):
         if a.get("met") or a.get("slept") or a["kind"] not in creatures.KINDS or not leads(a, by_id):
             continue                                   # (the other one in a meeting is met with it)
@@ -216,22 +221,39 @@ def due(world: Path, asleep=False, now=None):
             wakes = sum(1 for e in recent(world, now=now) if e.get("woke"))
             if not (is_loud(a["kind"]) or is_loud(a.get("with_kind", ""))) or wakes >= NIGHT_WAKES_PER_WEEK:
                 continue
-        return a
-    return None
+        waiting.append(a)
+    if not waiting:
+        return None
+    waiting.sort(key=lambda a: _parse(a["start"]) or now)
+    first = waiting[0]
+    if not first.get("queued"):
+        first["queued"] = True
+        first["queued_at"] = _iso(now)
+        (world / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+    return first
 
 
 def settle(world: Path, asleep_at, now=None):
     """Beings that came and went without a meeting: slept through (he finds what they left in
-    the morning), or only glimpsed. asleep_at(t): was he asleep then. Returns what he'll know."""
+    the morning), or only glimpsed. A being that was queued to meet him gets one grace window
+    first: its stay is stretched by twenty minutes, and only if he still hasn't met it by
+    then is it called glimpsed. asleep_at(t): was he asleep then. Returns what he'll know."""
     now = now or _now()
     state = creatures.load(world)
     news = []
+    changed = False
     for a in state["appearances"]:
         end = _parse(a.get("end"))
         if a.get("met") or a.get("slept") or a.get("cancelled") or not end or end > now or a["kind"] not in creatures.KINDS:
             continue
         if a.get("witnessed") is not None:
             continue                                   # already counted before encounters existed
+        if a.get("queued") and not a.get("grace_used"):
+            a["grace_used"] = True                     # one more chance: twenty minutes longer
+            a["queued"] = False
+            a["end"] = _iso(end + dt.timedelta(minutes=GRACE_MINUTES))
+            changed = True
+            continue
         c = character(a["kind"])
         if asleep_at(_parse(a["start"])):
             a["slept"], a["seen"] = True, False
@@ -240,7 +262,7 @@ def settle(world: Path, asleep_at, now=None):
         else:
             a["met"] = {"outcome": "glimpsed"}
             news.append({"time": a["start"], "kind": a["kind"], "text": f"You glimpsed {c.get('looks', 'something strange')}, and then it was gone."})
-    if news:
+    if news or changed:
         (world / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
     return news
 
@@ -285,6 +307,8 @@ def scene(a, entry, seeing, ph, history):
         if a.get("with_kind"):
             o = character(a["with_kind"])
             lines.append(f"And it is not alone: {o.get('looks', 'something else')}. {STANCE_SAYS.get(a.get('stance'), '')}")
+        if a.get("with_met"):
+            lines.append("The other one is here too, and you have met it already.")
     else:
         lines.append("Whatever it is hasn't come into sight yet.")
     return " ".join(lines)
@@ -367,10 +391,14 @@ def wariness(entry, key, now, memory=1.0):
 
 def leads(a, by_id):
     """Whether this appearance leads its meeting (the one he meets; the other comes with it). A
-    hostile being that came alongside a gentler one leads: it is the danger."""
+    hostile being that came alongside a gentler one leads: it is the danger. An independent
+    second being leads its own meeting too: both of a second-spawn pair are met, one after
+    the other, in start order."""
     if a.get("companion"):
         return bool(a.get("counts"))
     partner = by_id.get(a.get("with"))
+    if partner and (a.get("second") or partner.get("second")):
+        return True                                    # a second spawn: both lead, met in turn
     return not (partner and partner.get("counts"))
 
 
@@ -470,8 +498,7 @@ def resolve(a, choice, how, ctx, rng=None):
         result = "bad" if nature == "hostile" else result     # a slow presence that reaches the wall
 
     out = {"choice": choice, "result": result, "weakness": weak, "liked": liked, "effects": {}, "tool": tool,
-           "used": used[0] if used else None, "used_why": used[2] if used else "",
-           "sky": ctx.get("sky", ""), "strength": round(strength, 2),
+           "used": used[0] if used else None, "strength": round(strength, 2),
            "injury": None, "damage": None, "loss": None, "gift": None, "returned": None, "regard": 0,
            "tell": None, "turned_back": False}
     said = WEAKNESS_SAYS if weak and result == "good" else SAYS[(choice, result)]
@@ -632,6 +659,4 @@ def apply(out, a, needs, body, keep, entry, how, now=None):
     if how and out["result"] == "good" and out["choice"] not in ("leave",):
         entry["worked"] = ([x for x in entry.get("worked", []) if x != how] + [how])[-4:]
     elif how and out["result"] == "bad":
-        if out.get("used_why") == "weather" and out.get("sky"):
-            how = f"{how} (in {out['sky']})"[:120]
         entry["failed"] = ([x for x in entry.get("failed", []) if x != how] + [how])[-4:]

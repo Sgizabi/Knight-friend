@@ -1385,8 +1385,10 @@ class Knight:
 
     def encounter(self, a):
         """A being has come. A short awake stretch: what it notices, then 2-3 quick decisions, each
-        its own; fair rules (encounters.py) settle what comes of them. It writes about it in its
-        diary at its next full wake-up, with everything in front of it."""
+        its own; fair rules (encounters.py) settle what comes of them. If another being is here
+        too and has already arrived, the two get one bounded exchange at arrival only — the
+        first reacts, the second replies — and then it is back to Rooken. It writes about it in
+        its diary at its next full wake-up, with everything in front of it."""
         plan = self.catch_up()
         plan["applied_until"] = iso()
         save("plan.json", plan)
@@ -1401,8 +1403,36 @@ class Knight:
         doing = ("asleep on your bedroll, until it woke you" if woke else
                  f"{DOING.get(current['action'], current['action'])} at the {current['place']}" if current else
                  "dozing by the fire")
-        history, prepared, shown = [], False, False
+        history, prepared, shown, shown_exchange = [], False, False, False
         a["seeing"] = best["step"]                                # (its mind describes only what he can see)
+        partner = next((x for x in state["appearances"] if x.get("id") == a.get("with")), None)
+        if partner and partner.get("met"):
+            a["with_met"] = True                                  # the other one was already met, earlier
+        exchange = []
+        if partner and not a.get("reacted") and not partner.get("reacted"):
+            # the later-arriving of the pair has to have arrived by now, or there is nothing to react to
+            later = a if encounters._parse(a["start"]) >= encounters._parse(partner["start"]) else partner
+            earlier = partner if later is a else a
+            # arrived by now — or, for a companion, arriving within minutes, during this meeting
+            if encounters._parse(later["start"]) <= now() or a.get("companion") or partner.get("companion"):
+                mode = minds.mind_mode()
+                if mode == "full":
+                    print("  [full mind mode is not built yet: using the arrival exchange]")
+                if minds.can_think(self.brain, today_usage(), WORLD):
+                    r = minds.react(self.brain, earlier, later, WORLD,
+                                    f"It is {part_of_day()}. {weather.describe(self.sky)}")
+                    if r:
+                        exchange.append({"kind": earlier["kind"], **r})
+                        if mode != "medium" and minds.can_think(self.brain, today_usage(), WORLD):
+                            rp = minds.reply(self.brain, later, earlier, r, WORLD,
+                                             f"It is {part_of_day()}. {weather.describe(self.sky)}")
+                            if rp:
+                                exchange.append({"kind": later["kind"], **rp})
+                if exchange:
+                    a["reacted"] = True
+                    partner["reacted"] = True
+                    print(f"  arrival exchange: {exchange[0]['kind']} reacts"
+                          + (f", {exchange[1]['kind']} replies" if len(exchange) > 1 else ", no reply"))
         if minds.can_think(self.brain, today_usage(), WORLD):   # the being's own mind: why it came, how it goes about it
             m = minds.arrive(self.brain, a, WORLD, f"It is {part_of_day()}. {weather.describe(self.sky)} "
                              f"The knight is {'asleep' if woke else doing}.")
@@ -1416,6 +1446,10 @@ class Knight:
             if ph == "here" and a.get("mind") and not shown:     # what it does first, once it is in sight
                 sc += " " + minds.told(a["mind"]["doing"], a["mind"]["says"])
                 shown = True
+            if ph == "here" and exchange and not shown_exchange:   # the arrival exchange, once, as quoted lines
+                sc += " " + " ".join(f"{creatures.KINDS[e['kind']]['name']}: {minds.told(e['does'], e['says'])}"
+                                     for e in exchange)
+                shown_exchange = True
             so_far = "\n".join(f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}"
                                 for h in history)
             prompt = (
@@ -1463,7 +1497,10 @@ class Knight:
                 break
             if ENCOUNTER_PAUSE:
                 time.sleep(ENCOUNTER_PAUSE)
-        story = encounters.scene(a, entry, best["step"], "here", []) + "\n" + "\n".join(
+        exchange_text = " ".join(f"{creatures.KINDS[e['kind']]['name']}: {minds.told(e['does'], e['says'])}"
+                                 for e in exchange)
+        story = encounters.scene(a, entry, best["step"], "here", []) + "\n" + (
+            exchange_text + "\n" if exchange_text else "") + "\n".join(
             f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}" for h in history)
         try:
             after = self.ask("encounter_after", (
@@ -1488,11 +1525,25 @@ class Knight:
                 x["seen"] = True
                 if a.get("mind"):
                     x["mind"] = a["mind"]
-            if a.get("with") and x.get("id") == a["with"]:        # the one it came with was met too
+                if exchange:
+                    x["reacted"] = True
+            if a.get("with") and x.get("id") == a["with"] and (x.get("companion") or a.get("companion")):
+                # the one it came with was met too (a companion pair only; an independent
+                # second gets its own encounter, in its turn, and is never stamped "with")
                 x["met"] = {"outcome": "with", "time": iso()}
                 x["seen"] = True
+                x["with_met"] = True
+                if exchange:
+                    x["reacted"] = True
+        partner_stance = partner.get("stance", "") if partner else ""
         if a.get("with_kind"):
-            creatures.note_relation(state, kind, a["with_kind"], a.get("stance", ""))
+            creatures.note_relation(state, kind, a["with_kind"], a.get("stance", ""), partner_stance)
+            if partner and partner.get("met", {}).get("outcome") == "with":
+                # a bestiary note for the partner, only when Rooken actually saw it with the lead
+                pentry = best["kinds"].setdefault(partner["kind"], {})
+                if not pentry.get("note"):
+                    pentry["note"] = (f"Seen with {creatures.KINDS[kind]['name']}: "
+                                      f"{encounters.STANCE_SAYS.get(a.get('stance'), '')}").strip()
         (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
         (WORLD / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
         encounters.record(WORLD, {"time": iso(start), "id": a["id"], "kind": kind, "woke": woke, "steps": history,
@@ -1500,11 +1551,12 @@ class Knight:
                                   "damage": any(h.get("damage") for h in history),
                                   "loss": any(h.get("loss") for h in history), "note": note,
                                   "why": (a.get("mind") or {}).get("why", a.get("drive", "")),
+                                  **({"exchange": exchange} if exchange else {}),
                                   **({"with": a["with_kind"], "stance": a.get("stance")} if a.get("with_kind") else {})})
         told = " ".join(f"You chose to {h['choice'].replace('_', ' ')} ({h['how']}). {h['happened']}" for h in history)
         self.memory["beings_since"].append({"time": iso(start), "kind": kind, "text": (
             ("It woke you in the night. " if woke else "") + encounters.scene(a, entry, best["step"], "here", [])
-            + " " + told)[:900]})
+            + (" " + exchange_text if exchange_text else "") + " " + told)[:900]})
         if after.get("thought"):
             thought = str(after["thought"]).strip()[:140]
             self.memory["recent_thoughts"] = (self.memory.get("recent_thoughts", []) + [thought])[-12:]
