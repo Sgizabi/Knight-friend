@@ -13,6 +13,14 @@
       "first": "2026-11-22T06:14:00+00:00",
       "count": 1,
       "last": "2026-11-22T06:14:00+00:00"
+    },
+    "bloom": {
+      "regard": 1,
+      "worked": [
+        "I set a bowl of stew on the table and tell the figure I have warm broth."
+      ],
+      "name": "Coated Wanderer",
+      "note": "It sat by the hearth, drank broth, and said the warmth was adequate. It seemed harmless and just needed a break."
     }
   }
 }

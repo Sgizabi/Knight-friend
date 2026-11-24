@@ -1,5 +1,5 @@
 {
-  "start": "2026-11-23T23:01:32+00:00",
+  "start": "2026-11-24T01:01:33+00:00",
   "mood": "content",
   "steps": [
     {
@@ -9,7 +9,8 @@
       "emote": "spark",
       "note": "",
       "thoughts": [
-        "The fire needs a push again."
+        "The handle feels solid enough for now",
+        "Hope the fire stays bright"
       ]
     },
     {
@@ -19,17 +20,8 @@
       "emote": "question",
       "note": "",
       "thoughts": [
-        "Those thick slabs might need extra mortar."
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "pace",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "Check the bellows while I think about the next repair."
+        "Need to tighten the bolt on the forge",
+        "Maybe I can fit another lantern"
       ]
     },
     {
@@ -39,13 +31,9 @@
       "emote": "zzz",
       "note": "",
       "thoughts": [
-        "A short nap before the night gets colder."
+        "Warm enough to close my eyes",
+        "Dream of a roof that never leaks"
       ]
     }
-  ],
-  "applied_until": "2026-11-24T00:30:22+00:00",
-  "live_thought": {
-    "text": "Another quiet guest, likes broth and fire.",
-    "time": "2026-11-24T00:31:49+00:00"
-  }
+  ]
 }

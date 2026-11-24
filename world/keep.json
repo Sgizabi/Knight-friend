@@ -1032,6 +1032,89 @@
         }
       ],
       "made": "2026-11-23T19:00:33+00:00"
+    },
+    {
+      "name": "Reinforced Lantern Handle",
+      "about": "A sturdy handle for a lantern, built from a metal bar and a grip ring",
+      "placement": "table",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "size": [
+            0.04,
+            0.04,
+            0.25
+          ],
+          "pos": [
+            0.0,
+            0.125,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#555555"
+        },
+        {
+          "shape": "torus",
+          "size": [
+            0.07,
+            0.015
+          ],
+          "pos": [
+            0.0,
+            0.125,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#777777"
+        },
+        {
+          "shape": "box",
+          "size": [
+            0.02,
+            0.02,
+            0.06
+          ],
+          "pos": [
+            0.12,
+            0.125,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#555555"
+        },
+        {
+          "shape": "box",
+          "size": [
+            0.02,
+            0.02,
+            0.06
+          ],
+          "pos": [
+            -0.12,
+            0.125,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#555555"
+        }
+      ],
+      "made": "2026-11-24T01:00:31+00:00"
     }
   ],
   "buildings": [
