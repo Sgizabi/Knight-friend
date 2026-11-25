@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T17:30:24+00:00",
+    "applied_until": "2026-11-25T18:00:32+00:00",
     "live_thought": {
-      "text": "The iron sings, the stone just listens.",
-      "time": "2026-11-25T17:30:24+00:00"
+      "text": "Logs pile up, stone stays mute.",
+      "time": "2026-11-25T18:00:32+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T17:30:25+00:00",
+    "since": "2026-11-25T18:00:32+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 75.8,
+    "warmth": 79.7,
+    "inspiration": 42.9,
+    "spirit": 77.1
+  },
+  "needs_prev": {
     "rest": 77.4,
     "warmth": 81.1,
     "inspiration": 42.9,
     "spirit": 77.8
   },
-  "needs_prev": {
-    "rest": 79.4,
-    "warmth": 82.0,
-    "inspiration": 42.9,
-    "spirit": 78.5
-  },
-  "needs_at": "2026-11-25T17:30:25+00:00",
+  "needs_at": "2026-11-25T18:00:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2099,7 +2099,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T17:30:24+00:00",
+    "updated": "2026-11-25T18:00:32+00:00",
     "seen_until": "2026-11-25T16:55:28+00:00"
   },
   "gifts": [],
@@ -2114,12 +2114,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-24T08:14:26+00:00",
-        "end": "2026-11-24T15:47:15+00:00",
-        "kind": "clear",
-        "intensity": 0.69
-      },
       {
         "start": "2026-11-24T15:47:15+00:00",
         "end": "2026-11-24T22:56:39+00:00",
@@ -2248,15 +2242,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-25T17:00:00+00:00",
-      "end": "2026-11-25T18:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-25T18:00:00+00:00",
       "end": "2026-11-25T19:00:00+00:00",
       "kinds": [
@@ -2330,6 +2315,16 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-26T01:00:00+00:00",
+      "end": "2026-11-26T02:00:00+00:00",
+      "kinds": [
+        "deer",
+        "owl",
+        "fox",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -2337,5 +2332,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T17:30:25+00:00"
+  "exported": "2026-11-25T18:00:32+00:00"
 }
