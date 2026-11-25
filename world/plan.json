@@ -42,5 +42,10 @@
         "Watch the shards settle in my pouch"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-25T15:30:25+00:00",
+  "live_thought": {
+    "text": "The iron glows, stone watches, I keep hammering.",
+    "time": "2026-11-25T15:30:25+00:00"
+  }
 }
