@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-25T21:00:25+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-25T21:00:29+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "continue forging and fitting the next lantern guard",
+    "thought": "The fire is steady, the metal is cool, and I have a few extra shards rattling in my pocket. I could tighten another guard or start a new little project."
   },
   "needs": {
-    "rest": 72.0,
-    "warmth": 85.4,
+    "rest": 72.8,
+    "warmth": 85.9,
     "inspiration": 54.9,
-    "spirit": 73.9
+    "spirit": 73.3
   },
   "needs_prev": {
     "rest": 72.0,
@@ -106,7 +106,7 @@
     "inspiration": 54.9,
     "spirit": 73.9
   },
-  "needs_at": "2026-11-25T21:00:25+00:00",
+  "needs_at": "2026-11-25T21:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2331,5 +2331,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T21:00:25+00:00"
+  "exported": "2026-11-25T21:00:30+00:00"
 }
