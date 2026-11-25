@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T14:00:32+00:00",
+    "applied_until": "2026-11-25T14:30:24+00:00",
     "live_thought": {
-      "text": "Stone's cold bite reminds me the fire's still half‑lit.",
-      "time": "2026-11-25T14:00:32+00:00"
+      "text": "The fire cracks, stone sighs, I could stay a while",
+      "time": "2026-11-25T14:30:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T14:00:33+00:00",
+    "since": "2026-11-25T14:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 90.7,
+    "warmth": 73.9,
+    "inspiration": 42.9,
+    "spirit": 76.1
+  },
+  "needs_prev": {
     "rest": 91.4,
     "warmth": 75.0,
     "inspiration": 42.9,
     "spirit": 76.8
   },
-  "needs_prev": {
-    "rest": 92.0,
-    "warmth": 67.7,
-    "inspiration": 42.9,
-    "spirit": 77.5
-  },
-  "needs_at": "2026-11-25T14:00:33+00:00",
+  "needs_at": "2026-11-25T14:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2111,7 +2111,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T14:00:32+00:00",
+    "updated": "2026-11-25T14:30:24+00:00",
     "seen_until": "2026-11-25T12:55:29+00:00"
   },
   "gifts": [],
@@ -2335,5 +2335,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T14:00:33+00:00"
+  "exported": "2026-11-25T14:30:25+00:00"
 }
