@@ -71,11 +71,16 @@
           "Rain will come soon, hope the roof holds"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-25T21:30:24+00:00",
+    "live_thought": {
+      "text": "The hammer's rhythm matches my heartbeat.",
+      "time": "2026-11-25T21:30:24+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T21:01:37+00:00",
+    "since": "2026-11-25T21:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -83,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 64.8,
+    "warmth": 86.3,
+    "inspiration": 42.9,
+    "spirit": 77.9
+  },
+  "needs_prev": {
     "rest": 66.8,
     "warmth": 87.4,
     "inspiration": 42.9,
     "spirit": 78.6
   },
-  "needs_prev": {
-    "rest": 72.0,
-    "warmth": 85.4,
-    "inspiration": 54.9,
-    "spirit": 73.9
-  },
-  "needs_at": "2026-11-25T21:01:38+00:00",
+  "needs_at": "2026-11-25T21:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2141,7 +2146,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T21:01:37+00:00",
+    "updated": "2026-11-25T21:30:24+00:00",
     "seen_until": "2026-11-25T20:55:27+00:00"
   },
   "gifts": [],
@@ -2377,5 +2382,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T21:01:38+00:00"
+  "exported": "2026-11-25T21:30:24+00:00"
 }
