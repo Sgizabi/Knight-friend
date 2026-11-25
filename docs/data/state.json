@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-25T02:33:30+00:00",
+    "since": "2026-11-25T02:36:34+00:00",
     "place": "workbench",
     "action": "work",
     "emote": "dots",
-    "note": "continue",
-    "thought": "I’m still feeling the itch from all that lantern work. The guard feels solid but the edge still catches my palm. I could tweak it or try something else, but the"
+    "note": "continue refining the guard and test its fit on the lantern",
+    "thought": "The fire's steady heat makes me want to finish the guard for the lantern handle. The metal is cold enough to bite, but I can shape it better."
   },
   "needs": {
-    "rest": 55.4,
-    "warmth": 88.7,
-    "inspiration": 30.3,
-    "spirit": 82.5
+    "rest": 49.4,
+    "warmth": 89.9,
+    "inspiration": 18.3,
+    "spirit": 86.0
   },
   "needs_prev": {
     "rest": 54.2,
@@ -106,7 +106,7 @@
     "inspiration": 40.9,
     "spirit": 78.8
   },
-  "needs_at": "2026-11-25T02:33:30+00:00",
+  "needs_at": "2026-11-25T02:36:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -193,157 +193,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "Portable Lantern",
-        "about": "A small handheld lantern made from glass shards and scrap metal.",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.07,
-              0.07,
-              0.15
-            ],
-            "pos": [
-              0.0,
-              0.075,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.03,
-              0.03,
-              0.12
-            ],
-            "pos": [
-              0.0,
-              0.21,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "cone",
-            "size": [
-              0.06,
-              0.03
-            ],
-            "pos": [
-              0.0,
-              0.12,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#999999"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.12,
-              0.02,
-              0.12
-            ],
-            "pos": [
-              0.0,
-              0.015,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#333333"
-          },
-          {
-            "shape": "sphere",
-            "size": [
-              0.025
-            ],
-            "pos": [
-              0.0,
-              0.13,
-              0.06
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#aaddff"
-          },
-          {
-            "shape": "sphere",
-            "size": [
-              0.025
-            ],
-            "pos": [
-              0.0,
-              0.13,
-              -0.06
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#aaddff"
-          },
-          {
-            "shape": "sphere",
-            "size": [
-              0.025
-            ],
-            "pos": [
-              0.06,
-              0.13,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#aaddff"
-          },
-          {
-            "shape": "sphere",
-            "size": [
-              0.025
-            ],
-            "pos": [
-              -0.06,
-              0.13,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#aaddff"
-          }
-        ],
-        "made": "2026-11-19T02:33:31+00:00"
-      },
       {
         "name": "Portable Lantern Upgrade",
         "about": "A handheld lantern with a refillable oil tank and a detachable stand",
@@ -2157,6 +2006,90 @@
           }
         ],
         "made": "2026-11-25T02:30:30+00:00"
+      },
+      {
+        "name": "Lantern Handle Guard",
+        "about": "A small metal guard to protect the lantern handle edge",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.08
+            ],
+            "pos": [
+              0.0,
+              0.04,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.06,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.07,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.06,
+              0.01,
+              0.03
+            ],
+            "pos": [
+              0.0,
+              0.035,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          }
+        ],
+        "made": "2026-11-25T02:33:33+00:00"
       }
     ],
     "buildings": [
@@ -2460,5 +2393,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T02:33:30+00:00"
+  "exported": "2026-11-25T02:36:34+00:00"
 }
