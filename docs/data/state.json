@@ -78,11 +78,16 @@
           "fire finally gives a break"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-25T19:30:25+00:00",
+    "live_thought": {
+      "text": "Stone feels like a dull friend under my hammer.",
+      "time": "2026-11-25T19:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T19:01:34+00:00",
+    "since": "2026-11-25T19:30:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 72.7,
+    "warmth": 84.1,
+    "inspiration": 54.9,
+    "spirit": 75.1
+  },
+  "needs_prev": {
     "rest": 74.7,
     "warmth": 83.4,
     "inspiration": 54.9,
     "spirit": 75.7
   },
-  "needs_prev": {
-    "rest": 77.0,
-    "warmth": 82.9,
-    "inspiration": 42.9,
-    "spirit": 76.4
-  },
-  "needs_at": "2026-11-25T19:01:34+00:00",
+  "needs_at": "2026-11-25T19:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2090,7 +2095,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T19:01:34+00:00",
+    "updated": "2026-11-25T19:30:25+00:00",
     "seen_until": "2026-11-25T18:55:29+00:00"
   },
   "gifts": [],
@@ -2331,5 +2336,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T19:01:34+00:00"
+  "exported": "2026-11-25T19:30:26+00:00"
 }
