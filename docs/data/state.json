@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T19:30:25+00:00",
+    "applied_until": "2026-11-25T20:00:29+00:00",
     "live_thought": {
-      "text": "Stone feels like a dull friend under my hammer.",
-      "time": "2026-11-25T19:30:25+00:00"
+      "text": "Loose slab shifts underfoot, stone whispers to stay.",
+      "time": "2026-11-25T20:00:29+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T19:30:26+00:00",
+    "since": "2026-11-25T20:00:29+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 71.1,
+    "warmth": 81.7,
+    "inspiration": 54.9,
+    "spirit": 74.5
+  },
+  "needs_prev": {
     "rest": 72.7,
     "warmth": 84.1,
     "inspiration": 54.9,
     "spirit": 75.1
   },
-  "needs_prev": {
-    "rest": 74.7,
-    "warmth": 83.4,
-    "inspiration": 54.9,
-    "spirit": 75.7
-  },
-  "needs_at": "2026-11-25T19:30:26+00:00",
+  "needs_at": "2026-11-25T20:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2095,7 +2095,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T19:30:25+00:00",
+    "updated": "2026-11-25T20:00:29+00:00",
     "seen_until": "2026-11-25T18:55:29+00:00"
   },
   "gifts": [],
@@ -2244,16 +2244,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-25T19:00:00+00:00",
-      "end": "2026-11-25T20:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "fish",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-25T20:00:00+00:00",
       "end": "2026-11-25T21:00:00+00:00",
       "kinds": [
@@ -2329,6 +2319,14 @@
         "fox",
         "fish"
       ]
+    },
+    {
+      "start": "2026-11-26T03:00:00+00:00",
+      "end": "2026-11-26T04:00:00+00:00",
+      "kinds": [
+        "owl",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -2336,5 +2334,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T19:30:26+00:00"
+  "exported": "2026-11-25T20:00:29+00:00"
 }
