@@ -82,11 +82,16 @@
           "fog outside keeps me alert"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-25T03:30:21+00:00",
+    "live_thought": {
+      "text": "Fog presses, stone stays cold, I wait for the fire to settle.",
+      "time": "2026-11-25T03:30:21+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T02:40:41+00:00",
+    "since": "2026-11-25T03:30:21+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -94,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 40.5,
+    "warmth": 88.8,
+    "inspiration": 18.6,
+    "spirit": 87.1
+  },
+  "needs_prev": {
     "rest": 40.4,
     "warmth": 91.0,
     "inspiration": 18.3,
     "spirit": 88.8
   },
-  "needs_prev": {
-    "rest": 54.2,
-    "warmth": 88.4,
-    "inspiration": 40.9,
-    "spirit": 78.8
-  },
-  "needs_at": "2026-11-25T02:40:41+00:00",
+  "needs_at": "2026-11-25T03:30:21+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2129,7 +2134,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T02:40:41+00:00",
+    "updated": "2026-11-25T03:30:21+00:00",
     "seen_until": "2026-11-25T02:25:25+00:00"
   },
   "gifts": [],
@@ -2266,17 +2271,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-25T02:00:00+00:00",
-      "end": "2026-11-25T03:00:00+00:00",
-      "kinds": [
-        "deer",
-        "bats",
-        "fox",
-        "fish",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-25T03:00:00+00:00",
       "end": "2026-11-25T04:00:00+00:00",
       "kinds": [
@@ -2330,6 +2324,17 @@
       "kinds": [
         "owl"
       ]
+    },
+    {
+      "start": "2026-11-25T10:00:00+00:00",
+      "end": "2026-11-25T11:00:00+00:00",
+      "kinds": [
+        "songbirds",
+        "hares",
+        "deer",
+        "owl",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -2337,5 +2342,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T02:40:41+00:00"
+  "exported": "2026-11-25T03:30:21+00:00"
 }

@@ -46,5 +46,10 @@
         "fog outside keeps me alert"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-25T03:30:21+00:00",
+  "live_thought": {
+    "text": "Fog presses, stone stays cold, I wait for the fire to settle.",
+    "time": "2026-11-25T03:30:21+00:00"
+  }
 }
