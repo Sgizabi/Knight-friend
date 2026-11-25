@@ -1,7 +1,7 @@
 {
   "start": "2026-11-25T11:00:29+00:00",
   "mood": "restless",
-  "applied_until": "2026-11-25T12:00:30+00:00",
+  "applied_until": "2026-11-25T12:30:24+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -12,7 +12,7 @@
     }
   ],
   "live_thought": {
-    "text": "The fire flickers, a lazy grin on cold stone.",
-    "time": "2026-11-25T12:00:30+00:00"
+    "text": "The fire flickers, stone stays cold, I wait.",
+    "time": "2026-11-25T12:30:24+00:00"
   }
 }
