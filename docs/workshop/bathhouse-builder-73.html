@@ -6,15 +6,17 @@
 <style>
 body{font-family:sans-serif;background:#f0f0f0;margin:0;padding:1em;color:#333}
 h1{margin-top:0}
-#stack{border:2px solid #555;background:#fff;width:200px;height:200px;margin:auto;position:relative}
+#stack{border:2px solid #555;background:#fff;width:200px;height:200px;margin:0 auto;position:relative}
 .block{position:absolute;width:100%;height:20px;background:#a2d5f2;box-sizing:border-box;border:1px solid #555}
+.control{margin:0.3em 0}
 #log,#summary,#preview{margin-top:1em;padding:5px;background:#fff;border:1px solid #555;max-height:150px;overflow:auto}
-button,select{margin:0.3em}
+button,select{margin:0.2em}
+pre{margin:0;white-space:pre-wrap}
 </style>
 </head>
 <body>
 <h1>Bathhouse Floor Shim Stacker</h1>
-<div>
+<div class="control">
   <label for="section">Section:</label>
   <select id="section"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select>
   <button id="add">Add Shim</button>
@@ -22,8 +24,8 @@ button,select{margin:0.3em}
   <button id="reset">Reset Section</button>
   <button id="resetAll">Reset All</button>
   <button id="export">Export CSV</button>
-  <button id="test">Test Stability</button>
   <button id="exportTest">Export Test</button>
+  <button id="copy">Copy Preview</button>
   <button id="clearLog">Clear Log</button>
 </div>
 
@@ -40,14 +42,9 @@ button,select{margin:0.3em}
 
 <script>
 let cur=0;
-const sections=[
-  {level:0,total:0},
-  {level:0,total:0},
-  {level:0,total:0}
-];
-const stack=document.getElementById('stack'),log=document.getElementById('log'),
- sel=document.getElementById('section'),secSum=document.getElementById('sectionSum'),
- overall=document.getElementById('overallSum'),preview=document.getElementById('csvPreview');
+const sections=[{level:0,total:0},{level:0,total:0},{level:0,total:0}];
+const $=id=>document.getElementById(id);
+const stack=$('stack'),log=$('log'),sel=$('section'),secSum=$('sectionSum'),overall=$('overallSum'),preview=$('csvPreview');
 
 function draw(){
   const s=sections[cur];
@@ -62,7 +59,12 @@ function draw(){
   overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.total,0);
   updateCSVPreview();
 }
-function logMsg(m){const p=document.createElement('p');p.textContent=m;log.appendChild(p);log.scrollTop=log.scrollHeight;}
+function logMsg(m){
+  const p=document.createElement('p');
+  p.textContent=m;
+  log.appendChild(p);
+  log.scrollTop=log.scrollHeight;
+}
 function add(){const s=sections[cur];s.level++;s.total++;logMsg('Added shim '+s.level+' to section '+cur);draw();}
 function rem(){const s=sections[cur];if(s.level){logMsg('Removed shim '+s.level+' from section '+cur);s.level--;draw();}}
 function reset(){if(!confirm('Reset section '+cur+'?'))return;const s=sections[cur];if(s.level)logMsg('Reset section '+cur+', removed '+s.level+' shims');s.level=0;s.total=0;draw();}
@@ -73,7 +75,9 @@ function exportCSV(){
   const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n')+'\n';
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='shim_summary.csv';a.click();URL.revokeObjectURL(a.href);
+  a.download='shim_summary.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 function updateCSVPreview(){
   preview.textContent='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n');
@@ -83,24 +87,27 @@ function exportTest(){
   const rows=csv.trim().split('\n');
   const header=rows[0].split(',');
   const expected=['section','level','total'];
-  const ok=header.length===3 && header.every((v,i)=>v===expected[i]);
-  if(!ok){logMsg('Export test failed: header mismatch');return;}
+  if(header.length!==3||!header.every((v,i)=>v===expected[i])){logMsg('Export test failed: header');return;}
   for(let i=1;i<rows.length;i++){
     const cols=rows[i].split(',');
-    if(cols.length!==3){logMsg('Export test failed: row '+i+' column count');return;}
-    if(+cols[0]!==i-1){logMsg('Export test failed: section index '+i);return;}
+    if(cols.length!==3){logMsg('Export test failed: row '+i);return;}
+    if(+cols[0]!==i-1){logMsg('Export test failed: index '+i);return;}
   }
-  logMsg('Export test passed. Column order correct.');
+  logMsg('Export test passed.');
+}
+function copyPreview(){
+  navigator.clipboard.writeText(preview.textContent).then(()=>logMsg('Preview copied'),()=>logMsg('Copy failed'));
 }
 sel.onchange=()=>{cur=+sel.value;draw();};
-document.getElementById('add').onclick=add;
-document.getElementById('remove').onclick=rem;
-document.getElementById('reset').onclick=reset;
-document.getElementById('resetAll').onclick=resetAll;
-document.getElementById('test').onclick=test;
-document.getElementById('clearLog').onclick=clearLog;
-document.getElementById('export').onclick=exportCSV;
-document.getElementById('exportTest').onclick=exportTest;
+$('add').onclick=add;
+$('remove').onclick=rem;
+$('reset').onclick=reset;
+$('resetAll').onclick=resetAll;
+$('test').onclick=test;
+$('clearLog').onclick=clearLog;
+$('export').onclick=exportCSV;
+$('exportTest').onclick=exportTest;
+$('copy').onclick=copyPreview;
 draw();
 </script>
 </body>
