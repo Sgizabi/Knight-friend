@@ -42,5 +42,10 @@
         "count stones, spot a new moss patch"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-25T13:30:25+00:00",
+  "live_thought": {
+    "text": "The iron glows, the stone jokes back.",
+    "time": "2026-11-25T13:30:25+00:00"
+  }
 }

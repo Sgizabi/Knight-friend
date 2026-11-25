@@ -78,11 +78,16 @@
           "count stones, spot a new moss patch"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-25T13:30:25+00:00",
+    "live_thought": {
+      "text": "The iron glows, the stone jokes back.",
+      "time": "2026-11-25T13:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T13:01:41+00:00",
+    "since": "2026-11-25T13:30:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 92.0,
+    "warmth": 67.7,
+    "inspiration": 42.9,
+    "spirit": 77.5
+  },
+  "needs_prev": {
     "rest": 94.0,
     "warmth": 68.1,
     "inspiration": 42.9,
     "spirit": 78.2
   },
-  "needs_prev": {
-    "rest": 100.0,
-    "warmth": 65.9,
-    "inspiration": 52.7,
-    "spirit": 73.4
-  },
-  "needs_at": "2026-11-25T13:01:42+00:00",
+  "needs_at": "2026-11-25T13:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2106,7 +2111,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T13:01:41+00:00",
+    "updated": "2026-11-25T13:30:25+00:00",
     "seen_until": "2026-11-25T12:55:29+00:00"
   },
   "gifts": [],
@@ -2329,5 +2334,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T13:01:42+00:00"
+  "exported": "2026-11-25T13:30:26+00:00"
 }
