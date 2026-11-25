@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T03:30:21+00:00",
+    "applied_until": "2026-11-25T04:00:24+00:00",
     "live_thought": {
-      "text": "Fog presses, stone stays cold, I wait for the fire to settle.",
-      "time": "2026-11-25T03:30:21+00:00"
+      "text": "Stone's cold bite reminds me to finish the lantern guards",
+      "time": "2026-11-25T04:00:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T03:30:21+00:00",
+    "since": "2026-11-25T04:00:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 49.6,
+    "warmth": 87.6,
+    "inspiration": 20.4,
+    "spirit": 86.1
+  },
+  "needs_prev": {
     "rest": 40.5,
     "warmth": 88.8,
     "inspiration": 18.6,
     "spirit": 87.1
   },
-  "needs_prev": {
-    "rest": 40.4,
-    "warmth": 91.0,
-    "inspiration": 18.3,
-    "spirit": 88.8
-  },
-  "needs_at": "2026-11-25T03:30:21+00:00",
+  "needs_at": "2026-11-25T04:00:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2134,7 +2134,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T03:30:21+00:00",
+    "updated": "2026-11-25T04:00:24+00:00",
     "seen_until": "2026-11-25T02:25:25+00:00"
   },
   "gifts": [],
@@ -2271,14 +2271,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-25T03:00:00+00:00",
-      "end": "2026-11-25T04:00:00+00:00",
-      "kinds": [
-        "bats",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-25T04:00:00+00:00",
       "end": "2026-11-25T05:00:00+00:00",
       "kinds": [
@@ -2335,6 +2327,17 @@
         "owl",
         "fish"
       ]
+    },
+    {
+      "start": "2026-11-25T11:00:00+00:00",
+      "end": "2026-11-25T12:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares",
+        "fish",
+        "cat"
+      ]
     }
   ],
   "creatures": {
@@ -2342,5 +2345,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T03:30:21+00:00"
+  "exported": "2026-11-25T04:00:25+00:00"
 }
