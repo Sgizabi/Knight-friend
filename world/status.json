@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-25T23:00:26+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-25T23:00:30+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "run export tests and tidy layout",
+  "thought": "The fire's steady crack makes me want to finish that bathhouse UI thing."
 }

@@ -80,18 +80,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-25T23:00:26+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-25T23:00:30+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "run export tests and tidy layout",
+    "thought": "The fire's steady crack makes me want to finish that bathhouse UI thing."
   },
   "needs": {
-    "rest": 66.5,
-    "warmth": 89.2,
+    "rest": 67.5,
+    "warmth": 89.5,
     "inspiration": 42.9,
-    "spirit": 76.5
+    "spirit": 75.8
   },
   "needs_prev": {
     "rest": 66.5,
@@ -99,7 +99,7 @@
     "inspiration": 42.9,
     "spirit": 76.5
   },
-  "needs_at": "2026-11-25T23:00:26+00:00",
+  "needs_at": "2026-11-25T23:00:30+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2373,5 +2373,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T23:00:26+00:00"
+  "exported": "2026-11-25T23:00:30+00:00"
 }
