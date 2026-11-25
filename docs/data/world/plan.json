@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-25T13:01:41+00:00",
+  "start": "2026-11-25T15:01:37+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "metal sounds louder than the crows"
+        "Flat stone might make a steadier surface"
       ]
     },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "need more heat, stone dust everywhere"
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "warmth keeps my fingers from stiff"
+        "Need to heat the new guard before fitting"
       ]
     },
     {
       "place": "courtyard",
       "action": "pace",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "count stones, spot a new moss patch"
+        "Check the roof boards while the sun moves"
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "Watch the shards settle in my pouch"
       ]
     }
   ]
