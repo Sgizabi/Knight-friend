@@ -68,11 +68,16 @@
           "Warmth is decent, fog makes the night feel close."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-25T00:00:37+00:00",
+    "live_thought": {
+      "text": "The flames dance, keeping the fog at bay.",
+      "time": "2026-11-25T00:00:37+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-24T23:01:35+00:00",
+    "since": "2026-11-25T00:00:38+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -80,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 58.9,
+    "warmth": 87.2,
+    "inspiration": 52.9,
+    "spirit": 76.5
+  },
+  "needs_prev": {
     "rest": 60.7,
     "warmth": 84.3,
     "inspiration": 52.9,
     "spirit": 77.9
   },
-  "needs_prev": {
-    "rest": 62.6,
-    "warmth": 83.8,
-    "inspiration": 40.9,
-    "spirit": 78.6
-  },
-  "needs_at": "2026-11-24T23:01:36+00:00",
+  "needs_at": "2026-11-25T00:00:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2013,7 +2018,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-24T23:01:35+00:00",
+    "updated": "2026-11-25T00:00:37+00:00",
     "seen_until": "2026-11-24T22:55:30+00:00"
   },
   "gifts": [],
@@ -2150,18 +2155,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-24T23:00:00+00:00",
-      "end": "2026-11-25T00:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "bats",
-        "fish",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-25T00:00:00+00:00",
       "end": "2026-11-25T01:00:00+00:00",
       "kinds": [
@@ -2223,6 +2216,14 @@
         "owl",
         "fox"
       ]
+    },
+    {
+      "start": "2026-11-25T07:00:00+00:00",
+      "end": "2026-11-25T08:00:00+00:00",
+      "kinds": [
+        "owl",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -2230,5 +2231,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-24T23:01:36+00:00"
+  "exported": "2026-11-25T00:00:38+00:00"
 }
