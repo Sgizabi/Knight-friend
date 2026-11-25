@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-18T20:36:52+00:00",
-    "activity": "repair",
-    "mood": "content",
-    "emote": "spark",
-    "text": "I pried another slab loose and wedged it against the cleared stones. The gap narrowed enough to see a sliver of courtyard light. A second shard of glass slipped from my pocket and cracked on the floor; I set it aside for later use.",
-    "creations": []
-  },
-  {
     "time": "2026-11-18T21:24:22+00:00",
     "activity": "repair",
     "mood": "proud",
@@ -503,6 +495,14 @@
     "mood": "content",
     "emote": "spark",
     "text": "I tightened the new lantern guard and the edge snagged my glove again. I set it aside and checked the courtyard stones; found a loose slab that shifted when I stepped.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-25T21:01:37+00:00",
+    "activity": "craft",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I slipped the fresh lantern guard onto the handle and gave it a quick shake. The metal stayed clear of my glove this time. I set the lantern on the bench and watched the flame stay steady. The extra piece I set aside earlier fits nicely as a spare.",
     "creations": []
   }
 ]

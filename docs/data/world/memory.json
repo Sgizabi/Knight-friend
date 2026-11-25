@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.012,
-    "craft": 23.012
+    "repair": 23.092,
+    "craft": 23.092
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 6,
+  "entries_since_condense": 7,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,15 +38,12 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 15,
-      "strength": 8.655,
+      "strength": 8.309,
       "last": "2026-11-25T19:00:32+00:00"
     }
   ],
   "last_long": "2026-11-25T02:30:23+00:00",
   "recent_thoughts": [
-    "Stone's cold bite reminds me to finish the lantern guards",
-    "The fire's glow feels like a tired joke I can't finish yet.",
-    "The fire flickers, a lazy grin on cold stone.",
     "The fire flickers, stone stays cold, I wait.",
     "The iron glows, the stone jokes back.",
     "Stone's cold bite reminds me the fire's still half‑lit.",
@@ -55,10 +52,13 @@
     "Stone's cold bite keeps the fire from sleeping.",
     "The iron sings, the stone just listens.",
     "Logs pile up, stone stays mute.",
-    "The fire crackles, stone stays mute, I watch the sparks."
+    "The fire crackles, stone stays mute, I watch the sparks.",
+    "Stone feels like a dull friend under my hammer.",
+    "Loose slab shifts underfoot, stone whispers to stay.",
+    "The fire's glow keeps the cold at bay"
   ],
-  "last_glance": "2026-11-25T18:30:27+00:00",
-  "visits_seen_until": "2026-11-25T18:55:29+00:00",
+  "last_glance": "2026-11-25T20:30:24+00:00",
+  "visits_seen_until": "2026-11-25T20:55:27+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

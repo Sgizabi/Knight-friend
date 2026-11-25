@@ -30,75 +30,63 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 62,
-    "last_wake": "2026-11-25T19:01:34+00:00",
+    "wakeups": 63,
+    "last_wake": "2026-11-25T21:01:37+00:00",
     "nights_slept_through": 24
   },
   "plan": {
-    "start": "2026-11-25T19:01:34+00:00",
+    "start": "2026-11-25T21:01:37+00:00",
     "mood": "content",
     "steps": [
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "heat bellows and shape a spare piece",
-        "thoughts": [
-          "bellows squeak like old hinge"
-        ]
-      },
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
         "emote": "spark",
-        "note": "smooth the guard edge",
+        "note": "",
         "thoughts": [
-          "glove still catches, need finer filing"
+          "Gloves feel tighter than the metal",
+          "Another guard ready for the next lantern"
         ]
       },
       {
-        "place": "courtyard",
-        "action": "pace",
+        "place": "forge",
+        "action": "work",
         "minutes": 20,
         "emote": "spark",
-        "note": "secure the loose slab",
+        "note": "",
         "thoughts": [
-          "stone shifts, might need extra mortar"
+          "Heat climbs faster than my patience",
+          "Should I try a thicker bar next?"
         ]
       },
       {
-        "place": "fire",
+        "place": "bathhouse",
         "action": "sit",
         "minutes": 20,
         "emote": "spark",
-        "note": "warm hands, watch flames",
+        "note": "",
         "thoughts": [
-          "fire finally gives a break"
+          "Steam makes the stone feel softer",
+          "Rain will come soon, hope the roof holds"
         ]
       }
-    ],
-    "applied_until": "2026-11-25T20:30:24+00:00",
-    "live_thought": {
-      "text": "The fire's glow keeps the cold at bay",
-      "time": "2026-11-25T20:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-25T21:00:29+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-25T21:01:37+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue forging and fitting the next lantern guard",
-    "thought": "The fire is steady, the metal is cool, and I have a few extra shards rattling in my pocket. I could tighten another guard or start a new little project."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 72.8,
-    "warmth": 85.9,
-    "inspiration": 54.9,
-    "spirit": 73.3
+    "rest": 66.8,
+    "warmth": 87.4,
+    "inspiration": 42.9,
+    "spirit": 78.6
   },
   "needs_prev": {
     "rest": 72.0,
@@ -106,7 +94,7 @@
     "inspiration": 54.9,
     "spirit": 73.9
   },
-  "needs_at": "2026-11-25T21:00:29+00:00",
+  "needs_at": "2026-11-25T21:01:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -193,127 +181,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "Reinforced Lantern Handle",
-        "about": "A sturdy grip for the keep's lanterns.",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.025,
-              0.025,
-              0.12
-            ],
-            "pos": [
-              0.0,
-              0.06,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.015,
-              0.015,
-              0.04
-            ],
-            "pos": [
-              0.0,
-              0.12,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.08,
-              0.02,
-              0.02
-            ],
-            "pos": [
-              0.0,
-              0.14,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#444444"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.02,
-              0.02,
-              0.06
-            ],
-            "pos": [
-              0.04,
-              0.14,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.02,
-              0.02,
-              0.06
-            ],
-            "pos": [
-              -0.04,
-              0.14,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "torus",
-            "size": [
-              0.03,
-              0.008
-            ],
-            "pos": [
-              0.0,
-              0.145,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#666666"
-          }
-        ],
-        "made": "2026-11-23T15:00:35+00:00"
-      },
       {
         "name": "Lantern Oil Seal",
         "about": "A small metal seal for a lantern oil vial",
@@ -2000,6 +1867,185 @@
           }
         ],
         "made": "2026-11-25T17:00:37+00:00"
+      },
+      {
+        "name": "Lantern Guard",
+        "about": "A small metal cage that protects a lantern from wind and rain.",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.05
+            ],
+            "pos": [
+              0.0,
+              0.025,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.05
+            ],
+            "pos": [
+              0.07,
+              0.025,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.05
+            ],
+            "pos": [
+              -0.07,
+              0.025,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.07
+            ],
+            "pos": [
+              0.0,
+              0.035,
+              0.07
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.07
+            ],
+            "pos": [
+              0.0,
+              0.035,
+              -0.07
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.07
+            ],
+            "pos": [
+              0.07,
+              0.035,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              1.5708,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.015,
+              0.015,
+              0.07
+            ],
+            "pos": [
+              -0.07,
+              0.035,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              1.5708,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.1,
+              0.02,
+              0.1
+            ],
+            "pos": [
+              0.0,
+              0.01,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.025,
+              0.025,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.08,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          }
+        ],
+        "made": "2026-11-25T21:00:34+00:00"
       }
     ],
     "buildings": [
@@ -2095,8 +2141,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T20:30:24+00:00",
-    "seen_until": "2026-11-25T18:55:29+00:00"
+    "updated": "2026-11-25T21:01:37+00:00",
+    "seen_until": "2026-11-25T20:55:27+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2331,5 +2377,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T21:00:30+00:00"
+  "exported": "2026-11-25T21:01:38+00:00"
 }
