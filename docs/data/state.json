@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T20:00:29+00:00",
+    "applied_until": "2026-11-25T20:30:24+00:00",
     "live_thought": {
-      "text": "Loose slab shifts underfoot, stone whispers to stay.",
-      "time": "2026-11-25T20:00:29+00:00"
+      "text": "The fire's glow keeps the cold at bay",
+      "time": "2026-11-25T20:30:24+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T20:00:29+00:00",
+    "since": "2026-11-25T20:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 72.0,
+    "warmth": 85.4,
+    "inspiration": 54.9,
+    "spirit": 73.9
+  },
+  "needs_prev": {
     "rest": 71.1,
     "warmth": 81.7,
     "inspiration": 54.9,
     "spirit": 74.5
   },
-  "needs_prev": {
-    "rest": 72.7,
-    "warmth": 84.1,
-    "inspiration": 54.9,
-    "spirit": 75.1
-  },
-  "needs_at": "2026-11-25T20:00:29+00:00",
+  "needs_at": "2026-11-25T20:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2095,7 +2095,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T20:00:29+00:00",
+    "updated": "2026-11-25T20:30:24+00:00",
     "seen_until": "2026-11-25T18:55:29+00:00"
   },
   "gifts": [],
@@ -2334,5 +2334,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T20:00:29+00:00"
+  "exported": "2026-11-25T20:30:24+00:00"
 }
