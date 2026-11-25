@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-25T19:00:27+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-25T19:00:30+00:00",
+  "place": "courtyard",
+  "action": "pace",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "",
+  "thought": "The stones feel steady today, and the fire is just lazy enough to let me think."
 }
