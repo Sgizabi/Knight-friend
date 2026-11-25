@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T04:00:24+00:00",
+    "applied_until": "2026-11-25T04:30:22+00:00",
     "live_thought": {
-      "text": "Stone's cold bite reminds me to finish the lantern guards",
-      "time": "2026-11-25T04:00:24+00:00"
+      "text": "The fire's glow feels like a tired joke I can't finish yet.",
+      "time": "2026-11-25T04:30:22+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T04:00:25+00:00",
+    "since": "2026-11-25T04:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 50.8,
+    "warmth": 88.0,
+    "inspiration": 20.4,
+    "spirit": 85.2
+  },
+  "needs_prev": {
     "rest": 49.6,
     "warmth": 87.6,
     "inspiration": 20.4,
     "spirit": 86.1
   },
-  "needs_prev": {
-    "rest": 40.5,
-    "warmth": 88.8,
-    "inspiration": 18.6,
-    "spirit": 87.1
-  },
-  "needs_at": "2026-11-25T04:00:25+00:00",
+  "needs_at": "2026-11-25T04:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2134,7 +2134,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T04:00:24+00:00",
+    "updated": "2026-11-25T04:30:22+00:00",
     "seen_until": "2026-11-25T02:25:25+00:00"
   },
   "gifts": [],
@@ -2345,5 +2345,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T04:00:25+00:00"
+  "exported": "2026-11-25T04:30:23+00:00"
 }
