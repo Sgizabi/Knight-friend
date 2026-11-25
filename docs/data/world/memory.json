@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 22.459,
-    "craft": 22.459
+    "repair": 22.561,
+    "craft": 22.561
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 0,
+  "entries_since_condense": 1,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,13 +38,12 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 12,
-      "strength": 7.659,
+      "strength": 7.353,
       "last": "2026-11-24T23:00:33+00:00"
     }
   ],
   "last_long": "2026-11-24T02:30:21+00:00",
   "recent_thoughts": [
-    "Stone warms my back, fire keeps the cold at bay.",
     "Loose nail, stone joke ready, keep eyes on the board.",
     "Log's dry, stone's cold, but crows keep me company",
     "The fire crackles, stone jokes on repeat.",
@@ -55,10 +54,11 @@
     "The fire's crackle feels louder than my own thoughts.",
     "The stone under my hand feels stubborn, like a stone joke waiting.",
     "Stone's warmth beats the fog outside",
-    "The fire's crackle beats the fog outside."
+    "The fire's crackle beats the fog outside.",
+    "The flames dance, keeping the fog at bay."
   ],
-  "last_glance": "2026-11-24T22:30:23+00:00",
-  "visits_seen_until": "2026-11-24T22:55:30+00:00",
+  "last_glance": "2026-11-25T00:00:37+00:00",
+  "visits_seen_until": "2026-11-25T00:55:34+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

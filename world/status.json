@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-25T01:00:36+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-25T01:01:41+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "tighten the handle and polish the metal surface",
-  "thought": "I’ve been at the forge too long. The lantern handle is still a bit loose, and I can feel the fire itching for more work."
+  "note": "",
+  "thought": ""
 }
