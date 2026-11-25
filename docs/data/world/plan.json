@@ -1,45 +1,49 @@
 {
-  "start": "2026-11-25T15:01:37+00:00",
+  "start": "2026-11-25T17:01:40+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "spark",
+      "note": "Finish shaping the new guard and smooth the edge.",
       "thoughts": [
-        "Flat stone might make a steadier surface"
+        "Need a smoother finish.",
+        "Glove is a good reminder."
       ]
     },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "spark",
+      "note": "Heat extra metal for a spare guard.",
       "thoughts": [
-        "Need to heat the new guard before fitting"
+        "Always handy to have a spare.",
+        "Fire is obedient today."
       ]
     },
     {
-      "place": "courtyard",
-      "action": "pace",
+      "place": "woodshed",
+      "action": "stand",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "spark",
+      "note": "Stack dry logs for the evening fire.",
       "thoughts": [
-        "Check the roof boards while the sun moves"
+        "Logs are stacking nicely.",
+        "Hope the wind stays out."
       ]
     },
     {
-      "place": "fire",
+      "place": "bathhouse",
       "action": "sit",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "spark",
+      "note": "Warm soak to restore warmth.",
       "thoughts": [
-        "Watch the shards settle in my pouch"
+        "Hot water feels good.",
+        "Maybe I’ll think of a new design."
       ]
     }
   ]

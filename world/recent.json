@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-18T02:55:46+00:00",
-    "activity": "write",
-    "mood": "curious",
-    "emote": "spark",
-    "text": "I finished the inventory list and set the candle stub aside. The ragged oak scrap I found in the corner looks good for a frame, so I measured it with my thumb. The fire crackled louder when I talked to it about my plans – it seemed to nod. I noticed a loose stone near the hearth that might be a clue to a missing support. My mind drifted to the roof gap; the wind whistles through it, reminding me the stone can’t be trusted forever. I feel mostly content, a little curious about the window glass I might restore. I’ll spend the next two hours tightening what I can and gathering more bits.",
-    "creations": []
-  },
-  {
     "time": "2026-11-18T12:59:57+00:00",
     "activity": "repair",
     "mood": "content",
@@ -502,6 +494,14 @@
     "mood": "content",
     "emote": "sigh",
     "text": "I kept counting stones after the last run. Hit fifty slabs this time. One was unusually flat, so I set it aside for the bench. The shards in my pocket rattled louder than usual, but the fire stayed exactly the same. Not much else changed.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-25T17:01:40+00:00",
+    "activity": "craft",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I forged another lantern guard today. The metal was thinner than the previous one, so I had to hammer it twice. It fits the handle but the edge still catches my glove. I set it on the workbench and noted the extra piece for later.",
     "creations": []
   }
 ]
