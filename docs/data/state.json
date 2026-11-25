@@ -72,15 +72,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-25T22:00:27+00:00",
+    "applied_until": "2026-11-25T22:30:23+00:00",
     "live_thought": {
-      "text": "Steam drifts, stone walls stay cold",
-      "time": "2026-11-25T22:00:27+00:00"
+      "text": "The fire crackles, stone stays mute.",
+      "time": "2026-11-25T22:30:23+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-25T22:00:28+00:00",
+    "since": "2026-11-25T22:30:23+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -88,18 +88,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 66.5,
+    "warmth": 89.2,
+    "inspiration": 42.9,
+    "spirit": 76.5
+  },
+  "needs_prev": {
     "rest": 65.4,
     "warmth": 88.8,
     "inspiration": 42.9,
     "spirit": 77.2
   },
-  "needs_prev": {
-    "rest": 64.8,
-    "warmth": 86.3,
-    "inspiration": 42.9,
-    "spirit": 77.9
-  },
-  "needs_at": "2026-11-25T22:00:28+00:00",
+  "needs_at": "2026-11-25T22:30:23+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2146,7 +2146,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T22:00:27+00:00",
+    "updated": "2026-11-25T22:30:23+00:00",
     "seen_until": "2026-11-25T20:55:27+00:00"
   },
   "gifts": [],
@@ -2377,5 +2377,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T22:00:28+00:00"
+  "exported": "2026-11-25T22:30:23+00:00"
 }
