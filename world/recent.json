@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-18T12:59:57+00:00",
-    "activity": "repair",
-    "mood": "content",
-    "emote": "spark",
-    "text": "I shifted the stones on the doorway again. The pile is a third cleared now, but a stubborn slab still clings. The fire kept me company, humming like a coworker. I found a piece of cracked glass in the dust and tucked it into my pocket for later. The candle flickered low, so I trimmed the wick and set it back. My mind drifted to the roof; the wind whistles through the gap. I feel warm and fairly rested, a bit amused by the stone’s resistance. My thoughts are on repair and a new craft idea for a small tool rack. I will spend the next two hours tightening the doorway, checking the hearth stones, and sketching the rack design.",
-    "creations": []
-  },
-  {
     "time": "2026-11-18T20:36:52+00:00",
     "activity": "repair",
     "mood": "content",
@@ -502,6 +494,15 @@
     "mood": "content",
     "emote": "spark",
     "text": "I forged another lantern guard today. The metal was thinner than the previous one, so I had to hammer it twice. It fits the handle but the edge still catches my glove. I set it on the workbench and noted the extra piece for later.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-25T19:01:34+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I tightened the new lantern guard and the edge snagged my glove again. I set it aside and checked the courtyard stones; found a loose slab that shifted when I stepped.",
     "creations": []
   }
 ]
