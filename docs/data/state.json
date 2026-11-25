@@ -30,42 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 58,
-    "last_wake": "2026-11-25T11:00:29+00:00",
+    "wakeups": 59,
+    "last_wake": "2026-11-25T13:01:41+00:00",
     "nights_slept_through": 24
   },
   "plan": {
-    "start": "2026-11-25T11:00:29+00:00",
-    "mood": "restless",
-    "applied_until": "2026-11-25T12:30:24+00:00",
+    "start": "2026-11-25T13:01:41+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
-        "emote": "zzz",
-        "note": "asleep for the night"
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "metal sounds louder than the crows"
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "need more heat, stone dust everywhere"
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "warmth keeps my fingers from stiff"
+        ]
+      },
+      {
+        "place": "courtyard",
+        "action": "pace",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "count stones, spot a new moss patch"
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "The fire flickers, stone stays cold, I wait.",
-      "time": "2026-11-25T12:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-25T13:00:33+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-25T13:01:41+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "Add a second guard to the lantern set and file the edges smooth",
-    "thought": "The fire is steady, the shards clink in my pocket, and the forge is humming. I could finish another guard or just count stones for a while."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
-    "warmth": 64.4,
-    "inspiration": 54.9,
-    "spirit": 72.8
+    "rest": 94.0,
+    "warmth": 68.1,
+    "inspiration": 42.9,
+    "spirit": 78.2
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +101,7 @@
     "inspiration": 52.7,
     "spirit": 73.4
   },
-  "needs_at": "2026-11-25T13:00:33+00:00",
+  "needs_at": "2026-11-25T13:01:42+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -160,127 +188,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "Lantern Oil Seal",
-        "about": "A small, flat seal for holding oil bottles on the workbench",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.12,
-              0.12,
-              0.02
-            ],
-            "pos": [
-              0.0,
-              0.01,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.24,
-              0.015,
-              0.015
-            ],
-            "pos": [
-              0.0,
-              0.025,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.005,
-              0.02,
-              0.02
-            ],
-            "pos": [
-              -0.09,
-              0.035,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#333333"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.005,
-              0.02,
-              0.02
-            ],
-            "pos": [
-              0.09,
-              0.035,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#333333"
-          },
-          {
-            "shape": "torus",
-            "size": [
-              0.04,
-              0.005
-            ],
-            "pos": [
-              0.0,
-              0.045,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#aa8800"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.04,
-              0.015,
-              0.015
-            ],
-            "pos": [
-              0.0,
-              0.06,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#aa8800"
-          }
-        ],
-        "made": "2026-11-19T09:00:30+00:00"
-      },
       {
         "name": "Portable Lantern Upgrade",
         "about": "A compact lantern with a rechargeable battery and a foldable handle.",
@@ -2002,6 +1909,108 @@
           }
         ],
         "made": "2026-11-25T02:36:36+00:00"
+      },
+      {
+        "name": "Lantern Handle Guard",
+        "about": "A simple metal guard for a lantern handle, fits on a table",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.15,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.075,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.12,
+              0.015,
+              0.015
+            ],
+            "pos": [
+              0.0,
+              0.15,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.01,
+              0.04,
+              0.01
+            ],
+            "pos": [
+              0.06,
+              0.167,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.01,
+              0.04,
+              0.01
+            ],
+            "pos": [
+              -0.06,
+              0.167,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.03,
+              0.005
+            ],
+            "pos": [
+              0.0,
+              0.18,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          }
+        ],
+        "made": "2026-11-25T13:00:36+00:00"
       }
     ],
     "buildings": [
@@ -2097,8 +2106,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-25T12:30:24+00:00",
-    "seen_until": "2026-11-25T02:25:25+00:00"
+    "updated": "2026-11-25T13:01:41+00:00",
+    "seen_until": "2026-11-25T12:55:29+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2320,5 +2329,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-25T13:00:33+00:00"
+  "exported": "2026-11-25T13:01:42+00:00"
 }

@@ -1,49 +1,45 @@
 {
-  "start": "2026-11-25T02:40:41+00:00",
-  "mood": "restless",
+  "start": "2026-11-25T13:01:41+00:00",
+  "mood": "content",
   "steps": [
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "dots",
-      "note": "finish lantern guard batch",
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "metal is stubborn today",
-        "glove feels unnecessary"
+        "metal sounds louder than the crows"
       ]
     },
     {
-      "place": "courtyard",
-      "action": "pace",
-      "minutes": 15,
-      "emote": "sigh",
-      "note": "inspect cracked slab",
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "crack looks deeper",
-        "maybe need stronger mortar"
+        "need more heat, stone dust everywhere"
       ]
     },
     {
       "place": "fire",
       "action": "sit",
-      "minutes": 10,
-      "emote": "heart",
-      "note": "warm up",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "fire never rushes",
-        "still warm enough"
+        "warmth keeps my fingers from stiff"
       ]
     },
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 30,
-      "emote": "zzz",
-      "note": "rest before night ends",
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
       "thoughts": [
-        "sleep will reset rest",
-        "fog outside keeps me alert"
+        "count stones, spot a new moss patch"
       ]
     }
   ]

@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261123",
-      "items": [
-        {
-          "id": "t20261123-0",
-          "text": "Did the lantern upgrade finally stop wobbling?"
-        },
-        {
-          "id": "t20261123-1",
-          "text": "What’s the story behind those half‑height stones?"
-        },
-        {
-          "id": "t20261123-2",
-          "text": "Why do you keep glass shards jingling in your pocket?"
-        },
-        {
-          "id": "t20261123-3",
-          "text": "Is the fire in the hearth feeling sluggish lately?"
-        },
-        {
-          "id": "t20261123-4",
-          "text": "Do you enjoy the new bathhouse more than the forge?"
-        },
-        {
-          "id": "t20261123-5",
-          "text": "How’s the window view now that it’s all mended?"
-        }
-      ]
-    },
-    {
       "date": "20261124",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261124-5",
           "text": "Do you enjoy the bathhouse after a long day?"
+        }
+      ]
+    },
+    {
+      "date": "20261125",
+      "items": [
+        {
+          "id": "t20261125-0",
+          "text": "Did the glass shard make a nice song on the bench?"
+        },
+        {
+          "id": "t20261125-1",
+          "text": "What’s the story behind that mossy slab?"
+        },
+        {
+          "id": "t20261125-2",
+          "text": "Did the lantern guard nick hurt more than the cold?"
+        },
+        {
+          "id": "t20261125-3",
+          "text": "How’s the bathhouse after the final verification?"
+        },
+        {
+          "id": "t20261125-4",
+          "text": "Do you ever miss the wind through the broken window?"
+        },
+        {
+          "id": "t20261125-5",
+          "text": "What’s the favorite sound in the newly mended courtyard?"
         }
       ]
     }

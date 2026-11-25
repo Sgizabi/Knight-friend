@@ -1,18 +1,46 @@
 {
-  "start": "2026-11-25T11:00:29+00:00",
-  "mood": "restless",
-  "applied_until": "2026-11-25T12:30:24+00:00",
+  "start": "2026-11-25T13:01:41+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 120,
-      "emote": "zzz",
-      "note": "asleep for the night"
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "metal sounds louder than the crows"
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "need more heat, stone dust everywhere"
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "warmth keeps my fingers from stiff"
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "",
+      "thoughts": [
+        "count stones, spot a new moss patch"
+      ]
     }
-  ],
-  "live_thought": {
-    "text": "The fire flickers, stone stays cold, I wait.",
-    "time": "2026-11-25T12:30:24+00:00"
-  }
+  ]
 }
