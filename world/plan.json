@@ -1,55 +1,14 @@
 {
-  "start": "2026-11-25T02:40:41+00:00",
+  "start": "2026-11-25T05:00:25+00:00",
   "mood": "restless",
+  "applied_until": "2026-11-25T05:00:25+00:00",
   "steps": [
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "finish lantern guard batch",
-      "thoughts": [
-        "metal is stubborn today",
-        "glove feels unnecessary"
-      ]
-    },
-    {
-      "place": "courtyard",
-      "action": "pace",
-      "minutes": 15,
-      "emote": "sigh",
-      "note": "inspect cracked slab",
-      "thoughts": [
-        "crack looks deeper",
-        "maybe need stronger mortar"
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 10,
-      "emote": "heart",
-      "note": "warm up",
-      "thoughts": [
-        "fire never rushes",
-        "still warm enough"
-      ]
-    },
     {
       "place": "bedroll",
       "action": "sleep",
-      "minutes": 30,
+      "minutes": 120,
       "emote": "zzz",
-      "note": "rest before night ends",
-      "thoughts": [
-        "sleep will reset rest",
-        "fog outside keeps me alert"
-      ]
+      "note": "asleep for the night"
     }
-  ],
-  "applied_until": "2026-11-25T04:30:22+00:00",
-  "live_thought": {
-    "text": "The fire's glow feels like a tired joke I can't finish yet.",
-    "time": "2026-11-25T04:30:22+00:00"
-  }
+  ]
 }
