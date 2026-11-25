@@ -1,45 +1,49 @@
 {
-  "start": "2026-11-25T01:01:41+00:00",
+  "start": "2026-11-25T02:40:41+00:00",
   "mood": "restless",
   "steps": [
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "sigh",
-      "note": "",
-      "thoughts": [
-        "The fire keeps its steady heat, no complaints."
-      ]
-    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "emote": "dots",
+      "note": "finish lantern guard batch",
       "thoughts": [
-        "Need to sand that edge before it bites again."
+        "metal is stubborn today",
+        "glove feels unnecessary"
       ]
     },
     {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 15,
       "emote": "sigh",
-      "note": "",
+      "note": "inspect cracked slab",
       "thoughts": [
-        "List the shards I still have, maybe fewer tomorrow."
+        "crack looks deeper",
+        "maybe need stronger mortar"
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 10,
+      "emote": "heart",
+      "note": "warm up",
+      "thoughts": [
+        "fire never rushes",
+        "still warm enough"
       ]
     },
     {
       "place": "bedroll",
       "action": "sleep",
-      "minutes": 20,
-      "emote": "sigh",
-      "note": "",
+      "minutes": 30,
+      "emote": "zzz",
+      "note": "rest before night ends",
       "thoughts": [
-        "Fog outside, hope the roof holds."
+        "sleep will reset rest",
+        "fog outside keeps me alert"
       ]
     }
   ]

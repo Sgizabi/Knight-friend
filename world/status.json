@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-25T02:39:37+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-25T02:40:41+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "count more courtyard stones and note any changes",
-  "thought": "The fire's steady crackle makes me think the stones could use another look. My fingers itch for the cool feel of stone under thumb."
+  "note": "",
+  "thought": ""
 }
