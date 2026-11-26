@@ -31,13 +31,13 @@
     },
     "born": "2026-11-18T02:54:43+00:00",
     "wakeups": 66,
-    "last_wake": "2026-11-26T02:43:50+00:00",
-    "nights_slept_through": 24
+    "last_wake": "2026-11-26T05:00:25+00:00",
+    "nights_slept_through": 25
   },
   "plan": {
-    "start": "2026-11-26T05:00:25+00:00",
+    "start": "2026-11-26T07:00:27+00:00",
     "mood": "content",
-    "applied_until": "2026-11-26T05:00:25+00:00",
+    "applied_until": "2026-11-26T07:00:27+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -50,7 +50,7 @@
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T05:00:25+00:00",
+    "since": "2026-11-26T07:00:27+00:00",
     "place": "bedroll",
     "action": "sleep",
     "emote": "zzz",
@@ -58,18 +58,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 73.0,
+    "warmth": 83.2,
+    "inspiration": 8.6,
+    "spirit": 81.6
+  },
+  "needs_prev": {
     "rest": 31.0,
     "warmth": 89.2,
     "inspiration": 0.0,
     "spirit": 85.1
   },
-  "needs_prev": {
-    "rest": 29.8,
-    "warmth": 88.8,
-    "inspiration": 0.0,
-    "spirit": 86.0
-  },
-  "needs_at": "2026-11-26T05:00:25+00:00",
+  "needs_at": "2026-11-26T07:00:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2116,7 +2116,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T05:00:25+00:00",
+    "updated": "2026-11-26T07:00:27+00:00",
     "seen_until": "2026-11-26T02:25:22+00:00"
   },
   "gifts": [],
@@ -2131,12 +2131,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-24T22:56:39+00:00",
-        "end": "2026-11-25T04:01:47+00:00",
-        "kind": "fog",
-        "intensity": 0.87
-      },
       {
         "start": "2026-11-25T04:01:47+00:00",
         "end": "2026-11-25T09:19:23+00:00",
@@ -2202,6 +2196,12 @@
         "end": "2026-11-27T11:46:39+00:00",
         "kind": "glass_hail",
         "intensity": 0.93
+      },
+      {
+        "start": "2026-11-27T11:46:39+00:00",
+        "end": "2026-11-27T15:17:25+00:00",
+        "kind": "wind",
+        "intensity": 0.59
       }
     ],
     "effects": {
@@ -2265,21 +2265,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-26T05:00:00+00:00",
-      "end": "2026-11-26T06:00:00+00:00",
-      "kinds": [
-        "owl"
-      ]
-    },
-    {
-      "start": "2026-11-26T06:00:00+00:00",
-      "end": "2026-11-26T07:00:00+00:00",
-      "kinds": [
-        "owl",
-        "fox"
-      ]
-    },
-    {
       "start": "2026-11-26T07:00:00+00:00",
       "end": "2026-11-26T08:00:00+00:00",
       "kinds": [
@@ -2329,6 +2314,26 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-26T13:00:00+00:00",
+      "end": "2026-11-26T14:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares",
+        "deer",
+        "fish"
+      ]
+    },
+    {
+      "start": "2026-11-26T14:00:00+00:00",
+      "end": "2026-11-26T15:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares"
+      ]
     }
   ],
   "creatures": {
@@ -2336,5 +2341,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T05:00:25+00:00"
+  "exported": "2026-11-26T07:00:27+00:00"
 }
