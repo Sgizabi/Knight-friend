@@ -42,5 +42,10 @@
         "Warmth seeps into my gloves."
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-26T21:30:24+00:00",
+  "live_thought": {
+    "text": "The iron glows, steady as the old walls.",
+    "time": "2026-11-26T21:30:24+00:00"
+  }
 }
