@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-26T13:30:24+00:00",
+    "applied_until": "2026-11-26T14:00:31+00:00",
     "live_thought": {
-      "text": "Stone under the blade, cold as morning light.",
-      "time": "2026-11-26T13:30:24+00:00"
+      "text": "Heat of forge sings, metal glows",
+      "time": "2026-11-26T14:00:31+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T13:30:24+00:00",
+    "since": "2026-11-26T14:00:31+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 92.6,
+    "warmth": 61.1,
+    "inspiration": 46.2,
+    "spirit": 72.4
+  },
+  "needs_prev": {
     "rest": 94.7,
     "warmth": 62.8,
     "inspiration": 46.2,
     "spirit": 73.0
   },
-  "needs_prev": {
-    "rest": 97.0,
-    "warmth": 65.4,
-    "inspiration": 46.2,
-    "spirit": 73.5
-  },
-  "needs_at": "2026-11-26T13:30:24+00:00",
+  "needs_at": "2026-11-26T14:00:31+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2153,7 +2153,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T13:30:24+00:00",
+    "updated": "2026-11-26T14:00:31+00:00",
     "seen_until": "2026-11-26T12:51:33+00:00"
   },
   "gifts": [],
@@ -2302,17 +2302,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-26T13:00:00+00:00",
-      "end": "2026-11-26T14:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "deer",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-26T14:00:00+00:00",
       "end": "2026-11-26T15:00:00+00:00",
       "kinds": [
@@ -2371,6 +2360,17 @@
         "hares",
         "fish"
       ]
+    },
+    {
+      "start": "2026-11-26T21:00:00+00:00",
+      "end": "2026-11-26T22:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares",
+        "deer",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -2378,5 +2378,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T13:30:24+00:00"
+  "exported": "2026-11-26T14:00:31+00:00"
 }
