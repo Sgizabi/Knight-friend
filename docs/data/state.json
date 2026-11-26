@@ -68,11 +68,16 @@
           "Log looks tidy now"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-26T03:10:12+00:00",
+    "live_thought": {
+      "text": "Rain drips, stone stays mute, I tap the chisel.",
+      "time": "2026-11-26T03:10:12+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T02:43:50+00:00",
+    "since": "2026-11-26T03:10:13+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -80,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 29.7,
+    "warmth": 90.9,
+    "inspiration": 0.0,
+    "spirit": 88.7
+  },
+  "needs_prev": {
     "rest": 29.1,
     "warmth": 89.2,
     "inspiration": 0.0,
     "spirit": 89.6
   },
-  "needs_prev": {
-    "rest": 51.3,
-    "warmth": 88.9,
-    "inspiration": 10.9,
-    "spirit": 80.6
-  },
-  "needs_at": "2026-11-26T02:43:50+00:00",
+  "needs_at": "2026-11-26T03:10:13+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2138,7 +2143,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T02:43:50+00:00",
+    "updated": "2026-11-26T03:10:12+00:00",
     "seen_until": "2026-11-26T02:25:22+00:00"
   },
   "gifts": [],
@@ -2218,6 +2223,12 @@
         "end": "2026-11-27T08:55:33+00:00",
         "kind": "cloudy",
         "intensity": 1.0
+      },
+      {
+        "start": "2026-11-27T08:55:33+00:00",
+        "end": "2026-11-27T11:46:39+00:00",
+        "kind": "glass_hail",
+        "intensity": 0.93
       }
     ],
     "effects": {
@@ -2281,15 +2292,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-26T02:00:00+00:00",
-      "end": "2026-11-26T03:00:00+00:00",
-      "kinds": [
-        "owl",
-        "fox",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-26T03:00:00+00:00",
       "end": "2026-11-26T04:00:00+00:00",
       "kinds": [
@@ -2339,6 +2341,14 @@
       "kinds": [
         "fox"
       ]
+    },
+    {
+      "start": "2026-11-26T10:00:00+00:00",
+      "end": "2026-11-26T11:00:00+00:00",
+      "kinds": [
+        "songbirds",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -2346,5 +2356,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T02:43:50+00:00"
+  "exported": "2026-11-26T03:10:13+00:00"
 }
