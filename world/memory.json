@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.623,
-    "craft": 23.623
+    "repair": 23.678,
+    "craft": 23.678
   },
   "projects": [
     {
@@ -20,14 +20,14 @@
       "title": "Bathhouse Builder – Shim Summary (Enhanced)",
       "started": "2026-11-22T01:01:30+00:00",
       "status": "in progress",
-      "versions": 12,
-      "about": "Aligned the copy button in dark mode, removed stray newlines from log messages, added a tiny tooltip, and tightened the ",
-      "updated": "2026-11-26T02:42:47+00:00",
-      "next": "Finalize tooltip behavior and push the updated stylesheet to the keep's site."
+      "versions": 13,
+      "about": "Added hover tooltips showing shim level and improved dark‑mode handling, plus minor code cleanup.",
+      "updated": "2026-11-26T23:01:40+00:00",
+      "next": "Next I need to test the tooltip on mobile and finish the dark‑mode stylesheet tweaks."
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 7,
+  "entries_since_condense": 0,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,7 +38,7 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 21,
-      "strength": 11.208,
+      "strength": 10.76,
       "last": "2026-11-26T21:00:31+00:00"
     }
   ],
@@ -58,7 +58,7 @@
     "Rain drums on stone, fire hums low."
   ],
   "last_glance": "2026-11-26T22:30:23+00:00",
-  "visits_seen_until": "2026-11-26T20:55:28+00:00",
+  "visits_seen_until": "2026-11-26T22:55:32+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-26T21:01:33+00:00",
-  "mood": "restless",
+  "start": "2026-11-26T23:02:43+00:00",
+  "mood": "content",
   "steps": [
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "The lantern guard needs a tighter fit."
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Heating metal makes the air feel thicker."
-      ]
-    },
-    {
-      "place": "glasshouse",
-      "action": "gaze",
-      "minutes": 20,
-      "emote": "heart",
-      "note": "",
-      "thoughts": [
-        "Seedlings look greener than yesterday."
-      ]
-    },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "zzz",
       "note": "",
       "thoughts": [
-        "Warmth seeps into my gloves."
+        "Rain beats the stones, but the fire is cooperative"
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "",
+      "thoughts": [
+        "Time to log the next row of courtyard stones"
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "",
+      "thoughts": [
+        "Inventory list needs a fresh line"
+      ]
+    },
+    {
+      "place": "bedroll",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "heart",
+      "note": "",
+      "thoughts": [
+        "Warmth is good, but I should watch the roof"
       ]
     }
   ]

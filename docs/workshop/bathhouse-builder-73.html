@@ -5,13 +5,14 @@
 <title>Bathhouse Builder – Shim Summary (Enhanced)</title>
 <style>
 :root{
-  --bg:#f0f0f0;--fg:#333;--panel:#fff;--border:#555;--block:#a2d5f2
+  --bg:#f0f0f0;--fg:#333;--panel:#fff;--border:#555;--block:#a2d5f2;
+  --tooltip-bg:#222;--tooltip-fg:#fff
 }
 @media (prefers-color-scheme:dark){
   :root{
-    --bg:#202020;--fg:#ddd;--panel:#2a2a2a;--border:#777;--block:#5a7ea5
+    --bg:#202020;--fg:#ddd;--panel:#2a2a2a;--border:#777;--block:#5a7ea5;
+    --tooltip-bg:#eee;--tooltip-fg:#000
   }
-  .control button.copy{margin-left:auto}
 }
 body{margin:0;padding:1em;font-family:sans-serif;background:var(--bg);color:var(--fg)}
 h1{margin-top:0}
@@ -21,7 +22,8 @@ h1{margin-top:0}
 }
 .block{
   position:absolute;bottom:0;left:0;width:100%;height:20px;
-  background:var(--block);border:1px solid var(--border);box-sizing:border-box
+  background:var(--block);border:1px solid var(--border);box-sizing:border-box;
+  cursor:pointer
 }
 .control{
   display:flex;flex-wrap:wrap;gap:.2em;align-items:center;margin:.3em 0
@@ -33,7 +35,10 @@ h1{margin-top:0}
 }
 pre{margin:0;white-space:pre-wrap}
 #darkToggle{margin-left:auto;cursor:pointer}
-.tooltip{position:absolute;background:#000;color:#fff;padding:2px 4px;border-radius:3px;font-size:10px;visibility:hidden}
+.tooltip{
+  position:absolute;padding:2px 4px;border-radius:3px;font-size:10px;
+  background:var(--tooltip-bg);color:var(--tooltip-fg);visibility:hidden;pointer-events:none
+}
 </style>
 </head>
 <body>
@@ -76,6 +81,13 @@ function draw(){
     const d=document.createElement('div');
     d.className='block';
     d.style.bottom=(i*20)+'px';
+    d.dataset.level=i+1;
+    const tip=document.createElement('div');
+    tip.className='tooltip';
+    tip.textContent='Level '+(i+1);
+    d.appendChild(tip);
+    d.onmouseenter=e=>{tip.style.visibility='visible';tip.style.left=e.offsetX+'px';tip.style.top=e.offsetY-20+'px'};
+    d.onmouseleave={()=>{tip.style.visibility='hidden'}};
     stack.appendChild(d);
   }
   secSum.textContent='Section '+cur+' total: '+s.t;
@@ -83,9 +95,7 @@ function draw(){
   updateCSV();
 }
 function logMsg(m){
-  const p=document.createElement('p');
-  p.textContent=m; // no stray newline
-  log.appendChild(p);
+  const p=document.createElement('p');p.textContent=m;log.appendChild(p);
   log.scrollTop=log.scrollHeight;
 }
 function add(){const s=sections[cur];s.l++;s.t++;logMsg('Added shim '+s.l+' to section '+cur);draw();}
@@ -96,8 +106,7 @@ function exportCSV(){
   const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='shim_summary.csv';
-  a.click();URL.revokeObjectURL(a.href);
+  a.download='shim_summary.csv';a.click();URL.revokeObjectURL(a.href);
 }
 function updateCSV(){preview.textContent='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n');}
 function exportTest(){
@@ -113,13 +122,10 @@ function exportTest(){
 }
 function copyPreview(){
   navigator.clipboard.writeText(preview.textContent)
-    .then(()=>logMsg('Preview copied'))
-    .catch(()=>logMsg('Copy failed'));
+    .then(()=>logMsg('Preview copied')).catch(()=>logMsg('Copy failed'));
 }
 function runUITest(){
-  logMsg('UI test start');
-  add();add();rem();reset();add();resetAll();
-  logMsg('UI test end');
+  logMsg('UI test start');add();add();rem();reset();add();resetAll();logMsg('UI test end');
 }
 sel.onchange=()=>{cur=+sel.value;draw();};
 $('add').onclick=add;$('remove').onclick=rem;$('reset').onclick=reset;$('resetAll').onclick=resetAll;
