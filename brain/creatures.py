@@ -94,11 +94,11 @@ DRAWN_BY = {"wyrm": ["hill"], "moths": ["lanternheads", "warden"], "larva": ["mo
             "glassbeak": ["nightgrown", "glassy1", "moon2"], "brood": ["nightgrown", "glassy3"], "ashwolves": ["dragon"]}
 TRACE_DAYS = {"meteor": 4, "ship": 3}
 
-# Meetings: now and then (about one notable day in eight) a second being is about at the same
-# time. Never two legendary beings; two hostile ones only together (and they count as one
-# dangerous event). How they treat each other (their stance) comes from who they are and what
-# has passed between their kinds before; fair rules say who prevails.
-MEET_CHANCE = .125
+# Meetings: when a second being's stay overlaps the first's, the two are about at the same time
+# and each is met on its own, in turn (there is no 'companion' that comes as part of another any
+# more; older plans that still have one are handled as before). Never two legendary beings;
+# exactly one of a pair counts as the dangerous event. How they treat each other (their stance)
+# comes from who they are and what has passed between their kinds; fair rules say who prevails.
 # A second notable being, planned on its own (not as a companion): rarer than the first, and
 # usually timed to overlap it, so two beings can be about at once without doubling how often
 # he meets something on his own. At most two notable beings a day in all.
@@ -453,37 +453,6 @@ def link_pair(state, a, b, rng):
         runner["end"] = _iso(min(_parse(runner["end"]), _parse(runner["start"]) + dt.timedelta(minutes=15)))
 
 
-def companion(state, a, sched, step, rng, keep=None):
-    """A second being about at the same time as a, or None."""
-    k = KINDS[a["kind"]]
-    start, end = _parse(a["start"]), _parse(a["end"])
-    choices = []
-    for kind, kk in KINDS.items():
-        if kind == a["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or a.get("chain") or not released(kind):
-            continue
-        if kk["rarity"] == "legendary" and k["rarity"] == "legendary":
-            continue
-        if kk["nature"] == "hostile" and k["nature"] != "hostile" and not hostile_allowed(state, start):
-            continue                               # a hostile one alongside a gentler one: still within the safeguards
-        until = _parse(state["cooldowns"].get(kind))
-        if until and until > start:
-            continue
-        if not _possible(kind, start, sched):
-            continue
-        hunt = 3 if kk["nature"] == "hostile" and k["nature"] != "hostile" else 1   # predators follow where life is
-        choices.append((kind, RARITY_WEIGHT[kk["rarity"]] * hunt * ecology(kind, state, start, keep)))
-    if not choices:
-        return None
-    kind = rng.choices([c for c, _ in choices], [w for _, w in choices])[0]
-    t = start + dt.timedelta(minutes=rng.randint(0, 15))
-    b = _appearance(kind, dt.date.fromisoformat(a["day"]), t - dt.timedelta(minutes=0), rng, state)
-    b["start"] = _iso(t)
-    b["end"] = _iso(min(end, t + dt.timedelta(minutes=rng.randint(*KINDS[kind]["minutes"]) or 30)))
-    b["companion"] = True
-    link_pair(state, a, b, rng)
-    return b
-
-
 def _keeper_hour(kind_day_start, t):
     """The keeper's hour of day for a UTC time (0-23; night hours past midnight count as 0-4)."""
     return int((t - kind_day_start).total_seconds() // 3600) % 24
@@ -576,11 +545,6 @@ def update(world: Path, sched=None, now=None, keep=None):
             if second:
                 state["appearances"].append(second)
                 state["cooldowns"][second["kind"]] = _iso(_parse(second["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[second["kind"]]["rarity"]]))
-            else:                                    # or, now and then, another being about at the same time
-                b = companion(state, a, sched, best["step"], mrng, keep) if mrng.random() < MEET_CHANCE else None
-                if b:
-                    state["appearances"].append(b)
-                    state["cooldowns"][b["kind"]] = _iso(_parse(b["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[b["kind"]]["rarity"]]))
     state["appearances"] = state["appearances"][-60:]
     (world / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
     (world / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")

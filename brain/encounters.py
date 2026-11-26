@@ -498,7 +498,8 @@ def resolve(a, choice, how, ctx, rng=None):
         result = "bad" if nature == "hostile" else result     # a slow presence that reaches the wall
 
     out = {"choice": choice, "result": result, "weakness": weak, "liked": liked, "effects": {}, "tool": tool,
-           "used": used[0] if used else None, "strength": round(strength, 2),
+           "used": used[0] if used else None, "used_why": used[2] if used else "",
+           "sky": ctx.get("sky", ""), "strength": round(strength, 2),
            "injury": None, "damage": None, "loss": None, "gift": None, "returned": None, "regard": 0,
            "tell": None, "turned_back": False}
     said = WEAKNESS_SAYS if weak and result == "good" else SAYS[(choice, result)]
@@ -659,4 +660,6 @@ def apply(out, a, needs, body, keep, entry, how, now=None):
     if how and out["result"] == "good" and out["choice"] not in ("leave",):
         entry["worked"] = ([x for x in entry.get("worked", []) if x != how] + [how])[-4:]
     elif how and out["result"] == "bad":
+        if out.get("used_why") == "weather" and out.get("sky"):
+            how = f"{how} (in {out['sky']})"[:120]
         entry["failed"] = ([x for x in entry.get("failed", []) if x != how] + [how])[-4:]
