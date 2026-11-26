@@ -30,34 +30,14 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 64,
-    "last_wake": "2026-11-25T23:03:41+00:00",
+    "wakeups": 65,
+    "last_wake": "2026-11-26T01:02:37+00:00",
     "nights_slept_through": 24
   },
   "plan": {
-    "start": "2026-11-25T23:02:38+00:00",
+    "start": "2026-11-26T01:02:37+00:00",
     "mood": "content",
     "steps": [
-      {
-        "place": "workbench",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "That margin tweak felt like a tiny victory."
-        ]
-      },
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "The bellows still cough when I fire them up."
-        ]
-      },
       {
         "place": "fire",
         "action": "sit",
@@ -65,7 +45,17 @@
         "emote": "spark",
         "note": "",
         "thoughts": [
-          "The flames keep the cold at bay, no complaints."
+          "The rain sounds like someone tapping a drum."
+        ]
+      },
+      {
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "continue bathhouse builder UI tweaks",
+        "thoughts": [
+          "That button still likes the edge."
         ]
       },
       {
@@ -73,32 +63,47 @@
         "action": "write",
         "minutes": 20,
         "emote": "spark",
+        "note": "update inventory list",
+        "thoughts": [
+          "Glass shards rattle when I move."
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "sharpen hammer and tongs",
+        "thoughts": [
+          "The metal smells like iron tea."
+        ]
+      },
+      {
+        "place": "bedroll",
+        "action": "sleep",
+        "minutes": 20,
+        "emote": "zzz",
         "note": "",
         "thoughts": [
-          "Need to note the CSS issue for tomorrow's fix."
+          "Warmth from the fire seeps into the stone."
         ]
       }
-    ],
-    "applied_until": "2026-11-26T00:30:22+00:00",
-    "live_thought": {
-      "text": "The fire flickers, stone stays mute, I watch the sparks.",
-      "time": "2026-11-26T00:30:22+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-26T01:00:27+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-26T01:02:37+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "adjust dark‑mode stylesheet to keep copy button aligned and run a full UI test",
-    "thought": "The rain hammers the roof, but the bathhouse page still looks off. I’ll fix the button alignment before the night gets any darker."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 59.4,
+    "rest": 52.4,
     "warmth": 89.9,
-    "inspiration": 26.9,
-    "spirit": 77.7
+    "inspiration": 10.9,
+    "spirit": 82.2
   },
   "needs_prev": {
     "rest": 58.2,
@@ -106,7 +111,7 @@
     "inspiration": 26.9,
     "spirit": 78.4
   },
-  "needs_at": "2026-11-26T01:00:27+00:00",
+  "needs_at": "2026-11-26T01:02:37+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2153,8 +2158,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T00:30:22+00:00",
-    "seen_until": "2026-11-25T22:55:28+00:00"
+    "updated": "2026-11-26T01:02:37+00:00",
+    "seen_until": "2026-11-26T00:55:26+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2364,5 +2369,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T01:00:27+00:00"
+  "exported": "2026-11-26T01:02:37+00:00"
 }

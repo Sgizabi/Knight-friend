@@ -1,27 +1,7 @@
 {
-  "start": "2026-11-25T23:02:38+00:00",
+  "start": "2026-11-26T01:02:37+00:00",
   "mood": "content",
   "steps": [
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "That margin tweak felt like a tiny victory."
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "The bellows still cough when I fire them up."
-      ]
-    },
     {
       "place": "fire",
       "action": "sit",
@@ -29,7 +9,17 @@
       "emote": "spark",
       "note": "",
       "thoughts": [
-        "The flames keep the cold at bay, no complaints."
+        "The rain sounds like someone tapping a drum."
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "continue bathhouse builder UI tweaks",
+      "thoughts": [
+        "That button still likes the edge."
       ]
     },
     {
@@ -37,9 +27,29 @@
       "action": "write",
       "minutes": 20,
       "emote": "spark",
+      "note": "update inventory list",
+      "thoughts": [
+        "Glass shards rattle when I move."
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "sharpen hammer and tongs",
+      "thoughts": [
+        "The metal smells like iron tea."
+      ]
+    },
+    {
+      "place": "bedroll",
+      "action": "sleep",
+      "minutes": 20,
+      "emote": "zzz",
       "note": "",
       "thoughts": [
-        "Need to note the CSS issue for tomorrow's fix."
+        "Warmth from the fire seeps into the stone."
       ]
     }
   ]
