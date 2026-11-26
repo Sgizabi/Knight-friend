@@ -88,11 +88,16 @@
           "Warmth from the fire seeps into the stone."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-26T01:30:28+00:00",
+    "live_thought": {
+      "text": "Rain drums, code drips; stone stays mute.",
+      "time": "2026-11-26T01:30:28+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T01:02:37+00:00",
+    "since": "2026-11-26T01:30:29+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -100,18 +105,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 52.9,
+    "warmth": 91.3,
+    "inspiration": 10.9,
+    "spirit": 81.4
+  },
+  "needs_prev": {
     "rest": 52.4,
     "warmth": 89.9,
     "inspiration": 10.9,
     "spirit": 82.2
   },
-  "needs_prev": {
-    "rest": 58.2,
-    "warmth": 89.6,
-    "inspiration": 26.9,
-    "spirit": 78.4
-  },
-  "needs_at": "2026-11-26T01:02:37+00:00",
+  "needs_at": "2026-11-26T01:30:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2158,7 +2163,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T01:02:37+00:00",
+    "updated": "2026-11-26T01:30:28+00:00",
     "seen_until": "2026-11-26T00:55:26+00:00"
   },
   "gifts": [],
@@ -2369,5 +2374,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T01:02:37+00:00"
+  "exported": "2026-11-26T01:30:29+00:00"
 }
