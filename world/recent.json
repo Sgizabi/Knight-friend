@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-19T13:01:34+00:00",
-    "activity": "repair",
-    "mood": "frustrated",
-    "emote": "sigh",
-    "text": "I wedged the next stone on the stair and hammered it until it sat flush. The slab shifted a bit when I pressed my foot, so I sanded the edge a little more. The hammer slipped once, bruising my thumb, but the gap is tighter now.",
-    "creations": []
-  },
-  {
     "time": "2026-11-19T15:01:38+00:00",
     "activity": "repair",
     "mood": "proud",
@@ -515,6 +507,15 @@
     "mood": "content",
     "emote": "spark",
     "text": "I moved to the sixth row of stones. Two slabs gave a bigger wobble than expected. I logged their dimensions and added markers. A tiny crack ran along one edge, so I noted it for later.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-26T21:01:33+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "restless",
+    "emote": "question",
+    "text": "I moved to the seventh row. One slab shifted just enough to drop its marker. I reset it and noted the new position. No other wobble this round.",
     "creations": []
   }
 ]

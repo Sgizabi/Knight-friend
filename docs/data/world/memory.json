@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.566,
-    "craft": 23.566
+    "repair": 23.623,
+    "craft": 23.623
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 6,
+  "entries_since_condense": 7,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -37,16 +37,13 @@
       "action": "pace",
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
-      "times": 20,
-      "strength": 10.675,
-      "last": "2026-11-26T19:00:31+00:00"
+      "times": 21,
+      "strength": 11.208,
+      "last": "2026-11-26T21:00:31+00:00"
     }
   ],
   "last_long": "2026-11-26T02:30:20+00:00",
   "recent_thoughts": [
-    "Rain drums, fire steadies, stone listens.",
-    "The stone feels cool against my cheek, steady as always.",
-    "The stone feels cold, but the night is done.",
     "Stone under the blade, cold as morning light.",
     "Heat of forge sings, metal glows",
     "The flames crackle, stones keep their secrets.",
@@ -55,10 +52,13 @@
     "Stone warmth steadies me, fire crackles",
     "Stone under my pen, steady as the walls.",
     "The fire flickers, stone cold beside me.",
-    "The fire's crackle feels like a stone's sigh."
+    "The fire's crackle feels like a stone's sigh.",
+    "Stone under my hands, cold but steady.",
+    "The iron glows, steady as the old walls.",
+    "The fire crackles, stones keep their quiet watch."
   ],
-  "last_glance": "2026-11-26T18:30:23+00:00",
-  "visits_seen_until": "2026-11-26T18:55:28+00:00",
+  "last_glance": "2026-11-26T20:30:25+00:00",
+  "visits_seen_until": "2026-11-26T20:55:28+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},
