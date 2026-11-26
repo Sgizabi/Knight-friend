@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.241,
-    "craft": 23.241
+    "repair": 23.311,
+    "craft": 23.311
   },
   "projects": [
     {
@@ -20,14 +20,14 @@
       "title": "Bathhouse Builder – Shim Summary (Enhanced)",
       "started": "2026-11-22T01:01:30+00:00",
       "status": "in progress",
-      "versions": 9,
-      "about": "Added dark‑mode stylesheet with button alignment fix, a toggle switch, and a simple UI test runner; trimmed comments to ",
-      "updated": "2026-11-26T01:01:33+00:00",
-      "next": "Adjust dark‑mode stylesheet to fully align copy button and remove stray newline from log."
+      "versions": 12,
+      "about": "Aligned the copy button in dark mode, removed stray newlines from log messages, added a tiny tooltip, and tightened the ",
+      "updated": "2026-11-26T02:42:47+00:00",
+      "next": "Finalize tooltip behavior and push the updated stylesheet to the keep's site."
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 1,
+  "entries_since_condense": 2,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -37,15 +37,13 @@
       "action": "pace",
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
-      "times": 15,
-      "strength": 7.658,
-      "last": "2026-11-25T19:00:32+00:00"
+      "times": 16,
+      "strength": 8.312,
+      "last": "2026-11-26T02:30:26+00:00"
     }
   ],
-  "last_long": "2026-11-25T02:30:23+00:00",
+  "last_long": "2026-11-26T02:30:20+00:00",
   "recent_thoughts": [
-    "The iron sings, the stone just listens.",
-    "Logs pile up, stone stays mute.",
     "The fire crackles, stone stays mute, I watch the sparks.",
     "Stone feels like a dull friend under my hammer.",
     "Loose slab shifts underfoot, stone whispers to stay.",
@@ -55,10 +53,12 @@
     "The fire crackles, stone stays mute.",
     "Sparks fly, stone stays mute.",
     "Sparks dance, stone stays mute.",
-    "The fire flickers, stone stays mute, I watch the sparks."
+    "The fire flickers, stone stays mute, I watch the sparks.",
+    "Rain drums, code drips; stone stays mute.",
+    "The rain taps the window, code drips slow."
   ],
-  "last_glance": "2026-11-26T00:30:22+00:00",
-  "visits_seen_until": "2026-11-26T00:55:26+00:00",
+  "last_glance": "2026-11-26T02:00:24+00:00",
+  "visits_seen_until": "2026-11-26T02:25:22+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

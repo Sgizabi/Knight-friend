@@ -1,61 +1,36 @@
 {
-  "start": "2026-11-26T01:02:37+00:00",
+  "start": "2026-11-26T02:43:50+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "zzz",
       "note": "",
       "thoughts": [
-        "The rain sounds like someone tapping a drum."
+        "Rain keeps the stones from sleeping"
       ]
     },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "continue bathhouse builder UI tweaks",
+      "emote": "question",
+      "note": "",
       "thoughts": [
-        "That button still likes the edge."
+        "Copy button finally behaved"
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "spark",
-      "note": "update inventory list",
-      "thoughts": [
-        "Glass shards rattle when I move."
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "stand",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "sharpen hammer and tongs",
-      "thoughts": [
-        "The metal smells like iron tea."
-      ]
-    },
-    {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 20,
-      "emote": "zzz",
+      "emote": "dots",
       "note": "",
       "thoughts": [
-        "Warmth from the fire seeps into the stone."
+        "Log looks tidy now"
       ]
     }
-  ],
-  "applied_until": "2026-11-26T02:00:24+00:00",
-  "live_thought": {
-    "text": "The rain taps the window, code drips slow.",
-    "time": "2026-11-26T02:00:24+00:00"
-  }
+  ]
 }
