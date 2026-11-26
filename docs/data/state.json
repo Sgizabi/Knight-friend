@@ -69,15 +69,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-26T18:00:34+00:00",
+    "applied_until": "2026-11-26T18:30:23+00:00",
     "live_thought": {
-      "text": "The fire flickers, stone cold beside me.",
-      "time": "2026-11-26T18:00:34+00:00"
+      "text": "The fire's crackle feels like a stone's sigh.",
+      "time": "2026-11-26T18:30:23+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T18:00:34+00:00",
+    "since": "2026-11-26T18:30:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -85,18 +85,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 80.1,
+    "warmth": 80.4,
+    "inspiration": 70.2,
+    "spirit": 68.3
+  },
+  "needs_prev": {
     "rest": 79.5,
     "warmth": 79.6,
     "inspiration": 70.2,
     "spirit": 68.7
   },
-  "needs_prev": {
-    "rest": 79.5,
-    "warmth": 75.7,
-    "inspiration": 70.2,
-    "spirit": 69.1
-  },
-  "needs_at": "2026-11-26T18:00:34+00:00",
+  "needs_at": "2026-11-26T18:30:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2143,7 +2143,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T18:00:34+00:00",
+    "updated": "2026-11-26T18:30:23+00:00",
     "seen_until": "2026-11-26T16:55:34+00:00"
   },
   "gifts": [],
@@ -2361,5 +2361,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T18:00:34+00:00"
+  "exported": "2026-11-26T18:30:24+00:00"
 }
