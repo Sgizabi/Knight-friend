@@ -42,5 +42,10 @@
         "Warmth is good, but I should watch the roof"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-26T23:30:28+00:00",
+  "live_thought": {
+    "text": "The rain drums, the fire holds steady on the bench.",
+    "time": "2026-11-26T23:30:28+00:00"
+  }
 }

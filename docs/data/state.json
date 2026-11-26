@@ -78,11 +78,16 @@
           "Warmth is good, but I should watch the roof"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-26T23:30:28+00:00",
+    "live_thought": {
+      "text": "The rain drums, the fire holds steady on the bench.",
+      "time": "2026-11-26T23:30:28+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T23:03:45+00:00",
+    "since": "2026-11-26T23:30:28+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 63.5,
+    "warmth": 86.3,
+    "inspiration": 70.6,
+    "spirit": 71.6
+  },
+  "needs_prev": {
     "rest": 63.1,
     "warmth": 83.6,
     "inspiration": 70.6,
     "spirit": 72.1
   },
-  "needs_prev": {
-    "rest": 69.2,
-    "warmth": 83.1,
-    "inspiration": 86.6,
-    "spirit": 65.4
-  },
-  "needs_at": "2026-11-26T23:03:46+00:00",
+  "needs_at": "2026-11-26T23:30:28+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2148,7 +2153,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T23:03:45+00:00",
+    "updated": "2026-11-26T23:30:28+00:00",
     "seen_until": "2026-11-26T22:55:32+00:00"
   },
   "gifts": [],
@@ -2362,5 +2367,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T23:03:46+00:00"
+  "exported": "2026-11-26T23:30:28+00:00"
 }
