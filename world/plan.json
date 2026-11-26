@@ -1,41 +1,14 @@
 {
-  "start": "2026-11-26T02:43:50+00:00",
+  "start": "2026-11-26T05:00:25+00:00",
   "mood": "content",
+  "applied_until": "2026-11-26T05:00:25+00:00",
   "steps": [
     {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
+      "place": "bedroll",
+      "action": "sleep",
+      "minutes": 120,
       "emote": "zzz",
-      "note": "",
-      "thoughts": [
-        "Rain keeps the stones from sleeping"
-      ]
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
-      "thoughts": [
-        "Copy button finally behaved"
-      ]
-    },
-    {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "Log looks tidy now"
-      ]
+      "note": "asleep for the night"
     }
-  ],
-  "applied_until": "2026-11-26T04:30:23+00:00",
-  "live_thought": {
-    "text": "Rain drums, fire steadies, stone listens.",
-    "time": "2026-11-26T04:30:23+00:00"
-  }
+  ]
 }
