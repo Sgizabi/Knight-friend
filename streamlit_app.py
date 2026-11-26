@@ -389,7 +389,6 @@ def ask_section(name, state, today, of_kind, visit):
                 st.markdown(f"**{escape(p['text'])}**  \n{escape(p['response']['text'])}", unsafe_allow_html=True)
 
 
-@st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload
 def name_ok(name):
     """The checker's verdict on a name to be remembered by: True / False, or None if it couldn't
     run (the Visit run checks it again, so nothing unchecked ever reaches Rooken)."""
@@ -449,6 +448,7 @@ def help_section(name, state, found, visit):
                 helped.append(a["id"])
 
 
+@st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload
 def visit_tab():
     name = identity.get("name") or "the knight"
     state = st.session_state
