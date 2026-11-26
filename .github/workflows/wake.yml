@@ -54,6 +54,7 @@ jobs:
         id: due
         env:
           KNIGHT_CREATURES: ${{ vars.KNIGHT_CREATURES }}      # a being at the keep makes it an encounter
+          GITHUB_TOKEN: ${{ github.token }}                   # to read visitors' help against a hostile being
         run: python brain/knight.py --is-due >> "$GITHUB_OUTPUT"
       # A practice wake-up on a throwaway copy of its world (no AI, no internet, no commits).
       # If the code is broken, this fails and the real wake-up below never runs, so a bad

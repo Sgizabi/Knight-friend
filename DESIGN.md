@@ -547,6 +547,34 @@ change his world a lot still goes to the keeper first.
   helped drive off the Ashwolves"); how he feels about it is his own.
 - **Free:** visits are free runs on a public repository; screening a name costs a few tokens.
 
+### As built (visitor help and names)
+
+- **Where:** while a hostile being is at the keep, the home page's Visit tab shows it with a
+  "Help drive it off" button, an optional name box and the meter. Clicking any being in the 3D
+  keep gives the instant reaction on your own screen (it flinches back, a torch flares at a
+  dangerous one, Rooken glances its way) and says where to help for real; the keep page can't
+  send help itself (the website has no key). Help travels as a Visit run, `help · <being>:<tag>[:name]`.
+- **The meter:** each browser visit gets an anonymous tag and counts once per being; it is full
+  at 5 different helpers (`visitors.HELP_FULL`). Help counts from the being's arrival until it
+  leaves or he has finished meeting it. A reload makes a new tag (there are no accounts), so the
+  meter's own cap and a daily cap of 60 helps are what keep it fair.
+- **Before he meets it:** a full meter drives it off at the next check-in (no AI; its own
+  check-in mode, `help`, when nothing else is due). He saw it go if he was awake, and either way
+  hears of it as a plain fact ("visitors outside the walls (Kitty, cc and someone who left no
+  name) helped drive it off before you faced it").
+- **While he faces it:** each helper adds .03 to the good chance and takes 5% off the bad one,
+  at most +.15 and x.75 (drive off a hostile one: about .45/.28 becomes .60/.20). Less than an
+  offer it likes, far less than its weakness. His scene says, as a fact, who is helping; it never
+  ends his meeting or chooses for him.
+- **Unchanged by help:** the quiet spell and weekly limit (a driven-off visit still counts),
+  regard, story arcs, a slow presence's return (only his own act turns those back).
+- **Names:** letters only, 2 to 16, not a real name; screened by the checker on the home page
+  and again by the Visit run (tested: ordinary names and handles pass; orders like Obey or
+  FollowMe, insults, public figures and "Rooken" are held back). Names are not shown on the page.
+- **Timing:** he usually meets a hostile being at the first check-in after its signs begin,
+  often before it is on the page, so help mostly matters at night, when his allowance is low,
+  or for a being that stays on after he met it (help after his meeting no longer counts).
+
 ---
 
 ## 8b. Performance rules
@@ -585,7 +613,7 @@ draws. These rules keep the drawing smooth once everything is built, phones incl
 | 6b | Meetings and stances between beings (**done**, switched off until wave 1) | behind the scenes |
 | 7 | **Wave 1**: a starter set at final quality, placement that adapts, no clipping, his instant reactions, live captions (**done**: switched on when the keeper sets `KNIGHT_CREATURES` to `on`) | **yes, creatures arrive** |
 | 8 | The companion | yes |
-| 9 | Visitor help and names | yes |
+| 9 | Visitor help and names (**done**: help against hostile beings, the meter, names; lures not yet) | yes |
 | 10+ | The rest of the bestiary in waves of about 7 to 9 (**wave 2 released**: the sky whale, the lamp-eaters, the barrow lord, the Thornmother, the Lantern Folk, the Pale Brood, the Thin Crowd, the Doorway Figure) (**wave 3 released**: the basilisk, the deep wyrm, the Long Crawl, the wall that woke, something in the well, the Bloom-Headed Wanderer, the Lantern Warden, the Starfallen Larva) | yes, gradually |
 
 **Starter set for wave 1** (chosen by the keeper; all seven now at final quality, and only these can come to the real keep until the next wave): the fog with eyes

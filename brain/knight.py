@@ -283,10 +283,93 @@ def encounter_room(usage):
             and daily_budget() - spent_today(usage) > ENCOUNTER_RESERVE)
 
 
+# --------------------------------------------------------------------------
+# Visitors helping drive off a hostile being (DESIGN.md section 8; the meter is in visitors.py)
+# --------------------------------------------------------------------------
+
+def hostile_unmet(state, moment=None):
+    """Hostile beings at the keep now that he has not met (yet): the ones visitors can still drive off."""
+    moment = moment or now()
+    return [a for a in creatures.current(state, moment) if a["kind"] in creatures.KINDS and not a.get("met")
+            and not a.get("slept") and creatures.nature_of(a) == "hostile"]
+
+
+def visitor_help(a, found=None):
+    """The meter for this being right now ({"count", "names", "unnamed"}), from the Visit runs.
+    None if the visits could not be read."""
+    if found is None:
+        start = encounters._parse(a["start"]) - dt.timedelta(minutes=visits.HELP_EARLY)
+        found = visits.fetch(iso(start))
+    return None if found is None else visits.help_for(a, found)
+
+
+def help_pending():
+    """Whether a hostile being has a full meter and has not been met: then it leaves (no AI)."""
+    if not creatures.enabled():
+        return False
+    waiting = hostile_unmet(creatures.load(WORLD))
+    if not waiting:
+        return False
+    found = visits.fetch(iso(min(encounters._parse(a["start"]) for a in waiting) - dt.timedelta(minutes=visits.HELP_EARLY)))
+    return any((visitor_help(a, found) or {}).get("count", 0) >= visits.HELP_FULL for a in waiting if found is not None)
+
+
+def drive_offs():
+    """Hostile beings that enough visitors helped drive off before he met them leave now. He saw
+    them go if he was awake, and hears of it either way, as a plain fact. Their visit still counts
+    toward the quiet spell and the weekly limit (nothing about who comes next changes), and nothing
+    about the being itself (regard, story arcs, a slow presence's return) changes: only his own
+    choices do that. Returns how many left. No AI."""
+    if not creatures.enabled():
+        return 0
+    state = creatures.load(WORLD)
+    waiting = hostile_unmet(state)
+    if not waiting:
+        return 0
+    found = visits.fetch(iso(min(encounters._parse(a["start"]) for a in waiting) - dt.timedelta(minutes=visits.HELP_EARLY)))
+    if found is None:
+        return 0
+    memory, gone = load("memory.json", {}), 0
+    for a in waiting:
+        h = visitor_help(a, found)
+        if h["count"] < visits.HELP_FULL:
+            a["help"] = h
+            continue
+        awake = not asleep_at(now())
+        c = encounters.character(a["kind"])
+        a["help"] = h
+        a["met"] = {"outcome": "driven off by visitors", "time": iso()}
+        a["seen"] = awake
+        a["end"] = iso(min(encounters._parse(a["end"]), now() + dt.timedelta(minutes=3)))
+        a["caption"], a["caption_at"] = "Driven off: it turns from the walls and is gone.", iso()
+        who = visits.helpers_line(h)
+        text = (f"{'You saw' if awake else 'While you slept,'} {c.get('looks', 'something strange')}"
+                f"{' at the keep, and then' if awake else ' came to the keep, and'} visitors outside the walls "
+                f"({who}) helped drive it off before you faced it.")
+        memory.setdefault("beings_since", []).append({"time": iso(), "kind": a["kind"], "text": text[:900]})
+        encounters.record(WORLD, {"time": iso(), "id": a["id"], "kind": a["kind"], "woke": False, "steps": [],
+                                  "injury": False, "damage": False, "loss": False, "note": "",
+                                  "driven_off_by_visitors": True, "helped_by": h})
+        print(f"  visitors drove off {a['kind']} ({h['count']} helped)")
+        gone += 1
+    (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+    if gone:
+        save("memory.json", memory)
+    return gone
+
+
 def check_in_mode(session):
     """What a scheduled check-in should do: 'encounter' (a being has come: a short awake stretch),
     'wake' (a full wake-up), 'sleep' (night: a tired knight sleeps on, no AI), 'glance' (a light
-    check-in), or 'none'. Started by hand: always 'wake'."""
+    check-in), 'help' (only visitors driving off a hostile being: no AI), or 'none'. Started by
+    hand: always 'wake'."""
+    mode = _check_in_mode(session)
+    if mode == "none" and help_pending():
+        return "help"
+    return mode
+
+
+def _check_in_mode(session):
     if not os.environ.get("KNIGHT_SCHEDULED"):
         return "wake"
     identity = load("identity.json", {})
@@ -1439,10 +1522,16 @@ class Knight:
             if m:
                 minds.settle_in(a, m, entry)
                 print(f"  its mind: {m['approach']}: {m['why']}")
+        helped = {"count": 0, "names": [], "unnamed": 0}
+        hostile = creatures.nature_of(a) == "hostile"
         for step in range(1, encounters.STEPS_MOST + 1):
             ph = encounters.phase(a)
             opts = encounters.options(ph)
             sc = encounters.scene(a, entry, best["step"], ph, history)
+            if hostile and ph == "here":                          # visitors helping drive it off (a plain fact)
+                h = visitor_help(a)
+                if h and h["count"] > helped["count"]:
+                    helped = h
             if ph == "here" and a.get("mind") and not shown:     # what it does first, once it is in sight
                 sc += " " + minds.told(a["mind"]["doing"], a["mind"]["says"])
                 shown = True
@@ -1450,6 +1539,9 @@ class Knight:
                 sc += " " + " ".join(f"{creatures.KINDS[e['kind']]['name']}: {minds.told(e['does'], e['says'])}"
                                      for e in exchange)
                 shown_exchange = True
+            if hostile and ph == "here" and helped["count"]:
+                sc += (f" From outside the walls, visitors are trying to help drive it off: "
+                       f"{visits.helpers_line(helped)}.")
             so_far = "\n".join(f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}"
                                 for h in history)
             prompt = (
@@ -1478,7 +1570,7 @@ class Knight:
             out = encounters.resolve(a, choice, how, {
                 "needs": self.needs, "body": self.body, "keep": self.keep, "entry": entry, "prepared": prepared,
                 "step": step, "week": encounters.recent(WORLD), "now": now(), "said": [h["happened"] for h in history],
-                "sky": (weather.at(self.sky, now()) or {}).get("kind", "")})
+                "sky": (weather.at(self.sky, now()) or {}).get("kind", ""), "help": helped["count"]})
             encounters.apply(out, a, self.needs, self.body, self.keep, entry, how)
             if a.get("mind") and minds.can_think(self.brain, today_usage(), WORLD):   # its answer, within the outcome
                 t = minds.turn(self.brain, a, choice, how, out)
@@ -1527,6 +1619,8 @@ class Knight:
                     x["mind"] = a["mind"]
                 if exchange:
                     x["reacted"] = True
+                if helped["count"]:
+                    x["help"] = helped
             if a.get("with") and x.get("id") == a["with"] and (x.get("companion") or a.get("companion")):
                 # the one it came with was met too (a companion pair only; an independent
                 # second gets its own encounter, in its turn, and is never stamped "with")
@@ -1552,10 +1646,12 @@ class Knight:
                                   "loss": any(h.get("loss") for h in history), "note": note,
                                   "why": (a.get("mind") or {}).get("why", a.get("drive", "")),
                                   **({"exchange": exchange} if exchange else {}),
+                                  **({"helped_by": helped} if helped["count"] else {}),
                                   **({"with": a["with_kind"], "stance": a.get("stance")} if a.get("with_kind") else {})})
         told = " ".join(f"You chose to {h['choice'].replace('_', ' ')} ({h['how']}). {h['happened']}" for h in history)
         self.memory["beings_since"].append({"time": iso(start), "kind": kind, "text": (
             ("It woke you in the night. " if woke else "") + encounters.scene(a, entry, best["step"], "here", [])
+            + (f" Visitors outside the walls tried to help drive it off: {visits.helpers_line(helped)}." if helped["count"] else "")
             + (" " + exchange_text if exchange_text else "") + " " + told)[:900]})
         if after.get("thought"):
             thought = str(after["thought"]).strip()[:140]
@@ -1866,7 +1962,7 @@ def main():
     parser.add_argument("--fake", action="store_true", help="test without calling any model")
     parser.add_argument("--is-due", action="store_true",
                         help="only say what a scheduled check-in should do (for the workflow)")
-    parser.add_argument("--mode", choices=["wake", "sleep", "glance", "encounter", "none"],
+    parser.add_argument("--mode", choices=["wake", "sleep", "glance", "encounter", "help", "none"],
                         help="what to do (from --is-due); without it, worked out here")
     args = parser.parse_args()
     args.session = pick_session(args.session)
@@ -1878,6 +1974,12 @@ def main():
     mode = args.mode or check_in_mode(args.session)
     if mode == "none":
         print("Nothing to do at this check-in; the knight carries on.")
+        return
+    gone = drive_offs()                  # visitors' help, before anything else (no AI)
+    if mode == "help":
+        if gone:
+            life.export_state(WORLD, DOCS)
+            checkpoint("Visitors drive something off")
         return
     if mode == "sleep":
         night_sleep()

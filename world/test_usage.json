@@ -1,51 +1,19 @@
 {
-  "date": "2026-11-21",
-  "tokens": 68680,
+  "date": "2026-11-26",
+  "tokens": 13163,
   "by_model": {
-    "openai/gpt-oss-120b": 58694,
-    "openai/gpt-oss-20b": 1618,
-    "qwen/qwen3.8-27b": 8368
+    "openai/gpt-oss-20b": 5146,
+    "qwen/qwen3.8-27b": 1910,
+    "openai/gpt-oss-120b": 6107
   },
   "runs": [
     {
-      "note": "letter replies test",
-      "tokens": 6740
+      "note": "visitor help: name screening test",
+      "tokens": 4268
     },
     {
-      "note": "letter replies test",
-      "tokens": 6468
-    },
-    {
-      "note": "letter replies test",
-      "tokens": 6943
-    },
-    {
-      "note": "letter replies test",
-      "tokens": 7159
-    },
-    {
-      "note": "encounter test",
-      "tokens": 5369
-    },
-    {
-      "note": "encounter test",
-      "tokens": 9761
-    },
-    {
-      "note": "encounter test",
-      "tokens": 4234
-    },
-    {
-      "note": "encounter test",
-      "tokens": 17913
-    },
-    {
-      "note": "beings minds test",
-      "tokens": 3016
-    },
-    {
-      "note": "beings minds test",
-      "tokens": 1077
+      "note": "visitor help: encounter with helpers test",
+      "tokens": 8895
     }
   ]
 }

@@ -195,7 +195,7 @@ def checked(text, sender="a visitor"):
 # ------------------------------------------------------------------ visits (knock, gift, candle, question)
 
 VISITS_PER_DAY = 100          # all visits together; past this the gate is shut until tomorrow
-PER_VISIT = {"knock": 1, "gift": 2, "candle": 1, "question": 1, "answer": 3}   # per visitor, per visit (and one answer per question)
+PER_VISIT = {"knock": 1, "gift": 2, "candle": 1, "question": 1, "answer": 3, "help": 99}   # (help: once per being, see help_section)   # per visitor, per visit (and one answer per question)
 
 
 def secret(key):
@@ -390,6 +390,65 @@ def ask_section(name, state, today, of_kind, visit):
 
 
 @st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload
+def name_ok(name):
+    """The checker's verdict on a name to be remembered by: True / False, or None if it couldn't
+    run (the Visit run checks it again, so nothing unchecked ever reaches Rooken)."""
+    key = secret("groq_api_key")
+    if not key:
+        return None
+    try:
+        from llm import Brain
+        return visitors.screen_name(Brain(key, world=ROOT / "world", remember=False), name)
+    except Exception as err:         # never the name in the logs
+        print(f"[check] could not run: {type(err).__name__}", file=sys.stderr)
+        return None
+
+
+def help_section(name, state, found, visit):
+    """A hostile being at the keep: visitors can help drive it off (DESIGN.md section 8). Each
+    browser visit counts once per being; the meter is full at visitors.HELP_FULL helpers."""
+    now = dt.datetime.now(dt.timezone.utc)
+    here = [a for a in (keep_state.get("creatures") or {}).get("current", [])
+            if a.get("nature") == "hostile" and a.get("help_open", True)
+            and dt.datetime.fromisoformat(a["start"]) <= now < dt.datetime.fromisoformat(a["end"])]
+    if not here:
+        return
+    if "visitor_tag" not in state:
+        import secrets as _secrets
+        state.visitor_tag = "".join(_secrets.choice("abcdefghijklmnopqrstuvwxyz0123456789") for _ in range(6))
+    helped = state.setdefault("helped", [])
+    events = [e for e in (found or []) if e["kind"] == "help"]
+    st.markdown("#### Something dangerous is at the keep")
+    for a in here:
+        meter = visitors.help_for(a, events)["count"]
+        full = visitors.HELP_FULL
+        st.markdown(f"<p>Something hostile has come to the keep. You can help drive it off from outside the "
+                    f"walls. Your help adds to everyone's: when {full} visitors have helped, it may leave before "
+                    f"{escape(name)} has to face it, and if {escape(name)} faces it, the help makes it a little "
+                    f"easier. {escape(name)} still decides what to do.</p>", unsafe_allow_html=True)
+        st.progress(min(1.0, meter / full), text=f"Helping drive it off: {min(meter, full)} of {full}")
+        if a["id"] in helped:
+            st.caption("You've helped with this one. Thank you!")
+            continue
+        c1, c2 = st.columns([3, 2])
+        who = c1.text_input("A name to be remembered by (optional)", key=f"helpname-{a['id']}", max_chars=16,
+                            placeholder="letters only, not your real name",
+                            help=f"{name} may read it, as a plain fact, and may mention it in its diary.")
+        c2.write("")
+        if c2.button("📣 Help drive it off", key=f"help-{a['id']}", use_container_width=True):
+            who = (who or "").strip()
+            if who and not visitors.NAME.fullmatch(who):
+                st.warning("Names are letters only, 2 to 16 of them. Or leave it blank.")
+                continue
+            if who and name_ok(who) is False:
+                st.warning("That name can't be used. Try another, or leave it blank.")
+                continue
+            item = f"{a['id']}:{state.visitor_tag}" + (f":{who}" if who else "")
+            if visit("help", item, f"You shout and clatter from beyond the walls. {name} hears of it "
+                                   "within a minute or two."):
+                helped.append(a["id"])
+
+
 def visit_tab():
     name = identity.get("name") or "the knight"
     state = st.session_state
@@ -410,7 +469,7 @@ def visit_tab():
         return
     start = keeper_day_start().isoformat()
     today = [r for r in (found or []) if r["time"] >= start]
-    if len(today) >= VISITS_PER_DAY:
+    if len([r for r in today if r["kind"] != "help"]) >= VISITS_PER_DAY:
         st.info(f"The gate is quiet for today: {escape(name)} has had a lot of visitors. Come back tomorrow!")
         return
     of_kind = lambda kind: sum(1 for r in today if r["kind"] == kind)
@@ -429,11 +488,12 @@ def visit_tab():
             made[kind] = made.get(kind, 0) + 1
             todays_visits.clear()
             st.success(thanks)
-            react_in_keep(kind, item if kind == "gift" else "-")
+            react_in_keep(kind, item if kind in ("gift", "help") else "-")
         else:
             st.error("The gate didn't answer just now. Please try again in a little while.")
         return ok
 
+    help_section(name, state, found, visit)
     ask_section(name, state, today, of_kind, visit)
 
     st.markdown("#### Knock, or light a candle")

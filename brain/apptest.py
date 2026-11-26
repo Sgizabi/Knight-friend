@@ -23,8 +23,17 @@ os.environ["KNIGHT_ROOT"] = str(T)
 (T / "world" / "asks.json").write_text(json.dumps({"current": {
     "id": "a202601010900", "time": "2026-01-01T09:00:00+00:00", "text": "What should I build first?",
     "options": [], "tally": {}, "said": []}, "past": []}), encoding="utf-8")
+# a hostile being at the keep right now, so the "help drive it off" form shows
+import datetime as _dt  # noqa: E402
+_now = _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0)
+HOSTILE = {"id": "ashwolves-209901010000", "kind": "ashwolves", "start": (_now - _dt.timedelta(minutes=5)).isoformat(),
+           "end": (_now + _dt.timedelta(minutes=40)).isoformat(), "nature": "hostile", "help": 0, "help_full": 5, "help_open": True}
+_state = json.loads((T / "docs" / "data" / "state.json").read_text(encoding="utf-8"))
+_state["creatures"] = {"current": [HOSTILE], "seeing": 0, "traces": []}
+(T / "docs" / "data" / "state.json").write_text(json.dumps(_state), encoding="utf-8")
 
 calls = []
+sent = []
 
 
 class _Reply(io.BytesIO):
@@ -41,6 +50,8 @@ class _Reply(io.BytesIO):
 def fake_urlopen(request, timeout=0):
     url = getattr(request, "full_url", request)
     calls.append(url)
+    if getattr(request, "data", None):
+        sent.append(request.data.decode("utf-8", "replace"))
     if "groq.com" in url:
         return _Reply(json.dumps({"choices": [{"message": {"content": "ALLOW - fine"}, "finish_reason": "stop"}],
                                   "usage": {"total_tokens": 10}}).encode())
@@ -88,5 +99,16 @@ at.run()
 assert not at.exception, at.exception
 assert any(c.endswith("/visit.yml/dispatches") for c in calls), calls
 assert sum("groq.com" in c for c in calls) >= 2, "the letter and the answer should both have been checked"
+
+# 4. helping drive off a hostile being, with a name to be remembered by
+fields = {w.label: w for w in at.text_input}
+fields["A name to be remembered by (optional)"].input("Kitty")
+next(b for b in at.button if b.label == "📣 Help drive it off").click()
+at.run()
+assert not at.exception, at.exception
+helps = [b for b in sent if '"kind": "help"' in b]
+assert helps and HOSTILE["id"] in helps[-1] and helps[-1].rstrip('"}').endswith(":Kitty"), helps
+at.run()
+assert any("helped with this one" in c.value for c in at.caption), "a second help from the same visit should not be offered"
 shutil.rmtree(T, ignore_errors=True)
 print("home page checks passed")

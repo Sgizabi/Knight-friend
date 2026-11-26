@@ -396,4 +396,25 @@ assert all("stance_says" not in c and "stance" not in c for c in _one["current"]
 __import__("os").environ.pop("KNIGHT_CREATURES")
 if _old is not None:
     __import__("os").environ["KNIGHT_CREATURES"] = _old
+# visitors helping drive off a hostile being: one count per visitor per being, only while it is
+# here, capped at HELP_FULL; names only if letters; and the odds shift is small and capped
+import visitors as _vis
+_ha = {"id": "ashwolves-202611211700", "kind": "ashwolves", "start": "2026-11-21T17:00:00+00:00", "end": "2026-11-21T18:00:00+00:00"}
+_hv = lambda tag, at, name=None: {"kind": "help", "item": f"{_ha['id']}:{tag}" + (f":{name}" if name else ""), "time": at}
+_hm = _vis.help_for(_ha, [_hv("aaaaaa", "2026-11-21T17:05:00+00:00", "Kitty"), _hv("aaaaaa", "2026-11-21T17:06:00+00:00", "Kitty"),
+                          _hv("bbbbbb", "2026-11-21T17:07:00+00:00"), _hv("cccccc", "2026-11-21T16:00:00+00:00"),
+                          _hv("dddddd", "2026-11-21T17:08:00+00:00", "No1")] +
+                   [_hv(f"e{i}aaaa", "2026-11-21T17:10:00+00:00") for i in range(9)])
+assert _hm["count"] == _vis.HELP_FULL and _hm["names"] == ["Kitty"], _hm
+assert _vis.helpers_line({"names": ["Kitty", "cc"], "unnamed": 1}) == "Kitty, cc and someone who left no name"
+assert _vis.parse_help(f"{_ha['id']}:abcdef:Søren") and not _vis.parse_help(f"{_ha['id']}:abcdef:hi there")
+_hc = {"needs": {"rest": 70, "warmth": 70}, "body": {"injuries": []}, "keep": {"objects": [], "repairs": {}, "damage": {}},
+       "entry": {}, "step": 1, "week": [], "now": _t21}
+import random as _rnd
+_odds = []
+for _n in (0, 5, 50):
+    _r = _rnd.Random(3)
+    _res = [encounters.resolve({**_ha, "temper": "wary"}, "drive_off", "I step toward it", {**_hc, "help": _n}, _r)["result"] for _ in range(3000)]
+    _odds.append(_res.count("good") / 3000)
+assert _odds[0] + .1 < _odds[1] < _odds[0] + .2 and abs(_odds[1] - _odds[2]) < .03, _odds   # +.15 at most, capped
 print("all checks passed")

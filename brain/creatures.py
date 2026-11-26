@@ -609,6 +609,11 @@ def export(world: Path, now=None):
         item = {**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
                                      "with_met", "prevails", "caption", "caption_at", "regard") if k in a},
                 "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
+        if item["nature"] == "hostile":            # the "driving it off" meter, as of his last check-in
+            import visitors                          # (the page also counts help live, from the Visit runs)
+            item["help"] = (a.get("help") or {}).get("count", 0)
+            item["help_full"] = visitors.HELP_FULL
+            item["help_open"] = not a.get("met")
         if both_here:
             if a.get("stance"):
                 item["stance"] = a["stance"]

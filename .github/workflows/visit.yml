@@ -12,9 +12,9 @@ on:
         description: "What the visitor did"
         required: true
         type: choice
-        options: [knock, gift, candle, question, answer]
+        options: [knock, gift, candle, question, answer, help]
       item:
-        description: "Which gift, which question card, or an answer to Rooken's question ('-' for none)"
+        description: "Which gift, which question card, an answer to Rooken's question, or which being you help drive off ('-' for none)"
         required: false
         default: "-"
         type: string

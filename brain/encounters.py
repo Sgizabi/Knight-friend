@@ -40,6 +40,8 @@ MARK_WISDOM = {"young": .3, "old": 1.25, "scarred": 1.25}   # the young don't kn
 AGE_MEMORY = {"young": .5, "old": 2.0}     # and the old hold on to what they know twice as long
 CUNNING_CUT = .6            # a quick learner that comes ready for his last answer blunts it this much
 TOOL_BONUS = .08            # using something he made for the keep
+HELP_GOOD = .03             # each visitor helping drive off a hostile being (up to visitors.HELP_FULL = 5):
+HELP_BAD = .05             #   +.03 to the good chance and 5% off the bad one: at most +.15 and x.75
 LIKES_SHARE = .6            # each individual cares for about this share of what its kind likes
 
 # (good, bad) for each nature and choice; the rest of the chance is "nothing much happens".
@@ -477,6 +479,10 @@ def resolve(a, choice, how, ctx, rng=None):
         good *= .85
     good += .07 * regard
     bad -= .04 * regard
+    helpers = min(5, ctx.get("help", 0)) if nature == "hostile" else 0
+    if helpers:                                    # visitors outside the walls, helping drive it off
+        good += HELP_GOOD * helpers
+        bad *= 1 - HELP_BAD * helpers
     needs = ctx["needs"]
     if a.get("stance") in DISTRACTED:              # he can use their squabble
         good += .12
@@ -497,7 +503,7 @@ def resolve(a, choice, how, ctx, rng=None):
     if a.get("last") and not (result == "good" and choice in ("drive_off", "hide", "prepare")):
         result = "bad" if nature == "hostile" else result     # a slow presence that reaches the wall
 
-    out = {"choice": choice, "result": result, "weakness": weak, "liked": liked, "effects": {}, "tool": tool,
+    out = {"choice": choice, "result": result, "helpers": helpers, "weakness": weak, "liked": liked, "effects": {}, "tool": tool,
            "used": used[0] if used else None, "used_why": used[2] if used else "",
            "sky": ctx.get("sky", ""), "strength": round(strength, 2),
            "injury": None, "damage": None, "loss": None, "gift": None, "returned": None, "regard": 0,
