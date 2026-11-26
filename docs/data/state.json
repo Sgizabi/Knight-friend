@@ -97,17 +97,17 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-26T02:30:25+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "since": "2026-11-26T02:33:27+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "count each stone, note its size and condition in the ledger",
-    "thought": "The rain drums on the roof, the fire crackles, my glove is still free of metal. I could use the quiet to count the stones again."
+    "note": "adjust dark‑mode stylesheet to align copy button and remove stray newline from log",
+    "thought": "The rain drums on the roof, the fire flickers, and the dark‑mode button still nudges left."
   },
   "needs": {
-    "rest": 53.1,
+    "rest": 50.1,
     "warmth": 89.2,
-    "inspiration": 11.5,
+    "inspiration": 23.5,
     "spirit": 79.8
   },
   "needs_prev": {
@@ -116,7 +116,7 @@
     "inspiration": 10.9,
     "spirit": 80.6
   },
-  "needs_at": "2026-11-26T02:30:25+00:00",
+  "needs_at": "2026-11-26T02:33:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2371,5 +2371,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T02:30:25+00:00"
+  "exported": "2026-11-26T02:33:27+00:00"
 }
