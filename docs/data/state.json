@@ -54,18 +54,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-26T12:56:32+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-26T12:56:35+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "continue counting and noting stone sizes in the courtyard",
+    "thought": "The fire is steady, the stones feel solid. I could keep counting the courtyard stones before breakfast."
   },
   "needs": {
     "rest": 100.0,
-    "warmth": 66.7,
-    "inspiration": 32.3,
-    "spirit": 74.0
+    "warmth": 65.4,
+    "inspiration": 34.2,
+    "spirit": 73.5
   },
   "needs_prev": {
     "rest": 100.0,
@@ -73,7 +73,7 @@
     "inspiration": 32.3,
     "spirit": 74.0
   },
-  "needs_at": "2026-11-26T12:56:32+00:00",
+  "needs_at": "2026-11-26T12:56:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2347,5 +2347,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T12:56:32+00:00"
+  "exported": "2026-11-26T12:56:35+00:00"
 }
