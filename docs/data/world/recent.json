@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-19T11:01:39+00:00",
-    "activity": "repair",
-    "mood": "frustrated",
-    "emote": "sigh",
-    "text": "I kept at the stair, wedging a new slab where the old one cracked. The stone slipped a bit, so I tapped it back with the hammer. The gap still shows a thin line of dust. I think the next piece will need a tighter fit, otherwise the whole thing will wobble when I climb.",
-    "creations": []
-  },
-  {
     "time": "2026-11-19T13:01:34+00:00",
     "activity": "repair",
     "mood": "frustrated",
@@ -514,6 +506,15 @@
     "mood": "content",
     "emote": "sigh",
     "text": "I walked to the courtyard again and scanned the fifth row. One slab shifted a hair when I nudged it. I logged the size and taped a marker. Nothing else moved.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-26T19:01:33+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I moved to the sixth row of stones. Two slabs gave a bigger wobble than expected. I logged their dimensions and added markers. A tiny crack ran along one edge, so I noted it for later.",
     "creations": []
   }
 ]

@@ -30,64 +30,69 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 69,
-    "last_wake": "2026-11-26T17:01:40+00:00",
+    "wakeups": 70,
+    "last_wake": "2026-11-26T19:01:33+00:00",
     "nights_slept_through": 28
   },
   "plan": {
-    "start": "2026-11-26T17:01:40+00:00",
+    "start": "2026-11-26T19:01:33+00:00",
     "mood": "content",
     "steps": [
+      {
+        "place": "courtyard",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "Stone feels looser than before"
+        ]
+      },
+      {
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
+        "thoughts": [
+          "Need a better chisel for that crack"
+        ]
+      },
       {
         "place": "forge",
         "action": "work",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "spark",
         "note": "",
         "thoughts": [
-          "Need to tighten the bellows a bit more."
+          "Fire is still demanding"
         ]
       },
       {
         "place": "desk",
         "action": "write",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "spark",
         "note": "",
         "thoughts": [
-          "Updating the stone log feels oddly satisfying."
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "",
-        "thoughts": [
-          "The heat keeps the chill off my armor."
+          "Update inventory list"
         ]
       }
-    ],
-    "applied_until": "2026-11-26T18:30:23+00:00",
-    "live_thought": {
-      "text": "The fire's crackle feels like a stone's sigh.",
-      "time": "2026-11-26T18:30:23+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-26T19:00:30+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-26T19:01:33+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "record size and stability of each slab, tape markers as needed",
-    "thought": "The stones are still shifting a bit, and I want to log the next few rows before the sun goes low."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 80.7,
+    "rest": 77.7,
     "warmth": 81.0,
-    "inspiration": 70.2,
+    "inspiration": 79.1,
     "spirit": 67.9
   },
   "needs_prev": {
@@ -96,7 +101,7 @@
     "inspiration": 70.2,
     "spirit": 68.3
   },
-  "needs_at": "2026-11-26T19:00:30+00:00",
+  "needs_at": "2026-11-26T19:01:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2143,8 +2148,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T18:30:23+00:00",
-    "seen_until": "2026-11-26T16:55:34+00:00"
+    "updated": "2026-11-26T19:01:33+00:00",
+    "seen_until": "2026-11-26T18:55:28+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2365,5 +2370,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T19:00:30+00:00"
+  "exported": "2026-11-26T19:01:33+00:00"
 }
