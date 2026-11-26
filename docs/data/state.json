@@ -78,11 +78,16 @@
           "Updating inventory list"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-26T15:30:25+00:00",
+    "live_thought": {
+      "text": "Stone under my hands, cold but steady.",
+      "time": "2026-11-26T15:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-26T15:01:34+00:00",
+    "since": "2026-11-26T15:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 86.6,
+    "warmth": 73.4,
+    "inspiration": 58.2,
+    "spirit": 71.0
+  },
+  "needs_prev": {
     "rest": 88.0,
     "warmth": 75.7,
     "inspiration": 58.2,
     "spirit": 71.4
   },
-  "needs_prev": {
-    "rest": 90.7,
-    "warmth": 66.5,
-    "inspiration": 46.2,
-    "spirit": 71.9
-  },
-  "needs_at": "2026-11-26T15:01:34+00:00",
+  "needs_at": "2026-11-26T15:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2148,7 +2153,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T15:01:34+00:00",
+    "updated": "2026-11-26T15:30:25+00:00",
     "seen_until": "2026-11-26T14:55:28+00:00"
   },
   "gifts": [],
@@ -2379,5 +2384,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T15:01:34+00:00"
+  "exported": "2026-11-26T15:30:25+00:00"
 }
