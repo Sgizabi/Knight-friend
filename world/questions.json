@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261124",
-      "items": [
-        {
-          "id": "t20261124-0",
-          "text": "Did the new lantern handle finally stop the rattling?"
-        },
-        {
-          "id": "t20261124-1",
-          "text": "How's the fire now—still needing more logs?"
-        },
-        {
-          "id": "t20261124-2",
-          "text": "Did you spot any more foxes sneaking around?"
-        },
-        {
-          "id": "t20261124-3",
-          "text": "What do you think of the repaired east wall’s view?"
-        },
-        {
-          "id": "t20261124-4",
-          "text": "Got any funny stories from counting those thick slabs?"
-        },
-        {
-          "id": "t20261124-5",
-          "text": "Do you enjoy the bathhouse after a long day?"
-        }
-      ]
-    },
-    {
       "date": "20261125",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261125-5",
           "text": "What’s the favorite sound in the newly mended courtyard?"
+        }
+      ]
+    },
+    {
+      "date": "20261126",
+      "items": [
+        {
+          "id": "t20261126-0",
+          "text": "That lantern guard finally stopped snagging your glove?"
+        },
+        {
+          "id": "t20261126-1",
+          "text": "Did the stray newline finally vanish from the log?"
+        },
+        {
+          "id": "t20261126-2",
+          "text": "How's the roof handling that relentless rain?"
+        },
+        {
+          "id": "t20261126-3",
+          "text": "Got any thoughts on the flickering tooltip habit?"
+        },
+        {
+          "id": "t20261126-4",
+          "text": "Seen any new loose stones in the courtyard lately?"
+        },
+        {
+          "id": "t20261126-5",
+          "text": "Is the bathhouse finally feeling just right in narrow view?"
         }
       ]
     }

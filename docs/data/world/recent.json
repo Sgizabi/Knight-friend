@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-19T05:01:32+00:00",
-    "activity": "repair",
-    "mood": "restless",
-    "emote": "sigh",
-    "text": "I finally got the window frame back together. The wood still wants to bow, so I set it aside. The glass shards in my pocket are still whole, but I have no idea what to do with them yet. The fire kept its usual steady burn.",
-    "creations": []
-  },
-  {
     "time": "2026-11-19T07:01:35+00:00",
     "activity": "rest",
     "mood": "sleepy",
@@ -512,5 +504,14 @@
       "workshop/bathhouse-builder-73.html",
       "workshop/bathhouse-builder-73.html"
     ]
+  },
+  {
+    "time": "2026-11-26T12:57:39+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "curious",
+    "emote": "question",
+    "text": "I went back to the courtyard and counted stones again. This time I got to the third row and found a slab that was half loose; I tapped it and it shifted more than before. I wrote its size down and set a marker. My glove stayed clear.",
+    "creations": []
   }
 ]

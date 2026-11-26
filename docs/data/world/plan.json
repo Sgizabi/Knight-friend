@@ -1,35 +1,45 @@
 {
-  "start": "2026-11-26T02:43:50+00:00",
-  "mood": "content",
+  "start": "2026-11-26T12:57:39+00:00",
+  "mood": "curious",
   "steps": [
     {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "zzz",
-      "note": "",
+      "place": "courtyard",
+      "action": "work",
+      "minutes": 30,
+      "emote": "question",
+      "note": "stone counting",
       "thoughts": [
-        "Rain keeps the stones from sleeping"
+        "These stones never line up right."
       ]
     },
     {
       "place": "workbench",
       "action": "work",
-      "minutes": 20,
+      "minutes": 30,
       "emote": "question",
-      "note": "",
+      "note": "sharpen tools",
       "thoughts": [
-        "Copy button finally behaved"
+        "A sharper file saves a lot of time."
       ]
     },
     {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
+      "place": "forge",
+      "action": "work",
+      "minutes": 30,
+      "emote": "question",
+      "note": "heat metal for lantern guard",
       "thoughts": [
-        "Log looks tidy now"
+        "Heat's steady, unlike my thoughts."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 30,
+      "emote": "question",
+      "note": "warm up",
+      "thoughts": [
+        "The fire's still demanding a break."
       ]
     }
   ]
