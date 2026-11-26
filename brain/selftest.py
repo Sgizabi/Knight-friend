@@ -417,4 +417,13 @@ for _n in (0, 5, 50):
     _res = [encounters.resolve({**_ha, "temper": "wary"}, "drive_off", "I step toward it", {**_hc, "help": _n}, _r)["result"] for _ in range(3000)]
     _odds.append(_res.count("good") / 3000)
 assert _odds[0] + .1 < _odds[1] < _odds[0] + .2 and abs(_odds[1] - _odds[2]) < .03, _odds   # +.15 at most, capped
+# the meter takes in one helper every HELP_GAP minutes: five at once still fill it, just not at once,
+# and a helper whose turn would come after the being has gone doesn't count
+_hp = lambda m: __import__("datetime").datetime.fromisoformat(f"2026-11-21T17:{m:02d}:00+00:00")
+_five = [_hv(f"f{i}aaaa", "2026-11-21T17:05:00+00:00") for i in range(5)]
+assert _vis.help_for(_ha, _five, now=_hp(5))["count"] == 1
+assert _vis.help_for(_ha, _five, now=_hp(8))["count"] == 1 + 3 // _vis.HELP_GAP
+assert _vis.help_for(_ha, _five, now=_hp(5 + 4 * _vis.HELP_GAP))["count"] == _vis.HELP_FULL
+_late = {**_ha, "end": f"2026-11-21T17:{10 - _vis.HELP_LATE:02d}:00+00:00"}   # five come just as it goes:
+assert _vis.help_for(_late, [_hv(f"g{i}aaaa", "2026-11-21T17:10:00+00:00") for i in range(5)], now=_hp(59))["count"] == 1
 print("all checks passed")

@@ -45,10 +45,12 @@ GIFT_EACH = 3                                                           # of any
 TITLE = re.compile(r"^Visit · (knock|gift|candle|question|answer|help) · (.*)$")
 # Helping drive off a hostile being (DESIGN.md section 8): each visitor counts once per being, and
 # the "driving it off" meter is full at HELP_FULL different helpers. A visitor is an anonymous tag
-# made by the home page for that browser session (a reload makes a new one: no accounts, so the
-# meter's own cap is what really keeps danger meaningful). An optional name to be remembered by:
-# letters only, short, screened by the checker, read by Rooken only as a plain fact.
+# kept in a cookie by the home page, so a reload is the same visitor (no accounts: a private
+# window or cleared cookies still make a new one, which is why the meter also fills slowly).
+# An optional name to be remembered by: letters only, short, screened by the checker, read by
+# Rooken only as a plain fact.
 HELP_FULL = 5
+HELP_GAP = 2         # minutes: the meter takes in at most one helper this often (see help_for)
 HELP_ITEM = re.compile(r"^([a-z0-9]+-\d{12}):([a-z0-9]{6})(?::(.+))?$")
 NAME = re.compile(r"^[^\W\d_]{2,16}$")
 HELP_EARLY, HELP_LATE = 2, 10    # minutes of slack around a being's stay (clocks, a run still starting)
@@ -222,15 +224,20 @@ def help_open(a, at):
     return start - dt.timedelta(minutes=HELP_EARLY) <= at <= last + dt.timedelta(minutes=HELP_LATE)
 
 
-def help_for(a, events):
+def help_for(a, events, now=None):
     """The meter for one being, from help visits: different helpers, first come, up to HELP_FULL.
-    Returns {"count", "names", "unnamed"} (names in the order they helped)."""
-    tags, names, unnamed = set(), [], 0
+    The meter takes in at most one helper every HELP_GAP minutes: helpers who come at the same
+    moment all count, just one after another, so it can't fill faster than (HELP_FULL - 1) x
+    HELP_GAP minutes however help arrives. A helper whose turn would come after the being has gone
+    (or after he has met it) doesn't count. Returns {"count", "names", "unnamed"} (names in the
+    order they counted)."""
+    now = now or _now()
+    first = {}                                   # each helper's first help for this being
     for e in events or []:
         if e.get("kind") != "help":
             continue
         parsed = parse_help(e.get("item"))
-        if not parsed or parsed[0] != a.get("id") or parsed[1] in tags:
+        if not parsed or parsed[0] != a.get("id"):
             continue
         try:
             at = dt.datetime.fromisoformat(e["time"])
@@ -238,14 +245,21 @@ def help_for(a, events):
             continue
         if not help_open(a, at):
             continue
-        tags.add(parsed[1])
-        if parsed[2] and parsed[2] not in names:
-            names.append(parsed[2])
+        if parsed[1] not in first or at < first[parsed[1]][0]:
+            first[parsed[1]] = (at, parsed[2])
+    names, unnamed, count, turn = [], 0, 0, None
+    for at, name in sorted(first.values(), key=lambda x: x[0]):
+        turn = at if turn is None else max(at, turn + dt.timedelta(minutes=HELP_GAP))
+        if turn > now or not help_open(a, turn):
+            break
+        count += 1
+        if name and name not in names:
+            names.append(name)
         else:
             unnamed += 1
-        if len(tags) >= HELP_FULL:
+        if count >= HELP_FULL:
             break
-    return {"count": len(tags), "names": names, "unnamed": unnamed}
+    return {"count": count, "names": names, "unnamed": unnamed}
 
 
 def helpers_line(h):

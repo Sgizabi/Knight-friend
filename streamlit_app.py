@@ -403,6 +403,18 @@ def name_ok(name):
         return None
 
 
+VISITOR_COOKIE = "keep_visitor"
+
+
+def keep_visitor_tag(tag):
+    """Keep this visitor's anonymous tag in a cookie on the home page (a year), so a reload counts
+    as the same visitor. A random code only: nothing about the person. The same tiny same-page
+    script as react_in_keep."""
+    st.iframe("<script>try{window.parent.document.cookie="
+              f"'{VISITOR_COOKIE}={tag}; max-age=31536000; path=/; SameSite=Lax'"
+              "}catch(e){}</script>", height=1)
+
+
 def help_section(name, state, found, visit):
     """A hostile being at the keep: visitors can help drive it off (DESIGN.md section 8). Each
     browser visit counts once per being; the meter is full at visitors.HELP_FULL helpers."""
@@ -412,11 +424,19 @@ def help_section(name, state, found, visit):
             and dt.datetime.fromisoformat(a["start"]) <= now < dt.datetime.fromisoformat(a["end"])]
     if not here:
         return
-    if "visitor_tag" not in state:
-        import secrets as _secrets
-        state.visitor_tag = "".join(_secrets.choice("abcdefghijklmnopqrstuvwxyz0123456789") for _ in range(6))
+    if "visitor_tag" not in state:     # the same visitor after a reload: the tag lives in a cookie
+        kept = str((st.context.cookies or {}).get(VISITOR_COOKIE, ""))
+        if len(kept) == 6 and all(ch in "abcdefghijklmnopqrstuvwxyz0123456789" for ch in kept):
+            state.visitor_tag, state.tag_kept = kept, True
+        else:
+            import secrets as _secrets
+            state.visitor_tag = "".join(_secrets.choice("abcdefghijklmnopqrstuvwxyz0123456789") for _ in range(6))
     helped = state.setdefault("helped", [])
     events = [e for e in (found or []) if e["kind"] == "help"]
+    for e in events:                   # what this visitor already helped with, before a reload too
+        parsed = visitors.parse_help(e.get("item"))
+        if parsed and parsed[1] == state.visitor_tag and parsed[0] not in helped:
+            helped.append(parsed[0])
     st.markdown("#### Something dangerous is at the keep")
     for a in here:
         meter = visitors.help_for(a, events)["count"]
@@ -424,7 +444,8 @@ def help_section(name, state, found, visit):
         st.markdown(f"<p>Something hostile has come to the keep. You can help drive it off from outside the "
                     f"walls. Your help adds to everyone's: when {full} visitors have helped, it may leave before "
                     f"{escape(name)} has to face it, and if {escape(name)} faces it, the help makes it a little "
-                    f"easier. {escape(name)} still decides what to do.</p>", unsafe_allow_html=True)
+                    f"easier. {escape(name)} still decides what to do. The meter takes in one helper every "
+                    f"{visitors.HELP_GAP} minutes, so it fills over a little while.</p>", unsafe_allow_html=True)
         st.progress(min(1.0, meter / full), text=f"Helping drive it off: {min(meter, full)} of {full}")
         if a["id"] in helped:
             st.caption("You've helped with this one. Thank you!")
@@ -446,6 +467,9 @@ def help_section(name, state, found, visit):
             if visit("help", item, f"You shout and clatter from beyond the walls. {name} hears of it "
                                    "within a minute or two."):
                 helped.append(a["id"])
+                if not state.get("tag_kept"):
+                    keep_visitor_tag(state.visitor_tag)
+                    state.tag_kept = True
 
 
 @st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload

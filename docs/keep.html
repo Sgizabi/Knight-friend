@@ -1152,7 +1152,7 @@ const REPO = (() => {
 let liveCandles = null, candlesNow = 0;
 const VISIT_TITLE = /^Visit · (knock|gift|candle|question|answer|help) · (.*)$/;
 const seenRuns = new Set();
-const helpTags = new Map();   // (help visits per being: see shoo, below)
+const helpTags = new Map();   // being id -> (helper tag -> when it first helped): see helpCount, below
 let pollBaseline = false, lastPoll = 0, polledGifts = [], localGifts = [], localRecent = [];
 async function refreshVisits() {
   if (DEMO || !REPO || document.hidden) return showCandles();
@@ -1167,7 +1167,7 @@ async function refreshVisits() {
       liveCandles = { n: runs.filter(x => x.kind === 'candle' && x.at >= lastEvening()).length, at: Date.now() };
       polledGifts = runs.filter(x => x.kind === 'gift').map(x => ({ item: x.item, at: x.at }));
       helpTags.clear();                    // the "driving it off" meter, live: different helpers per being
-      for (const x of runs) if (x.kind === 'help') { const [aid, tag] = x.item.split(':'); if (!helpTags.has(aid)) helpTags.set(aid, new Set()); helpTags.get(aid).add(tag); }
+      for (const x of runs) if (x.kind === 'help') addHelp(x.item, x.at);
       lastPoll = Date.now();
       localGifts = localGifts.filter(g => g.at > lastPoll - 20000);   // older ones are in the poll by now
       for (const v of runs) {
@@ -1223,7 +1223,7 @@ function react(kind, item, someoneElse) {
   } else if (kind === 'question') toast(someoneElse ? '🃏 Someone left a question card at the gate' : '🃏 A card at the gate');
   else if (kind === 'help') {
     const aid = item.split(':')[0], b = beings.get(aid);
-    if (!someoneElse) { const [, tag] = item.split(':'); if (!helpTags.has(aid)) helpTags.set(aid, new Set()); helpTags.get(aid).add(tag || 'me'); }
+    if (!someoneElse) addHelp(item, Date.now());
     if (b?.root) shoo(b, true);
     toast(someoneElse ? '📣 Someone is helping drive it off' : '📣 You help drive it off');
   }
@@ -1231,7 +1231,19 @@ function react(kind, item, someoneElse) {
 }
 // Visitors helping drive off a hostile being (DESIGN.md section 8). The page counts the meter live
 // from the Visit runs (one per helper per being); Rooken's side counts it again when it matters.
-const helpCount = a => Math.max(a?.help || 0, helpTags.get(a?.id)?.size || 0);
+// Counted the way Rooken's side counts it (visitors.help_for): one helper every HELP_GAP minutes.
+const HELP_GAP = 2 * 60000;
+function addHelp(item, at) {
+  const [aid, tag] = String(item).split(':'); if (!aid || !tag) return;
+  if (!helpTags.has(aid)) helpTags.set(aid, new Map());
+  const m = helpTags.get(aid); if (!m.has(tag) || at < m.get(tag)) m.set(tag, at);
+}
+function helpCount(a) {
+  const times = [...(helpTags.get(a?.id)?.values() || [])].sort((x, y) => x - y), now = Date.now();
+  let n = 0, turn = null;
+  for (const at of times) { turn = turn === null ? at : Math.max(at, turn + HELP_GAP); if (turn > now) break; n++; }
+  return Math.min(a?.help_full || 5, Math.max(a?.help?.count ?? a?.help ?? 0, n));
+}
 // The instant reaction, on this screen only: it flinches away, a torch flares at it if it is
 // dangerous, and Rooken glances its way. Nothing here reaches Rooken: real help goes through the
 // Visit tab. One shared flare sprite, no extra lights.
@@ -2114,7 +2126,7 @@ renderer.domElement.addEventListener('pointerup', e => {
     const n = helpCount(a), full = a?.help_full || 5, open = a?.help_open !== false;
     const where = window.parent !== window ? 'the Visit tab below' : 'the Visit tab on its home page';
     card.innerHTML = danger
-      ? `Something dangerous<small>You shout from beyond the walls and it flinches. ${open ? `To really help drive it off, use ${where}: ${Math.min(n, full)} of ${full} have helped so far.` : `${esc(name)} has faced it already.`}</small>`
+      ? `Something dangerous<small>You shout from beyond the walls and it flinches. ${open ? `To really help drive it off, use ${where}: ${Math.min(n, full)} of ${full} counted so far (one helper every ${HELP_GAP / 60000} minutes).` : `${esc(name)} has faced it already.`}</small>`
       : `Something is here<small>It ${a?.nature === 'gentle' ? 'startles, then settles' : 'flinches, and watches you back'}. ${esc(name)} glances its way.</small>`;
     card.style.display = 'block'; clearTimeout(cardTimer); cardTimer = setTimeout(() => card.style.display = 'none', 7000);
     return;
