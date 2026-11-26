@@ -4,16 +4,35 @@
 <meta charset="utf-8">
 <title>Bathhouse Builder – Shim Summary (Enhanced)</title>
 <style>
-:root{--bg:#f0f0f0;--fg:#333;--panel:#fff;--border:#555;--block:#a2d5f2}
-@media (prefers-color-scheme:dark){
-  :root{--bg:#202020;--fg:#ddd;--panel:#2a2a2a;--border:#777;--block:#5a7ea5}
+:root{
+  --bg:#f0f0f0;--fg:#333;--panel:#fff;--border:#555;--block:#a2d5f2
 }
-body{font-family:sans-serif;background:var(--bg);margin:0;padding:1em;color:var(--fg)}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#202020;--fg:#ddd;--panel:#2a2a2a;--border:#777;--block:#5a7ea5
+  }
+  .control button.copy{margin-left:auto}
+}
+body{
+  font-family:sans-serif;background:var(--bg);margin:0;padding:1em;color:var(--fg)
+}
 h1{margin-top:0}
-#stack{border:2px solid var(--border);background:var(--panel);width:200px;height:200px;margin:0 auto;position:relative}
-.block{position:absolute;width:100%;height:20px;background:var(--block);box-sizing:border-box;border:1px solid var(--border)}
-.control{margin:.3em 0;display:flex;flex-wrap:wrap;gap:.2em;align-items:center}
-#log,#summary,#preview{margin-top:1em;padding:5px;background:var(--panel);border:1px solid var(--border);max-height:150px;overflow:auto}
+#stack{
+  border:2px solid var(--border);background:var(--panel);
+  width:200px;height:200px;margin:0 auto;position:relative
+}
+.block{
+  position:absolute;width:100%;height:20px;background:var(--block);
+  box-sizing:border-box;border:1px solid var(--border)
+}
+.control{
+  margin:.3em 0;display:flex;flex-wrap:wrap;gap:.2em;align-items:center
+}
+.control button.copy{margin-left:auto}
+#log,#summary,#preview{
+  margin-top:1em;padding:5px;background:var(--panel);
+  border:1px solid var(--border);max-height:150px;overflow:auto
+}
 button,select{margin:0}
 pre{margin:0;white-space:pre-wrap}
 #darkToggle{margin-left:auto}
@@ -30,7 +49,7 @@ pre{margin:0;white-space:pre-wrap}
   <button id="resetAll">Reset All</button>
   <button id="export">Export CSV</button>
   <button id="exportTest">Export Test</button>
-  <button id="copy">Copy Preview</button>
+  <button class="copy" id="copy">Copy Preview</button>
   <button id="clearLog">Clear Log</button>
   <button id="runTest">Run UI Test</button>
   <label id="darkToggle"><input type="checkbox"> Dark</label>
@@ -66,7 +85,12 @@ function draw(){
   overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.total,0);
   updateCSVPreview();
 }
-function logMsg(m){const p=document.createElement('p');p.textContent=m;log.appendChild(p);log.scrollTop=log.scrollHeight;}
+function logMsg(m){
+  const p=document.createElement('p');
+  p.textContent=m;
+  log.appendChild(p);
+  log.scrollTop=log.scrollHeight;
+}
 function add(){const s=sections[cur];s.level++;s.total++;logMsg('Added shim '+s.level+' to section '+cur);draw();}
 function rem(){const s=sections[cur];if(s.level){logMsg('Removed shim '+s.level+' from section '+cur);s.level--;draw();}}
 function reset(){if(!confirm('Reset section '+cur+'?'))return;const s=sections[cur];if(s.level)logMsg('Reset section '+cur+', removed '+s.level+' shims');s.level=0;s.total=0;draw();}
@@ -90,17 +114,24 @@ function exportTest(){
   }
   logMsg('Export test passed.');
 }
-function copyPreview(){navigator.clipboard.writeText(preview.textContent).then(()=>logMsg('Preview copied'),()=>logMsg('Copy failed'));}
+function copyPreview(){
+  navigator.clipboard.writeText(preview.textContent)
+    .then(()=>logMsg('Preview copied'))
+    .catch(()=>logMsg('Copy failed'));
+}
 function runUITest(){
   logMsg('UI test start');
-  add();add();rem();reset();add();resetAll();logMsg('UI test end');
+  add();add();rem();reset();add();resetAll();
+  logMsg('UI test end');
 }
 sel.onchange=()=>{cur=+sel.value;draw();};
 $('add').onclick=add;$('remove').onclick=rem;$('reset').onclick=reset;$('resetAll').onclick=resetAll;
 $('export').onclick=exportCSV;$('exportTest').onclick=exportTest;$('copy').onclick=copyPreview;
 $('clearLog').onclick=()=>{log.innerHTML='';};
 $('runTest').onclick=runUITest;
-$('darkToggle').querySelector('input').onchange=e=>{document.documentElement.classList.toggle('dark',e.target.checked);};
+$('darkToggle').querySelector('input').onchange=e=>{
+  document.documentElement.classList.toggle('dark',e.target.checked);
+};
 draw();
 </script>
 </body>
