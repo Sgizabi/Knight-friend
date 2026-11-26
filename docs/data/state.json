@@ -30,74 +30,69 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 67,
-    "last_wake": "2026-11-26T12:57:39+00:00",
+    "wakeups": 68,
+    "last_wake": "2026-11-26T15:01:34+00:00",
     "nights_slept_through": 28
   },
   "plan": {
-    "start": "2026-11-26T12:57:39+00:00",
-    "mood": "curious",
+    "start": "2026-11-26T15:01:34+00:00",
+    "mood": "content",
     "steps": [
       {
         "place": "courtyard",
-        "action": "work",
-        "minutes": 30,
-        "emote": "question",
-        "note": "stone counting",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "These stones never line up right."
+          "Stone rows feel like a spreadsheet"
         ]
       },
       {
         "place": "workbench",
         "action": "work",
-        "minutes": 30,
-        "emote": "question",
-        "note": "sharpen tools",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "A sharper file saves a lot of time."
+          "Need to tighten the lantern guard screw"
         ]
       },
       {
         "place": "forge",
         "action": "work",
-        "minutes": 30,
-        "emote": "question",
-        "note": "heat metal for lantern guard",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "Heat's steady, unlike my thoughts."
+          "Fire is still demanding a break"
         ]
       },
       {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 30,
-        "emote": "question",
-        "note": "warm up",
+        "place": "desk",
+        "action": "write",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "",
         "thoughts": [
-          "The fire's still demanding a break."
+          "Updating inventory list"
         ]
       }
-    ],
-    "applied_until": "2026-11-26T14:30:31+00:00",
-    "live_thought": {
-      "text": "The flames crackle, stones keep their secrets.",
-      "time": "2026-11-26T14:30:31+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-26T15:00:30+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-26T15:01:34+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "record size and position of the half‑loose slab and mark it for later repair",
-    "thought": "The stones are still shifting, might as well note the new loose slab."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 91.0,
+    "rest": 88.0,
     "warmth": 75.7,
-    "inspiration": 46.2,
+    "inspiration": 58.2,
     "spirit": 71.4
   },
   "needs_prev": {
@@ -106,7 +101,7 @@
     "inspiration": 46.2,
     "spirit": 71.9
   },
-  "needs_at": "2026-11-26T15:00:30+00:00",
+  "needs_at": "2026-11-26T15:01:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2153,8 +2148,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-26T14:30:31+00:00",
-    "seen_until": "2026-11-26T12:51:33+00:00"
+    "updated": "2026-11-26T15:01:34+00:00",
+    "seen_until": "2026-11-26T14:55:28+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2384,5 +2379,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T15:00:30+00:00"
+  "exported": "2026-11-26T15:01:34+00:00"
 }
