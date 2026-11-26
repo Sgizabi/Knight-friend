@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-26T15:00:26+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-26T15:00:30+00:00",
+  "place": "courtyard",
+  "action": "pace",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "record size and position of the half‑loose slab and mark it for later repair",
+  "thought": "The stones are still shifting, might as well note the new loose slab."
 }
