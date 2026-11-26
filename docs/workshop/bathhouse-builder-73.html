@@ -11,29 +11,27 @@
   :root{
     --bg:#202020;--fg:#ddd;--panel:#2a2a2a;--border:#777;--block:#5a7ea5
   }
-  .control button.copy{margin-left:auto}
 }
 body{
-  font-family:sans-serif;background:var(--bg);margin:0;padding:1em;color:var(--fg)
+  margin:0;padding:1em;font-family:sans-serif;background:var(--bg);color:var(--fg)
 }
 h1{margin-top:0}
 #stack{
-  border:2px solid var(--border);background:var(--panel);
-  width:200px;height:200px;margin:0 auto;position:relative
+  width:200px;height:200px;margin:0 auto;position:relative;
+  border:2px solid var(--border);background:var(--panel)
 }
 .block{
-  position:absolute;width:100%;height:20px;background:var(--block);
-  box-sizing:border-box;border:1px solid var(--border)
+  position:absolute;bottom:0;left:0;width:100%;height:20px;
+  background:var(--block);border:1px solid var(--border);box-sizing:border-box
 }
 .control{
-  margin:.3em 0;display:flex;flex-wrap:wrap;gap:.2em;align-items:center
+  display:flex;flex-wrap:wrap;gap:.2em;align-items:center;margin:.3em 0
 }
 .control button.copy{margin-left:auto}
 #log,#summary,#preview{
   margin-top:1em;padding:5px;background:var(--panel);
   border:1px solid var(--border);max-height:150px;overflow:auto
 }
-button,select{margin:0}
 pre{margin:0;white-space:pre-wrap}
 #darkToggle{margin-left:auto}
 </style>
@@ -42,7 +40,7 @@ pre{margin:0;white-space:pre-wrap}
 <h1>Bathhouse Floor Shim Stacker</h1>
 <div class="control">
   <label for="section">Section:</label>
-  <select id="section"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select>
+  <select id="section"><option>0</option><option>1</option><option>2</option></select>
   <button id="add">Add Shim</button>
   <button id="remove">Remove Shim</button>
   <button id="reset">Reset Section</button>
@@ -63,48 +61,47 @@ pre{margin:0;white-space:pre-wrap}
 </div>
 
 <div id="preview"><strong>CSV preview:</strong><pre id="csvPreview"></pre></div>
-
 <div id="log"></div>
 
 <script>
 let cur=0;
-const sections=[{level:0,total:0},{level:0,total:0},{level:0,total:0}];
-const $=id=>document.getElementById(id);
+const sections=[{l:0,t:0},{l:0,t:0},{l:0,t:0}];
+const $=i=>document.getElementById(i);
 const stack=$('stack'),log=$('log'),sel=$('section'),secSum=$('sectionSum'),overall=$('overallSum'),preview=$('csvPreview');
 
 function draw(){
   const s=sections[cur];
   stack.innerHTML='';
-  for(let i=0;i<s.level;i++){
+  for(let i=0;i<s.l;i++){
     const d=document.createElement('div');
     d.className='block';
-    d.style.bottom=i*20+'px';
+    d.style.bottom=(i*20)+'px';
     stack.appendChild(d);
   }
-  secSum.textContent='Section '+cur+' total: '+s.total;
-  overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.total,0);
-  updateCSVPreview();
+  secSum.textContent='Section '+cur+' total: '+s.t;
+  overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.t,0);
+  updateCSV();
 }
 function logMsg(m){
   const p=document.createElement('p');
-  p.textContent=m;
+  p.textContent=m.replace(/\n/g,'');
   log.appendChild(p);
   log.scrollTop=log.scrollHeight;
 }
-function add(){const s=sections[cur];s.level++;s.total++;logMsg('Added shim '+s.level+' to section '+cur);draw();}
-function rem(){const s=sections[cur];if(s.level){logMsg('Removed shim '+s.level+' from section '+cur);s.level--;draw();}}
-function reset(){if(!confirm('Reset section '+cur+'?'))return;const s=sections[cur];if(s.level)logMsg('Reset section '+cur+', removed '+s.level+' shims');s.level=0;s.total=0;draw();}
-function resetAll(){if(!confirm('Reset all sections?'))return;sections.forEach(s=>{s.level=0;s.total=0;});logMsg('All sections cleared');draw();}
+function add(){const s=sections[cur];s.l++;s.t++;logMsg('Added shim '+s.l+' to section '+cur);draw();}
+function rem(){const s=sections[cur];if(s.l){logMsg('Removed shim '+s.l+' from section '+cur);s.l--;draw();}}
+function reset(){if(!confirm('Reset section '+cur+'?'))return;const s=sections[cur];if(s.l)logMsg('Reset section '+cur+', removed '+s.l+' shims');s.l=0;s.t=0;draw();}
+function resetAll(){if(!confirm('Reset all sections?'))return;sections.forEach(s=>{s.l=0;s.t=0});logMsg('All sections cleared');draw();}
 function exportCSV(){
-  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n')+'\n';
+  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download='shim_summary.csv';
   a.click();URL.revokeObjectURL(a.href);
 }
-function updateCSVPreview(){preview.textContent='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n');}
+function updateCSV(){preview.textContent='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n');}
 function exportTest(){
-  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.level+','+s.total).join('\n')+'\n';
+  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
   const rows=csv.trim().split('\n');
   const hdr=rows[0].split(',');
   if(hdr.length!==3||hdr[0]!='section'||hdr[1]!='level'||hdr[2]!='total'){logMsg('Export test failed: header');return;}
@@ -129,9 +126,7 @@ $('add').onclick=add;$('remove').onclick=rem;$('reset').onclick=reset;$('resetAl
 $('export').onclick=exportCSV;$('exportTest').onclick=exportTest;$('copy').onclick=copyPreview;
 $('clearLog').onclick=()=>{log.innerHTML='';};
 $('runTest').onclick=runUITest;
-$('darkToggle').querySelector('input').onchange=e=>{
-  document.documentElement.classList.toggle('dark',e.target.checked);
-};
+$('darkToggle').querySelector('input').onchange=e=>document.documentElement.classList.toggle('dark',e.target.checked);
 draw();
 </script>
 </body>
