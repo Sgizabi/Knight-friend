@@ -1,51 +1,36 @@
 {
-  "start": "2026-11-26T15:01:34+00:00",
+  "start": "2026-11-26T17:01:40+00:00",
   "mood": "content",
   "steps": [
-    {
-      "place": "courtyard",
-      "action": "stand",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Stone rows feel like a spreadsheet"
-      ]
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Need to tighten the lantern guard screw"
-      ]
-    },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "Fire is still demanding a break"
+        "Need to tighten the bellows a bit more."
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "spark",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "Updating inventory list"
+        "Updating the stone log feels oddly satisfying."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "The heat keeps the chill off my armor."
       ]
     }
-  ],
-  "applied_until": "2026-11-26T16:30:24+00:00",
-  "live_thought": {
-    "text": "Stone warmth steadies me, fire crackles",
-    "time": "2026-11-26T16:30:24+00:00"
-  }
+  ]
 }

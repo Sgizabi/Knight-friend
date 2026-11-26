@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-19T09:01:30+00:00",
-    "activity": "craft",
-    "mood": "frustrated",
-    "emote": "spark",
-    "text": "I fitted the new oil seal onto the bottle and gave it a test tilt. The oil still finds a way out, like a leaky gossip. I’ll have to sand the edge a bit more before it stops spilling.",
-    "creations": []
-  },
-  {
     "time": "2026-11-19T11:01:39+00:00",
     "activity": "repair",
     "mood": "frustrated",
@@ -513,6 +505,15 @@
     "mood": "content",
     "emote": "spark",
     "text": "I checked the fourth row of stones. Two more slabs were shifting a bit. I wrote their dimensions and taped a marker. Glove stayed clear.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-26T17:01:40+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "content",
+    "emote": "sigh",
+    "text": "I walked to the courtyard again and scanned the fifth row. One slab shifted a hair when I nudged it. I logged the size and taped a marker. Nothing else moved.",
     "creations": []
   }
 ]
