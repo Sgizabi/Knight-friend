@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-26T23:00:30+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-26T23:00:33+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "continue",
+    "thought": "The storm rattles the roof gap, but the forge hums steady. I feel a pull to finish the bathhouse builder tweaks before the rain seeps in."
   },
   "needs": {
-    "rest": 69.2,
-    "warmth": 83.1,
+    "rest": 70.1,
+    "warmth": 83.6,
     "inspiration": 86.6,
-    "spirit": 65.4
+    "spirit": 65.1
   },
   "needs_prev": {
     "rest": 69.2,
@@ -106,7 +106,7 @@
     "inspiration": 86.6,
     "spirit": 65.4
   },
-  "needs_at": "2026-11-26T23:00:30+00:00",
+  "needs_at": "2026-11-26T23:00:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2367,5 +2367,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-26T23:00:30+00:00"
+  "exported": "2026-11-26T23:00:33+00:00"
 }

@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-26T23:00:30+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-26T23:00:33+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "continue",
+  "thought": "The storm rattles the roof gap, but the forge hums steady. I feel a pull to finish the bathhouse builder tweaks before the rain seeps in."
 }
