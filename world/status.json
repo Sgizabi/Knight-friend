@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-27T02:30:27+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "since": "2026-11-27T02:33:30+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "log sizes and stability of the next row, note any new movement",
-  "thought": "The stone rows are still shifting a bit, and I want to see if the eighth row behaves differently."
+  "note": "continue",
+  "thought": "I’ve been staring at the same stone rows for hours. The fire’s steady, but my mind wants to move. The bathhouse builder page still has that stray newline and th"
 }
