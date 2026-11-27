@@ -91,18 +91,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-27T15:00:30+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-27T15:00:34+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "continue counting the stones in the courtyard wall and note any new cracks",
+    "thought": "The wind rattles the repaired roof. I want to see if any new cracks showed up while I was fixing the lantern guard."
   },
   "needs": {
-    "rest": 93.8,
-    "warmth": 67.8,
+    "rest": 94.1,
+    "warmth": 68.8,
     "inspiration": 85.2,
-    "spirit": 68.9
+    "spirit": 68.5
   },
   "needs_prev": {
     "rest": 93.8,
@@ -110,7 +110,7 @@
     "inspiration": 85.2,
     "spirit": 68.9
   },
-  "needs_at": "2026-11-27T15:00:30+00:00",
+  "needs_at": "2026-11-27T15:00:34+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2393,5 +2393,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T15:00:30+00:00"
+  "exported": "2026-11-27T15:00:34+00:00"
 }
