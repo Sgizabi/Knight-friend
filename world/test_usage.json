@@ -1,10 +1,10 @@
 {
   "date": "2026-11-27",
-  "tokens": 40593,
+  "tokens": 50704,
   "by_model": {
-    "openai/gpt-oss-120b": 27646,
-    "qwen/qwen3.8-27b": 9313,
-    "openai/gpt-oss-20b": 3634
+    "openai/gpt-oss-120b": 34146,
+    "qwen/qwen3.8-27b": 11886,
+    "openai/gpt-oss-20b": 4672
   },
   "runs": [
     {
@@ -26,6 +26,10 @@
     {
       "note": "road test: traveller scholar",
       "tokens": 6951
+    },
+    {
+      "note": "road test: knight errant",
+      "tokens": 10111
     }
   ]
 }
