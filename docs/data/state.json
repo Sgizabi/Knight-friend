@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-27T23:00:34+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-27T23:00:37+00:00",
+    "place": "workbench",
+    "action": "work",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "make",
+    "thought": "The fire is steady, the roof feels solid after the board swap. I have a few shards in my pocket and a spare piece of wood on the bench."
   },
   "needs": {
-    "rest": 71.3,
-    "warmth": 85.0,
+    "rest": 71.7,
+    "warmth": 84.0,
     "inspiration": 72.3,
-    "spirit": 74.3
+    "spirit": 73.1
   },
   "needs_prev": {
     "rest": 71.3,
@@ -106,7 +106,7 @@
     "inspiration": 72.3,
     "spirit": 74.3
   },
-  "needs_at": "2026-11-27T23:00:34+00:00",
+  "needs_at": "2026-11-27T23:00:37+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2518,5 +2518,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T23:00:34+00:00"
+  "exported": "2026-11-27T23:00:37+00:00"
 }

@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-27T23:00:34+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-27T23:00:37+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "make",
+  "thought": "The fire is steady, the roof feels solid after the board swap. I have a few shards in my pocket and a spare piece of wood on the bench."
 }
