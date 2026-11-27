@@ -42,5 +42,10 @@
         "Heat from the forge might melt the extra glass safely."
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-27T17:30:25+00:00",
+  "live_thought": {
+    "text": "The wood grain looks like old scars.",
+    "time": "2026-11-27T17:30:25+00:00"
+  }
 }

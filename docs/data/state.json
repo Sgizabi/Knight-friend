@@ -78,11 +78,16 @@
           "Heat from the forge might melt the extra glass safely."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-27T17:30:25+00:00",
+    "live_thought": {
+      "text": "The wood grain looks like old scars.",
+      "time": "2026-11-27T17:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T17:01:38+00:00",
+    "since": "2026-11-27T17:30:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 85.7,
+    "warmth": 83.3,
+    "inspiration": 77.6,
+    "spirit": 73.0
+  },
+  "needs_prev": {
     "rest": 85.9,
     "warmth": 80.0,
     "inspiration": 77.6,
     "spirit": 73.5
   },
-  "needs_prev": {
-    "rest": 89.6,
-    "warmth": 79.3,
-    "inspiration": 89.6,
-    "spirit": 67.3
-  },
-  "needs_at": "2026-11-27T17:01:38+00:00",
+  "needs_at": "2026-11-27T17:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2152,7 +2157,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T17:01:38+00:00",
+    "updated": "2026-11-27T17:30:25+00:00",
     "seen_until": "2026-11-27T16:55:30+00:00"
   },
   "gifts": [],
@@ -2394,5 +2399,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T17:01:38+00:00"
+  "exported": "2026-11-27T17:30:26+00:00"
 }
