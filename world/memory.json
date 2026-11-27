@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.878,
-    "craft": 23.878
+    "repair": 23.923,
+    "craft": 23.923
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 4,
+  "entries_since_condense": 5,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,7 +38,7 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 25,
-      "strength": 12.791,
+      "strength": 12.279,
       "last": "2026-11-27T15:00:36+00:00"
     }
   ],
@@ -58,7 +58,7 @@
     "Stone's warm, fire's steady, mind drifts."
   ],
   "last_glance": "2026-11-27T16:30:24+00:00",
-  "visits_seen_until": "2026-11-27T14:55:32+00:00",
+  "visits_seen_until": "2026-11-27T16:55:30+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

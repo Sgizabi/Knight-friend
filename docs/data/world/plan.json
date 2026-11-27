@@ -1,27 +1,7 @@
 {
-  "start": "2026-11-27T15:01:37+00:00",
-  "mood": "curious",
+  "start": "2026-11-27T17:01:38+00:00",
+  "mood": "content",
   "steps": [
-    {
-      "place": "courtyard",
-      "action": "pace",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "Wind makes the stones feel restless"
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "",
-      "thoughts": [
-        "Need to test the new hammer handle"
-      ]
-    },
     {
       "place": "fire",
       "action": "sit",
@@ -29,17 +9,37 @@
       "emote": "heart",
       "note": "",
       "thoughts": [
-        "Fire’s heat is a good excuse for a short break"
+        "The fire's heat feels like a coworker on a break."
       ]
     },
     {
-      "place": "bathhouse",
+      "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "sigh",
+      "emote": "question",
       "note": "",
       "thoughts": [
-        "Check the shim tooltip on the tablet again"
+        "Need to finish the tooltip flicker test."
+      ]
+    },
+    {
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "",
+      "thoughts": [
+        "Check the stone rows for new cracks."
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "music",
+      "note": "",
+      "thoughts": [
+        "Heat from the forge might melt the extra glass safely."
       ]
     }
   ]

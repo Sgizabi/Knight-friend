@@ -30,34 +30,14 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 76,
-    "last_wake": "2026-11-27T15:01:37+00:00",
+    "wakeups": 77,
+    "last_wake": "2026-11-27T17:01:38+00:00",
     "nights_slept_through": 32
   },
   "plan": {
-    "start": "2026-11-27T15:01:37+00:00",
-    "mood": "curious",
+    "start": "2026-11-27T17:01:38+00:00",
+    "mood": "content",
     "steps": [
-      {
-        "place": "courtyard",
-        "action": "pace",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "",
-        "thoughts": [
-          "Wind makes the stones feel restless"
-        ]
-      },
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "",
-        "thoughts": [
-          "Need to test the new hammer handle"
-        ]
-      },
       {
         "place": "fire",
         "action": "sit",
@@ -65,40 +45,55 @@
         "emote": "heart",
         "note": "",
         "thoughts": [
-          "Fire’s heat is a good excuse for a short break"
+          "The fire's heat feels like a coworker on a break."
         ]
       },
       {
-        "place": "bathhouse",
+        "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "sigh",
+        "emote": "question",
         "note": "",
         "thoughts": [
-          "Check the shim tooltip on the tablet again"
+          "Need to finish the tooltip flicker test."
+        ]
+      },
+      {
+        "place": "courtyard",
+        "action": "pace",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "",
+        "thoughts": [
+          "Check the stone rows for new cracks."
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "music",
+        "note": "",
+        "thoughts": [
+          "Heat from the forge might melt the extra glass safely."
         ]
       }
-    ],
-    "applied_until": "2026-11-27T16:30:24+00:00",
-    "live_thought": {
-      "text": "Stone's warm, fire's steady, mind drifts.",
-      "time": "2026-11-27T16:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-27T17:00:32+00:00",
-    "place": "desk",
-    "action": "write",
+    "awake": false,
+    "since": "2026-11-27T17:01:38+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "document the guard dimensions and fit notes",
-    "thought": "The fire kept its steady heat while I logged the lantern guard details. I think I’ll write it up."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 89.9,
+    "rest": 85.9,
     "warmth": 80.0,
-    "inspiration": 89.6,
-    "spirit": 66.9
+    "inspiration": 77.6,
+    "spirit": 73.5
   },
   "needs_prev": {
     "rest": 89.6,
@@ -106,7 +101,7 @@
     "inspiration": 89.6,
     "spirit": 67.3
   },
-  "needs_at": "2026-11-27T17:00:32+00:00",
+  "needs_at": "2026-11-27T17:01:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2144,6 +2139,10 @@
     {
       "title": "Inventory and Repair Plans",
       "form": "list"
+    },
+    {
+      "title": "Lantern Guard Catalog",
+      "form": "list"
     }
   ],
   "interests": [
@@ -2153,8 +2152,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T16:30:24+00:00",
-    "seen_until": "2026-11-27T14:55:32+00:00"
+    "updated": "2026-11-27T17:01:38+00:00",
+    "seen_until": "2026-11-27T16:55:30+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2395,5 +2394,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T17:00:32+00:00"
+  "exported": "2026-11-27T17:01:38+00:00"
 }
