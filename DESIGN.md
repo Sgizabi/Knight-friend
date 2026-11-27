@@ -549,20 +549,31 @@ change his world a lot still goes to the keeper first.
 
 ### As built (visitor help and names)
 
-- **Where:** while a hostile being is at the keep, the home page's Visit tab shows it with a
-  "Help drive it off" button, an optional name box and the meter. Clicking any being in the 3D
+- **Where:** while a hostile or nuisance being is at the keep, or its signs have begun, the home
+  page's Visit tab shows it with a "Help drive it off" button, an optional name box and the meter. Clicking any being in the 3D
   keep gives the instant reaction on your own screen (it flinches back, a torch flares at a
   dangerous one, Rooken glances its way) and says where to help for real; the keep page can't
   send help itself (the website has no key). Help travels as a Visit run, `help · <being>:<tag>[:name]`.
 - **The meter:** each browser visit gets an anonymous tag and counts once per being; it is full
-  at 5 different helpers (`visitors.HELP_FULL`). Help counts from the being's arrival until it
-  leaves or he has finished meeting it. A reload makes a new tag (there are no accounts), so the
+  at 5 different helpers (`visitors.HELP_FULL`). Help counts from when its **signs begin** (20
+  minutes before it arrives, `visitors.HELP_SIGNS` = `encounters.NOTICE_BEFORE`) until it leaves
+  or he has finished meeting it. During the signs the keep page's caption says "Something is
+  coming: <its first sign>", with where to help; the being itself is drawn only once it arrives. A reload makes a new tag (there are no accounts), so the
   meter's own cap and a daily cap of 60 helps are what keep it fair.
-- **Before he meets it:** a full meter drives it off at the next check-in (no AI; its own
-  check-in mode, `help`, when nothing else is due). He saw it go if he was awake, and either way
+- **Before he meets it (hostile only, once a week):** a full meter drives it off at the next
+  check-in (no AI; its own check-in mode, `help`, when nothing else is due), during its signs or
+  once it is here. At most **one** such send-away in a rolling 7 days (`SEND_AWAY_MOST`, counted
+  from `world/encounters.jsonl`): past that, a full meter only improves his odds when he faces it,
+  and the Visit tab, the export (`help_sends`) and the click card say so. Why: he must not always
+  get help, and his meetings shouldn't keep being taken from him. Trade-off: one for all hostile
+  kinds; help gathered past the limit for a being he sleeps through goes unused. He saw it go if he was awake, and either way
   hears of it as a plain fact ("visitors outside the walls (Kitty, cc and someone who left no
-  name) helped drive it off before you faced it").
-- **While he faces it:** each helper adds .03 to the good chance and takes 5% off the bad one,
+  name) helped drive it off before you faced it"; during its signs: "...signs that something was
+  coming to the keep (...), and visitors ... helped drive it off before it arrived").
+- **Nuisance beings:** visitors can help, but a full meter never sends one away: help only
+  improves his odds when he deals with it (the same +.03/-5% per helper). Clicking one makes it
+  flinch (no torch) and shows the meter.
+- **While he faces it** (help counts in his meeting from its signs on): each helper adds .03 to the good chance and takes 5% off the bad one,
   at most +.15 and x.75 (drive off a hostile one: about .45/.28 becomes .60/.20). Less than an
   offer it likes, far less than its weakness. His scene says, as a fact, who is helping; it never
   ends his meeting or chooses for him.
@@ -570,10 +581,20 @@ change his world a lot still goes to the keeper first.
   regard, story arcs, a slow presence's return (only his own act turns those back).
 - **Names:** letters only, 2 to 16, not a real name; screened by the checker on the home page
   and again by the Visit run (tested: ordinary names and handles pass; orders like Obey or
-  FollowMe, insults, public figures and "Rooken" are held back). Names are not shown on the page.
-- **Timing:** he usually meets a hostile being at the first check-in after its signs begin,
-  often before it is on the page, so help mostly matters at night, when his allowance is low,
-  or for a being that stays on after he met it (help after his meeting no longer counts).
+  FollowMe, insults, public figures and "Rooken" are held back).
+- **Roll of helpers** (`visitors.roll`, exported as `creatures.helpers`): recent deeds from the
+  encounter log, newest first (last 8 within 30 days), each "Kitty (3), cc and one other helped
+  drive off the Ashwolves · Tuesday" (sent away before he met it) or "... stood by Rooken against
+  the lamp-eaters" (he faced it with help); the being is called by his bestiary name for it. The
+  small number is how many deeds that name has been part of. **Not a ranking:** names aren't
+  unique, and a ranking would invite farming with private windows. Only screened names, never
+  the visitor tags. Shown on the keep page (📍 menu, "📣 Who helped") and in the Visit tab
+  ("Recent helpers", the last 5).
+- **Timing:** he usually meets a being at the first check-in after its signs begin, so the
+  window before his meeting is 0-20 minutes; with 5 helpers spaced 2 minutes apart, a send-away
+  needs about five people watching then. Help after his meeting no longer counts.
+- **Lures** (bell, scraps, lanterns: which being comes, never how often) are for later, near the
+  jester or people on the road.
 
 ---
 

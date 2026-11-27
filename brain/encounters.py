@@ -40,7 +40,7 @@ MARK_WISDOM = {"young": .3, "old": 1.25, "scarred": 1.25}   # the young don't kn
 AGE_MEMORY = {"young": .5, "old": 2.0}     # and the old hold on to what they know twice as long
 CUNNING_CUT = .6            # a quick learner that comes ready for his last answer blunts it this much
 TOOL_BONUS = .08            # using something he made for the keep
-HELP_GOOD = .03             # each visitor helping drive off a hostile being (up to visitors.HELP_FULL = 5):
+HELP_GOOD = .03             # each visitor helping against a hostile or nuisance being (up to visitors.HELP_FULL = 5):
 HELP_BAD = .05             #   +.03 to the good chance and 5% off the bad one: at most +.15 and x.75
 LIKES_SHARE = .6            # each individual cares for about this share of what its kind likes
 
@@ -479,7 +479,7 @@ def resolve(a, choice, how, ctx, rng=None):
         good *= .85
     good += .07 * regard
     bad -= .04 * regard
-    helpers = min(5, ctx.get("help", 0)) if nature == "hostile" else 0
+    helpers = min(5, ctx.get("help", 0)) if nature in ("hostile", "nuisance") else 0   # (visitors.HELP_NATURES)
     if helpers:                                    # visitors outside the walls, helping drive it off
         good += HELP_GOOD * helpers
         bad *= 1 - HELP_BAD * helpers

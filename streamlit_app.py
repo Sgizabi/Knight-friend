@@ -416,12 +416,15 @@ def keep_visitor_tag(tag):
 
 
 def help_section(name, state, found, visit):
-    """A hostile being at the keep: visitors can help drive it off (DESIGN.md section 8). Each
-    browser visit counts once per being; the meter is full at visitors.HELP_FULL helpers."""
+    """A hostile or nuisance being at the keep, or whose signs have begun: visitors can help
+    (DESIGN.md section 8). Each browser visit counts once per being; the meter is full at
+    visitors.HELP_FULL helpers. A full meter sends a hostile one away before he meets it once a
+    week at most; otherwise, and always for a nuisance, it only improves his odds."""
     now = dt.datetime.now(dt.timezone.utc)
+    signs = dt.timedelta(minutes=visitors.HELP_SIGNS)
     here = [a for a in (keep_state.get("creatures") or {}).get("current", [])
-            if a.get("nature") == "hostile" and a.get("help_open", True)
-            and dt.datetime.fromisoformat(a["start"]) <= now < dt.datetime.fromisoformat(a["end"])]
+            if a.get("nature") in visitors.HELP_NATURES and a.get("help_open", True)
+            and dt.datetime.fromisoformat(a["start"]) - signs <= now < dt.datetime.fromisoformat(a["end"])]
     if not here:
         return
     if "visitor_tag" not in state:     # the same visitor after a reload: the tag lives in a cookie
@@ -437,15 +440,27 @@ def help_section(name, state, found, visit):
         parsed = visitors.parse_help(e.get("item"))
         if parsed and parsed[1] == state.visitor_tag and parsed[0] not in helped:
             helped.append(parsed[0])
-    st.markdown("#### Something dangerous is at the keep")
     for a in here:
         meter = visitors.help_for(a, events)["count"]
-        full = visitors.HELP_FULL
-        st.markdown(f"<p>Something hostile has come to the keep. You can help drive it off from outside the "
-                    f"walls. Your help adds to everyone's: when {full} visitors have helped, it may leave before "
-                    f"{escape(name)} has to face it, and if {escape(name)} faces it, the help makes it a little "
-                    f"easier. {escape(name)} still decides what to do. The meter takes in one helper every "
-                    f"{visitors.HELP_GAP} minutes, so it fills over a little while.</p>", unsafe_allow_html=True)
+        full, who = visitors.HELP_FULL, escape(name)
+        coming = now < dt.datetime.fromisoformat(a["start"])
+        hostile = a.get("nature") == "hostile"
+        st.markdown(f"#### {'Something dangerous' if hostile else 'Something troublesome'} "
+                    f"{'is coming to' if coming else 'is at'} the keep")
+        sign = f" ({escape(a['sign'])})" if coming and a.get("sign") else ""
+        if hostile and a.get("help_sends", True):
+            what = (f"when {full} visitors have helped, it may leave before {who} has to face it, and if {who} "
+                    f"faces it, the help makes it a little easier")
+        elif hostile:
+            what = (f"visitors already sent one away this week, so this time help can't send it away: it makes "
+                    f"it a little easier for {who} to face it")
+        else:
+            what = (f"help can't send a nuisance away, but it makes it a little easier for {who} to "
+                    f"deal with it")
+        st.markdown(f"<p>{'There are signs of something on its way' + sign if coming else 'Something has come'}. "
+                    f"You can help from outside the walls. Your help adds to everyone's: {what}. {who} still "
+                    f"decides what to do. The meter takes in one helper every {visitors.HELP_GAP} minutes, so it "
+                    f"fills over a little while.</p>", unsafe_allow_html=True)
         st.progress(min(1.0, meter / full), text=f"Helping drive it off: {min(meter, full)} of {full}")
         if a["id"] in helped:
             st.caption("You've helped with this one. Thank you!")
@@ -470,6 +485,27 @@ def help_section(name, state, found, visit):
                 if not state.get("tag_kept"):
                     keep_visitor_tag(state.visitor_tag)
                     state.tag_kept = True
+
+
+def helpers_roll(name):
+    """The roll of helpers: recent deeds, newest first, with a small count of each name's deeds.
+    Not a ranking (names aren't unique), and only screened names, never the visitor tags."""
+    roll = (keep_state.get("creatures") or {}).get("helpers") or {}
+    deeds = roll.get("deeds") or []
+    if not deeds:
+        return
+    st.markdown("#### Recent helpers")
+    lines = []
+    for d in deeds[:5]:
+        try:
+            day = (dt.datetime.fromisoformat(d["time"]) - dt.timedelta(hours=5))
+            old = (dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(d["time"])).days >= 6
+            label = day.strftime("%b %d").replace(" 0", " ") if old else day.strftime("%A")
+        except (KeyError, ValueError):
+            label = ""
+        line = visitors.roll_line(d, roll.get("counts"), name)
+        lines.append(f"<div>{escape(line)}<span class='when'> · {escape(label)}</span></div>")
+    st.markdown("<div class='entry'>" + "".join(lines) + "</div>", unsafe_allow_html=True)
 
 
 @st.fragment   # pressing a button here reruns only this part, so the keep above doesn't reload
@@ -518,6 +554,7 @@ def visit_tab():
         return ok
 
     help_section(name, state, found, visit)
+    helpers_roll(name)
     ask_section(name, state, today, of_kind, visit)
 
     st.markdown("#### Knock, or light a candle")

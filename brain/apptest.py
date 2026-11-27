@@ -110,5 +110,29 @@ helps = [b for b in sent if '"kind": "help"' in b]
 assert helps and HOSTILE["id"] in helps[-1] and helps[-1].rstrip('"}').endswith(":Kitty"), helps
 at.run()
 assert any("helped with this one" in c.value for c in at.caption), "a second help from the same visit should not be offered"
+
+# 5. help opens when the signs begin; past the weekly send-away, and for a nuisance, help only
+# improves his odds (and the page says so); the roll of helpers shows screened names only
+COMING = {**HOSTILE, "id": "basilisk-209901010010", "kind": "basilisk", "start": (_now + _dt.timedelta(minutes=10)).isoformat(),
+          "help_sends": False, "sign": "a patch of grass gone grey and stiff"}
+NUISANCE = {**HOSTILE, "id": "moths-209901010000", "kind": "moths", "nature": "nuisance", "help_sends": False}
+LATER = {**HOSTILE, "id": "wyrm-209901010100", "kind": "wyrm", "start": (_now + _dt.timedelta(minutes=40)).isoformat()}
+_state["creatures"] = {"current": [COMING, NUISANCE, LATER], "seeing": 0, "traces": [], "helpers": {
+    "deeds": [{"time": (_now - _dt.timedelta(days=1)).isoformat(), "being": "the Ashwolves", "deed": "drove off",
+               "names": ["Kitty", "cc"], "unnamed": 1}], "counts": {"Kitty": 2, "cc": 1}}}
+(T / "docs" / "data" / "state.json").write_text(json.dumps(_state), encoding="utf-8")
+import streamlit as _st  # noqa: E402
+_st.cache_data.clear()                     # (the page keeps what it read for two minutes)
+at = AppTest.from_file(str(T / "streamlit_app.py"), default_timeout=90)
+at.secrets["github_token"] = "test-token"
+at.secrets["groq_api_key"] = "test-key"
+at.run()
+assert not at.exception, at.exception
+page = " ".join(m.value for m in at.markdown)
+assert "Something dangerous is coming to the keep" in page and "grass gone grey" in page, page[-2000:]
+assert "already sent one away this week" in page and "can't send a nuisance away" in page
+assert "Something troublesome is at the keep" in page and "wyrm" not in page.lower()
+assert "Kitty (2), cc and one other helped drive off the Ashwolves" in page
+assert len([b for b in at.button if b.label == "📣 Help drive it off"]) == 2
 shutil.rmtree(T, ignore_errors=True)
 print("home page checks passed")

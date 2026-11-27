@@ -599,6 +599,8 @@ def export(world: Path, now=None):
     now = now or _now()
     state, best = load(world), load_bestiary(world)
     import encounters                              # (here, to keep the two modules from importing each other at load)
+    import visitors
+    sends = visitors.can_send_away(world, now)
     here = current(state, now, ahead_minutes=120)
     here_ids = {a["id"] for a in here}
     shown = []
@@ -609,11 +611,13 @@ def export(world: Path, now=None):
         item = {**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
                                      "with_met", "prevails", "caption", "caption_at", "regard") if k in a},
                 "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
-        if item["nature"] == "hostile":            # the "driving it off" meter, as of his last check-in
-            import visitors                          # (the page also counts help live, from the Visit runs)
-            item["help"] = (a.get("help") or {}).get("count", 0)
+        if item["nature"] in visitors.HELP_NATURES:   # the "driving it off" meter, as of his last check-in
+            item["help"] = (a.get("help") or {}).get("count", 0)   # (the page also counts help live, from the Visit runs)
             item["help_full"] = visitors.HELP_FULL
             item["help_open"] = not a.get("met")
+            item["help_sends"] = item["nature"] == "hostile" and sends   # a full meter may still send it away first
+            if now < _parse(a["start"]) and encounters.character(a["kind"]).get("signs"):
+                item["sign"] = encounters.character(a["kind"])["signs"][0]   # what is seen of it while it is coming
         if both_here:
             if a.get("stance"):
                 item["stance"] = a["stance"]
@@ -623,4 +627,6 @@ def export(world: Path, now=None):
     traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
               if a.get("arrival") and _parse(a["start"]) and
               _parse(a["start"]) <= now < _parse(a["start"]) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]
-    return {"current": shown, "seeing": best["step"], "traces": traces}
+    helpers = visitors.roll(world, now)            # the roll of helpers (recent deeds, screened names only)
+    return {"current": shown, "seeing": best["step"], "traces": traces,
+            **({"helpers": helpers} if helpers["deeds"] else {})}

@@ -426,4 +426,72 @@ assert _vis.help_for(_ha, _five, now=_hp(8))["count"] == 1 + 3 // _vis.HELP_GAP
 assert _vis.help_for(_ha, _five, now=_hp(5 + 4 * _vis.HELP_GAP))["count"] == _vis.HELP_FULL
 _late = {**_ha, "end": f"2026-11-21T17:{10 - _vis.HELP_LATE:02d}:00+00:00"}   # five come just as it goes:
 assert _vis.help_for(_late, [_hv(f"g{i}aaaa", "2026-11-21T17:10:00+00:00") for i in range(5)], now=_hp(59))["count"] == 1
+# help opens when its signs begin (HELP_SIGNS before it arrives, the same as encounters.NOTICE_BEFORE)
+assert _vis.HELP_SIGNS == encounters.NOTICE_BEFORE
+assert _vis.help_for(_ha, [_hv("hhhhhh", "2026-11-21T16:45:00+00:00")], now=_hp(0))["count"] == 1
+assert _vis.help_for(_ha, [_hv("hhhhhh", "2026-11-21T16:30:00+00:00")], now=_hp(0))["count"] == 0
+# nuisances can be helped against (help only improves his odds), other natures can't
+_nw = Path(tempfile.mkdtemp())
+(_nw / "creatures.json").write_text(__import__("json").dumps({"appearances": [
+    {**_ha, "id": "moths-202611211700", "kind": "moths"}, {**_ha, "id": "listener-202611211700", "kind": "listener"}]}))
+assert _vis.help_target("moths-202611211700", _nw) and not _vis.help_target("listener-202611211700", _nw)
+_mo = {**_ha, "kind": "moths", "nature": "nuisance"}
+_r0, _r5 = _rnd.Random(5), _rnd.Random(5)
+_g0 = sum(encounters.resolve(_mo, "drive_off", "I wave them off", {**_hc, "help": 0}, _r0)["result"] == "good" for _ in range(3000))
+_g5 = sum(encounters.resolve(_mo, "drive_off", "I wave them off", {**_hc, "help": 5}, _r5)["result"] == "good" for _ in range(3000))
+assert _g5 > _g0 + 200, (_g0, _g5)
+# a full meter sends a hostile one away before he meets it at most once in a rolling week
+_now21 = _hp(0)
+_lw = lambda *days: "".join(__import__("json").dumps({"time": (_now21 - _dt.timedelta(days=d)).isoformat(), "kind": "ashwolves",
+                                                   "driven_off_by_visitors": True, "helped_by": {"count": 5, "names": ["Kitty"], "unnamed": 4}}) + "\n" for d in days)
+(_nw / "encounters.jsonl").write_text(_lw(8))
+assert _vis.can_send_away(_nw, _now21)
+(_nw / "encounters.jsonl").write_text(_lw(8, 3))
+assert not _vis.can_send_away(_nw, _now21)
+# the roll of helpers: recent deeds newest first, a small count per name, screened names only (no tags)
+with (_nw / "encounters.jsonl").open("a", encoding="utf-8") as _f:
+    _f.write(__import__("json").dumps({"time": (_now21 - _dt.timedelta(days=1)).isoformat(), "kind": "moths",
+                                       "helped_by": {"count": 3, "names": ["Kitty", "cc"], "unnamed": 1}}) + "\n")
+    _f.write(__import__("json").dumps({"time": (_now21 - _dt.timedelta(days=2)).isoformat(), "kind": "moths"}) + "\n")
+(_nw / "bestiary.json").write_text(__import__("json").dumps({"kinds": {"moths": {"name": "the lamp-moths"}}}))
+_roll = _vis.roll(_nw, _now21)
+assert [d["deed"] for d in _roll["deeds"]] == ["stood by", "drove off", "drove off"], _roll
+assert _roll["counts"] == {"Kitty": 3, "cc": 1}, _roll
+assert _vis.roll_line(_roll["deeds"][0], _roll["counts"], "Rooken") == "Kitty (3), cc and one other stood by Rooken against the lamp-moths"
+assert _vis.roll_line(_roll["deeds"][1], _roll["counts"]) == "Kitty (3) and 4 others helped drive off the Ashwolves" or \
+       _vis.roll_line(_roll["deeds"][1], _roll["counts"]).startswith("Kitty (3) and 4 others helped drive off ")
+assert _vis.roll_line({"names": [], "unnamed": 2, "deed": "drove off", "being": "it"}) == "2 who left no name helped drive off it"
+assert "aaaaaa" not in __import__("json").dumps(_roll)
+# the export: the meter for hostile and nuisance beings, whether a full one may still send it away,
+# what is seen of it while it is coming, and the roll
+__import__("os").environ["KNIGHT_CREATURES"] = "on"
+(_nw / "creatures.json").write_text(__import__("json").dumps({"appearances": [
+    {**_ha, "start": "2026-11-21T17:10:00+00:00"}, {**_ha, "id": "moths-202611211700", "kind": "moths"}]}))
+_ex = creatures.export(_nw, _now21)
+_exa = {c["kind"]: c for c in _ex["current"]}
+assert _exa["ashwolves"]["help_sends"] is False and _exa["moths"]["help_sends"] is False and _exa["ashwolves"].get("sign"), _exa
+assert "sign" not in _exa["moths"] and _ex["helpers"]["deeds"], _ex
+(_nw / "encounters.jsonl").write_text(_lw(8))
+assert creatures.export(_nw, _now21)["current"][0]["help_sends"] is True
+# drive_offs: a full meter sends a hostile one away during its signs, once a week; past that it stays
+import knight as _kn
+_kn.WORLD, _kn.now, _kn.asleep_at = _nw, (lambda: _now21), (lambda t: False)
+_full = [{"kind": "help", "item": f"{_ha['id']}:k{i}aaaa", "time": "2026-11-21T16:50:00+00:00"} for i in range(5)]
+_kfetch = _kn.visits.fetch
+_kn.visits.fetch = lambda since: _full
+_vnow = _vis._now
+_vis._now = lambda: _now21
+(_nw / "encounters.jsonl").write_text(_lw(3))
+assert _kn.help_pending() is False and _kn.drive_offs() == 0
+assert creatures.load(_nw)["appearances"][0]["help"]["count"] == 5 and not creatures.load(_nw)["appearances"][0].get("met")
+(_nw / "encounters.jsonl").write_text(_lw(8))
+assert _kn.help_pending() is True and _kn.drive_offs() == 1
+_gone = creatures.load(_nw)["appearances"][0]
+assert _gone["met"]["outcome"] == "driven off by visitors" and _gone["seen"] is False and "before it reached" in _gone["caption"]
+assert "signs that something was coming" in _kn.load("memory.json", {})["beings_since"][-1]["text"]
+assert not _vis.can_send_away(_nw, _now21)
+_kn.visits.fetch, _vis._now = _kfetch, _vnow
+__import__("os").environ.pop("KNIGHT_CREATURES")
+if _old is not None:
+    __import__("os").environ["KNIGHT_CREATURES"] = _old
 print("all checks passed")

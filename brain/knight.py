@@ -288,35 +288,40 @@ def encounter_room(usage):
 # --------------------------------------------------------------------------
 
 def hostile_unmet(state, moment=None):
-    """Hostile beings at the keep now that he has not met (yet): the ones visitors can still drive off."""
+    """Hostile beings at the keep, or whose signs have begun, that he has not met (yet): the ones
+    visitors can still drive off (nuisances never are: help only improves his odds with them)."""
     moment = moment or now()
-    return [a for a in creatures.current(state, moment) if a["kind"] in creatures.KINDS and not a.get("met")
-            and not a.get("slept") and creatures.nature_of(a) == "hostile"]
+    return [a for a in creatures.current(state, moment, ahead_minutes=encounters.NOTICE_BEFORE)
+            if a["kind"] in creatures.KINDS and not a.get("met") and not a.get("slept")
+            and creatures.nature_of(a) == "hostile"]
 
 
 def visitor_help(a, found=None):
     """The meter for this being right now ({"count", "names", "unnamed"}), from the Visit runs.
     None if the visits could not be read."""
     if found is None:
-        start = encounters._parse(a["start"]) - dt.timedelta(minutes=visits.HELP_EARLY)
+        start = encounters._parse(a["start"]) - dt.timedelta(minutes=visits.HELP_SIGNS + visits.HELP_EARLY)
         found = visits.fetch(iso(start))
     return None if found is None else visits.help_for(a, found)
 
 
 def help_pending():
-    """Whether a hostile being has a full meter and has not been met: then it leaves (no AI)."""
+    """Whether a hostile being has a full meter and has not been met, and visitors haven't sent one
+    away this week yet: then it leaves (no AI)."""
     if not creatures.enabled():
         return False
     waiting = hostile_unmet(creatures.load(WORLD))
-    if not waiting:
+    if not waiting or not visits.can_send_away(WORLD, now()):
         return False
-    found = visits.fetch(iso(min(encounters._parse(a["start"]) for a in waiting) - dt.timedelta(minutes=visits.HELP_EARLY)))
+    found = visits.fetch(iso(min(encounters._parse(a["start"]) for a in waiting)
+                             - dt.timedelta(minutes=visits.HELP_SIGNS + visits.HELP_EARLY)))
     return any((visitor_help(a, found) or {}).get("count", 0) >= visits.HELP_FULL for a in waiting if found is not None)
 
 
 def drive_offs():
-    """Hostile beings that enough visitors helped drive off before he met them leave now. He saw
-    them go if he was awake, and hears of it either way, as a plain fact. Their visit still counts
+    """Hostile beings that enough visitors helped drive off before he met them leave now (at most
+    visitors.SEND_AWAY_MOST in a rolling week: past that, a full meter only improves his odds when
+    he faces it). He saw them go if he was awake, and hears of it either way, as a plain fact. Their visit still counts
     toward the quiet spell and the weekly limit (nothing about who comes next changes), and nothing
     about the being itself (regard, story arcs, a slow presence's return) changes: only his own
     choices do that. Returns how many left. No AI."""
@@ -326,26 +331,36 @@ def drive_offs():
     waiting = hostile_unmet(state)
     if not waiting:
         return 0
-    found = visits.fetch(iso(min(encounters._parse(a["start"]) for a in waiting) - dt.timedelta(minutes=visits.HELP_EARLY)))
+    found = visits.fetch(iso(min(encounters._parse(a["start"]) for a in waiting)
+                             - dt.timedelta(minutes=visits.HELP_SIGNS + visits.HELP_EARLY)))
     if found is None:
         return 0
     memory, gone = load("memory.json", {}), 0
+    may = visits.can_send_away(WORLD, now())
     for a in waiting:
         h = visitor_help(a, found)
-        if h["count"] < visits.HELP_FULL:
-            a["help"] = h
+        a["help"] = h
+        if h["count"] < visits.HELP_FULL or not may:
             continue
+        may = False                                       # (one a week: see visitors.can_send_away)
         awake = not asleep_at(now())
         c = encounters.character(a["kind"])
-        a["help"] = h
+        coming = encounters.phase(a, now()) == "signs"    # still on its way: only its signs were here
         a["met"] = {"outcome": "driven off by visitors", "time": iso()}
-        a["seen"] = awake
+        a["seen"] = awake and not coming
         a["end"] = iso(min(encounters._parse(a["end"]), now() + dt.timedelta(minutes=3)))
-        a["caption"], a["caption_at"] = "Driven off: it turns from the walls and is gone.", iso()
+        a["caption"] = ("Driven off before it reached the keep." if coming
+                        else "Driven off: it turns from the walls and is gone.")
+        a["caption_at"] = iso()
         who = visits.helpers_line(h)
-        text = (f"{'You saw' if awake else 'While you slept,'} {c.get('looks', 'something strange')}"
-                f"{' at the keep, and then' if awake else ' came to the keep, and'} visitors outside the walls "
-                f"({who}) helped drive it off before you faced it.")
+        sign = (c.get("signs") or ["signs that something was coming"])[0]
+        if coming:
+            text = (f"{'You noticed' if awake else 'While you slept, there were'} signs that something was coming "
+                    f"to the keep ({sign}), and visitors outside the walls ({who}) helped drive it off before it arrived.")
+        else:
+            text = (f"{'You saw' if awake else 'While you slept,'} {c.get('looks', 'something strange')}"
+                    f"{' at the keep, and then' if awake else ' came to the keep, and'} visitors outside the walls "
+                    f"({who}) helped drive it off before you faced it.")
         memory.setdefault("beings_since", []).append({"time": iso(), "kind": a["kind"], "text": text[:900]})
         encounters.record(WORLD, {"time": iso(), "id": a["id"], "kind": a["kind"], "woke": False, "steps": [],
                                   "injury": False, "damage": False, "loss": False, "note": "",
@@ -1523,12 +1538,12 @@ class Knight:
                 minds.settle_in(a, m, entry)
                 print(f"  its mind: {m['approach']}: {m['why']}")
         helped = {"count": 0, "names": [], "unnamed": 0}
-        hostile = creatures.nature_of(a) == "hostile"
+        helpable = creatures.nature_of(a) in visits.HELP_NATURES   # (help counts from its signs on)
         for step in range(1, encounters.STEPS_MOST + 1):
             ph = encounters.phase(a)
             opts = encounters.options(ph)
             sc = encounters.scene(a, entry, best["step"], ph, history)
-            if hostile and ph == "here":                          # visitors helping drive it off (a plain fact)
+            if helpable:                                          # visitors helping drive it off (a plain fact)
                 h = visitor_help(a)
                 if h and h["count"] > helped["count"]:
                     helped = h
@@ -1539,7 +1554,7 @@ class Knight:
                 sc += " " + " ".join(f"{creatures.KINDS[e['kind']]['name']}: {minds.told(e['does'], e['says'])}"
                                      for e in exchange)
                 shown_exchange = True
-            if hostile and ph == "here" and helped["count"]:
+            if helpable and helped["count"]:
                 sc += (f" From outside the walls, visitors are trying to help drive it off: "
                        f"{visits.helpers_line(helped)}.")
             so_far = "\n".join(f"- You chose to {h['choice'].replace('_', ' ')}: {h['how']} What happened: {h['happened']}"

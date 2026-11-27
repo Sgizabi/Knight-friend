@@ -54,6 +54,12 @@ HELP_GAP = 2         # minutes: the meter takes in at most one helper this often
 HELP_ITEM = re.compile(r"^([a-z0-9]+-\d{12}):([a-z0-9]{6})(?::(.+))?$")
 NAME = re.compile(r"^[^\W\d_]{2,16}$")
 HELP_EARLY, HELP_LATE = 2, 10    # minutes of slack around a being's stay (clocks, a run still starting)
+HELP_SIGNS = 20      # help opens when its signs begin, this long before it arrives (= encounters.NOTICE_BEFORE)
+HELP_NATURES = ("hostile", "nuisance")   # the beings visitors can help against
+SEND_AWAY_DAYS, SEND_AWAY_MOST = 7, 1    # a full meter sends a hostile one away before he meets it at most
+                                         # this often (a rolling week, from the encounter log); otherwise,
+                                         # and always for a nuisance, help only improves his odds
+ROLL_DAYS, ROLL_MOST = 30, 8             # the roll of helpers: recent deeds, newest first (not a ranking)
 # Rooken's own question at the gate, and visitors' answers to it
 ASK_OPEN_HOURS = 36          # a question closes on its own after this long
 ANSWER_TOKENS = 45           # a written answer: a line (~170 characters in English, fewer in some languages)
@@ -188,7 +194,7 @@ def parse_help(item):
 
 
 def help_target(aid, world=WORLD):
-    """The hostile being this help is for, if it is one visitors can help against."""
+    """The being this help is for, if it is one visitors can help against (hostile or a nuisance)."""
     try:
         state = json.loads((world / "creatures.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -196,7 +202,7 @@ def help_target(aid, world=WORLD):
     for a in state.get("appearances", []):
         if a.get("id") == aid and not a.get("cancelled"):
             nature = a.get("nature") or _nature(a.get("kind"))
-            return a if nature == "hostile" else None
+            return a if nature in HELP_NATURES else None
     return None
 
 
@@ -209,8 +215,9 @@ def _nature(kind):
 
 
 def help_open(a, at):
-    """Whether help sent at this time counts for this being: from its arrival until it has gone
-    (or he has finished meeting it), with a little slack either side."""
+    """Whether help sent at this time counts for this being: from when its signs begin
+    (HELP_SIGNS before it arrives) until it has gone (or he has finished meeting it), with a
+    little slack either side."""
     def parse(s):
         try:
             return dt.datetime.fromisoformat(s)
@@ -221,7 +228,7 @@ def help_open(a, at):
     if not start or not end:
         return False
     last = min(end, met) if met else end
-    return start - dt.timedelta(minutes=HELP_EARLY) <= at <= last + dt.timedelta(minutes=HELP_LATE)
+    return start - dt.timedelta(minutes=HELP_SIGNS + HELP_EARLY) <= at <= last + dt.timedelta(minutes=HELP_LATE)
 
 
 def help_for(a, events, now=None):
@@ -260,6 +267,78 @@ def help_for(a, events, now=None):
         if count >= HELP_FULL:
             break
     return {"count": count, "names": names, "unnamed": unnamed}
+
+
+def _log(world, days, now):
+    try:
+        lines = (world / "encounters.jsonl").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    out = []
+    for line in lines:
+        try:
+            e = json.loads(line)
+            at = dt.datetime.fromisoformat(e["time"])
+        except (ValueError, KeyError, TypeError):
+            continue
+        if now - at < dt.timedelta(days=days):
+            out.append(e)
+    return out
+
+
+def can_send_away(world=WORLD, now=None):
+    """Whether a full meter may still send a hostile being away before he meets it: at most
+    SEND_AWAY_MOST times in a rolling SEND_AWAY_DAYS (counted from the encounter log). Past that,
+    help only improves his odds when he faces it."""
+    now = now or _now()
+    return sum(1 for e in _log(world, SEND_AWAY_DAYS, now) if e.get("driven_off_by_visitors")) < SEND_AWAY_MOST
+
+
+def roll(world=WORLD, now=None):
+    """The roll of helpers: recent deeds, newest first, and how many deeds each name has been part
+    of (all time). Never a ranking and never the visitor tags: only screened names, read from the
+    encounter log. Each deed: {"time", "being", "deed" ("drove off" before he met it, or "stood by"
+    him while he faced it), "names", "unnamed"}."""
+    now = now or _now()
+    try:
+        kinds = json.loads((world / "bestiary.json").read_text(encoding="utf-8")).get("kinds", {})
+    except (OSError, json.JSONDecodeError):
+        kinds = {}
+    def being(kind):
+        own = (kinds.get(kind) or {}).get("name")
+        if own:
+            return own
+        try:
+            import creatures
+            return creatures.KINDS.get(kind, {}).get("name") or "something"
+        except Exception:
+            return "something"
+    every = [e for e in _log(world, 100000, now) if isinstance(e.get("helped_by"), dict) and e["helped_by"].get("count")]
+    counts = {}
+    for e in every:
+        for n in set(e["helped_by"].get("names") or []):
+            counts[n] = counts.get(n, 0) + 1
+    deeds = [{"time": e["time"], "being": being(e.get("kind")),
+              "deed": "drove off" if e.get("driven_off_by_visitors") else "stood by",
+              "names": list(e["helped_by"].get("names") or [])[:HELP_FULL],
+              "unnamed": int(e["helped_by"].get("unnamed") or 0)}
+             for e in every if now - dt.datetime.fromisoformat(e["time"]) < dt.timedelta(days=ROLL_DAYS)]
+    deeds = sorted(deeds, key=lambda d: d["time"], reverse=True)[:ROLL_MOST]
+    shown = {n for d in deeds for n in d["names"]}
+    return {"deeds": deeds, "counts": {n: c for n, c in counts.items() if n in shown}}
+
+
+def roll_line(d, counts=None, knight="the knight"):
+    """'Kitty (3), cc and one other helped drive off the Ashwolves' (for the pages)."""
+    counts = counts or {}
+    parts = [f"{n} ({counts[n]})" if counts.get(n, 0) > 1 else n for n in d.get("names") or []]
+    n = d.get("unnamed", 0)
+    if n:
+        parts.append(("one other" if n == 1 else f"{n} others") if parts else
+                     ("someone who left no name" if n == 1 else f"{n} who left no name"))
+    who = parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
+    return (f"{who} helped drive off {d['being']}" if d.get("deed") == "drove off"
+            else f"{who} stood by {knight} against {d['being']}")
 
 
 def helpers_line(h):
