@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-27T17:00:29+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-27T17:00:32+00:00",
+  "place": "desk",
+  "action": "write",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "document the guard dimensions and fit notes",
+  "thought": "The fire kept its steady heat while I logged the lantern guard details. I think I’ll write it up."
 }
