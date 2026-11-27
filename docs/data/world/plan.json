@@ -1,45 +1,49 @@
 {
-  "start": "2026-11-27T01:02:43+00:00",
+  "start": "2026-11-27T02:42:50+00:00",
   "mood": "restless",
   "steps": [
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "warm up before night work",
+      "emote": "spark",
+      "note": "Warm up",
       "thoughts": [
-        "The stones are still cold enough to bite."
+        "Stone jokes are getting stale",
+        "Fire still acts like a coworker"
       ]
     },
     {
       "place": "workbench",
       "action": "work",
-      "minutes": 30,
-      "emote": "dots",
-      "note": "finish mobile tooltip sizing",
+      "minutes": 20,
+      "emote": "question",
+      "note": "Finalize tooltip tweaks",
       "thoughts": [
-        "Why does the copy button love the left margin?"
+        "Copy button finally behaves",
+        "Hope the tablet stops flickering"
       ]
     },
     {
-      "place": "forge",
-      "action": "work",
-      "minutes": 25,
-      "emote": "spark",
-      "note": "heat a new piece of metal for a latch",
+      "place": "courtyard",
+      "action": "pace",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "Stone counting row 9",
       "thoughts": [
-        "Metal sings louder than the thunder."
+        "Another slab wobbles",
+        "Maybe I’ll find a pattern"
       ]
     },
     {
       "place": "bedroll",
       "action": "sleep",
-      "minutes": 40,
+      "minutes": 20,
       "emote": "zzz",
-      "note": "catch some rest before dawn",
+      "note": "Rest before dawn",
       "thoughts": [
-        "Hope the roof holds through the hail."
+        "Warm enough for a quick nap",
+        "Grey sky still drumming"
       ]
     }
   ]

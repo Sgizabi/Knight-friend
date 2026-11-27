@@ -30,74 +30,73 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 73,
-    "last_wake": "2026-11-27T01:02:43+00:00",
+    "wakeups": 74,
+    "last_wake": "2026-11-27T02:42:50+00:00",
     "nights_slept_through": 28
   },
   "plan": {
-    "start": "2026-11-27T01:02:43+00:00",
+    "start": "2026-11-27T02:42:50+00:00",
     "mood": "restless",
     "steps": [
       {
         "place": "fire",
         "action": "sit",
         "minutes": 20,
-        "emote": "sigh",
-        "note": "warm up before night work",
+        "emote": "spark",
+        "note": "Warm up",
         "thoughts": [
-          "The stones are still cold enough to bite."
+          "Stone jokes are getting stale",
+          "Fire still acts like a coworker"
         ]
       },
       {
         "place": "workbench",
         "action": "work",
-        "minutes": 30,
-        "emote": "dots",
-        "note": "finish mobile tooltip sizing",
+        "minutes": 20,
+        "emote": "question",
+        "note": "Finalize tooltip tweaks",
         "thoughts": [
-          "Why does the copy button love the left margin?"
+          "Copy button finally behaves",
+          "Hope the tablet stops flickering"
         ]
       },
       {
-        "place": "forge",
-        "action": "work",
-        "minutes": 25,
-        "emote": "spark",
-        "note": "heat a new piece of metal for a latch",
+        "place": "courtyard",
+        "action": "pace",
+        "minutes": 20,
+        "emote": "dots",
+        "note": "Stone counting row 9",
         "thoughts": [
-          "Metal sings louder than the thunder."
+          "Another slab wobbles",
+          "Maybe I’ll find a pattern"
         ]
       },
       {
         "place": "bedroll",
         "action": "sleep",
-        "minutes": 40,
+        "minutes": 20,
         "emote": "zzz",
-        "note": "catch some rest before dawn",
+        "note": "Rest before dawn",
         "thoughts": [
-          "Hope the roof holds through the hail."
+          "Warm enough for a quick nap",
+          "Grey sky still drumming"
         ]
       }
-    ],
-    "applied_until": "2026-11-27T02:00:25+00:00",
-    "live_thought": {
-      "text": "Metal glows, I wait for it to harden.",
-      "time": "2026-11-27T02:00:25+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-27T02:41:46+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-27T02:42:50+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "log sizes and stability, note any movement, add markers if needed",
-    "thought": "I’m still uneasy about the stone rows. I’ll keep checking them before the roof gives out."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 40.1,
+    "rest": 37.1,
     "warmth": 84.9,
-    "inspiration": 35.5,
+    "inspiration": 47.5,
     "spirit": 83.5
   },
   "needs_prev": {
@@ -106,7 +105,7 @@
     "inspiration": 54.6,
     "spirit": 74.9
   },
-  "needs_at": "2026-11-27T02:41:46+00:00",
+  "needs_at": "2026-11-27T02:42:50+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2153,8 +2152,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T02:00:25+00:00",
-    "seen_until": "2026-11-27T00:55:32+00:00"
+    "updated": "2026-11-27T02:42:50+00:00",
+    "seen_until": "2026-11-27T02:25:25+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2370,5 +2369,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T02:41:46+00:00"
+  "exported": "2026-11-27T02:42:50+00:00"
 }

@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-27T02:41:46+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-27T02:42:50+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "log sizes and stability, note any movement, add markers if needed",
-  "thought": "I’m still uneasy about the stone rows. I’ll keep checking them before the roof gives out."
+  "note": "",
+  "thought": ""
 }
