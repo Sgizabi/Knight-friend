@@ -1,10 +1,10 @@
 {
   "date": "2026-11-27",
-  "tokens": 26007,
+  "tokens": 33642,
   "by_model": {
-    "openai/gpt-oss-120b": 18253,
-    "qwen/qwen3.8-27b": 5479,
-    "openai/gpt-oss-20b": 2275
+    "openai/gpt-oss-120b": 23155,
+    "qwen/qwen3.8-27b": 7509,
+    "openai/gpt-oss-20b": 2978
   },
   "runs": [
     {
@@ -18,6 +18,10 @@
     {
       "note": "Kitemakers sheltering in a gale: one encounter test",
       "tokens": 9723
+    },
+    {
+      "note": "road test: pedlar spicer",
+      "tokens": 7635
     }
   ]
 }
