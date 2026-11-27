@@ -7645,8 +7645,8 @@ function folkPose(p, pose, stoop = 0) {
   }
 }
 // A HORSE, made like the mule (muleNew, o.horse): taller and finer, small ears, a long mane that falls to one
-// side and a full tail, a bridle and reins; a saddle with a high back and stirrups on a cloth in the knight's
-// colours. o: { coat, mane, muzzle, arms }.
+// side and a full tail, a bridle and reins; a saddle with a high back on a cloth in the knight's colours (or
+// plain, for anyone else). o: { coat, arms } or { coat, cloth }.
 const HORSE_COATS = { bay: ['#6e3e22', '#1c1410', '#8a5a3a'], grey: ['#a9a6a0', '#d8d4cc', '#c4c0b8'], black: ['#1f1a18', '#100c0a', '#3a3230'],
   chestnut: ['#93522a', '#7a3e1c', '#a8683e'], dun: ['#b8955e', '#2a1e14', '#c8a878'] };
 function horseNew(parent, o) {
@@ -7656,7 +7656,8 @@ function horseNew(parent, o) {
   const tack = tex('#3a2416', 'brushed', .004);
   const seat = G(h.body, [0, .29, .02]);                             // the top of the back, under the saddle
   const cloth = new T.Mesh(A.facet(new T.CylinderGeometry(.31, .31, .64, 16, 1, true, -1.7, 3.4), .004, 2),
-    new T.MeshStandardMaterial({ map: armsTex(o.arms, 160, 80, { charge: false }), roughness: .95, flatShading: true, side: T.DoubleSide }));
+    o.arms ? new T.MeshStandardMaterial({ map: armsTex(o.arms, 160, 80, { charge: false }), roughness: .95, flatShading: true, side: T.DoubleSide })
+           : texMat(o.cloth || '#6a4a3a', 'weave', { bump: .005, side: T.DoubleSide }));   // (a knight's: their arms; anyone else's: plain cloth)
   cloth.rotation.set(-Math.PI / 2, 0, 0); cloth.position.set(0, -.29, -.02); cloth.scale.set(.8, 1, 1); cloth.castShadow = true; seat.add(cloth);   // (draped over the back, its arms colours down each flank)
   P(seat, A.box(.3, .06, .44), tack, [0, .015, 0], { jitter: .004 });                                   // the saddle
   P(seat, A.box(.26, .13, .05), tack, [0, .07, -.2], { rot: [-.25, 0, 0], jitter: .004 });              // its high back
@@ -7664,6 +7665,82 @@ function horseNew(parent, o) {
   merge(seat);
   h.seat = seat;
   return h;
+}
+
+// ------------------------------------------------------------------ passers-by
+// People going along the old road about their own business: they never stop and never meet him (no brain, no
+// tokens). The page decides from the clock who passes and when, the same for everyone watching (keep.html,
+// passersDue); this draws them. One of: someone of a trade on foot, two walking together, someone leading a mule,
+// a rider. Near the keep they glance over at it; if he is out in the courtyard, some raise a hand.
+const PASS_SAYS = { minstrel: 'A minstrel', woodcutter: 'A woodcutter', herbalist: 'A herb-gatherer', messenger: 'A messenger', scholar: 'A wandering scholar' };
+const MULE_COATS = [['#8c8984', '#d6d0c6'], ['#5e4434', '#c8b496'], ['#cfc4b0', '#efe8da'], ['#4a3a30', '#b8a488']];
+export function spawnPasser(spec, api) {
+  T = api.THREE; A = api; A.mat = api.mat;
+  const root = new T.Group(); root.userData.appearance = { id: spec.id }; A.scene.add(root);
+  const r = A.rand(spec.seed); r(); r(); r();                        // (its first few draws follow the seed too closely)
+  const roll = r(), kind = roll < .5 ? 'walker' : roll < .65 ? 'pair' : roll < .82 ? 'mule' : 'rider';
+  const forms = Object.keys(TRADES), pick = list => list[Math.floor(r() * list.length)], they = () => (r() < .5 ? 'he' : 'she');
+  const fromWest = r() < .5, path = fromWest ? ROAD_PATH : [...ROAD_PATH].reverse(), L = pathLen(path), waves = r() < .5;
+  const folk = [], extra = {};
+  const form = kind === 'mule' ? pick(['woodcutter', 'herbalist', 'scholar']) : pick(forms);
+  if (kind === 'walker' || kind === 'mule') folk.push(tradeFolk(root, form, spec.seed, root, they()));
+  if (kind === 'pair') { const a = pick(['woodcutter', 'herbalist', 'minstrel', 'scholar']); folk.push(tradeFolk(root, a, spec.seed, root, they()), tradeFolk(root, pick(['woodcutter', 'herbalist', 'minstrel', 'scholar']), spec.seed + 1, root, they())); }
+  if (kind === 'mule') { const [coat, muzzle] = pick(MULE_COATS); extra.mule = muleNew(root, { coat, muzzle, load: pick(['panniers', 'pots', 'box']) }); extra.rope = leadRope(root); }
+  if (kind === 'rider') { const p = roadFolk(root, { seed: spec.seed, root, fem: they() === 'she', height: 1.66 + r() * .14, tunic: pick(['#5a4a32', '#3a5a6a', '#6a3a2a', '#4a5a3a']), hose: ['#3a3028'],
+      hem: 'thigh', cloak: pick(['#6a2a22', '#3a4a5a', '#5a4a2a']), cloakLen: .55, hat: pick(['round', 'felt', '']), hatColor: '#2a2420', boot: '#2a1e16' });
+    folk.push(p); extra.horse = horseNew(root, { coat: pick(Object.keys(HORSE_COATS)), cloth: pick(['#6a4a3a', '#3a4a5a', '#5a3a3a']) }); }
+  const pace = kind === 'rider' ? 1.5 : kind === 'mule' ? .95 : Math.min(...folk.map(p => p.pace || 1)) * 1.15;
+  root.userData.label = kind === 'pair' ? 'Two people walking together' : kind === 'mule' ? 'Someone leading a mule' : kind === 'rider' ? 'A rider'
+    : PASS_SAYS[form] || 'Someone';
+  const st = folk.map(() => ({ ph: 0, x: null, z: null, yaw: 0 })), seatW = V(), K0 = V();
+  let t0 = null, greet = -99, hs = { x: null, z: null, yaw: 0 };
+  root.userData.greet = () => { greet = lastT; };
+  let lastT = 0;
+  const tick = (t, dt = 1 / 60) => {
+    dt = Math.min(dt, .1); lastT = t;
+    if (t0 === null) t0 = t - (Date.now() - spec.t0) / 1000;           // (real time since they set off, so everyone sees them in the same place)
+    const s = (t - t0) * pace;
+    root.visible = s > 0 && s < L + 2; root.userData.done = s >= L + 2;
+    if (!root.visible) return;
+    A.K?.root?.getWorldPosition(K0);
+    const out = K0.x < -5.2, nearKeep = x => Math.abs(x + 10) < 6;
+    if (extra.horse) {                                                 // a rider
+      const h = extra.horse, [x, z, head] = atDist(path, s), m = hs.x === null ? 0 : Math.hypot(x - hs.x, z - hs.z);
+      hs.yaw = hs.x === null ? head : hs.yaw + Math.atan2(Math.sin(head - hs.yaw), Math.cos(head - hs.yaw)) * Math.min(1, dt * 4); hs.x = x; hs.z = z;
+      h.g.position.set(x, gy(x, z), z); h.g.rotation.y = hs.yaw; h.tick(t, dt, m < 1 ? m : 0);
+      h.seat.getWorldPosition(seatW); const p = folk[0];
+      p.g.position.set(seatW.x, seatW.y - .86, seatW.z); p.g.rotation.y = hs.yaw;
+      const pose = knightPose('ride', t, { gait: h.gait, amp: Math.min(1, m / Math.max(dt, 1e-3) / .8) });
+      if (nearKeep(x)) pose.joints.head = [0, Math.max(-1, Math.min(1, Math.atan2(-10 - x, 1 - z) - hs.yaw)) * .8, 0];
+      folkPose(p, pose); p.step(t, dt); p.seated?.(1);
+      return;
+    }
+    folk.forEach((p, i) => {                                           // on foot (a second walker a little behind and to the side)
+      const back = i * 1.1, [x0, z0, head] = atDist(path, Math.max(0, s - back)), side = i ? .55 : 0;
+      const x = x0 + Math.cos(head) * side, z = z0 - Math.sin(head) * side, q = st[i];
+      const moved = q.x === null ? 0 : Math.hypot(x - q.x, z - q.z);
+      q.yaw = q.x === null ? head : q.yaw + Math.atan2(Math.sin(head - q.yaw), Math.cos(head - q.yaw)) * Math.min(1, dt * 5); q.x = x; q.z = z;
+      p.g.position.set(x, gy(x, z), z); p.g.rotation.y = q.yaw;
+      if (moved < 1) q.ph += moved / (.72 * (p.stride || .9)) * Math.PI;
+      p.walk(q.ph, 1, p.stride || .9);
+      const passing = nearKeep(x);
+      if (t - greet < 3) p.lookAt(A.camera.position.x, A.camera.position.z);
+      else if (kind === 'pair' && !passing) p.lookAt(...(() => { const o = st[1 - i]; return [o.x ?? x, o.z ?? z]; })(), .6);   // (talking as they go)
+      else if (passing) p.lookAt(out ? K0.x : -10, out ? K0.z : 1, .8);
+      if (passing && out && waves && Math.abs(x - K0.x) < 1.6) p.wave(t, .9);   // (a hand raised to him in passing)
+      p.step(t, dt);
+    });
+    if (extra.mule) {                                                  // the mule, led on a rope a little behind
+      const mu = extra.mule, [x, z, head] = atDist(path, Math.max(0, s - 1.6)), m = hs.x === null ? 0 : Math.hypot(x - hs.x, z - hs.z);
+      hs.yaw = hs.x === null ? head : hs.yaw + Math.atan2(Math.sin(head - hs.yaw), Math.cos(head - hs.yaw)) * Math.min(1, dt * 4); hs.x = x; hs.z = z;
+      mu.g.position.set(x, gy(x, z), z); mu.g.rotation.y = hs.yaw; mu.tick(t, dt, m < 1 ? m : 0);
+      extra.rope(folk[0].hand(1), mu.ring, .3);
+    }
+  };
+  const ticker = withCloth(root, tick);
+  A.onTick.push(ticker);
+  return { root, get done() { return !!root.userData.done; }, label: root.userData.label,
+    remove() { const i = A.onTick.indexOf(ticker); if (i >= 0) A.onTick.splice(i, 1); A.scene.remove(root); root.traverse(o => { if (o.isMesh) o.geometry?.dispose(); }); } };
 }
 
 // ------------------------------------------------------------------ the abyssals

@@ -2242,6 +2242,7 @@ function whatsHere() {
   const list = [];
   for (const [id, b] of beings) if (b?.root) { const a = state?.creatures?.current?.find(x => x.id === id); list.push([b.root, a?.person ? personLabel(a) : 'Something is here']); }
   for (const [k, m] of animalMarks) if (m?.root) list.push([m.root, ANIMAL_NAMES[k] || k]);
+  for (const m of passers.values()) if (m.root?.visible) list.push([m.root, `${m.label || 'Someone'}, passing along the road`]);
   const TRACE_SAYS = [[/-village-/, 'A village of reeds, on the lake'], [/-hollow-/, 'A hollow of glowing mushrooms, on the plain'],
     [/^burrow1-/, 'A hole in the courtyard, where something came up'], [/^burrow2-/, 'A line of fresh mounds, across the plain'],
     [/^kite[13]-/, 'A scrap of patterned silk, snagged on the stones']];
@@ -2306,6 +2307,14 @@ renderer.domElement.addEventListener('pointerup', e => {
   const card = $('card');
   const roots = [...beings.values()].filter(b => b?.root).map(b => b.root);   // a being here: click it
   const bh = roots.length ? ray.intersectObjects(roots, true).find(h => h.object.visible) : null;
+  const pr = [...passers.values()].map(m => m.root), ph = pr.length ? ray.intersectObjects(pr, true).find(h => h.object.visible) : null;
+  if (ph && (!hit || ph.distance < hit.distance) && (!bh || ph.distance < bh.distance)) {   // someone passing on the road
+    const m = [...passers.values()].find(x => { let o = ph.object; while (o && o !== x.root) o = o.parent; return !!o; });
+    m?.root.userData.greet?.();
+    card.innerHTML = `${esc(m?.label || 'Someone')}, passing along the road<small>They look up at you and nod, and go on their way.</small>`;
+    card.style.display = 'block'; clearTimeout(cardTimer); cardTimer = setTimeout(() => card.style.display = 'none', 7000);
+    return;
+  }
   if (bh && (!hit || bh.distance < hit.distance)) {
     let o = bh.object; while (o.parent && !roots.includes(o)) o = o.parent;
     const b = [...beings.values()].find(x => x?.root === o), a = state?.creatures?.current?.find(x => beings.get(x.id) === b);
@@ -2746,6 +2755,9 @@ refreshVisits(); setInterval(refreshVisits, 150000);   // ~24 times an hour at m
 resize();
 requestAnimationFrame(tick);
 window.__keep = { K, camera, controls, goodView, greet, tossLog, get bout() { return boutNow; }, fence: FENCE,
+  passersDue, async passer(seed, ago = 0) {   // for testing: someone setting off along the road ago seconds back
+    if (!creatureMod) creatureMod = await loadCreatures(); const p = { id: 'test-' + seed, seed, t0: Date.now() - ago * 1000 };
+    passers.get(p.id)?.remove(); passers.set(p.id, Object.assign(creatureMod.spawnPasser(p, creatureApi()), { t0: p.t0 })); return passers.get(p.id).label; },
   advance(seconds, step = 1 / 30) {   // for testing: run the beings' own animation forward in time, without drawing
     for (let s = 0; s < seconds; s += step) { benchT += step; const t = clock.elapsedTime + benchT; for (const f of onTick) f(t, step); }
     scene.updateMatrixWorld(true); return benchT;
@@ -2870,7 +2882,41 @@ async function showAnimals() {
     scared: near => animalsScared() || !!near,
     near: (x, z, r) => { K.J.hips.getWorldPosition(_av); return Math.hypot(_av.x - x, _av.z - z) < r; } }));
 }
-beingsReady = true; showBeings(); showAnimals(); setInterval(() => { showBeings(); showAnimals(); }, 30000);
+// Passers-by: people going along the old road about their own business, by day. Page only: they never stop
+// and never meet him (no brain, no tokens). Who passes and when comes from the clock, worked out the same way
+// on every screen, so everyone watching sees the same people at the same moment. The day is cut into 15-minute
+// slots; in each, someone sets off along the road this often, at a moment of the slot's own; a crossing takes
+// a minute or two. Not at night (by the sky shown), not in a storm, gale or hail; in rain or snow, fewer; and
+// not while someone has stopped at the keep (a traveller, a pedlar, a knight).
+const PASS_SLOT = 15 * 60000, PASS_CHANCE = .45, PASS_SPAN = 150000, PASS_HOURS = [7.5, 19.5];
+const ih = (n, k) => {   // a steady number in [0, 1) from two whole numbers (the same in every browser)
+  let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(k + 1, 0xc2b2ae35);
+  x ^= x >>> 15; x = Math.imul(x, 0x2c1b3c6d); x ^= x >>> 12; x = Math.imul(x, 0x297a2d39); x ^= x >>> 15; return (x >>> 0) / 4294967296;
+};
+function passersDue(now) {
+  const out = [], hour = skyHour ?? (new Date().getHours() + new Date().getMinutes() / 60), wx = wxNow().kind;
+  if (hour < PASS_HOURS[0] || hour > PASS_HOURS[1] || ['storm', 'gale', 'hail'].includes(wx)) return out;
+  const stopped = (state?.creatures?.current || []).some(a => ['traveller', 'pedlar', 'knight'].includes(a.kind) && Date.parse(a.start) <= now + 6e4 && now < Date.parse(a.end));
+  if (stopped) return out;
+  for (const n of [Math.floor(now / PASS_SLOT) - 1, Math.floor(now / PASS_SLOT)]) {
+    if (ih(n, 0) >= PASS_CHANCE * (['rain', 'snow'].includes(wx) ? .4 : 1)) continue;
+    const t0 = n * PASS_SLOT + ih(n, 1) * (PASS_SLOT - PASS_SPAN);
+    if (now >= t0 && now < t0 + PASS_SPAN) out.push({ id: 'pass-' + n, seed: Math.floor(ih(n, 2) * 1e6) + 7, t0 });
+  }
+  return out;
+}
+const passers = new Map();
+async function showPassers() {
+  if (CREATURE || !beingsReady) return;
+  const now = Date.now();
+  for (const [id, m] of passers) if (m.done || now > m.t0 + PASS_SPAN + 60000) { m.remove(); passers.delete(id); }
+  const due = state?.creatures || window.__passersOn ? passersDue(now).filter(p => !passers.has(p.id)) : [];
+  if (!due.length) return;
+  if (!creatureMod) creatureMod = await loadCreatures().catch(() => null);
+  if (!creatureMod?.spawnPasser) return;
+  for (const p of due) if (!passers.has(p.id)) passers.set(p.id, Object.assign(creatureMod.spawnPasser(p, creatureApi()), { t0: p.t0 }));
+}
+beingsReady = true; showBeings(); showAnimals(); showPassers(); setInterval(() => { showBeings(); showAnimals(); }, 30000); setInterval(showPassers, 3000);
 </script>
 </body>
 </html>
