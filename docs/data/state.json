@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-27T14:00:31+00:00",
+    "applied_until": "2026-11-27T14:30:26+00:00",
     "live_thought": {
-      "text": "Dry logs stack, wind whistles through cracks.",
-      "time": "2026-11-27T14:00:31+00:00"
+      "text": "The flame flickers, stones keep their secrets.",
+      "time": "2026-11-27T14:30:26+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T14:00:31+00:00",
+    "since": "2026-11-27T14:30:27+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 93.8,
+    "warmth": 67.8,
+    "inspiration": 85.2,
+    "spirit": 68.9
+  },
+  "needs_prev": {
     "rest": 93.4,
     "warmth": 59.5,
     "inspiration": 85.2,
     "spirit": 69.3
   },
-  "needs_prev": {
-    "rest": 95.0,
-    "warmth": 59.9,
-    "inspiration": 85.2,
-    "spirit": 69.7
-  },
-  "needs_at": "2026-11-27T14:00:31+00:00",
+  "needs_at": "2026-11-27T14:30:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2157,7 +2157,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T14:00:31+00:00",
+    "updated": "2026-11-27T14:30:26+00:00",
     "seen_until": "2026-11-27T12:55:29+00:00"
   },
   "gifts": [],
@@ -2396,5 +2396,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T14:00:31+00:00"
+  "exported": "2026-11-27T14:30:27+00:00"
 }
