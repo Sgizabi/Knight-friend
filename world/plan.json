@@ -1,55 +1,14 @@
 {
-  "start": "2026-11-27T02:42:50+00:00",
+  "start": "2026-11-27T05:00:25+00:00",
   "mood": "restless",
+  "applied_until": "2026-11-27T05:00:25+00:00",
   "steps": [
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "Warm up",
-      "thoughts": [
-        "Stone jokes are getting stale",
-        "Fire still acts like a coworker"
-      ]
-    },
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "Finalize tooltip tweaks",
-      "thoughts": [
-        "Copy button finally behaves",
-        "Hope the tablet stops flickering"
-      ]
-    },
-    {
-      "place": "courtyard",
-      "action": "pace",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "Stone counting row 9",
-      "thoughts": [
-        "Another slab wobbles",
-        "Maybe I’ll find a pattern"
-      ]
-    },
     {
       "place": "bedroll",
       "action": "sleep",
-      "minutes": 20,
+      "minutes": 120,
       "emote": "zzz",
-      "note": "Rest before dawn",
-      "thoughts": [
-        "Warm enough for a quick nap",
-        "Grey sky still drumming"
-      ]
+      "note": "asleep for the night"
     }
-  ],
-  "applied_until": "2026-11-27T04:30:24+00:00",
-  "live_thought": {
-    "text": "Rain drums, fire steadies, I watch the stone glow.",
-    "time": "2026-11-27T04:30:24+00:00"
-  }
+  ]
 }
