@@ -83,15 +83,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-27T13:30:23+00:00",
+    "applied_until": "2026-11-27T14:00:31+00:00",
     "live_thought": {
-      "text": "The hammer sings louder than the wind.",
-      "time": "2026-11-27T13:30:23+00:00"
+      "text": "Dry logs stack, wind whistles through cracks.",
+      "time": "2026-11-27T14:00:31+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T13:30:23+00:00",
+    "since": "2026-11-27T14:00:31+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 93.4,
+    "warmth": 59.5,
+    "inspiration": 85.2,
+    "spirit": 69.3
+  },
+  "needs_prev": {
     "rest": 95.0,
     "warmth": 59.9,
     "inspiration": 85.2,
     "spirit": 69.7
   },
-  "needs_prev": {
-    "rest": 97.0,
-    "warmth": 60.7,
-    "inspiration": 85.2,
-    "spirit": 70.1
-  },
-  "needs_at": "2026-11-27T13:30:23+00:00",
+  "needs_at": "2026-11-27T14:00:31+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2157,7 +2157,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T13:30:23+00:00",
+    "updated": "2026-11-27T14:00:31+00:00",
     "seen_until": "2026-11-27T12:55:29+00:00"
   },
   "gifts": [],
@@ -2172,12 +2172,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-26T06:22:37+00:00",
-        "end": "2026-11-26T11:57:07+00:00",
-        "kind": "wind",
-        "intensity": 0.56
-      },
       {
         "start": "2026-11-26T11:57:07+00:00",
         "end": "2026-11-26T17:34:05+00:00",
@@ -2319,18 +2313,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-27T13:00:00+00:00",
-      "end": "2026-11-27T14:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "deer",
-        "fish",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-27T14:00:00+00:00",
       "end": "2026-11-27T15:00:00+00:00",
       "kinds": [
@@ -2395,6 +2377,18 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-27T21:00:00+00:00",
+      "end": "2026-11-27T22:00:00+00:00",
+      "kinds": [
+        "crows",
+        "songbirds",
+        "hares",
+        "deer",
+        "fish",
+        "cat"
+      ]
     }
   ],
   "creatures": {
@@ -2402,5 +2396,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T13:30:23+00:00"
+  "exported": "2026-11-27T14:00:31+00:00"
 }
