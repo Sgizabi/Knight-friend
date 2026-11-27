@@ -591,4 +591,7 @@ assert creatures.arc_open(_kt, "kite2", _t0) and creatures.arc_open(_kt, "kite3"
 assert all(g not in _bg.INTANGIBLE for k in ("kite1", "kite2", "kite3", "kite4") for g in _bg.CHARACTERS[k]["gifts"])   # what they shed is kept
 _ka = creatures._appearance("kite3", _d0, _t0, _rnd.Random(3), _kt)
 assert _ka.get("arrival") in (None, "silk") and "silk" in creatures.LEFT_AFTER and creatures.TRACE_DAYS["silk"] == 2
+# knights on the road: released; for a bout he goes out over the wall (the page's 'bout' spot), and how it went reaches the page
+assert "knight" in creatures.RELEASED and _kn.PEOPLE_POSE["spar"][:2] == ("bout", "spar")
+assert '"bout") if k in a' in open(creatures.__file__, encoding="utf-8").read()
 print("all checks passed")

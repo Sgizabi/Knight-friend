@@ -188,7 +188,7 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "tidekin1", "tidekin2", "tidekin3", "tidekin4",                                         # the peoples: the Tidekin
             "burrow1", "burrow2", "burrow3", "burrow4",                                             #   the Burrowfolk
             "kite1", "kite2", "kite3", "kite4",                                                     #   the Kitemakers
-            "traveller", "pedlar"}                                                                   # people on the road (knights: once their art is done)
+            "traveller", "pedlar", "knight"}                                                         # people on the road
 
 
 def nature_of(a):
@@ -841,7 +841,7 @@ def export(world: Path, now=None):
             continue
         both_here = bool(a.get("with") in here_ids)   # a stance is only shown while both of them are here
         item = {**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
-                                     "with_met", "prevails", "caption", "caption_at", "regard", "person") if k in a},
+                                     "with_met", "prevails", "caption", "caption_at", "regard", "person", "bout") if k in a},
                 "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
         if item["nature"] in visitors.HELP_NATURES:   # the "driving it off" meter, as of his last check-in
             item["help"] = (a.get("help") or {}).get("count", 0)   # (the page also counts help live, from the Visit runs)

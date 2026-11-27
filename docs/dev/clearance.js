@@ -38,7 +38,7 @@ const NATURE = { fog: 'hostile', axolotl: 'gentle', bellcrab: 'neutral', glassbe
   tidekin1: 'gentle', tidekin2: 'gentle', tidekin3: 'gentle', tidekin4: 'gentle',
   burrow1: 'gentle', burrow2: 'neutral', burrow3: 'gentle', burrow4: 'gentle',
   kite1: 'gentle', kite2: 'gentle', kite3: 'neutral', kite4: 'proud',
-  traveller: 'gentle', pedlar: 'courteous' };
+  traveller: 'gentle', pedlar: 'courteous', knight: 'courteous' };
 // beings that come in forms that are not ages (brain/creatures.py KINDS forms): each is checked
 const FORMS = { clockhead: ['', 'clock', 'hourglass', 'metronome', 'galaxy', 'mask'], stranger: ['cape', 'woodsman', 'bark', 'traveller', 'bare'],
   burrow4: ['thanks', 'scold'],   // (the Burrow-Mother's two moods)

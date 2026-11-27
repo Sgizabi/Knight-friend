@@ -122,7 +122,12 @@ def _who_person(a):
     if p.get("they") in ("he", "she"):
         lines.append(f"(You are a {'man' if p['they'] == 'he' else 'woman'}.)")
     lines.append("You are an ordinary person of this world, and you can talk. The knight is a stranger who lives alone in the "
-                 "ruined keep, on foot (he has no horse); you talk to him over the low courtyard wall.")
+                 "ruined keep, on foot (he has no horse); you talk to him over the low courtyard wall. You stay outside it, on "
+                 "the grass by the road; you do not come into the courtyard.")
+    if kind == "knight":
+        lines.append("You have already got down from your horse, which stands by the road, and you are on foot. You carry a "
+                     "sword at your hip and your shield on your back (no lance), and you hold your helm while you talk. If you "
+                     "two spar, he steps out over the low wall to you, and you stay out on the grass together after it.")
     return "\n".join(lines)
 
 
@@ -245,11 +250,18 @@ def turn(brain, a, choice, how, out):
     settled = {"good": "it goes well for the knight: you are won over, put off or driven back, as fits",
                "bad": "it goes badly for the knight: you are displeased, or press on, or have your way, as fits",
                "neutral": "nothing much changes"}[out["result"]]
+    if choice == "spar":                           # (a bout: who touched whom, beyond any doubt)
+        settled = {"good": "he won the bout: his blade touched you cleanly, and yours never touched him",
+                   "bad": "you won the bout: you got the better of him and he ended on his back in the grass",
+                   "neutral": "an even bout: neither of you touched the other, and you both ended it winded"}[out["result"]]
     facts = " ".join([out.get("said", "")] + out.get("extra", []))
     prompt = (f"{_who(a)}\nWhy you came: {m.get('why', '')}. Your approach: {m.get('approach', '')}.\n\n"
               f"The knight chose to {choice.replace('_', ' ')}: \"{how[:200]}\"\n"
               f"The outcome is already settled ({settled}): {facts}\n"
-              + ("This ends the meeting: you leave, or stop, or are gone.\n" if out.get("ends") else "") +
+              + ("(In those words, 'you' is him, the knight who lives in the keep, and 'they' is you.)\n" if a.get("person") else "")
+              + ("This ends the meeting: you leave, or stop, or are gone.\n" if out.get("ends") else "")
+              + (f"Write it in the third person, as a line of a story told to him: begin with {people.short(a['person'])} or "
+                 f"{'She' if a['person'].get('they') == 'she' else 'He'}; never 'you' or 'it' for yourself.\n" if a.get("person") else "") +
               "Describe what you do now, as he would see it, in one or two short sentences that fit that outcome "
               "exactly: add no harm, gift or loss beyond it, and don't repeat what you did before. says: only the "
               "words you speak aloud, if you can talk and want to (no actions, no quotation marks); otherwise empty.\n"

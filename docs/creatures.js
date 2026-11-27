@@ -5579,7 +5579,7 @@ const BEASTS = {
     build(root) {
       const ap = root.userData.appearance || {}, form = ap.variant?.kind || 'minstrel', sd = sid(ap.id || form) % 99991 + 11;
       const p = tradeFolk(root, form, sd, root, ap.person?.they), fromWest = sd % 2 === 0, v = 1.2 * p.pace;
-      const turn = [TALK[0], 7.95], inPath = [...roadTo(TALK[0], fromWest), turn, TALK], outPath = [TALK, turn, ...roadTo(TALK[0], !fromWest)];
+      const turn = [TALK[0], 7.95], inPath = [...roadTo(TALK[0], fromWest), turn, TALK], outPath = [TALK, turn, ...roadAway(TALK[0], fromWest)];
       const tin = pathLen(inPath) / v, tout = pathLen(outPath) / v, clock = visitClock(root, tin + tout + 80);
       const st = { leanK: 0, talkK: 0, waveK: 0, yaw: fromWest ? Math.PI / 2 : -Math.PI / 2, ph: 0, x: 0, z: 0, greet: -99 };
       root.userData.greet = () => { st.greet = p.t; };
@@ -5627,7 +5627,7 @@ const BEASTS = {
       const fromWest = sd % 2 === 0, sg = fromWest ? 1 : -1, v = 1.1 * p.pace;
       const STALL = [-9.3, 5.95], CLOTH = [-9.35, 5.22], MF = [-9.3 - sg * 1.45, 6.5], MP = [MF[0] - sg * 1.7, 6.6], PEG = [MF[0] - sg * .1, 6.05];
       const inPath = [...roadTo(MP[0] - sg * 2.2, fromWest), [MP[0] - sg * 2.2, 7.5], MP, MF];
-      const outPath = [MF, [MF[0] + sg * 2.4, 7.6], ...roadTo(MF[0] + sg * 2.4, !fromWest)], muleOut = [MP, MF, ...outPath.slice(1)];
+      const outPath = [MF, [MF[0] + sg * 2.4, 7.6], ...roadAway(MF[0] + sg * 2.4, fromWest)], muleOut = [MP, MF, ...outPath.slice(1)];
       const Lin = pathLen(inPath), tin = Lin / v, tout = pathLen(outPath) / v, PACK = 9, clock = visitClock(root, tin + tout + 120);
       // the peg and the cloth, with what they have laid out on it
       const peg = G(root, [PEG[0], gy(...PEG), PEG[1]]); bone(peg, [0, -.05, 0], [0, .22, 0], .02, .014, tex('#7a6244', 'bark', .003), 5, 0);
@@ -5690,6 +5690,113 @@ const BEASTS = {
         mule.tick(t, dt, mm < 1 ? mm : 0, !walking && since > tin + 6 && left > tout + 3 && nz(sd + Math.floor(t / 11) * 7) > .35 ? 1 : 0);
         // the lead rope: from the hand while leading, from the peg while tied
         rope(tied && since >= tin ? pegTop : p.hand(1), mule.ring, tied ? .12 : .3);
+      };
+    },
+  },
+
+  knight: {
+    name: 'A knight errant', hour: 15,
+    blurb: 'Now and then a knight rides along the old road and stops at the keep: a person in mail from head to foot, with a long surcoat in the colours of their own arms, the same arms on the shield across their back and on their horse\'s saddle-cloth, and a helm that is theirs alone. They get down, take off their helm, and talk over the south wall. Some are glad of a friendly bout: if the knight asks, he steps out over the low wall and they spar on the grass with blunted blades, and it ends as it ends. Some come back another day.',
+    variants: [['good', 'a bout he wins'], ['neutral', 'an even bout'], ['bad', 'a bout he loses'], ['proud', 'a proud knight, beaten'], ['talk', 'only talking']],
+    view: [[-6.0, 2.5, 10.6], [-10.4, 1.0, 5.6]],
+    knight: { place: 'roadside', action: 'stand', emote: 'question', note: 'talking over the wall' },
+    exit() { delete window.__bout; },
+    build(root) {
+      const ap = root.userData.appearance || {}, live = !!ap.id, pv = ap.variant?.kind || 'good';
+      const person = ap.person?.arms ? ap.person : PREVIEW_KNIGHTS[pv] || PREVIEW_KNIGHTS.good, a = person.arms;
+      const sd = sid(ap.id || person.name) % 99991 + 11, stoop = person.age === 'old' ? .06 : 0;
+      const p = knightFolk(root, person), horse = horseNew(root, { coat: person.horse, arms: a }), reins = leadRope(root);
+      const pommel = G(horse.seat, [0, .1, .2]);
+      // where things are: the horse stands by the road west of the wall; they get down on the wall side of it
+      const fromWest = sd % 2 === 0, sg = fromWest ? 1 : -1, v = 1.45, vw = 1.1, DIS = 2.8, RIDE_Y = .86;
+      const HS = [-12.75, 6.55], D = [HS[0], HS[1] - .8], hyaw = sg > 0 ? Math.PI / 2 : -Math.PI / 2, swing = sg > 0 ? 'R' : 'L';
+      const inPath = [...roadTo(HS[0] - sg * 3, fromWest), [HS[0] - sg * 3, 7.35], [HS[0] - sg * 1.2, HS[1]], HS];
+      const outPath = [HS, [HS[0] + sg * 1.6, HS[1] + .35], [HS[0] + sg * 3.4, 7.45], ...roadAway(HS[0] + sg * 3.4, sg > 0)];
+      const toTalk = [D, TALK], tin = pathLen(inPath) / v, tout = pathLen(outPath) / v, tw = pathLen(toTalk) / vw;
+      const PRE = tin + DIS + tw, POST = tout + DIS + tw;                  // arriving (ride, get down, walk to the wall); and the same, leaving
+      const clock = visitClock(root, PRE + POST + 95);
+      const st = { x: D[0], z: D[1], yaw: hyaw, ph: 0, shift: 0, side: 0, turn: 0, hx: HS[0], hz: HS[1], hyaw, greet: -99, bout: false, first: true };
+      let t0 = 0;
+      root.userData.greet = () => { st.greet = t0; };
+      const K0 = V(), seatW = V(), cam = () => A.camera.position, toYaw = (y, w, rate, dt) => y + Math.atan2(Math.sin(w - y), Math.cos(w - y)) * Math.min(1, dt * rate);
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1); t0 = t;
+        const { since, left } = clock(t), stay = since - PRE;
+        // the horse: in along the road, standing (grazing now and then), and away
+        let hx = HS[0], hz = HS[1], hh = hyaw;
+        if (since < tin) [hx, hz, hh] = atDist(inPath, since * v);
+        else if (left < tout) [hx, hz, hh] = atDist(outPath, (tout - left) * v);
+        const hm = Math.hypot(hx - st.hx, hz - st.hz); st.hx = hx; st.hz = hz;
+        st.hyaw = toYaw(st.hyaw, hh, hm > .002 ? 5 : 1.5, dt);
+        horse.g.position.set(hx, gy(hx, hz), hz); horse.g.rotation.y = st.hyaw;
+        horse.tick(t, dt, hm < 1 ? hm : 0, since > tin + 4 && left > tout + 4 && nz(sd + Math.floor(t / 13) * 7) > .45 ? 1 : 0);
+        horse.seat.getWorldPosition(seatW);
+        if (!live) {                                                     // the preview plays a bout of its own (live, he chooses)
+          const want = pv !== 'talk' && stay > 8 && stay < 56;
+          if (want && !st.bout) window.__bout = { result: pv === 'proud' ? 'good' : pv, at: Date.now(), proud: pv === 'proud' };
+          if (want !== st.bout) A.force(want ? { place: 'bout', action: 'spar', emote: 'exclaim', note: 'a friendly bout, with blunted blades', awake: false } : { ...BEASTS.knight.knight, awake: false });
+          if (!want) delete window.__bout;
+          st.bout = want;
+        }
+        const b = A.bout || {}, leaving = left < POST, arriving = since < PRE;
+        let x = st.x, z = st.z, yaw = st.yaw, y = null, mounted = false, walking = false, pose = null, sword = 'sheathed', helmOn = true;
+        A.K?.root?.getWorldPosition(K0);
+        if (since < tin || left < tout) {                                // riding
+          mounted = true; x = seatW.x; z = seatW.z; yaw = st.hyaw;
+          pose = knightPose('ride', t, { gait: horse.gait, amp: Math.min(1, hm / Math.max(dt, 1e-3) / .8) });
+        } else if (since < tin + DIS || (left < tout + DIS && left >= tout)) {   // getting down (or back up)
+          const u = since < tin + DIS ? (since - tin) / DIS : 1 - (left - tout) / DIS, m = smooth(.22, .92, u);
+          x = seatW.x + (D[0] - seatW.x) * m; z = seatW.z + (D[1] - seatW.z) * m; yaw = st.hyaw;
+          y = (seatW.y - RIDE_Y) + (gy(D[0], D[1]) - (seatW.y - RIDE_Y)) * smooth(.3, .95, u) + Math.sin(Math.PI * smooth(.1, .85, u)) * .14;
+          const ride = knightPose('ride', t), over = smooth(.15, .45, u) * (1 - smooth(.55, .8, u));   // one leg up and over the horse's back
+          ride.joints['th' + swing] = [-.72 - over * 1.0, 0, (swing === 'R' ? -.6 : .6) * (1 - over * 1.6)];
+          ride.joints['kn' + swing] = [1.0 - over * .6, 0, 0];
+          pose = kMix(ride, knightPose('stand', t), smooth(.5, .95, u));
+          if (u > .82 && u < 1) pose.hipsY -= Math.sin((u - .82) / .18 * Math.PI) * .12;   // (landing: knees give a little)
+        } else {                                                         // on foot: to the wall and back, or out on the grass with him
+          let goal = TALK, face = Math.PI;
+          if (leaving && left < tout + DIS + tw) goal = D, face = hyaw;
+          else if (!arriving && b.wanted) goal = FOE, face = Math.PI / 2;   // (for the bout, and after it)
+          if (st.first && live) { st.x = goal[0]; st.z = goal[1]; st.yaw = face; }   // (looked in partway through the visit: already there)
+          const dx = goal[0] - st.x, dz = goal[1] - st.z, dist = Math.hypot(dx, dz);
+          if (dist > .03) { const s = Math.min(dist, vw * dt); x = st.x + dx / dist * s; z = st.z + dz / dist * s; yaw = toYaw(st.yaw, Math.atan2(dx, dz), 6, dt); walking = true; st.ph += s / (.72 * p.stride) * Math.PI; }
+          else { x = goal[0]; z = goal[1]; yaw = toYaw(st.yaw, face, 4, dt); }
+          const atFoe = !walking && goal === FOE, fencing = atFoe && b.on && !b.done;
+          helmOn = goal === D || (goal === FOE && !(b.done && b.end?.k > (b.end.result === 'bad' ? 9.5 : 6.5)));   // (helm off to talk; on again to ride, or for the bout)
+          if (fencing) { pose = A.fencePose('V', b, t); sword = pose.sword === 'hand' ? 'hand' : 'sheathed'; }
+          else {                                                       // their own body: walking, standing, talking over the wall or face to face after
+            const lk = left - POST, seg = Math.floor(stay / 8), m = nz(sd + seg), greet = t - st.greet < 3;
+            if (walking) p.walk(st.ph, 1, p.stride); else p.stand(t);
+            if (!walking) {
+              if (atFoe && !b.on) reachFolk(p, -1, [.17, 1.0, .13]);   // waiting for him to come out: a hand on the hilt
+              else if (lk < 4 && !leaving) p.wave(t);
+              else if (m > .3 && m < .85 && !(atFoe && b.end?.proud && b.end.result === 'good')) p.talk(t, -1, 1);
+            }
+            if (!helmOn && !walking) p.R.want('sh1', .02, 0, .2), p.R.want('el1', -.25);       // (the helm held at the left hip)
+            if (greet) p.lookAt(cam().x, cam().z);
+            else if (atFoe && b.done && b.end?.proud && b.end.result === 'good') p.lookAt(x + Math.sin(yaw + 1.6) * 3, z + Math.cos(yaw + 1.6) * 3, .9);   // (proud, and beaten: looking away)
+            else if (!walking) p.lookAt(K0.x, K0.z, .9);
+          }
+        }
+        if (pose) folkPose(p, pose, stoop);
+        // a lunge, a step back, a walk up beside him to offer a hand: along the line they face, and to the side
+        const ps = pose?.shift || 0, pd = pose?.side || 0, pt = pose?.turn || 0, kk = 1 - Math.exp(-dt * 4), gap = Math.hypot(ps - st.shift, pd - st.side);
+        st.shift += (ps - st.shift) * (gap > .3 ? kk : 1 - Math.exp(-dt * 7)); st.side += (pd - st.side) * kk; st.turn += (pt - st.turn) * kk;
+        if (gap > .15 && !walking && !mounted) { st.ph += gap * dt * 14;
+          for (const L of p.legs) { const q = st.ph + (L.sx > 0 ? 0 : Math.PI), lift = Math.max(0, Math.sin(q + 1.35)); p.R.want('th' + L.sx, -Math.sin(q) * .44, 0, L.sx * .02); p.R.want('kn' + L.sx, .1 + .7 * lift); } }
+        const sx = Math.sin(yaw) * st.shift - Math.cos(yaw) * st.side, sz = Math.cos(yaw) * st.shift + Math.sin(yaw) * st.side;
+        st.x = x; st.z = z; st.yaw = yaw; st.first = false;
+        p.g.position.set(x + (mounted ? 0 : sx), y ?? (mounted ? seatW.y - RIDE_Y : gy(x, z)), z + (mounted ? 0 : sz));
+        p.g.rotation.y = yaw + (mounted ? 0 : st.turn);
+        if (sword !== p.holding) { p.holding = sword; p.hold(sword); }
+        if (helmOn === p.carried) { p.carried = !helmOn; p.carry(!helmOn); }
+        p.step(t, dt);
+        if (pose?.blade && sword === 'hand') A.aimBlade(p.aim, pose.blade, 1 - Math.exp(-dt * 7)); else p.aim.arms.R.hand.quaternion.slerp(_fq(), 1 - Math.exp(-dt * 7));   // (the sword hand turns at the wrist)
+        p.g.visible = horse.g.visible = since > 0 && left > 0;
+        st.seat = (st.seat ?? 1) + ((mounted ? 1 : y !== null ? Math.max(0, 1 - Math.abs(y - (seatW.y - RIDE_Y)) * 3) : 0) - (st.seat ?? 1)) * Math.min(1, dt * 6); p.seated(st.seat);
+        // the reins: in the rider's hands, or looped over the saddle's pommel while they are down
+        const rid = mounted || (since < tin + DIS * .4) || (left < tout + DIS * .6 && left >= tout);
+        reins(rid ? p.hand(1) : pommel, horse.ring, rid ? .08 : .12);
       };
     },
   },
@@ -7005,6 +7112,15 @@ function silkTrace(root, of, days) {
 // wall of the courtyard to talk over it (Rooken stands inside, at the page's 'roadside'), and go on their way.
 const ROAD_PATH = [[-54, 1.9], [-42, 2.6], [-31, 3.6], [-25, 3.9], [-21, 4.4], [-18.6, 5.3], [-15.2, 6.7], [-12, 7.6], [-7.5, 8.2], [-3, 8.4], [6, 8.6], [15, 8.2], [26, 7.4], [42, 8.9]];
 const TALK = [-9.6, 5.05], ROOKEN_AT = [-9.6, 3.5];      // where they stop, outside the wall; where he stands, inside
+const FOE = [-10.55, 5.65];                               // where a visiting knight stands for a bout, on the grass outside (the keep's FOE_AT)
+// knights for the preview (live, who comes is the brain's: people.new_knight)
+const PREVIEW_KNIGHTS = {
+  good: { name: 'Sir Edric of Coldwater', they: 'he', age: '', horse: 'bay', arms: { field: 'blue', div: 'plain', second: '', charge: 'tower', on: 'gold' } },
+  neutral: { name: 'Dame Maud of Fernmoor', they: 'she', age: '', horse: 'grey', arms: { field: 'silver', div: 'chevron', second: 'green', charge: 'acorn', on: 'red' } },
+  bad: { name: 'Sir Osric of Harrowmere', they: 'he', age: 'old', horse: 'black', arms: { field: 'red', div: 'pale', second: 'silver', charge: 'star', on: 'gold' } },
+  proud: { name: 'Dame Rosamund of Redmere', they: 'she', age: 'young', horse: 'chestnut', arms: { field: 'black', div: 'bend', second: 'gold', charge: 'key', on: 'silver' } },
+  talk: { name: 'Sir Piers of Stillbrook', they: 'he', age: 'old', horse: 'dun', arms: { field: 'green', div: 'band', second: 'silver', charge: 'leaf', on: 'gold' } },
+};
 const sid = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);   // a steady number from a visit's id
 const PREVIEW_WARES = { tinker: ['a brass hand-bell', 'a little hand mirror of polished tin', 'a horn lantern'],   // (live, the wares come from the visit)
   spicer: ['a thick wool blanket', 'a bundle of beeswax candles', 'a pot of heather honey'],
@@ -7016,8 +7132,8 @@ function roadFolk(parent, o = {}) {
   const r = A.rand(o.seed || 7), broad = o.broad || 1, fem = !!o.fem, H = .92;
   const skin = A.mat(o.skin || SKINS[Math.floor(r() * SKINS.length)], 0, .78), hairC = o.hair || HAIRS[Math.floor(r() * HAIRS.length)];
   const hairM = A.mat(hairC, 0, .9), dark = A.mat('#140e0b', .25, .25), lipM = A.mat('#8a4e40', 0, .8);
-  const tunicM = tex(o.tunic || '#5a6a48'), sleeveL = o.sleeves ? tex(o.sleeves[0]) : tunicM, sleeveR = o.sleeves ? tex(o.sleeves[1]) : tunicM;
-  const hoseL = tex((o.hose || ['#4a4038'])[0], 'weave', .003), hoseR = tex((o.hose || ['#4a4038'])[1] || (o.hose || ['#4a4038'])[0], 'weave', .003);
+  const tunicM = o.tunicMat || tex(o.tunic || '#5a6a48'), sleeveL = o.sleeveMats?.[0] || (o.sleeves ? tex(o.sleeves[0]) : tunicM), sleeveR = o.sleeveMats?.[1] || (o.sleeves ? tex(o.sleeves[1]) : tunicM);   // (or materials outright: a knight's mail)
+  const hoseL = o.hoseMats?.[0] || tex((o.hose || ['#4a4038'])[0], 'weave', .003), hoseR = o.hoseMats?.[1] || tex((o.hose || ['#4a4038'])[1] || (o.hose || ['#4a4038'])[0], 'weave', .003);
   const bootM = tex(o.boot || '#3a281c', 'brushed', .004), beltM = A.mat('#3a2616', .1, .6), buckle = A.mat('#b89a58', .7, .35);
   const g = G(parent), R = rig(); g.scale.setScalar((o.height || 1.72) / 1.72);
   const hips = R.add('hips', G(g, [0, H, 0]), 11, .9);
@@ -7038,7 +7154,7 @@ function roadFolk(parent, o = {}) {
                   : [[.14, 0], [.15, .09], [.16, .2], [.178, .33], [.19, .42], [.175, .48], [.12, .53], [.075, .55], [.058, .56]],
        tunicM, [0, 0, 0], [0, 0, 0], [broad, 1, .72], 12);
   const hem = { thigh: .26, knee: .5, calf: .66, ankle: .84 }[o.hem || 'thigh'], flare = .2 + hem * .2;
-  const skirt = new T.Mesh(A.facet(new T.CylinderGeometry(.15 * broad, flare * broad, hem, 14, 5, true), .006, 3), o.skirt ? tex(o.skirt) : tunicM);
+  const skirt = new T.Mesh(A.facet(new T.CylinderGeometry(.15 * broad, flare * broad, hem, 14, 5, true), .006, 3), o.skirtMat || (o.skirt ? tex(o.skirt) : tunicM));
   skirt.position.y = -hem / 2 + .02; skirt.scale.z = .86; skirt.castShadow = true; hips.add(skirt);
   clothSway(o.root || parent, skirt, { amp: .02 + hem * .025, speed: 1.2, wave: 2.4, phase: r() * 9 });
   P(hips, new T.TorusGeometry(.152 * broad, .018, 5, 16), beltM, [0, .03, 0], { rot: [Math.PI / 2, 0, 0], scale: [1, .86, 1], jitter: 0 });
@@ -7058,7 +7174,8 @@ function roadFolk(parent, o = {}) {
   }
   P(head, A.box(.032, .0055, .01), lipM, [0, .052, .094], { jitter: 0, cast: false });                            // the mouth
   const hairStyle = o.hairStyle || (fem ? 'long' : 'short');
-  if (hairStyle !== 'bald') {
+  if (hairStyle === 'none') { /* (under a mail hood) */ }
+  else if (hairStyle !== 'bald') {
     const cap = new T.Mesh(A.facet(new T.SphereGeometry(.108, 12, 8, 0, Math.PI * 2, 0, 1.45), .004, 4), hairM);
     cap.position.set(0, .115, -.012); cap.rotation.x = -.42; cap.scale.set(.9, 1, 1); cap.castShadow = true; head.add(cap);
   } else P(head, new T.TorusGeometry(.085, .018, 5, 12, Math.PI * 1.3), hairM, [0, .09, -.01], { rot: [Math.PI / 2, 0, Math.PI * .85], jitter: .002 });
@@ -7227,6 +7344,8 @@ function atDist(pts, s) {
 const pathLen = pts => pts.slice(1).reduce((a, q, i) => a + Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1]), 0);
 // the road from one end to the turn-off for the keep (fromWest: the west end first)
 function roadTo(x, fromWest) { const half = ROAD_PATH.filter(([px]) => fromWest ? px < x - 1 : px > x + 1); return fromWest ? half : half.reverse(); }
+// and from the turn-off away along the road to one end (east: toward the east end)
+function roadAway(x, east) { return roadTo(x, !east).reverse(); }
 // what a pedlar lays out: small things on a cloth, each recognisable by its shape
 function wareModel(parent, name) {
   const g = G(parent), n = name.toLowerCase(), brass = A.mat('#c8a050', .7, .3), iron = A.mat('#5a5e64', .6, .4), wood = tex('#8a6a42', 'brushed', .003);
@@ -7255,16 +7374,19 @@ function wareModel(parent, name) {
 // ears and swishes its tail at flies, and now and then shakes its head.
 function muleNew(parent, o) {
   const coat = texMat(o.coat, 'fur', { bump: .007 }), pale = texMat(o.muzzle, 'fur', { bump: .004 }), dark = A.mat('#1e1612', 0, .75), hoofM = A.mat('#1a1410', .1, .5);
-  const maneM = A.mat('#2a201a', 0, .9), tack = tex('#4a3020', 'brushed', .004), metal = A.mat('#b89a58', .7, .35);
+  const maneM = A.mat(o.mane || '#2a201a', 0, .9), tack = tex('#4a3020', 'brushed', .004), metal = A.mat('#b89a58', .7, .35), horse = !!o.horse;   // (horse: horseNew)
   const g = G(parent), R = rig(), body = G(g, [0, .98, 0]), BY = .98;
   lath(body, [[0, -.58], [.15, -.57], [.25, -.5], [.29, -.36], [.285, -.14], [.28, .06], [.29, .24], [.26, .4], [.17, .53], [0, .58]], coat, [0, 0, 0], [Math.PI / 2, 0, 0], [.8, 1, 1], 12);   // a deep, round barrel
   lath(body, [[0, -.3], [.18, -.22], [.19, .05], [.17, .28], [0, .36]], pale, [0, -.13, .03], [Math.PI / 2, 0, 0], [.7, 1, .55]);
   merge(body);
   const tail = R.add('tail', G(body, [0, .16, -.56], [.25, 0, 0]), 7, .35);   // (hangs down; it swings back when it swishes)
-  bone(tail, [0, 0, 0], [0, -.16, -.06], .04, .03, coat, 6, 0); lath(tail, [[0, 0], [.045, .08], [.06, .28], [.035, .5], [0, .55]], maneM, [0, -.14, -.06], [Math.PI, 0, 0], [1, 1, .7], 7);
+  bone(tail, [0, 0, 0], [0, -.16, -.06], .04, .03, coat, 6, 0);
+  lath(tail, horse ? [[0, 0], [.06, .1], [.085, .34], [.075, .58], [.04, .76], [0, .8]] : [[0, 0], [.045, .08], [.06, .28], [.035, .5], [0, .55]], maneM, [0, -.14, -.06], [Math.PI, 0, 0], [1, 1, .7], 7);
   const neck = R.add('neck', G(body, [0, .14, .46], [.75, 0, 0]), 4, .85);
   lath(neck, [[.17, 0], [.145, .18], [.11, .38], [.09, .5]], coat, [0, 0, 0], [0, 0, 0], [.72, 1, 1], 10);
-  P(neck, A.box(.025, .5, .07), maneM, [0, .26, -.08], { rot: [-.08, 0, 0], jitter: .003 });                    // the short upright mane
+  if (horse) { P(neck, A.box(.05, .54, .1), maneM, [.045, .25, -.085], { rot: [-.08, 0, .12], jitter: .006 });   // a long mane, falling to one side
+    P(neck, A.box(.035, .5, .06), maneM, [.075, .22, -.06], { rot: [-.06, 0, .3], jitter: .006 }); }
+  else P(neck, A.box(.025, .5, .07), maneM, [0, .26, -.08], { rot: [-.08, 0, 0], jitter: .003 });                    // the short upright mane
   const head = R.add('head', G(neck, [0, .52, 0], [-.25, 0, 0]), 6, .75);
   P(head, A.ico(.125, 1), coat, [0, 0, 0], { scale: [.8, .92, 1.05], jitter: .002 });
   P(head, new T.CylinderGeometry(.075, .108, .36, 9), coat, [0, -.035, .2], { rot: [Math.PI / 2 + .12, 0, 0], scale: [1, 1, 1.12], jitter: .002 });   // the long heavy face
@@ -7276,12 +7398,13 @@ function muleNew(parent, o) {
   P(head, new T.TorusGeometry(.1, .012, 4, 12), tack, [0, -.05, .32], { rot: [.12, 0, 0], scale: [.85, 1, 1], jitter: 0 });   // the halter
   P(head, new T.TorusGeometry(.12, .011, 4, 12), tack, [0, .02, .03], { rot: [0, Math.PI / 2, .25], jitter: 0 });
   const ring = G(head, [0, -.135, .32]); P(ring, new T.TorusGeometry(.015, .004, 4, 8), metal, [0, 0, 0], { jitter: 0 });
+  if (horse) P(head, A.box(.07, .15, .04), maneM, [0, .08, .075], { rot: [.75, 0, 0], jitter: .004 });   // the forelock
   merge(head);
   const earM = texMat(o.coat, 'fur', { bump: .004 });
   const ears = [-1, 1].map(sx => { const e = R.add('ear' + sx, G(head, [sx * .06, .085, -.03], [-.25, 0, -sx * .32]), 9, .4);
     const m = lath(e, [[0, 0], [.042, .03], [.06, .11], [.056, .19], [.034, .26], [0, .29]], earM, [0, 0, 0], [0, 0, 0], [1, 1, .38], 8);   // broad, long, like a leaf
     P(e, new T.CircleGeometry(.045, 8), pale, [0, .13, .02], { scale: [.9, 2.2, 1], jitter: 0, cast: false });                                  // pale inside
-    P(e, A.ico(.022, 0), maneM, [0, .265, 0], { scale: [1.1, 1.2, .5], jitter: 0, cast: false }); return e; });   // a dark tip
+    P(e, A.ico(.022, 0), maneM, [0, .265, 0], { scale: [1.1, 1.2, .5], jitter: 0, cast: false }); if (horse) e.scale.set(.62, .5, .7); return e; });   // a dark tip (a horse's: small and pricked)
   const jaw = G(head, [0, -.08, .25]); P(jaw, A.box(.06, .02, .12), pale, [0, 0, .02], { jitter: 0, cast: false });
   const legs = {};
   for (const [key, sx, front] of [['LF', -1, 1], ['RF', 1, 1], ['LH', -1, 0], ['RH', 1, 0]]) {
@@ -7293,7 +7416,7 @@ function muleNew(parent, o) {
   }
   // the load: a pad and girth, and the pedlar's own things
   const pack = G(body, [0, .25, -.02]);
-  P(pack, A.box(.5, .04, .62), tex('#7a2a22', 'weave', .005), [0, .02, 0], { jitter: .004 });
+  if (!horse) P(pack, A.box(.5, .04, .62), tex('#7a2a22', 'weave', .005), [0, .02, 0], { jitter: .004 });
   P(body, new T.TorusGeometry(.285, .02, 4, 16), tack, [0, 0, .12], { rot: [0, Math.PI / 2, 0], scale: [1, 1, .8], jitter: 0 });
   if (o.load === 'panniers') for (const sx of [-1, 1]) { const st = tex('#c89a4a', 'weave', .006);
     P(pack, A.box(.16, .34, .44), st, [sx * .3, -.12, 0], { jitter: .006 }); P(pack, A.box(.17, .05, .45), tex('#7a2a22', 'weave', .004), [sx * .3, -.04, 0], { jitter: 0 });
@@ -7341,6 +7464,206 @@ function leadRope(root) {
   return (from, to, sag = .25) => { from.getWorldPosition(a); (to.isObject3D ? to.getWorldPosition(b) : b.copy(to));
     for (let i = 0; i < N; i++) { const k = i / (N - 1); pos.set([a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k - Math.sin(k * Math.PI) * sag, a.z + (b.z - a.z) * k], i * 3); }
     geo.attributes.position.needsUpdate = true; };
+}
+
+// ------------------------------------------------------------------ knights errant
+// A knight on the road (knightFolk, below): their coat of arms on the surcoat, the shield and the saddle-cloth.
+// It comes from the brain (people.arms):
+// a field, maybe divided, and one charge, metal on colour or colour on metal, the old rule.
+const TINCT = { gold: '#d4a93c', silver: '#e6e2d8', red: '#9b2a22', blue: '#2b4a8c', green: '#2f6a3a', black: '#1d1b1b', purple: '#5b2d6c' };
+// one charge, centred at (x, y), about s across, in one colour (with the field showing through where it should)
+function paintCharge(g, kind, x, y, s, col, field) {
+  g.save(); g.translate(x, y); g.scale(s / 100, s / 100); g.fillStyle = col; g.strokeStyle = 'rgba(20,14,10,.55)'; g.lineWidth = 3.5; g.lineJoin = 'round';
+  const both = () => { g.fill(); g.stroke(); };
+  const disc = (cx, cy, r) => { g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); both(); };
+  switch (kind) {
+    case 'tower': g.beginPath(); g.moveTo(-30, 48); g.lineTo(-30, -26); for (const [a, b] of [[-30, -46], [-14, -46], [-14, -32], [-6, -32], [-6, -46], [6, -46], [6, -32], [14, -32], [14, -46], [30, -46]]) g.lineTo(a, b); g.lineTo(30, -26); g.lineTo(30, 48); g.closePath(); both();
+      g.fillStyle = field; g.beginPath(); g.moveTo(-10, 48); g.lineTo(-10, 22); g.arc(0, 22, 10, Math.PI, 0); g.lineTo(10, 48); g.closePath(); g.fill(); g.fillRect(-4, -14, 8, 14); break;
+    case 'key': g.beginPath(); g.arc(0, -30, 18, 0, Math.PI * 2); g.arc(0, -30, 9, 0, Math.PI * 2, true); both();
+      g.beginPath(); g.rect(-5, -13, 10, 60); g.rect(5, 26, 16, 8); g.rect(5, 38, 12, 8); both(); break;
+    case 'bell': g.beginPath(); g.moveTo(-36, 34); g.quadraticCurveTo(-28, 26, -26, 0); g.quadraticCurveTo(-24, -36, 0, -38); g.quadraticCurveTo(24, -36, 26, 0); g.quadraticCurveTo(28, 26, 36, 34); g.closePath(); both();
+      disc(0, 41, 8); g.beginPath(); g.rect(-6, -48, 12, 11); both(); break;
+    case 'fish': g.beginPath(); g.ellipse(-6, 0, 34, 16, 0, 0, Math.PI * 2); both(); g.beginPath(); g.moveTo(24, 0); g.lineTo(46, -18); g.lineTo(42, 0); g.lineTo(46, 18); g.closePath(); both();
+      g.fillStyle = field; g.beginPath(); g.arc(-26, -4, 3.5, 0, Math.PI * 2); g.fill(); break;
+    case 'leaf': g.beginPath(); g.moveTo(0, 44);
+      for (const [a, b, c, d] of [[-14, 34, -22, 24], [-10, 16, -26, 6], [-12, -6, -22, -18], [-8, -24, -14, -36], [-4, -40, 0, -46]]) g.quadraticCurveTo(a, b, c, d);
+      for (const [a, b, c, d] of [[4, -40, 14, -36], [8, -24, 22, -18], [12, -6, 26, 6], [10, 16, 22, 24], [14, 34, 0, 44]]) g.quadraticCurveTo(a, b, c, d);
+      g.closePath(); both(); g.strokeStyle = field; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 52); g.lineTo(0, -36); g.stroke(); break;
+    case 'star': g.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 19 : 46, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); both(); break;
+    case 'roundels': for (const [cx, cy] of [[-24, -20], [24, -20], [0, 24]]) disc(cx, cy, 17); break;
+    case 'lozenge': g.beginPath(); g.moveTo(0, -48); g.lineTo(30, 0); g.lineTo(0, 48); g.lineTo(-30, 0); g.closePath(); both(); break;
+    case 'hammer': g.beginPath(); g.rect(-6, -16, 12, 62); both(); g.beginPath(); g.rect(-34, -40, 68, 24); both(); break;
+    case 'acorn': g.beginPath(); g.ellipse(0, 10, 22, 30, 0, 0, Math.PI * 2); both();
+      g.beginPath(); g.moveTo(-26, -6); g.quadraticCurveTo(-26, -34, 0, -34); g.quadraticCurveTo(26, -34, 26, -6); g.closePath(); both(); g.beginPath(); g.rect(-3, -48, 6, 14); both(); break;
+    case 'wheel': g.beginPath(); g.arc(0, 0, 42, 0, Math.PI * 2); g.arc(0, 0, 32, 0, Math.PI * 2, true); both();
+      for (let i = 0; i < 4; i++) { g.save(); g.rotate(i * Math.PI / 4); g.beginPath(); g.rect(-4, -33, 8, 66); both(); g.restore(); } disc(0, 0, 10); break;
+  }
+  g.restore();
+}
+// the arms on a canvas: the field and its division, and (unless charge is false) the charge
+function paintArms(g, w, h, a, o = {}) {
+  const c1 = TINCT[a.field] || '#888', c2 = TINCT[a.second] || c1, on = TINCT[a.on] || '#eee', cy = (o.cy ?? .45) * h;
+  g.fillStyle = c1; g.fillRect(0, 0, w, h); g.fillStyle = c2;
+  const poly = pts => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x * w, y * h) : g.moveTo(x * w, y * h)); g.closePath(); g.fill(); };
+  if (a.div === 'pale') g.fillRect(w / 2, 0, w / 2, h);
+  if (a.div === 'fess') g.fillRect(0, h / 2, w, h / 2);
+  if (a.div === 'bend') poly([[0, 0], [1, 1], [0, 1]]);
+  if (a.div === 'quarterly') { g.fillRect(w / 2, 0, w / 2, h / 2); g.fillRect(0, h / 2, w / 2, h / 2); }
+  if (a.div === 'chevron') poly([[0, .78], [.5, .3], [1, .78], [1, .98], [.5, .5], [0, .98]]);
+  if (a.div === 'band') g.fillRect(0, .4 * h, w, .22 * h);
+  if (o.charge !== false && a.charge && a.charge !== 'none') {
+    const s = Math.min(w, h) * (o.size || .5), y = a.div === 'chevron' ? .72 * h : a.div === 'band' ? .2 * h : cy;
+    paintCharge(g, a.charge, w / 2, y, a.div === 'band' ? s * .6 : a.div === 'chevron' ? s * .62 : s, on, c1);
+  }
+  if (o.wear) for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(${i % 2 ? '255,255,255' : '0,0,0'},${.03 + Math.random() * .05})`; g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 4, 1 + Math.random() * 2); }   // (dents and scuffs: it has been used)
+}
+const armsTex = (a, w, h, o = {}) => canvasTex(w, h, (g) => paintArms(g, w, h, a, { wear: true, ...o }));
+// a heater shield: a face painted with the arms, a wooden body behind it with an iron rim (w, h: its size)
+function heater(parent, a, w = .46, h = .56) {
+  const hw = w / 2, top = h / 2, bot = -h / 2, sh = new T.Shape();
+  sh.moveTo(-hw, top); sh.lineTo(hw, top); sh.lineTo(hw, top - h * .32); sh.quadraticCurveTo(hw * .96, bot + h * .2, 0, bot); sh.quadraticCurveTo(-hw * .96, bot + h * .2, -hw, top - h * .32); sh.closePath();
+  const g = G(parent);
+  const body = new T.Mesh(new T.ExtrudeGeometry(sh, { depth: .022, bevelEnabled: false, curveSegments: 8 }), A.mat('#4a4c50', .6, .45));
+  body.position.z = -.024; body.scale.set(1.045, 1.035, 1); body.castShadow = true; g.add(body);   // (a little larger: the iron rim shows round the face)
+  const fg = new T.ShapeGeometry(sh, 10), uv = fg.attributes.uv, pz = fg.attributes.position;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (pz.getX(i) + hw) / w, (pz.getY(i) - bot) / h);
+  const face = new T.Mesh(fg, new T.MeshStandardMaterial({ map: armsTex(a, 256, 312, { cy: .42, size: .55 }), roughness: .62, metalness: .08 }));
+  face.position.z = .001; face.castShadow = true; g.add(face);
+  const back = new T.Mesh(new T.ShapeGeometry(sh, 6), A.mat('#5a4430', 0, .85)); back.rotation.y = Math.PI; back.position.z = -.025; g.add(back);   // (the wooden back)
+  return g;
+}
+// Poses in the same form as Rooken's (the keep's poseFor and bout poses), in a knight's own frame (folkPose puts them on a body)
+const KJOINTS = ['torso', 'head', 'shL', 'shR', 'elL', 'elR', 'thL', 'thR', 'knL', 'knR', 'anL', 'anR'];
+function knightPose(kind, t, o = {}) {
+  const look = o.look || 0, stoop = o.stoop || 0, ph = o.ph || 0;
+  switch (kind) {
+    case 'walk': return { hipsY: .95 - Math.abs(Math.cos(ph)) * .025, grip: .45, joints: {
+      torso: [.06 + stoop, Math.sin(ph) * .08, 0], head: [.05, -Math.sin(ph) * .06, 0],
+      thL: [-.5 * Math.sin(ph), 0, 0], thR: [.5 * Math.sin(ph), 0, 0],
+      knL: [.15 + .6 * Math.max(0, Math.sin(ph + 1.4)), 0, 0], knR: [.15 + .6 * Math.max(0, Math.sin(ph + 1.4 + Math.PI)), 0, 0],
+      anL: [-.1 * Math.sin(ph), 0, 0], anR: [.1 * Math.sin(ph), 0, 0],
+      shL: [.35 * Math.sin(ph), 0, .1], shR: [-.35 * Math.sin(ph), 0, -.1], elL: [-.35, 0, 0], elR: [-.35, 0, 0] } };
+    case 'ride': { const b = Math.sin((o.gait || 0) * 2) * .035 * (o.amp || 0);   // astride: thighs out round the barrel, the reins in both hands
+      return { hipsY: .95, grip: .9, joints: { torso: [.1 + stoop + b, 0, 0], head: [-.05, look, 0], thL: [-.72, 0, .6], thR: [-.72, 0, -.6],
+        knL: [1.0, 0, 0], knR: [1.0, 0, 0], anL: [-.3, 0, 0], anR: [-.3, 0, 0] }, ik: { L: [.09, 1.13, .4], R: [-.09, 1.13, .4] } }; }
+    case 'talk': { const q = Math.sin(t * 2.3) * .5 + Math.sin(t * 3.7) * .3, k = o.k ?? 1;   // a hand comes up and turns as they speak
+      return { hipsY: .95, grip: .3, joints: { torso: [stoop, 0, 0], head: [.04 * Math.sin(t * 3.1) * k, look, .04 * Math.sin(t * 1.3) * k],
+        shL: [0, 0, .1], shR: [(-.5 - q * .2) * k, 0, -.18 * k - .1 * (1 - k)], elL: [-.2, 0, 0], elR: [(-1.1 + q * .3) * k - .2 * (1 - k), 0, 0] }, ik: { L: [.22, .98, .02] } }; }
+    case 'wave': return { hipsY: .95, grip: .2, joints: { torso: [stoop, 0, 0], head: [.05, look, 0], shL: [0, 0, .1], shR: [-2.6, 0, -.35], elL: [-.2, 0, 0], elR: [-.35 + Math.sin(t * 9) * .25, 0, 0] } };
+    default: return { hipsY: .95, grip: .35, joints: { torso: [stoop, 0, 0], head: [.05 + Math.sin(t * .4) * .05, look, 0],   // at ease: hand on the hilt now and then
+      shL: [0, 0, .1], shR: [0, 0, -.1], elL: [-.2, 0, 0], elR: [-.2, 0, 0] }, ...(o.hilt ? { ik: { R: [.17, 1.0, .13] } } : {}) };
+  }
+}
+function kMix(a, b, w) {   // between two poses
+  const L = (p = [0, 0, 0], q = [0, 0, 0]) => p.map((v, i) => v + (q[i] - v) * w), joints = {};
+  for (const n of KJOINTS) if (a.joints[n] || b.joints[n]) joints[n] = L(a.joints[n], b.joints[n]);
+  return { ...(w < .5 ? a : b), hipsY: a.hipsY + (b.hipsY - a.hipsY) * w, joints, shift: (a.shift || 0) + ((b.shift || 0) - (a.shift || 0)) * w };
+}
+// A KNIGHT ERRANT, made unlike Rooken on purpose: a person (the road folk's body, with a plain face) in mail from
+// head to foot, not plate: a mail hood round the face, mail sleeves and chausses, and over it a long surcoat to the
+// knee in the colours of their arms, the arms themselves on the breast. A helm that is their own (a brimmed kettle
+// hat, a round helm with a nose-guard, or a tall pointed bascinet with a mail curtain): on for riding and for a
+// bout, carried in the left hand while they talk, so you see who they are. A young knight is clean-shaven, an old
+// one grey-bearded and a little stooped. Their shield hangs across their back; their sword at the left hip.
+// (Rooken alone wears full plate, a closed great helm with a plume, and a cape.)
+const HELMS = ['kettle', 'nasal', 'bascinet'];
+function knightFolk(root, person) {
+  const a = person.arms, sd = sid(person.id || person.name) % 99991 + 11, r = A.rand(sd), fem = person.they === 'she';
+  const old = person.age === 'old', young = person.age === 'young';
+  const mail = new T.MeshStandardMaterial({ color: old ? '#a4a8ac' : '#b8bec4', metalness: .35, roughness: .55, map: mailTex(), bumpMap: bumpTex('mail'), bumpScale: .02 });
+  const field = TINCT[a.field] || '#666', surM = texMat(field, 'weave', { bump: .004 });
+  const p = roadFolk(root, { seed: sd, root, fem, height: (fem ? 1.68 : 1.76) + r() * .06, broad: fem ? .98 : 1.08, stoop: old ? .06 : 0,
+    tunicMat: mail, sleeveMats: [mail, mail], hoseMats: [mail, mail], skirtMat: surM, hem: 'knee', boot: '#2e2620',
+    hair: old ? '#cfc9be' : HAIRS[Math.floor(r() * 6)], hairStyle: 'none', beard: fem || young ? '' : old ? 'full' : r() < .5 ? 'short' : '' });
+  // the surcoat over the mail: sleeveless, in the field's colour, the arms on the breast
+  lath(p.chest, [[.162, 0], [.172, .09], [.182, .2], [.198, .33], [.205, .4], [.175, .47]], surM, [0, 0, 0], [0, 0, 0], [fem ? .98 : 1.08, 1, .74], 12);
+  const breast = new T.Mesh(new T.CylinderGeometry(.212, .212, .34, 10, 1, true, -.62, 1.24),
+    new T.MeshStandardMaterial({ map: armsTex(a, 128, 128, { cy: .45, size: .62 }), roughness: .95, flatShading: true }));
+  breast.position.y = .22; breast.scale.set(fem ? .98 : 1.08, 1, .74); breast.castShadow = true; p.chest.add(breast);
+  // a mail mantle over the shoulders, and the hood round the face
+  P(p.chest, new T.CylinderGeometry(.075, .21, .15, 14, 1, true), mail, [0, .49, -.005], { scale: [1.05, 1, .8], jitter: .002 });
+  const coif = new T.Mesh(A.facet(new T.SphereGeometry(.13, 12, 8, Math.PI / 2 + .72, Math.PI * 2 - 1.44, 0, 2.3), .004, 2), mail);
+  coif.position.set(0, .105, -.026); coif.material.side = T.DoubleSide; coif.castShadow = true; p.head.add(coif);
+  // their helm
+  const kind = HELMS[sd % 3], steel = A.mat(old ? '#8a9096' : '#a8b0b8', .65, .38), dk = A.mat('#4a4e54', .6, .5), helm = G(p.head, [0, .13, -.02]);
+  if (kind === 'kettle') { lath(helm, [[.138, -.02], [.134, .05], [.11, .12], [.06, .16], [0, .17]], steel, [0, 0, 0], [0, 0, 0], [1, 1, 1], 14);
+    P(helm, A.cyl(.23, .24, .014, 18), steel, [0, -.02, 0], { rot: [-.08, 0, 0] }); P(helm, new T.TorusGeometry(.235, .008, 4, 20), dk, [0, -.02, 0], { rot: [Math.PI / 2 - .08, 0, 0], jitter: 0 }); }
+  if (kind === 'nasal') { lath(helm, [[.138, -.03], [.137, .03], [.118, .1], [.07, .17], [0, .21]], steel, [0, 0, 0], [0, 0, 0], [1, 1, 1], 14);
+    P(helm, new T.TorusGeometry(.137, .012, 4, 18), dk, [0, -.02, 0], { rot: [Math.PI / 2, 0, 0], jitter: 0 }); P(helm, A.box(.024, .13, .014), dk, [0, -.07, .138], { rot: [-.08, 0, 0], jitter: 0 }); }
+  if (kind === 'bascinet') { lath(helm, [[.14, -.04], [.14, .05], [.122, .13], [.075, .21], [0, .26]], steel, [0, 0, -.015], [-.18, 0, 0], [1, 1, 1], 14);
+    const av = new T.Mesh(new T.CylinderGeometry(.142, .2, .17, 14, 1, true, .85, Math.PI * 2 - 1.7), mail); av.position.y = -.12; av.castShadow = true; av.material.side = T.DoubleSide; helm.add(av); }   // (the mail curtain to the shoulders, open at the face)
+  merge(helm);
+  const onHead = { pos: helm.position.clone(), rot: helm.rotation.clone() };
+  const carry = on => {   // (carried: by the rim at the left hip, dome outward)
+    if (on) { p.hand(1).add(helm); helm.position.set(.05, -.07, .02); helm.rotation.set(.15, 0, -Math.PI / 2); } else { p.head.add(helm); helm.position.copy(onHead.pos); helm.rotation.copy(onHead.rot); } };
+  // the shield across the back, the sword at the left hip
+  const sl = heater(p.chest, a); sl.position.set(0, .27, -.21); sl.rotation.set(.1, Math.PI, 0);
+  sash(p.chest, .62, '#3a2416');
+  const leather = A.mat('#3e2a1c', .1, .8), blade = A.mat('#c4cbd2', .65, .35), guard = A.mat('#5f666e', .6, .5);
+  const scabbard = G(p.hips, [.17, -.04, .04], [.38, 0, .08]); P(scabbard, A.cyl(.028, .019, .78, 5), leather, [0, -.42, 0], { scale: [1, 1, .5] });
+  const sword = G(scabbard);
+  P(sword, A.cyl(.028, .004, .8, 4), blade, [0, -.42, 0], { scale: [1, 1, .3], jitter: .004 }); P(sword, A.box(.2, .028, .032), guard, [0, -.02, 0]);
+  P(sword, A.cyl(.016, .016, .15, 6), leather, [0, .065, 0]); P(sword, A.ico(.03, 0), guard, [0, .16, 0]);
+  const hold = mode => { if (mode === 'hand') { p.hand(-1).add(sword); sword.position.set(0, -.045, .035); sword.rotation.set(-Math.PI / 2, 0, 0); }
+    else { scabbard.add(sword); sword.position.set(0, -.04, 0); sword.rotation.set(0, 0, 0); } };
+  const armR = p.arms.find(x => x.sx === -1), aim = { root: p.g, arms: { R: { elbow: armR.el, hand: armR.hand } } };
+  const skirt = p.hips.children.find(c => c.material === surM), sy = skirt.position.y;
+  const seated = k => { skirt.scale.set(1 + k * .55, 1 - k * .3, 1 + k * .25); skirt.position.y = sy * (1 - k * .3); };   // (in the saddle it spreads over the horse's back)
+  return Object.assign(p, { helm, carry, hold, aim, sword, seated, helmKind: kind, holding: 'sheathed', carried: false, stride: .95, pace: 1 });
+}
+// chain mail's look: rows of little rings, dark between
+let mailT = null;
+const mailTex = () => mailT ??= (() => { const t = canvasTex(128, 128, (c, w) => { c.fillStyle = '#5c6066'; c.fillRect(0, 0, w, w);
+  c.strokeStyle = '#e4e8ec'; c.lineWidth = 1.6; for (let y = 0; y < w + 6; y += 5) for (let x = (y / 5 % 2) * 3; x < w + 6; x += 6) { c.beginPath(); c.arc(x, y, 2.4, 0, Math.PI * 2); c.stroke(); } });
+  t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(4, 4); return t; })();
+// One arm (sx: 1 left, -1 right) of a road-folk body reaching for a point in its own frame, as Rooken's arms reach:
+// shoulder and elbow, the elbow bending out and back (the sprung joints swing there).
+let _fe = null; const _fq = () => new T.Quaternion(), DOWNV = () => V(0, -1, 0);
+function reachFolk(p, sx, target) {
+  const arm = p.arms.find(x => x.sx === sx), chest = arm.sh.parent;
+  p.g.updateMatrixWorld(true);
+  const t = V(...target); p.g.localToWorld(t); chest.worldToLocal(t);
+  const s = arm.sh.position, d = t.clone().sub(s), LA = .28, LB = .25;
+  const c = Math.min(Math.max(d.length(), .05), LA + LB - .001), dir = d.normalize();
+  const ang = Math.acos(Math.min(1, Math.max(-1, (LA * LA + c * c - LB * LB) / (2 * LA * c))));
+  const u = dir.clone().applyAxisAngle(V(0, 0, 0).crossVectors(dir, V(sx * .7, -.4, -1).normalize()).normalize(), ang);
+  const qU = _fq().setFromUnitVectors(DOWNV(), u);
+  const f = t.clone().sub(s.clone().addScaledVector(u, LA)).normalize().applyQuaternion(qU.clone().invert());
+  const want = (name, q) => { const cur = p.R.J[name].cur; (_fe ??= new T.Euler()).setFromQuaternion(q);   // (each angle the nearest way round from where it is)
+    p.R.want(name, ...[_fe.x, _fe.y, _fe.z].map((v, i) => v + Math.round((cur[i] - v) / (Math.PI * 2)) * Math.PI * 2)); };
+  want('sh' + sx, qU); want('el' + sx, _fq().setFromUnitVectors(DOWNV(), f));
+}
+// a pose in Rooken's form (knightPose, the keep's bout poses) on a road-folk body
+function folkPose(p, pose, stoop = 0) {
+  const j = pose.joints || {}, J = n => j[n] || [0, 0, 0];
+  p.hips.position.set(0, .92 + (pose.hipsY - .95), 0); p.R.want('hips', 0, 0, 0);
+  const tr = J('torso'), hd = J('head');
+  p.R.want('chest', tr[0] + stoop, tr[1], tr[2]); p.R.want('neck', hd[0] * .4, hd[1] * .45, 0); p.R.want('head', hd[0] * .6, hd[1] * .55, hd[2]);
+  for (const [S, sx] of [['L', 1], ['R', -1]]) {
+    p.R.want('th' + sx, ...J('th' + S)); p.R.want('kn' + sx, ...J('kn' + S)); p.R.want('an' + sx, ...J('an' + S));
+    if (pose.ik?.[S]) reachFolk(p, sx, pose.ik[S]); else { p.R.want('sh' + sx, ...J('sh' + S)); p.R.want('el' + sx, ...J('el' + S)); }
+  }
+}
+// A HORSE, made like the mule (muleNew, o.horse): taller and finer, small ears, a long mane that falls to one
+// side and a full tail, a bridle and reins; a saddle with a high back and stirrups on a cloth in the knight's
+// colours. o: { coat, mane, muzzle, arms }.
+const HORSE_COATS = { bay: ['#6e3e22', '#1c1410', '#8a5a3a'], grey: ['#a9a6a0', '#d8d4cc', '#c4c0b8'], black: ['#1f1a18', '#100c0a', '#3a3230'],
+  chestnut: ['#93522a', '#7a3e1c', '#a8683e'], dun: ['#b8955e', '#2a1e14', '#c8a878'] };
+function horseNew(parent, o) {
+  const [coat, mane, muzzle] = HORSE_COATS[o.coat] || HORSE_COATS.bay;
+  const h = muleNew(parent, { coat, muzzle, mane, horse: true });
+  h.g.scale.setScalar(1.13);
+  const tack = tex('#3a2416', 'brushed', .004);
+  const seat = G(h.body, [0, .29, .02]);                             // the top of the back, under the saddle
+  const cloth = new T.Mesh(A.facet(new T.CylinderGeometry(.31, .31, .64, 16, 1, true, -1.7, 3.4), .004, 2),
+    new T.MeshStandardMaterial({ map: armsTex(o.arms, 160, 80, { charge: false }), roughness: .95, flatShading: true, side: T.DoubleSide }));
+  cloth.rotation.set(-Math.PI / 2, 0, 0); cloth.position.set(0, -.29, -.02); cloth.scale.set(.8, 1, 1); cloth.castShadow = true; seat.add(cloth);   // (draped over the back, its arms colours down each flank)
+  P(seat, A.box(.3, .06, .44), tack, [0, .015, 0], { jitter: .004 });                                   // the saddle
+  P(seat, A.box(.26, .13, .05), tack, [0, .07, -.2], { rot: [-.25, 0, 0], jitter: .004 });              // its high back
+  P(seat, A.box(.16, .08, .05), tack, [0, .05, .21], { rot: [.3, 0, 0], jitter: .004 });                // and pommel
+  merge(seat);
+  h.seat = seat;
+  return h;
 }
 
 // ------------------------------------------------------------------ the abyssals
@@ -7545,8 +7868,9 @@ function bumpTex(kind, rep) {
     if (kind === 'bark') for (let i = 0; i < 70; i++) { let x = q() * S, y = -10; c.strokeStyle = q() < .5 ? '#383838' : '#5a5a5a'; c.lineWidth = 2 + q() * 4; c.beginPath(); c.moveTo(x, y); while (y < S + 10) { y += 6 + q() * 10; x += (q() - .5) * 8; c.lineTo(x, y); } c.stroke(); }
     if (kind === 'scale') for (let y = 0; y < S + 16; y += 11) for (let x = (y / 11 % 2) * 8; x < S + 16; x += 16) { const gr = c.createRadialGradient(x, y - 9, 1, x, y - 9, 12); gr.addColorStop(0, '#b4b4b4'); gr.addColorStop(.8, '#808080'); gr.addColorStop(1, '#383838'); c.fillStyle = gr; c.beginPath(); c.arc(x, y - 9, 10, 0, Math.PI); c.fill(); }
     if (kind === 'feather') for (let y = 0; y < S + 12; y += 9) for (let x = (y / 9 % 2) * 7; x < S + 14; x += 14) { const gr = c.createRadialGradient(x, y - 6, 1, x, y - 6, 11); gr.addColorStop(0, '#a0a0a0'); gr.addColorStop(.75, '#7a7a7a'); gr.addColorStop(1, '#4a4a4a'); c.fillStyle = gr; c.beginPath(); c.arc(x, y - 6, 9, 0, Math.PI); c.fill(); }
+    if (kind === 'mail') for (let y = 0; y < S + 6; y += 5) for (let x = (y / 5 % 2) * 3; x < S + 6; x += 6) { c.strokeStyle = '#d0d0d0'; c.lineWidth = 1.6; c.beginPath(); c.arc(x, y, 2.4, 0, 6.3); c.stroke(); }
     if (kind === 'hammered') for (let i = 0; i < 220; i++) { const x = q() * S, y = q() * S, r = 4 + q() * 13, gr = c.createRadialGradient(x, y, 1, x, y, r); gr.addColorStop(0, '#3c3c3c'); gr.addColorStop(.7, '#a4a4a4'); gr.addColorStop(1, 'rgba(128,128,128,0)'); c.fillStyle = gr; c.beginPath(); c.arc(x, y, r, 0, 6.3); c.fill(); }
-    const t = new T.CanvasTexture(cv); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(kind === 'weave' ? 5 : 2, kind === 'weave' ? 5 : 2); return t;
+    const t = new T.CanvasTexture(cv); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(kind === 'weave' ? 5 : kind === 'mail' ? 4 : 2, kind === 'weave' ? 5 : kind === 'mail' ? 4 : 2); return t;
   })();
 }
 // a dark brocade: small gold-thread flowers in rows on deep oxblood (the Five Hours' waistcoat)

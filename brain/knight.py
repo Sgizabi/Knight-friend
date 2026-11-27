@@ -213,7 +213,7 @@ ENCOUNTER_RESERVE = 30000    # his own day comes first: no encounters when less 
 ENCOUNTER_PAUSE = int(os.environ.get("KNIGHT_ENCOUNTER_PAUSE", "75"))   # seconds between decisions, so visitors can watch
 # with someone on the road he goes to the courtyard's south wall and talks to them over it (the page's 'roadside')
 PEOPLE_POSE = {"offer": ("roadside", "stand", "heart"), "speak": ("roadside", "stand", "question"), "approach": ("roadside", "stand", "question"),
-               "trade": ("roadside", "stand", "spark"), "spar": ("roadside", "spar", "exclaim"), "drive_off": ("roadside", "stand", "anger")}
+               "trade": ("roadside", "stand", "spark"), "spar": ("bout", "spar", "exclaim"), "drive_off": ("roadside", "stand", "anger")}
 POSE = {   # where he goes and how he stands for each choice, while it plays out on the page
     "watch": ("window", "gaze", "exclaim"), "hide": ("fire", "sit", "sigh"), "prepare": ("workbench", "work", "dots"),
     "offer": ("courtyard", "stand", "heart"), "speak": ("courtyard", "stand", "question"),
@@ -1585,7 +1585,7 @@ class Knight:
             thought = re.sub(r"\s+", " ", str(data.get("thought") or "")).strip()[:140]
             place, action, emote = (PEOPLE_POSE.get(choice) if person else None) or POSE.get(choice) or (
                 (current["place"], current["action"], "dots") if current else ("fire", "sit", "dots"))
-            if place in ("courtyard", "roadside") and "courtyard" not in life.places(self.keep):
+            if place in ("courtyard", "roadside", "bout") and "courtyard" not in life.places(self.keep):
                 place = "window"
             self.set_status(True, place, action, emote, how[:100], thought=thought)
             checkpoint(f"{self.identity['name']} faces something")
@@ -1698,10 +1698,13 @@ class Knight:
             if not ok:
                 print(f"  [caption held back: {why}]")
                 text = out.get("said") or ""
-        if not text:
+        for x in state["appearances"]:
+            if x.get("id") == a["id"] and out.get("choice") == "spar":   # how a bout went: the page plays its ending
+                x["bout"] = {"result": out["result"], "at": iso()}
+        if not text and out.get("choice") != "spar":
             return
         for x in state["appearances"]:
-            if x.get("id") == a["id"]:
+            if x.get("id") == a["id"] and text:
                 x["caption"], x["caption_at"] = text[:240], iso()
         (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
         life.export_state(WORLD, DOCS)
