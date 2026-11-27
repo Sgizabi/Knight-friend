@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-27T02:30:23+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-27T02:30:27+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "log sizes and stability of the next row, note any new movement",
+    "thought": "The stone rows are still shifting a bit, and I want to see if the eighth row behaves differently."
   },
   "needs": {
-    "rest": 53.9,
-    "warmth": 84.4,
-    "inspiration": 54.6,
-    "spirit": 74.9
+    "rest": 57.1,
+    "warmth": 84.9,
+    "inspiration": 55.5,
+    "spirit": 74.3
   },
   "needs_prev": {
     "rest": 53.9,
@@ -106,7 +106,7 @@
     "inspiration": 54.6,
     "spirit": 74.9
   },
-  "needs_at": "2026-11-27T02:30:23+00:00",
+  "needs_at": "2026-11-27T02:30:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2376,5 +2376,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T02:30:23+00:00"
+  "exported": "2026-11-27T02:30:27+00:00"
 }
