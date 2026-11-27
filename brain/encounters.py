@@ -19,6 +19,7 @@ from pathlib import Path
 import beings
 import creatures
 import life
+import people
 
 FLOOR = 25                  # a being can push a need no lower than this
 INJURIES_MOST = 2           # injuries at once
@@ -100,6 +101,24 @@ DISTRACTED = {"rival", "squabble", "compete", "chase off", "steal from"}   # bus
 TOGETHER = {"team up"}                                                     # hunting together: harder for him
 
 WEAKNESS_SAYS = "It stops short: whatever you did, it works on it. +"
+PEOPLE_SAYS = {   # the same outcomes, said of a person ({n}: their name); "+" adds how they answer (beings.REACTS)
+    ("watch", "good"): "You watch from the wall, and {n} is easy about it. +", ("watch", "neutral"): "You watch. {n} goes on with what they came for.",
+    ("watch", "bad"): "You only watch, and {n} seems uneasy about it. +",
+    ("approach", "good"): "You go up to the wall, and {n} comes closer to talk. +", ("approach", "neutral"): "You go up to the wall. {n} stays where they are.",
+    ("approach", "bad"): "You go up to the wall. +",
+    ("offer", "good"): "{n} is glad of what you offer. +", ("offer", "neutral"): "{n} thanks you, but doesn't take it.",
+    ("offer", "bad"): "Your offer doesn't go down well with {n}. +",
+    ("speak", "good"): "{n} listens, and talks back readily. +", ("speak", "neutral"): "You talk a little; {n} answers politely, no more.",
+    ("speak", "bad"): "{n} takes what you said the wrong way. +",
+    ("hide", "good"): "You stay inside, and after a while {n} goes on along the road.", ("hide", "neutral"): "You stay inside. {n} waits a while by the wall.",
+    ("hide", "bad"): "You stay inside. {n} calls over the wall, puzzled, then gives up. +",
+    ("prepare", "good"): "You get ready before they reach the keep.", ("prepare", "neutral"): "You do what you can before they reach the keep.",
+    ("prepare", "bad"): "They reach the wall while you are still getting ready.",
+    ("drive_off", "good"): "{n} takes the hint, and goes on along the road.", ("drive_off", "neutral"): "{n} steps back from the wall, but doesn't leave yet.",
+    ("drive_off", "bad"): "{n} doesn't take kindly to being sent off. +",
+    ("leave", "good"): "You carry on, and in time {n} goes on along the road.", ("leave", "neutral"): "You carry on; {n} lingers by the wall a while.",
+    ("leave", "bad"): "You carry on, and {n} goes off looking hurt. +",
+}
 
 
 def _now():
@@ -273,9 +292,46 @@ def phase(a, now=None):
     return "signs" if (now or _now()) < _parse(a["start"]) else "here"
 
 
+def form_of(a):
+    return (a.get("variant") or {}).get("kind", "")
+
+
+def is_person(a):
+    return creatures.KINDS.get(a["kind"], {}).get("lane") == "road"
+
+
+def person_scene(a, entry, ph, history):
+    """Someone on the road: who they are, as he would see it (and their name, once they give it)."""
+    c, p, form = character(a["kind"]), a.get("person") or {}, form_of(a)
+    lines = [] if history else [f"{s[0].upper()}{s[1:]}." for s in c.get("signs", [])[:1]]
+    if ph != "here":
+        return " ".join(lines + ["Whoever it is hasn't reached the keep yet."])
+    known = bool((entry or {}).get("count"))
+    if known and p.get("name"):
+        lines.append(f"It is {p['name']} again" + (f", {p['who']}" if p.get("who") else "") + ".")
+    lines.append(f"You see {c['looks']}.")
+    form_look = beings.FORM_LOOKS.get(a["kind"], {}).get(form)
+    if form_look and not (known and a["kind"] == "pedlar"):
+        lines.append(form_look)
+    if people.describe(p):
+        lines.append(people.describe(p))
+    if p.get("name") and not known:
+        lines.append(f"They give their name as {p['name']}.")
+    wares = [w for w in (a.get("wares") or []) if w not in (a.get("sold") or [])]
+    if wares:
+        lines.append("Laid out on their cloth: " + ", ".join(wares[:-1]) + (" and " if len(wares) > 1 else "") + wares[-1] + ".")
+    elif a.get("wares"):
+        lines.append("Their cloth is empty now: you have had everything they brought.")
+    if a.get("regard", 0) < 0 or (entry or {}).get("regard", 0) < 0:
+        lines.append("They keep a little back from the wall, warier than before.")
+    return " ".join(lines)
+
+
 def scene(a, entry, seeing, ph, history):
     """What he notices, in plain words: signs first, then the being itself."""
     kind, c = a["kind"], character(a["kind"])
+    if is_person(a):
+        return person_scene(a, entry, ph, history)
     lines = []
     if not history:
         if a.get("arrival") == "meteor":
@@ -316,12 +372,13 @@ def scene(a, entry, seeing, ph, history):
     return " ".join(lines)
 
 
-def knowledge(entry):
-    """What he knows about this being from before, in his own words where he wrote them."""
+def knowledge(entry, person=False):
+    """What he knows about this being (or this person) from before, in his own words where he wrote them."""
     if not entry or not entry.get("count"):
-        return "You have never seen anything like it."
-    parts = [f"You have met this before ({entry.get('count', 1)} time{'s' if entry.get('count', 1) != 1 else ''})"
-             + (f"; you call it {entry['name']}" if entry.get("name") else "") + "."]
+        return "You have never met them before." if person else "You have never seen anything like it."
+    n = entry.get("count", 1)
+    parts = [(f"You have met them before ({n} time{'s' if n != 1 else ''})" + (f"; you think of them as {entry['name']}" if entry.get("name") else "")
+              if person else f"You have met this before ({n} time{'s' if n != 1 else ''})" + (f"; you call it {entry['name']}" if entry.get("name") else "")) + "."]
     if entry.get("note"):
         parts.append(f"Your own note on it: {entry['note']}")
     if entry.get("tells"):
@@ -333,9 +390,12 @@ def knowledge(entry):
     return " ".join(parts)
 
 
-def options(ph):
+def options(ph, kind=""):
     keys = [k for k in beings.OPTIONS if ph == "signs" or k != "prepare"]
-    return {k: beings.OPTIONS[k] for k in keys}
+    out = {k: beings.OPTIONS[k] for k in keys}
+    if ph == "here":                               # some have options of their own (a trade, a bout): added, never instead
+        out.update(beings.EXTRA_OPTIONS.get(kind, {}))
+    return out
 
 
 def _says(text, words):
@@ -433,7 +493,7 @@ def weakness_used(a, choice, how, entry, now, sky=""):
 
 def likes_of(a):
     """What this individual cares for: most of what its kind likes, not all of it."""
-    likes = character(a["kind"]).get("likes", [])
+    likes = beings.FORM_LIKES.get(a["kind"], {}).get(form_of(a)) or character(a["kind"]).get("likes", [])
     if len(likes) <= 2:
         return likes
     rng = random.Random(f"{a.get('id', a['kind'])}:likes")
@@ -444,19 +504,81 @@ def offers_liked(kind, how, a=None):
     return _says(how, likes_of(a) if a else character(kind).get("likes", []))
 
 
+TOOL_FINDS = {"a brass hand-bell", "a little hand mirror of polished tin", "a horn lantern", "a good whetstone",
+              "a twist of salt", "a carved wooden whistle"}   # (things he traded for that are of use, like the things he makes)
+
+
 def uses_tool(how, keep):
-    """Whether he uses something he made for the keep (named in what he does)."""
-    words = {w for o in (keep.get("objects") or []) for w in re.findall(r"[a-z]{5,}", str(o.get("name", "")).lower())}
+    """Whether he uses something he made for the keep, or a useful thing he traded for (named in what he does)."""
+    names = [o.get("name", "") for o in (keep.get("objects") or [])] + [f["what"] for f in (keep.get("finds") or []) if f["what"] in TOOL_FINDS]
+    words = {w for n in names for w in re.findall(r"[a-z]{5,}", str(n).lower())} - people.COMMON
     return bool(words) and _says(how, sorted(words))
 
 
 # --- the rules -----------------------------------------------------------------------------
+
+def _blank(choice, result, ctx):
+    return {"choice": choice, "result": result, "helpers": 0, "weakness": False, "liked": False, "effects": {}, "tool": False,
+            "used": None, "used_why": "", "sky": ctx.get("sky", ""), "strength": 0, "injury": None, "damage": None, "loss": None,
+            "gift": None, "returned": None, "regard": 0, "tell": None, "turned_back": False, "trade": None}
+
+
+def resolve_people(a, choice, how, ctx, rng):
+    """A trade with a pedlar, or a bout with a knight (people.py): fair rules, like everything else."""
+    p, step = a.get("person") or {}, ctx.get("step", 1)
+    regard = (ctx.get("entry") or {}).get("regard", 0) + a.get("regard", 0)
+    who = people.short(p)
+    if choice == "trade":
+        result, x = people.resolve_trade(a, how, {**ctx, "regard": regard}, rng, liked=offers_liked(a["kind"], how, a))
+        out = _blank(choice, result, ctx)
+        if result == "good":
+            out["trade"] = x
+            said = "You strike a bargain."
+            extra = [f"You give {x['gives']}, and {who} hands you {x['gets']}." if x["gives"] else
+                     f"{who} agrees to that, and hands you {x['gets']}."]
+            out["effects"], out["regard"] = {"spirit": 5}, 1
+        elif result == "bad":
+            said, extra = "The haggling turns sour.", ["They look put out."]
+            out["effects"], out["regard"] = {"spirit": -2}, -1
+        else:
+            said, extra = "They shake their head: not for that.", []
+        left = [w for w in (a.get("wares") or []) if w not in (a.get("sold") or []) and w != (x.get("gets") if result == "good" else None)]
+        out["ends"] = not left or (step >= 2 and result != "neutral") or step >= STEPS_MOST
+    else:                                          # a friendly bout with blunted blades
+        result = people.resolve_bout(a, ctx, rng)
+        out = _blank(choice, result, ctx)
+        proud = creatures.nature_of(a) == "proud"
+        if result == "good":
+            said = "You win the bout: a clean touch they can't argue with."
+            out["effects"], out["regard"] = {"spirit": 8, "inspiration": 3, "rest": -6}, 0 if proud else 1
+            extra = ["They take it badly." if proud else "They laugh and salute you with the blunted blade."]
+        elif result == "neutral":
+            said = "An even bout: neither gives way, and you both end it winded."
+            out["effects"], out["regard"], extra = {"spirit": 4, "rest": -6}, 1, []
+        else:
+            said = "They get the better of you, and you end up on your back in the grass."
+            out["effects"], extra = {"spirit": -3, "rest": -5}, ["They offer you a hand up."]
+            body = ctx["body"]
+            if rng.random() < people.BOUT_INJURY and len(body["injuries"]) < INJURIES_MOST and severity(body) < SEVERITY_MOST:
+                lo, hi = HEAL_DAYS[1]
+                out["injury"] = {"what": rng.choice(people.BOUT_HURTS), "severity": 1, "by": a["kind"],
+                                 "heals": _iso(ctx["now"] + dt.timedelta(days=rng.uniform(lo, hi)))}
+                extra.append(f"You come away with {out['injury']['what']}.")
+        out["ends"] = step >= 2
+    if out["ends"] and result == "neutral" and choice == "trade":
+        extra.append("In time they pack up and go on their way.")
+    out["text"] = " ".join([said] + extra)
+    out["said"], out["extra"] = said, extra
+    return out
+
 
 def resolve(a, choice, how, ctx, rng=None):
     """What comes of what he chose. ctx: needs, body, keep, entry (bestiary), prepared, step,
     week (recent encounters), now. Returns the outcome; apply() makes it so."""
     rng = rng or random.Random()
     kind = a["kind"]
+    if choice in beings.EXTRA_OPTIONS.get(kind, {}):   # a trade with a pedlar, a bout with a knight
+        return resolve_people(a, choice, how, ctx, rng)
     k, c = creatures.KINDS[kind], character(kind)
     nature = creatures.nature_of(a)
     choice = choice if choice in ODDS[nature] else "watch"
@@ -508,7 +630,8 @@ def resolve(a, choice, how, ctx, rng=None):
            "sky": ctx.get("sky", ""), "strength": round(strength, 2),
            "injury": None, "damage": None, "loss": None, "gift": None, "returned": None, "regard": 0,
            "tell": None, "turned_back": False}
-    said = WEAKNESS_SAYS if weak and result == "good" else SAYS[(choice, result)]
+    n = people.short(a.get("person")) if is_person(a) else ""   # (a person is spoken of by name)
+    said = (PEOPLE_SAYS[(choice, result)].format(n=n) if n else WEAKNESS_SAYS if weak and result == "good" else SAYS[(choice, result)])
     react = beings.REACTS.get(kind, ("", ""))[0 if result == "good" else 1]
     if any(react and react in t for t in ctx.get("said", [])):
         react = "It keeps on, as before." if result == "bad" else ""   # (it already did that this time)
@@ -533,10 +656,11 @@ def resolve(a, choice, how, ctx, rng=None):
         if choice == "drive_off":
             out["regard"] = -1 if nature not in ("hostile", "nuisance") else 0
             out["turned_back"] = bool(a.get("chain"))
-        if choice in ("offer", "speak", "approach", "watch") and c.get("gifts") and nature != "hostile" and \
+        gifts = beings.FORM_GIFTS.get(kind, {}).get(form_of(a)) or c.get("gifts")
+        if choice in ("offer", "speak", "approach", "watch") and gifts and nature != "hostile" and \
                 rng.random() < (GIFT_CHANCE + (.15 if choice == "offer" else 0)):
-            out["gift"] = rng.choice(c["gifts"])
-            text.append(f"It leaves you something: {out['gift']}.")
+            out["gift"] = rng.choice(gifts)
+            text.append(f"{n or 'It'} leaves you something: {out['gift']}.")
         lost = [x for x in (ctx["keep"].get("lost") or []) if x.get("by") == kind]
         if lost and choice in ("offer", "drive_off", "speak") and rng.random() < WIN_BACK_CHANCE:
             out["returned"] = lost[0]
@@ -582,7 +706,7 @@ def resolve(a, choice, how, ctx, rng=None):
         if choice in ("watch", "approach"):
             out["effects"] = {"inspiration": 3}
             if a.get("drive") and not any("seems to want" in t for t in ctx.get("said", [])):
-                text.append(f"What it seems to want: {a['drive']}.")   # watching shows what it came for
+                text.append(f"What {n or 'it'} seems to want: {a['drive']}.")   # watching shows what it came for
     # It goes when he drives it off or finds what keeps it back, when it passes him by, or when it
     # has done its harm; otherwise it answers and he decides again (2 or 3 decisions, usually).
     harmed = bool(out["injury"] or out["damage"] or out["loss"])
@@ -590,7 +714,7 @@ def resolve(a, choice, how, ctx, rng=None):
     step = ctx.get("step", 1)
     out["ends"] = decisive or (step >= 2 and result != "neutral") or step >= STEPS_MOST
     if out["ends"] and result == "neutral":
-        text.append("In its own time, it goes.")
+        text.append(f"In time, {n} goes on along the road." if n else "In its own time, it goes.")
     out["text"] = " ".join(text)
     out["said"] = said.replace("+", "").strip()    # (the parts, so a being's own mind can tell its part instead)
     out["extra"] = text[1:]
@@ -613,6 +737,20 @@ def _damage_target(targets, keep, rng):
         elif t in life.REPAIRS and not life.damaged(keep, t) and (life.repaired(keep, t) or keep["repairs"].get(t, 0) > 0):
             options.append(t)
     return rng.choice(options) if options else None
+
+
+def _ease(body):
+    """A salve: the worst injury heals now. Returns whether there was one to ease."""
+    if not body.get("injuries"):
+        return False
+    worst = max(body["injuries"], key=lambda i: i.get("severity", 1))
+    body["injuries"].remove(worst)
+    return True
+
+
+def _keep_find(keep, what, by, now):
+    keep.setdefault("finds", []).append({"what": what, "from": by, "time": _iso(now)})
+    keep["finds"] = keep["finds"][-30:]
 
 
 HOW = {"roof": "scorched and holed again", "wall": "cracked, stones loosened", "doorway": "knocked askew, stones fallen",
@@ -650,11 +788,38 @@ def apply(out, a, needs, body, keep, entry, how, now=None):
             keep["objects"].append({k: v for k, v in obj.items() if k not in ("by", "lost")})
     if out["gift"]:
         does = beings.GIFT_DOES.get(out["gift"])
+        kept = out["gift"] not in beings.INTANGIBLE
         if does and does[0] == "repair":
             life.repair(keep, does[1])                 # (help with the work: one session of it)
-        if out["gift"] not in beings.INTANGIBLE:
-            keep.setdefault("finds", []).append({"what": out["gift"], "from": a["kind"], "time": _iso(now)})
-            keep["finds"] = keep["finds"][-30:]
+        elif does and does[0] == "need":
+            life.change(needs, does[1], keep)          # (warmth from kindling, a lift from a song)
+        elif does and does[0] == "heal":
+            kept = not _ease(body) or kept             # (a salve: it eases a bruise now, or he keeps it for later)
+        if kept:
+            _keep_find(keep, out["gift"], a["kind"], now)
+    if out.get("trade"):                           # what changed hands with a pedlar
+        x = out["trade"]
+        if x["gives_kind"] == "object":
+            obj = next((o for o in keep["objects"] if o["name"] == x["gives"]), None)
+            if obj:
+                keep["objects"].remove(obj)
+        elif x["gives_kind"] == "find":
+            f = next((f for f in keep.get("finds") or [] if f["what"] == x["gives"]), None)
+            if f:
+                keep["finds"].remove(f)
+        a.setdefault("sold", []).append(x["gets"])
+        does = people.ware_does(x["form"], x["gets"])
+        keepit = x["gets"] not in people.CONSUMED
+        if does[0] == "repair":
+            keepit = not life.repair(keep, "")[0]      # (nails: one session's mending if anything needs it, else kept)
+        elif does[0] == "need":
+            life.change(needs, does[1], keep)
+        elif does[0] == "heal":
+            keepit = not _ease(body)
+        if keepit:
+            _keep_find(keep, x["gets"], a["kind"], now)
+        keep["traded"] = (keep.get("traded") or [])[-29:] + [{"gave": x["gives"] or x["pay"], "got": x["gets"],
+                                                               "with": (a.get("person") or {}).get("name", ""), "time": _iso(now)}]
     entry["regard"] = max(-3, min(3, entry.get("regard", 0) + out["regard"]))
     if out.get("used") and out["result"] == "good" and out.get("strength", 0) > 0:   # it gets used to the trick
         key, learns = out["used"], beings.LEARNS.get(a["kind"], .15)

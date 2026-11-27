@@ -181,7 +181,7 @@ def describe_keep(keep):
             for b in built)
     finds = keep.get("finds") or []
     if finds:
-        text += "\nThings the beings left you: " + ", ".join(f["what"] for f in finds[-6:])
+        text += "\nThings you were given or traded for: " + ", ".join(f["what"] for f in finds[-6:])
     going = under_way(keep)
     if going:
         text += f"\nUnder way in the courtyard: {going['name']} ({going['done']}/{going['needed']} of the work done)"

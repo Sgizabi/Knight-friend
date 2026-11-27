@@ -34,6 +34,7 @@ import animals  # noqa: E402
 import creatures  # noqa: E402
 import encounters  # noqa: E402
 import minds  # noqa: E402
+import people  # noqa: E402
 from llm import (Brain, DailyLimit, FakeBrain, LLMError, chosen_models, parse_json, read_meta,  # noqa: E402
                  TPM_LIMIT, tests_today, write_meta)
 
@@ -210,6 +211,9 @@ GLANCE_GAP_MINUTES = 25
 ENCOUNTER_BUDGET = 25000     # his tokens a day for meeting beings (about 10,000 each)
 ENCOUNTER_RESERVE = 30000    # his own day comes first: no encounters when less than this is left today
 ENCOUNTER_PAUSE = int(os.environ.get("KNIGHT_ENCOUNTER_PAUSE", "75"))   # seconds between decisions, so visitors can watch
+# with someone on the road he goes to the courtyard's south wall and talks to them over it (the page's 'roadside')
+PEOPLE_POSE = {"offer": ("roadside", "stand", "heart"), "speak": ("roadside", "stand", "question"), "approach": ("roadside", "stand", "question"),
+               "trade": ("roadside", "stand", "spark"), "spar": ("roadside", "spar", "exclaim"), "drive_off": ("roadside", "stand", "anger")}
 POSE = {   # where he goes and how he stands for each choice, while it plays out on the page
     "watch": ("window", "gaze", "exclaim"), "hide": ("fire", "sit", "sigh"), "prepare": ("workbench", "work", "dots"),
     "offer": ("courtyard", "stand", "heart"), "speak": ("courtyard", "stand", "question"),
@@ -1492,8 +1496,9 @@ class Knight:
         save("plan.json", plan)
         kind, start = a["kind"], now()
         state, best = creatures.load(WORLD), creatures.load_bestiary(WORLD)
-        entry = best["kinds"].setdefault(kind, {})
-        known = encounters.knowledge(entry)
+        person = (a.get("person") or {}).get("id")           # someone on the road: what he knows is of them, not their kind
+        entry = best.setdefault("people", {}).setdefault(person, {}) if person else best["kinds"].setdefault(kind, {})
+        known = encounters.knowledge(entry, bool(person))
         woke = is_night()
         if woke:
             life.change(self.needs, {"rest": -6})
@@ -1541,14 +1546,14 @@ class Knight:
         helpable = creatures.nature_of(a) in visits.HELP_NATURES   # (help counts from its signs on)
         for step in range(1, encounters.STEPS_MOST + 1):
             ph = encounters.phase(a)
-            opts = encounters.options(ph)
+            opts = encounters.options(ph, kind)
             sc = encounters.scene(a, entry, best["step"], ph, history)
             if helpable:                                          # visitors helping drive it off (a plain fact)
                 h = visitor_help(a)
                 if h and h["count"] > helped["count"]:
                     helped = h
             if ph == "here" and a.get("mind") and not shown:     # what it does first, once it is in sight
-                sc += " " + minds.told(a["mind"]["doing"], a["mind"]["says"])
+                sc += " " + minds.told(a["mind"]["doing"], a["mind"]["says"], people.short(a["person"]) if person else "It")
                 shown = True
             if ph == "here" and exchange and not shown_exchange:   # the arrival exchange, once, as quoted lines
                 sc += " " + " ".join(f"{creatures.KINDS[e['kind']]['name']}: {minds.told(e['does'], e['says'])}"
@@ -1565,6 +1570,8 @@ class Knight:
                 f"{sc}\n{known}\n" + (f"\nSo far:\n{so_far}\n" if so_far else "") +
                 (f"\nThings you have made, if any are of use: {', '.join(o['name'] for o in self.keep['objects'][-8:])}.\n"
                  if self.keep.get("objects") else "") +
+                (f"Things you were given or traded for: {', '.join(f['what'] for f in self.keep['finds'][-6:])}.\n"
+                 if person and self.keep.get("finds") else "") +
                 "\nWhat do you do? It is yours to decide; no option is the right one, and each has its "
                 "own risks and rewards:\n" + "\n".join(f"- [{k}] {v}" for k, v in opts.items()) +
                 "\nOr something of your own: describe it in how, and put in choice the option above it is closest to.\n"
@@ -1576,27 +1583,28 @@ class Knight:
             choice = choice if choice in opts else "watch"
             how = re.sub(r"\s+", " ", str(data.get("how") or "")).strip()[:240]
             thought = re.sub(r"\s+", " ", str(data.get("thought") or "")).strip()[:140]
-            place, action, emote = POSE.get(choice) or (
+            place, action, emote = (PEOPLE_POSE.get(choice) if person else None) or POSE.get(choice) or (
                 (current["place"], current["action"], "dots") if current else ("fire", "sit", "dots"))
-            if place == "courtyard" and "courtyard" not in life.places(self.keep):
+            if place in ("courtyard", "roadside") and "courtyard" not in life.places(self.keep):
                 place = "window"
             self.set_status(True, place, action, emote, how[:100], thought=thought)
             checkpoint(f"{self.identity['name']} faces something")
             out = encounters.resolve(a, choice, how, {
                 "needs": self.needs, "body": self.body, "keep": self.keep, "entry": entry, "prepared": prepared,
                 "step": step, "week": encounters.recent(WORLD), "now": now(), "said": [h["happened"] for h in history],
-                "sky": (weather.at(self.sky, now()) or {}).get("kind", ""), "help": helped["count"]})
+                "sky": (weather.at(self.sky, now()) or {}).get("kind", ""), "help": helped["count"],
+                "bouts": people.bouts(encounters._lines(WORLD / "encounters.jsonl")) if kind == "knight" else 0})
             encounters.apply(out, a, self.needs, self.body, self.keep, entry, how)
             if a.get("mind") and minds.can_think(self.brain, today_usage(), WORLD):   # its answer, within the outcome
                 t = minds.turn(self.brain, a, choice, how, out)
                 if t:
-                    out["text"] = " ".join([out["said"], minds.told(t["does"], t["says"])] + out["extra"]).strip()
+                    out["text"] = " ".join([out["said"], minds.told(t["does"], t["says"], people.short(a["person"]) if person else "It")] + out["extra"]).strip()
             if out["turned_back"]:
                 creatures.turn_back(state, kind)
             creatures.note_arc(state, kind, out["regard"])
             prepared = prepared or choice == "prepare"
             history.append({"choice": choice, "how": how, "thought": thought, "happened": out["text"],
-                            "result": out["result"], **{k: out[k] for k in ("injury", "loss", "gift") if out[k]},
+                            "result": out["result"], **{k: out[k] for k in ("injury", "loss", "gift", "trade") if out.get(k)},
                             **({"damage": out.get("damage_text")} if out.get("damage") else {})})
             print(f"  encounter {step}: {choice}: {how[:80]} -> {out['result']}: {out['text'][:100]}")
             self.publish_caption(state, a, out)                    # visitors see it as it happens
@@ -1612,10 +1620,13 @@ class Knight:
         try:
             after = self.ask("encounter_after", (
                 f"{story}\n\nIt is over, for now.\n"
-                'Reply as JSON: {"thought": "under 15 words, in your voice", '
-                f'"name": "what you call it, a few words{" (you have called it " + entry["name"] + "; keep it unless you have a reason)" if entry.get("name") else ""}", '
-                '"note": "one or two plain sentences for your own record of the beings you meet: what it is like, '
-                'and anything you learned about it. Only what happened above; add nothing that did not."}'), max_tokens=700, temperature=0.8)
+                'Reply as JSON: {"thought": "under 15 words, in your voice", ' +
+                (f'"name": "who they are to you, a few words (their name, if they gave it){" (you have called them " + entry["name"] + "; keep it unless you have a reason)" if entry.get("name") else ""}", '
+                 '"note": "one or two plain sentences for your own record of the people you meet on the road: who they are, '
+                 'and anything you learned about them. Only what happened above; add nothing that did not."}' if person else
+                 f'"name": "what you call it, a few words{" (you have called it " + entry["name"] + "; keep it unless you have a reason)" if entry.get("name") else ""}", '
+                 '"note": "one or two plain sentences for your own record of the beings you meet: what it is like, '
+                 'and anything you learned about it. Only what happened above; add nothing that did not."}')), max_tokens=700, temperature=0.8)
         except LLMError as err:
             print(f"  [no note this time: {err}]")
             after = {}
@@ -1657,6 +1668,7 @@ class Knight:
         (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
         (WORLD / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
         encounters.record(WORLD, {"time": iso(start), "id": a["id"], "kind": kind, "woke": woke, "steps": history,
+                                  **({"person": person} if person else {}),
                                   "injury": any(h.get("injury") for h in history),
                                   "damage": any(h.get("damage") for h in history),
                                   "loss": any(h.get("loss") for h in history), "note": note,

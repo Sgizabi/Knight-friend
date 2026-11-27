@@ -516,6 +516,41 @@ CHARACTERS = {
         likes=["bow", "wave", "banner", "flag", "kite", "salute", "respect", "watch", "silence", "quiet", "colour", "silk", "cloth", "song"],
         danger=0, gifts=["a long ribbon of the Wind-Chief's old silk, faded, patterned with lines older than anyone can read"],
         trace="the sky empty again, and silk and down drifting over the plain"),
+    # PEOPLE ON THE ROAD (people.py). Who exactly comes (a trade, one of the pedlars, a knight's arms and manner) is
+    # added from FORM_LOOKS and people.describe; these are what they all share.
+    "traveller": B(
+        traits=["human", "passing through", "talkative", "of the road"],
+        drives=["passing along the old road", "resting their feet for a while", "asking the way"],
+        signs=["someone is coming along the old road, on foot", "a figure on the road slows as it nears the keep"],
+        looks="a traveller on foot who has stopped on the road outside your south wall, looking over it at the keep",
+        tell="they lean on the wall when they mean to stay and talk; they shift their pack when they're ready to go",
+        likes=["water", "bread", "food", "rest", "sit", "fire", "warm", "story", "news", "welcome", "talk"],
+        voice=True, danger=0, gifts=["news from along the road"], trace="footprints on the road, stopping by the south wall"),
+    "pedlar": B(
+        traits=["human", "trading", "regular", "talkative", "of the road"],
+        drives=["their round of the villages along the old road", "to see if the knight in the ruin needs anything",
+                "to rest the mule and sell a thing or two"],
+        signs=["a mule's bell, coming along the old road", "the clank of pots and the slow clop of a mule on the road"],
+        looks="a pedlar who has stopped on the road outside your south wall with a laden mule, and spread a cloth on the grass with "
+              "things laid out on it",
+        tell="they turn a thing over in their hands and name a price when they want it; they start packing up when they're done",
+        likes=["made", "carved", "crafted", "lantern", "handle", "guard", "drawing", "painting", "poem", "book", "story", "song",
+               "help", "bread", "water for the mule", "firewood", "trade", "swap"],
+        voice=True, danger=0, gifts=["a bit of news from the villages"],
+        trace="the marks of a mule's hooves and a flattened square of grass by the south wall"),
+    "knight": B(
+        traits=["human", "armed", "proud", "travelling", "of the road"],
+        drives=["riding the old road on an errand of their own", "looking for a friendly bout, to keep their arm in",
+                "wanting an hour by a fire and someone to talk to", "curious about the knight who lives alone in the ruin",
+                "carrying a message to a town further on", "trading news of the road"],
+        signs=["a rider on the old road, the sun catching on mail", "the jingle of harness and a horse's hoofbeats on the road"],
+        looks="another knight who has reined in on the road outside your south wall and got down from the saddle, holding the horse "
+              "by the bridle and looking over the wall at the keep",
+        tell="they rest a hand on their sword hilt when they're unsure of you, and take it away when they relax",
+        likes=["bow", "salute", "greet", "name", "welcome", "water", "horse", "oats", "fire", "story", "news", "respect", "bout",
+               "spar", "challenge", "wine", "bread"],
+        voice=True, danger=0, gifts=["news from the far end of the road"],
+        trace="hoofprints on the road, and a horse's tether marks on the grass by the south wall"),
 }
 
 # More than one way to keep a being back, so no answer is the answer forever. Each individual
@@ -619,6 +654,18 @@ FORM_LOOKS = {
                               "though the limp keeps changing legs.",
                  "bare": "This time it wears nothing over itself: a far too tall, thin dark body and the smiling mask, walking out "
                          "into the open as if it thinks nobody can see it."},
+    # people on the road: who passes this time (each pedlar is someone he gets to know)
+    "traveller": {"minstrel": "This one is a minstrel: a bright, patched doublet, a cap with a long feather, and a lute slung on their back.",
+                  "woodcutter": "This one is a woodcutter: broad in the shoulders, an axe over one shoulder and a bundle of sticks on their back.",
+                  "herbalist": "This one gathers herbs: a wide-brimmed straw hat, a basket of cut plants on one arm and a walking staff.",
+                  "messenger": "This one is a messenger: a short cloak, a satchel across the chest, and the quick step of someone in a hurry.",
+                  "scholar": "This one is a wandering scholar: a long dark gown, ink on the fingers, and a strap of books over one shoulder."},
+    "pedlar": {"tinker": "It is a stout, red-cheeked tinker in a leather apron and a felt hat, with a grey mule hung all over with pots, "
+                         "pans and bundles of iron that clank as it walks.",
+               "spicer": "It is a tall, quick woman in a russet hooded cloak, with a brown mule whose striped panniers are full of cloth, "
+                         "candles, little jars and paper twists.",
+               "curios": "It is a thin old man with a long white beard and a patched blue coat, with a pale mule carrying a painted box "
+                         "whose little drawers are each full of something odd."},
     # the Burrow-Mother comes as he left things with her little one (creatures.MOODS), not in a form drawn at random
     "burrow4": {"thanks": "She lowers her great head toward the keep and holds it there, breathing slow and warm, the mushrooms on "
                           "her back glowing gold: it looks like thanks.",
@@ -641,16 +688,50 @@ FORM_MIND = {
                     for f, d in _DISGUISES.items()},
                  "bare": "This time you wear no disguise, and you believe nobody can see you. If anything notices you, you "
                          "realise, look back at it, and go back into the trees. You never speak."},
+    "traveller": {"minstrel": "You are a minstrel, travelling from fair to fair with your lute; you love an audience, and a story to make a song of.",
+                  "woodcutter": "You are a woodcutter, on your way to or from the forest edge; plain-spoken and practical.",
+                  "herbalist": "You gather herbs and make remedies for the villages; you notice every plant, even on old walls.",
+                  "messenger": "You are a messenger carrying letters between towns; you are in a hurry, but not rude.",
+                  "scholar": "You are a wandering scholar who studies old ruins and copies old writing; curious, and a little absent-minded."},
+    "pedlar": {"tinker": "You are Odo Brannock, a tinker: cheerful, chatty, always mending something. Your grey mule is called Pebble.",
+               "spicer": "You are Tamsin Ferrow, a pedlar of cloth, candles and sweet things: brisk and sharp at a bargain, but honest. "
+                         "Your brown mule is called Bramble.",
+               "curios": "You are Wim Asherby, an old dealer in odd things: dreamy, with a story about where every single thing came "
+                         "from. Your pale mule is called Quill."},
     "burrow4": {"thanks": "Your little one came home safe from the knight's stone house, and your people have not been driven from "
                           "it. You have come up to thank him, in your way.",
                 "scold": "Your little one, or your people, were driven off from the knight's stone house. You have come up to "
                          "scold him, in your way: you are slow to anger, and not cruel."},
 }
 # what such a being came for, by how it comes this time
-FORM_DRIVES = {"burrow4": {"thanks": ["to thank the one who was kind to her little one", "to see for herself, as well as she can, "
+FORM_DRIVES = {
+    "traveller": {"minstrel": ["on the way to a fair two towns on", "looking for someone to play to",
+                               "making a song about the old road, and in need of a verse"],
+                  "woodcutter": ["on the way to cut wood at the forest edge", "carrying wood to sell in the village",
+                                 "resting a sore back for a minute"],
+                  "herbalist": ["gathering herbs along the road", "looking for a plant that only grows on old walls",
+                                "after a remedy for someone back in the village"],
+                  "messenger": ["carrying letters to the next town", "lost the road in the hills, and wanting the way",
+                                "a quick rest and a drink of water"],
+                  "scholar": ["studying old ruins, and this keep is one", "copying old writing off stones",
+                              "asking what anyone knows of the keep's history"]},
+    "burrow4": {"thanks": ["to thank the one who was kind to her little one", "to see for herself, as well as she can, "
                                       "the stone house where her little one came up"],
                            "scold": ["to scold the one who drove off her little one", "to tell the stone house, in her way, "
                                      "that her people are not to be driven off"]}}
+
+# What someone of a form cares for (instead of their kind's likes), and what they might leave him
+FORM_LIKES = {"traveller": {"minstrel": ["song", "sing", "story", "tale", "listen", "clap", "music", "bread", "fire", "verse", "rhyme"],
+                            "woodcutter": ["water", "rest", "sit", "bread", "help", "carry", "wood", "fire", "axe", "work"],
+                            "herbalist": ["herb", "plant", "flower", "seed", "garden", "glasshouse", "moss", "water", "tea", "weed"],
+                            "messenger": ["water", "way", "road", "direction", "map", "point", "quick", "bread", "letter"],
+                            "scholar": ["book", "read", "history", "stone", "letter", "write", "map", "question", "ink", "study",
+                                        "drawing"]}}
+FORM_GIFTS = {"traveller": {"minstrel": ["a song made up on the spot about your keep", "a spare lute string"],
+                            "woodcutter": ["a bundle of dry kindling for your fire", "a walking stick, cut and trimmed for you"],
+                            "herbalist": ["a jar of salve for bruises", "a sprig of dried feverfew", "a pouch of chamomile for tea"],
+                            "messenger": ["news from the towns along the road", "a spare stick of sealing wax"],
+                            "scholar": ["a copied page of an old chronicle", "a stub of good red ink"]}}
 
 # How quickly each being gets used to a trick he keeps using (0: never; a third is quick). It
 # fades again if he leaves the trick alone (HALF_LIFE_DAYS in encounters.py). Clever and
@@ -771,16 +852,29 @@ REACTS = {
               "The Wind-Chief climbs, and the whole sky of them turns away from the keep after it."),
     "glassy4": ("Its crest brightens, and it inclines its head toward you.",
                 "Its crest dims; its attendants close around it and it turns away."),
+    "traveller": ("They smile, lean on the wall, and settle in to talk.",
+                  "They take a step back from the wall, shift their pack, and make to go on."),
+    "pedlar": ("They laugh, and pick something up off the cloth to show you.",
+               "They purse their lips, and start folding up the cloth."),
+    "knight": ("They take their hand off their sword hilt and give you a nod, one knight to another.",
+               "They stiffen, a hand on the hilt, and their horse sidesteps."),
 }
+# Options only some have, added to his usual ones (said as plainly as the rest; whether to is his)
+EXTRA_OPTIONS = {"pedlar": {"trade": "trade: offer something of yours (a thing you have, some work, a song) for something on their cloth"},
+                 "knight": {"spar": "spar: a friendly bout with blunted blades, if they're willing (you might come away bruised)"}}
 
 # Gifts that aren't things to keep: told, not added to what the beings left him.
-INTANGIBLE = {"a fresh fish, still cold from the lake", "a basket of mushrooms, good to eat",
+INTANGIBLE = {"news from along the road", "a bit of news from the villages", "news from the far end of the road",
+              "a song made up on the spot about your keep", "news from the towns along the road", "a bundle of dry kindling for your fire",
+              "a jar of salve for bruises", "a fresh fish, still cold from the lake","a basket of mushrooms, good to eat",
               "clay packed hard at the foot of your east wall, where it was weak", "a true answer to something", "a sound you can't forget", "a dream you can't stop thinking about",
               "a dream not your own", "a true secret", "an hour you remember twice", "help with one heavy stone",
               "a map of the keep drawn in light on the flagstones, gone by morning",
               "a new spring of clear water at the hill's foot", "a ring of the old bell, which carries for miles"}
 # Gifts that do something: (what, where)
 GIFT_DOES = {"help with one heavy stone": ("repair", "wall"),
+             "a jar of salve for bruises": ("heal",), "a bundle of dry kindling for your fire": ("need", {"warmth": 8}),
+             "a song made up on the spot about your keep": ("need", {"spirit": 6}),
              "clay packed hard at the foot of your east wall, where it was weak": ("repair", "wall")}
 
 # His options: plain verbs that fit any being; what he picks is his.

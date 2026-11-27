@@ -21,6 +21,7 @@ import random
 from pathlib import Path
 
 import beings
+import people
 import weather
 
 # what each being is. when: day (8-17 ET), dusk (17-20), night (20-5), dark (dusk or night), any.
@@ -98,7 +99,20 @@ KINDS = {
     "kite2":        dict(name="a flock of Kitemakers", nature="gentle", rarity="uncommon", step=0, when="day", needs="wind", likes=["wind", "gale"], minutes=(20, 40), arc="kite", stage=2),
     "kite3":        dict(name="the Kitemakers sheltering on the walls", nature="neutral", rarity="uncommon", step=1, when="any", needs="gale", likes=["gale", "storm"], minutes=(60, 150), arrives="silk", arrive_chance=.8, arc="kite", stage=3),
     "kite4":        dict(name="the Wind-Chief and the great migration", nature="proud", rarity="rare", step=1, when="day", needs="wind", likes=["wind", "gale"], minutes=(50, 70), arc="kite", stage=4),
+    # PEOPLE ON THE ROAD (lane "road": planned on a lane of their own, road_day; see people.py). Each one is someone
+    # (a["person"]): a passing stranger of some trade, one of three pedlars who come round with a mule, or a knight
+    # errant with a coat of arms. shuns: weather nobody sets out in.
+    "traveller":    dict(name="a traveller on the road", nature="gentle", rarity="common", step=0, when="road", minutes=(25, 50), lane="road",
+                         forms={"minstrel": 20, "woodcutter": 20, "herbalist": 20, "messenger": 20, "scholar": 20},
+                         natures=["gentle", "courteous"], shuns=["storm", "gale", "hail"]),
+    "pedlar":       dict(name="a pedlar with a mule", nature="courteous", rarity="uncommon", step=0, when="day", minutes=(40, 80), lane="road",
+                         forms={"tinker": 1, "spicer": 1, "curios": 1}, fresh=True, shuns=["storm", "gale", "hail", "snow"]),
+    "knight":       dict(name="a knight errant", nature="courteous", rarity="uncommon", step=0, when="road", minutes=(30, 60), lane="road",
+                         natures=["courteous", "courteous", "proud"], shuns=["storm", "hail"]),
 }
+ROAD_CHANCE = .35                 # someone stops at the keep on a given day (about two or three a week); their own lane
+ROAD_WEIGHT = {"traveller": 5, "pedlar": 2.5, "knight": 2.5}
+ROAD = {k for k, v in KINDS.items() if v.get("lane") == "road"}
 
 # Story arcs: each stage unlocks the next once it has been met enough times. If he drives them
 # off (regard falls to -2), the arc rests a long while and comes back warier, further away.
@@ -173,7 +187,8 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "manyjoint", "hill", "glassy2", "glassy3", "glassy4",
             "tidekin1", "tidekin2", "tidekin3", "tidekin4",                                         # the peoples: the Tidekin
             "burrow1", "burrow2", "burrow3", "burrow4",                                             #   the Burrowfolk
-            "kite1", "kite2", "kite3", "kite4"}                                                     #   the Kitemakers
+            "kite1", "kite2", "kite3", "kite4",                                                     #   the Kitemakers
+            "traveller", "pedlar"}                                                                   # people on the road (knights: once their art is done)
 
 
 def nature_of(a):
@@ -193,7 +208,7 @@ DAY_CHANCE = {"normal": .42, "strange": .75, "quiet": .12}   # a notable being, 
 HOSTILE_QUIET_DAYS = 3            # after anything hostile, no hostile beings for this long
 HOSTILE_PER_WEEK = 2              # at most this many hostile visits in a keeper's week
 HOURS = {"day": range(8, 17), "dusk": range(17, 20), "night": [20, 21, 22, 23, 0, 1],   # (keeper's hours: evenings, when people look in)
-         "dark": [17, 18, 19, 20, 21, 22, 23, 0], "any": range(8, 23)}
+         "dark": [17, 18, 19, 20, 21, 22, 23, 0], "any": range(8, 23), "road": range(8, 20)}
 CLEARISH = {"clear", "wind", "still", "starfall", "aurora"}
 WINDY = {"wind", "gale"}          # needs="wind"
 WILD_WIND = {"gale", "storm"}     # needs="gale": wind too wild even for the Kitemakers to stay up in
@@ -268,6 +283,8 @@ def _possible(kind, t, sched):
     if needs == "clear" and wkind not in CLEARISH:
         return 0
     if (needs == "wind" and wkind not in WINDY) or (needs == "gale" and wkind not in WILD_WIND):
+        return 0
+    if wkind in k.get("shuns", ()):
         return 0
     if needs == "after_rain":
         earlier = [weather.at(sched, t - dt.timedelta(hours=h)) for h in (1, 3, 6, 9)]
@@ -352,7 +369,7 @@ def plan_day(state, day, sched, step, rng=None, keep=None):
     start = _day_start(day)
     choices = []
     for kind, k in KINDS.items():
-        if k["step"] > step or not arc_open(state, kind, start) or not released(kind):
+        if k["step"] > step or not arc_open(state, kind, start) or not released(kind) or k.get("lane"):
             continue
         if kind in state.get("chains", {}):
             continue                               # already on its way
@@ -412,6 +429,17 @@ def _appearance(kind, day, t, rng, state, chain=None):
         variant["kind"] = mood(state, kind)
         a["nature"] = MOOD_NATURE[variant["kind"]]
         a["drive"] = rng.choice(beings.FORM_DRIVES[kind][variant["kind"]])
+    if k.get("lane") == "road":                    # someone in particular (people.py): who, how old, what they have with them
+        p = people.person_for(kind, variant.get("kind", ""), state, day, rng)
+        a["person"] = p
+        variant["age"] = p.get("age", "")
+        variant["mark"] = ""
+        form = variant.get("kind", "")
+        a["drive"] = rng.choice(beings.FORM_DRIVES.get(kind, {}).get(form) or drives)
+        if kind == "knight" and p.get("manner") == "boastful" and rng.random() < .5:
+            a["drive"] = "looking for a friendly bout, to keep their arm in"
+        if kind == "pedlar":
+            a["wares"] = people.wares_for(a, form)
     return a
 
 
@@ -434,6 +462,30 @@ def remember(state, kind, steps):
     choices = {c for c, _ in steps}
     arc = state.setdefault("arcs", {}).setdefault(k["arc"], {"stage": 1, "met": {}, "regard": 0})
     arc["young"] = "harsh" if "drive_off" in choices else "kind" if choices & {"offer", "speak", "approach"} else ""
+
+
+def road_day(state, day, sched, rng=None):
+    """Someone who stops at the keep on this day, coming along the road (their own lane: they never take a
+    day's turn from the beings of the wild, and nothing of the wild's limits applies to them), or None."""
+    rng = rng or random.Random(day.toordinal() * 17 + 3)
+    if rng.random() >= ROAD_CHANCE:
+        return None
+    start = _day_start(day)
+    choices = []
+    for kind in ROAD:
+        if not released(kind):
+            continue
+        until = _parse(state["cooldowns"].get(kind))
+        if until and until > start:
+            continue
+        fits = [(_possible(kind, start + dt.timedelta(hours=h), sched), start + dt.timedelta(hours=h)) for h in HOURS[KINDS[kind]["when"]]]
+        good = [t for f, t in fits if f]
+        if good:
+            choices.append((kind, ROAD_WEIGHT[kind], rng.choice(good)))
+    if not choices:
+        return None                                # (nobody sets out in a storm)
+    kind, _, t = rng.choices(choices, [w for _, w, _ in choices])[0]
+    return _appearance(kind, day, t, rng, state)
 
 
 def soon_visit(state, day, sched):
@@ -626,7 +678,7 @@ def second_spawn(state, lead, sched, step, rng, keep=None):
     for t in candidates:
         choices = []
         for kind, kk in KINDS.items():
-            if kind == lead["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or not released(kind):
+            if kind == lead["kind"] or kk["step"] > step or kk.get("arc") or kind in CHAINS or not released(kind) or kk.get("lane"):
                 continue
             if kk["rarity"] == "legendary" and KINDS[lead["kind"]]["rarity"] == "legendary":
                 continue
@@ -690,10 +742,32 @@ def update(world: Path, sched=None, now=None, keep=None):
             if second:
                 state["appearances"].append(second)
                 state["cooldowns"][second["kind"]] = _iso(_parse(second["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[second["kind"]]["rarity"]]))
+        r = road_day(state, day, sched)            # and someone on the road, on a lane of their own
+        if r:
+            state["appearances"].append(r)
+            state["cooldowns"][r["kind"]] = _iso(_parse(r["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[r["kind"]]["rarity"]]))
     state["appearances"] = state["appearances"][-60:]
+    keep_people(state)
+    if len(best.get("people") or {}) > PEOPLE_KEPT:    # what he knows of people: those still about, and the latest met
+        roster = state.get("people") or {}
+        ranked = sorted(best["people"].items(), key=lambda kv: (kv[0] in roster, kv[1].get("last", "")), reverse=True)
+        best["people"] = dict(ranked[:PEOPLE_KEPT])
     (world / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
     (world / "bestiary.json").write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
     return state
+
+
+PEOPLE_KEPT = 40                  # people remembered (the pedlars always; knights met; the rest drop off)
+
+
+def keep_people(state):
+    """The roster stays small: pedlars always, anyone still in the appearances, and the knights he has met most lately."""
+    roster = state.get("people") or {}
+    if len(roster) <= PEOPLE_KEPT:
+        return
+    live = {(a.get("person") or {}).get("id") for a in state["appearances"]}
+    ranked = sorted(roster.values(), key=lambda p: (p["id"].startswith("pedlar"), p["id"] in live, bool(p.get("visits")), p.get("last", "")), reverse=True)
+    state["people"] = {p["id"]: p for p in ranked[:PEOPLE_KEPT]}
 
 
 def witness(state, best, now):
@@ -708,6 +782,17 @@ def witness(state, best, now):
         if not seen:
             continue
         k = KINDS[a["kind"]]
+        if k.get("lane") == "road":                # someone on the road: remembered as themselves (no seeing points: nothing uncanny)
+            pid = (a.get("person") or {}).get("id")
+            p = state.setdefault("people", {}).get(pid)
+            if p is not None:
+                p["visits"] = p.get("visits", 0) + 1
+                p["last"] = a["start"]
+            entry = best.setdefault("people", {}).setdefault(pid or a["kind"], {})
+            entry.setdefault("first", a["start"])
+            entry["count"] = entry.get("count", 0) + 1
+            entry["last"] = a["start"]
+            continue
         if k.get("arc"):                           # a chapter met: enough of them and the story moves on
             arc = state.setdefault("arcs", {}).setdefault(k["arc"], {"stage": 1, "met": {}, "regard": 0})
             arc.setdefault("met", {})[a["kind"]] = arc["met"].get(a["kind"], 0) + 1
@@ -756,7 +841,7 @@ def export(world: Path, now=None):
             continue
         both_here = bool(a.get("with") in here_ids)   # a stance is only shown while both of them are here
         item = {**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
-                                     "with_met", "prevails", "caption", "caption_at", "regard") if k in a},
+                                     "with_met", "prevails", "caption", "caption_at", "regard", "person") if k in a},
                 "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
         if item["nature"] in visitors.HELP_NATURES:   # the "driving it off" meter, as of his last check-in
             item["help"] = (a.get("help") or {}).get("count", 0)   # (the page also counts help live, from the Visit runs)
@@ -765,6 +850,8 @@ def export(world: Path, now=None):
             item["help_sends"] = item["nature"] == "hostile" and sends   # a full meter may still send it away first
             if now < _parse(a["start"]) and encounters.character(a["kind"]).get("signs"):
                 item["sign"] = encounters.character(a["kind"])["signs"][0]   # what is seen of it while it is coming
+        if a.get("wares"):                         # what a pedlar has on the cloth (what he traded for is gone from it)
+            item["wares"] = [w for w in a["wares"] if w not in (a.get("sold") or [])]
         if both_here:
             if a.get("stance"):
                 item["stance"] = a["stance"]

@@ -514,6 +514,37 @@ every rule here: original, peril only, no religious imagery, his choices shape w
 nothing tells him what to do, the same performance rules, and anything that could hurt him or
 change his world a lot still goes to the keeper first.
 
+### People on the road (built 2026-11-27, brain/people.py)
+
+Ordinary people pass along the old road, and now and then one stops outside the courtyard's
+south wall to talk to him over it (he goes to the page's 'roadside' spot, inside the wall).
+
+- **Their own lane.** People are planned apart from the beings of the wild (creatures.road_day,
+  ROAD_CHANCE .35 a day, about two or three a week), so they never take a day's turn from a
+  being, never count toward the hostile limits, and give no seeing points (nothing uncanny about
+  them). Nobody sets out in a storm (KINDS shuns). Hours 8 to 20, so they never wake him.
+- **Each is someone.** A traveller is a stranger of some trade (minstrel, woodcutter,
+  herb-gatherer, messenger, wandering scholar) with a name. Three pedlars come round with their
+  mules, each always the same person (Odo Brannock the tinker, Tamsin Ferrow with cloth, candles
+  and sweet things, Wim Asherby with odd things). A knight errant has a name, age, manner, horse
+  and a coat of arms (metal on colour, one plain charge, nothing religious); a knight he has met
+  comes back now and then (35% once he has met any). What he knows is kept per person (bestiary
+  "people"); their minds remember only their own meetings with him, and hear what folk say along
+  the road (the peoples' places nearby, beings seen at the keep lately).
+- **Trade (pedlars).** Three wares on the cloth each visit. He offers something of his (a thing
+  he made or was given, named in what he does), some work, a song or a story, for one of them
+  ("X for Y"). Fair rules: a deal is struck 75% of the time for a thing of his, 60% for work or a
+  song, 30% for nothing in particular (a wary pedlar a little less; regard helps). What he gave
+  is gone from the keep; what he got is kept, or used (a blanket warms him, honey lifts him, nails
+  go into one session of mending if anything needs it, salve heals a bruise). Some are of use
+  with the beings, like the things he makes (a hand-bell, a mirror, salt, a lantern, a whistle).
+- **Spar (knights).** A friendly bout with blunted blades, only if he chooses it. Fair rules on
+  his skill (it grows a little with every bout, to +.15), theirs (by age), how rested and hurt he
+  is. Win, even bout, or put on his back; a lost bout bruises him 40% of the time, within the
+  same injury limits as everything else (heals in two or three days). Knights are not released
+  until their art (horse, heraldry, a sparring pose) is done.
+- **Gifts** from people can be things, news, a song, kindling for his fire, or a salve.
+
 ---
 
 ## 7. The companion

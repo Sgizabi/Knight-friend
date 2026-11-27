@@ -288,7 +288,7 @@ const pulse = (t, every, len) => { const p = t % every; return p < len ? Math.si
 // no visit: it loops instead (C seconds). Returns t => ({ since, left }).
 function visitClock(root, C) {
   const a = root.userData.appearance || {};
-  if (!a.id || !a.start || !a.end) return t => { const since = t % C; return { since, left: C - since, live: false }; };
+  if (!a.id || !a.start || !a.end) return t => { const since = window.__visitAt ?? t % C; return { since, left: C - since, live: false }; };   // (__visitAt: tests pin the moment)
   const s0 = Date.parse(a.start), len = (Date.parse(a.end) - s0) / 1000; let t0 = null;
   return t => { if (t0 === null) t0 = t - (Date.now() - s0) / 1000; const since = t - t0; return { since, left: len - since, live: true }; };
 }
@@ -5569,6 +5569,131 @@ const BEASTS = {
     },
   },
 
+  // ================================================================ PEOPLE ON THE ROAD
+  traveller: {
+    name: 'A traveller on the road', hour: 14,
+    blurb: 'Ordinary people pass along the old road, and now and then one stops outside the courtyard\'s south wall to talk to the knight over it: a minstrel, a woodcutter, a herb-gatherer, a messenger in a hurry, a wandering scholar. They come along the road from one end, stop a while (leaning on the wall, talking, looking about), wave, and go on their way.',
+    variants: [['minstrel', 'a minstrel'], ['woodcutter', 'a woodcutter'], ['herbalist', 'a herb-gatherer'], ['messenger', 'a messenger'], ['scholar', 'a wandering scholar']],
+    view: [[-6.6, 2.2, 9.6], [-9.6, 1.0, 5.0]],
+    knight: { place: 'roadside', action: 'stand', emote: 'question', note: 'talking over the wall' },
+    build(root) {
+      const ap = root.userData.appearance || {}, form = ap.variant?.kind || 'minstrel', sd = sid(ap.id || form) % 99991 + 11;
+      const p = tradeFolk(root, form, sd, root, ap.person?.they), fromWest = sd % 2 === 0, v = 1.2 * p.pace;
+      const turn = [TALK[0], 7.95], inPath = [...roadTo(TALK[0], fromWest), turn, TALK], outPath = [TALK, turn, ...roadTo(TALK[0], !fromWest)];
+      const tin = pathLen(inPath) / v, tout = pathLen(outPath) / v, clock = visitClock(root, tin + tout + 80);
+      const st = { leanK: 0, talkK: 0, waveK: 0, yaw: fromWest ? Math.PI / 2 : -Math.PI / 2, ph: 0, x: 0, z: 0, greet: -99 };
+      root.userData.greet = () => { st.greet = p.t; };
+      const K0 = V(), cam = () => A.camera.position;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        let x = TALK[0], z = TALK[1], head = Math.PI, walking = false;
+        if (since < tin) { [x, z, head] = atDist(inPath, since * v); walking = since * v < pathLen(inPath) - .02; }
+        else if (left < tout) { [x, z, head] = atDist(outPath, (tout - left) * v); walking = true; }
+        const moved = Math.hypot(x - st.x, z - st.z); st.x = x; st.z = z;
+        const e = Math.atan2(Math.sin(head - st.yaw), Math.cos(head - st.yaw)); st.yaw += e * Math.min(1, dt * (walking ? 6 : 3));
+        p.g.position.set(x, gy(x, z), z); p.g.rotation.y = st.yaw;
+        p.g.visible = since > 0 && left > 0;
+        const stay = !walking && since >= tin && left >= tout, sk = since - tin;
+        // while they stay: lean on the wall, talk, look about; wave goodbye before they go
+        const seg = Math.floor(sk / 9), m = nz(sd + seg), canLean = form !== 'herbalist' && form !== 'messenger';
+        const wantLean = stay && sk > 3 && canLean && m < .45 ? 1 : 0, wantTalk = stay && sk > 2 && (m > .3 && m < .8) ? 1 : 0, wantWave = stay && left < tout + 5 ? 1 : 0;
+        st.leanK += ((wantWave ? 0 : wantLean) - st.leanK) * Math.min(1, dt * 1.6); st.talkK += (wantTalk - st.talkK) * Math.min(1, dt * 2); st.waveK += (wantWave - st.waveK) * Math.min(1, dt * 3);
+        if (walking && moved > 0 && moved < 1) { st.ph += moved / (.72 * p.stride) * Math.PI; p.walk(st.ph, Math.min(1, moved / Math.max(dt, 1e-3) / .9), p.stride); }
+        else p.stand(t);
+        if (st.leanK > .01) p.lean(st.leanK, t);
+        if (st.talkK > .01 && st.leanK < .5) p.talk(t, p.talkHand || -1, p.talkHand === 0 ? 0 : st.talkK);
+        if (form === 'herbalist') { p.R.want('sh1', .05, 0, .2); p.R.want('el1', -1.45); }        // the basket on her arm
+        if (st.waveK > .01) p.wave(t, st.waveK);
+        // whom they look at: him, if he has come to the wall; else the keep, the road, and now and then you
+        A.K?.root?.getWorldPosition(K0);
+        const him = Math.hypot(K0.x - ROOKEN_AT[0], K0.z - ROOKEN_AT[1]) < 1.2, greet = t - st.greet < 3;
+        if (greet) p.lookAt(cam().x, cam().z), p.R.want('head', -.1, p.R.J.head.want[1], 0);
+        else if (stay && him) p.lookAt(K0.x, K0.z, .9);
+        else if (stay && nz(sd + seg * 3) > .75) p.lookAt(cam().x, cam().z, .8);
+        p.step(t, dt);
+      };
+    },
+  },
+  pedlar: {
+    name: 'A pedlar with a mule', hour: 13,
+    blurb: 'Three pedlars come round the villages along the old road, each with a mule: Odo Brannock the tinker, Tamsin Ferrow with cloth, candles and sweet things, and old Wim Asherby with his box of odd things. One stops outside the south wall, ties the mule to a peg, spreads a cloth on the grass and lays out what they have; the knight can trade over the wall. Whatever he trades for is gone from the cloth.',
+    variants: [['tinker', 'Odo Brannock, the tinker'], ['spicer', 'Tamsin Ferrow: cloth, candles, sweet things'], ['curios', 'Wim Asherby: odd things']],
+    view: [[-6.4, 2.4, 10.4], [-9.8, .8, 5.7]],
+    knight: { place: 'roadside', action: 'stand', emote: 'spark', note: 'looking over the wares' },
+    build(root) {
+      const ap = root.userData.appearance || {}, form = ap.variant?.kind || 'tinker', look = PEDLAR_LOOK[form] || PEDLAR_LOOK.tinker, sd = sid(ap.id || form) % 99991 + 11;
+      const p = tradeFolk(root, form, look.o.seed, root), mule = muleNew(root, look.mule), rope = leadRope(root);
+      const fromWest = sd % 2 === 0, sg = fromWest ? 1 : -1, v = 1.1 * p.pace;
+      const STALL = [-9.3, 5.95], CLOTH = [-9.35, 5.22], MF = [-9.3 - sg * 1.45, 6.5], MP = [MF[0] - sg * 1.7, 6.6], PEG = [MF[0] - sg * .1, 6.05];
+      const inPath = [...roadTo(MP[0] - sg * 2.2, fromWest), [MP[0] - sg * 2.2, 7.5], MP, MF];
+      const outPath = [MF, [MF[0] + sg * 2.4, 7.6], ...roadTo(MF[0] + sg * 2.4, !fromWest)], muleOut = [MP, MF, ...outPath.slice(1)];
+      const Lin = pathLen(inPath), tin = Lin / v, tout = pathLen(outPath) / v, PACK = 9, clock = visitClock(root, tin + tout + 120);
+      // the peg and the cloth, with what they have laid out on it
+      const peg = G(root, [PEG[0], gy(...PEG), PEG[1]]); bone(peg, [0, -.05, 0], [0, .22, 0], .02, .014, tex('#7a6244', 'bark', .003), 5, 0);
+      const pegTop = G(peg, [0, .2, 0]);
+      const cloth = G(root, [CLOTH[0], gy(...CLOTH) + .012, CLOTH[1]]);
+      P(cloth, A.box(.95, .008, .6), tex(form === 'spicer' ? '#6a2a3a' : form === 'curios' ? '#2a3a5a' : '#5a4a32', 'weave', .006), [0, 0, 0], { jitter: 0 });
+      const wares = (ap.wares || PREVIEW_WARES[form] || []).slice(0, 3).map((n, i) => { const w = wareModel(cloth, n); w.position.set((i - 1) * .3, .006, (i % 2 ? .07 : -.06)); w.rotation.y = (i - 1) * .4; return w; });
+      const shown = G(p.hand(-1), [0, -.09, .05]);                      // the thing they hold up to show him
+      if (wares.length) wareModel(shown, (ap.wares || PREVIEW_WARES[form])[Math.floor(nz(sd) * wares.length)]).scale.setScalar(1.2);
+      const st = { yaw: 0, x: MP[0] - sg * 9, z: 7.5, mx: 0, mz: 0, myaw: sg > 0 ? Math.PI / 2 : -Math.PI / 2, ph: 0, talkK: 0, crouchK: 0, showK: 0, greet: -99 };
+      root.userData.greet = () => { st.greet = p.t; };
+      const K0 = V(), toYaw = (a, b, rate, dt) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * Math.min(1, dt * rate);
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        let x, z, head, walking = false, mx, mz, mhead, crouch = 0, tied = true, laid = 0;
+        const sk = since - tin;
+        if (since < tin) {                                              // leading the mule in along the road
+          [x, z, head] = atDist(inPath, since * v); [mx, mz, mhead] = atDist(inPath, Math.max(0, since * v - 1.7)); walking = true; tied = false;
+        } else if (left < tout) {                                       // and away again
+          const s = (tout - left) * v; [x, z, head] = atDist(outPath, s); [mx, mz, mhead] = atDist(muleOut, s); walking = true; tied = false;
+        } else {
+          [mx, mz] = MP; mhead = Math.atan2(MF[0] - MP[0], MF[1] - MP[1]);
+          const lk = left - tout;                                       // (time left before they set off)
+          if (sk < 3) { [x, z] = MF; head = Math.atan2(PEG[0] - MF[0], PEG[1] - MF[1]); crouch = smooth(.3, 1, sk) * (1 - smooth(2.4, 3, sk)); tied = sk > 2; }   // tie the mule to the peg
+          else if (sk < 6) { const u = smooth(3, 6, sk); x = MF[0] + (STALL[0] - MF[0]) * u; z = MF[1] + (STALL[1] - MF[1]) * u; head = Math.atan2(STALL[0] - MF[0], STALL[1] - MF[1]); walking = u > .02 && u < .98; }
+          else if (lk < 2.6) { [x, z] = MF; head = Math.atan2(PEG[0] - MF[0], PEG[1] - MF[1]); crouch = smooth(0, .6, 2.6 - lk) * (1 - smooth(2.1, 2.6, 2.6 - lk)); tied = lk > 1.2; }   // untie
+          else if (lk < 5.6) { const u = smooth(5.6, 2.6, lk); x = STALL[0] + (MF[0] - STALL[0]) * u; z = STALL[1] + (MF[1] - STALL[1]) * u; head = Math.atan2(MF[0] - STALL[0], MF[1] - STALL[1]); walking = u > .02 && u < .98; }
+          else { [x, z] = STALL; head = Math.PI;
+            crouch = sk < 13 ? smooth(6, 7, sk) * (1 - smooth(12.2, 13, sk)) : lk < PACK + 5.6 ? smooth(PACK + 5.6, PACK + 4.6, lk) * (1 - smooth(6.4, 5.6, lk)) : 0; }
+          laid = sk < 13 ? smooth(7, 12.5, sk) : lk < PACK + 5.6 ? smooth(6, PACK + 4.6, lk) : 1;
+        }
+        // the person
+        const moved = Math.hypot(x - st.x, z - st.z); st.x = x; st.z = z;
+        st.yaw = toYaw(st.yaw, head, walking ? 6 : 3, dt);
+        p.g.position.set(x, gy(x, z), z); p.g.rotation.y = st.yaw; p.g.visible = since > 0 && left > 0;
+        if (walking && moved > 0 && moved < 1) { st.ph += moved / (.72 * p.stride) * Math.PI; p.walk(st.ph, Math.min(1, moved / Math.max(dt, 1e-3) / .8), p.stride); }
+        else p.stand(t);
+        st.crouchK += (crouch - st.crouchK) * Math.min(1, dt * 5); if (st.crouchK > .01) p.crouch(st.crouchK);
+        const atStall = !walking && Math.hypot(x - STALL[0], z - STALL[1]) < .05 && st.crouchK < .05, seg = Math.floor(sk / 8), m = nz(sd + seg);
+        st.talkK += ((atStall && m > .35 && m < .8 ? 1 : 0) - st.talkK) * Math.min(1, dt * 2);
+        st.showK += ((atStall && m >= .8 && wares.length ? 1 : 0) - st.showK) * Math.min(1, dt * 2.5);
+        if (st.talkK > .01) p.talk(t, 1, st.talkK);
+        if (st.showK > .01) { p.R.want('sh-1', -1.25 * st.showK, 0, -.1); p.R.want('el-1', -.55 * st.showK); }
+        shown.visible = st.showK > .35;
+        if (!walking && !tied && since >= tin) { p.R.want('sh1', -.3, 0, .1); p.R.want('el1', -.6); }   // the rope in hand
+        A.K?.root?.getWorldPosition(K0);
+        const him = Math.hypot(K0.x - ROOKEN_AT[0], K0.z - ROOKEN_AT[1]) < 1.2;
+        if (t - st.greet < 3) p.lookAt(A.camera.position.x, A.camera.position.z);
+        else if (atStall && him) p.lookAt(K0.x, K0.z, .9);
+        else if (atStall && m < .15) p.lookAt(mx, mz, .8);
+        p.step(t, dt);
+        // the cloth and the wares on it
+        cloth.visible = laid > .01 && p.g.visible; cloth.scale.set(Math.max(.01, laid), 1, Math.max(.01, Math.min(1, laid * 1.6)));
+        wares.forEach((w, i) => { w.visible = laid > .45 + i * .15; });
+        // the mule
+        const mm = Math.hypot(mx - st.mx, mz - st.mz); st.mx = mx; st.mz = mz;
+        st.myaw = toYaw(st.myaw, mhead, mm > .002 ? 5 : 1.5, dt);
+        mule.g.position.set(mx, gy(mx, mz), mz); mule.g.rotation.y = st.myaw; mule.g.visible = p.g.visible;
+        mule.tick(t, dt, mm < 1 ? mm : 0, !walking && since > tin + 6 && left > tout + 3 && nz(sd + Math.floor(t / 11) * 7) > .35 ? 1 : 0);
+        // the lead rope: from the hand while leading, from the peg while tied
+        rope(tied && since >= tin ? pegTop : p.hand(1), mule.ring, tied ? .12 : .3);
+      };
+    },
+  },
+
   // ================================================================ THE ABYSSALS (mockups)
   hanging: {
     name: 'The hanging dark', hour: 18,
@@ -6868,6 +6993,354 @@ function silkTrace(root, of, days) {
     h.scale.setScalar(Math.max(.4, 1 - days * .25));
   });
   return t => { for (const c of root.userData.cloth || []) c(t); };
+}
+
+// ------------------------------------------------------------------ people on the road
+// Ordinary people, in the world's own style (faceted, fogged, lit by the sky and the fire), built like real
+// people (a head about an eighth of their height), and dressed for their trade so each reads from far off by
+// shape alone: a minstrel's feathered cap, bright hose and lute; a woodcutter's axe and bundle of sticks; a
+// herb-gatherer's wide straw hat and basket; a messenger's short cloak and satchel; a scholar's long gown and
+// books. Faces are plain and quiet (small dark eyes, a nose, brows; hair and beards). Every joint is sprung
+// (rig), so arms swing and settle and heads turn and settle. They walk the old road, stop outside the south
+// wall of the courtyard to talk over it (Rooken stands inside, at the page's 'roadside'), and go on their way.
+const ROAD_PATH = [[-54, 1.9], [-42, 2.6], [-31, 3.6], [-25, 3.9], [-21, 4.4], [-18.6, 5.3], [-15.2, 6.7], [-12, 7.6], [-7.5, 8.2], [-3, 8.4], [6, 8.6], [15, 8.2], [26, 7.4], [42, 8.9]];
+const TALK = [-9.6, 5.05], ROOKEN_AT = [-9.6, 3.5];      // where they stop, outside the wall; where he stands, inside
+const sid = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);   // a steady number from a visit's id
+const PREVIEW_WARES = { tinker: ['a brass hand-bell', 'a little hand mirror of polished tin', 'a horn lantern'],   // (live, the wares come from the visit)
+  spicer: ['a thick wool blanket', 'a bundle of beeswax candles', 'a pot of heather honey'],
+  curios: ['a string of blue glass beads', 'a book of riddles with half its pages missing', 'a brass compass that points not quite north'] };
+const SKINS = ['#efcfb0', '#e2b892', '#cf9e78', '#b07c58', '#8a5c3e', '#6a442e'];
+const HAIRS = ['#1e1612', '#3a271a', '#5a3c24', '#7a5634', '#a07a48', '#b8723a', '#8a8070', '#d6d0c4'];
+const tex = (c, kind = 'weave', bump = .006) => texMat(c, kind, { bump });
+function roadFolk(parent, o = {}) {
+  const r = A.rand(o.seed || 7), broad = o.broad || 1, fem = !!o.fem, H = .92;
+  const skin = A.mat(o.skin || SKINS[Math.floor(r() * SKINS.length)], 0, .78), hairC = o.hair || HAIRS[Math.floor(r() * HAIRS.length)];
+  const hairM = A.mat(hairC, 0, .9), dark = A.mat('#140e0b', .25, .25), lipM = A.mat('#8a4e40', 0, .8);
+  const tunicM = tex(o.tunic || '#5a6a48'), sleeveL = o.sleeves ? tex(o.sleeves[0]) : tunicM, sleeveR = o.sleeves ? tex(o.sleeves[1]) : tunicM;
+  const hoseL = tex((o.hose || ['#4a4038'])[0], 'weave', .003), hoseR = tex((o.hose || ['#4a4038'])[1] || (o.hose || ['#4a4038'])[0], 'weave', .003);
+  const bootM = tex(o.boot || '#3a281c', 'brushed', .004), beltM = A.mat('#3a2616', .1, .6), buckle = A.mat('#b89a58', .7, .35);
+  const g = G(parent), R = rig(); g.scale.setScalar((o.height || 1.72) / 1.72);
+  const hips = R.add('hips', G(g, [0, H, 0]), 11, .9);
+  // legs: thigh, shin, a boot with its toe forward
+  const legs = [1, -1].map(sx => {
+    const th = R.add('th' + sx, G(hips, [sx * .088 * broad, -.03, 0]), 15, .85), hm = sx > 0 ? hoseL : hoseR;
+    bone(th, [0, 0, 0], [0, -.43, .012], .07 * broad, .052, hm, 7, .003);
+    const kn = R.add('kn' + sx, G(th, [0, -.44, .012]), 17, .85);
+    bone(kn, [0, 0, 0], [0, -.4, -.012], .05, .038, hm, 7, .003);
+    const an = R.add('an' + sx, G(kn, [0, -.41, -.012]), 17, .85);
+    bone(an, [0, .13, -.004], [0, -.02, 0], .047, .052, bootM, 7, .003);
+    P(an, A.ico(.058, 1), bootM, [0, -.04, .045], { scale: [.86, .62, 1.75], jitter: .003 });
+    return { th, kn, an, sx };
+  });
+  // the body: a tunic shaped over chest and shoulders; its skirt hangs from a belt and sways as they walk
+  const chest = R.add('chest', G(hips, [0, .03, 0]), 9, .85);
+  lath(chest, fem ? [[.13, 0], [.14, .08], [.135, .18], [.155, .3], [.17, .4], [.165, .46], [.12, .51], [.075, .54], [.055, .555]]
+                  : [[.14, 0], [.15, .09], [.16, .2], [.178, .33], [.19, .42], [.175, .48], [.12, .53], [.075, .55], [.058, .56]],
+       tunicM, [0, 0, 0], [0, 0, 0], [broad, 1, .72], 12);
+  const hem = { thigh: .26, knee: .5, calf: .66, ankle: .84 }[o.hem || 'thigh'], flare = .2 + hem * .2;
+  const skirt = new T.Mesh(A.facet(new T.CylinderGeometry(.15 * broad, flare * broad, hem, 14, 5, true), .006, 3), o.skirt ? tex(o.skirt) : tunicM);
+  skirt.position.y = -hem / 2 + .02; skirt.scale.z = .86; skirt.castShadow = true; hips.add(skirt);
+  clothSway(o.root || parent, skirt, { amp: .02 + hem * .025, speed: 1.2, wave: 2.4, phase: r() * 9 });
+  P(hips, new T.TorusGeometry(.152 * broad, .018, 5, 16), beltM, [0, .03, 0], { rot: [Math.PI / 2, 0, 0], scale: [1, .86, 1], jitter: 0 });
+  P(hips, A.box(.045, .04, .015), buckle, [0, .03, .135], { jitter: 0 });
+  // neck and head: a plain face; hair; maybe a beard
+  const neck = R.add('neck', G(chest, [0, .53, .005]), 10, .8);
+  bone(neck, [0, 0, 0], [0, .07, .01], .054, .05, skin, 7, .002);
+  const head = R.add('head', G(neck, [0, .07, .012]), 12, .72);
+  P(head, A.ico(.102, 2), skin, [0, .1, 0], { scale: [.86, 1.05, .98], jitter: .002 });
+  P(head, A.ico(.076, 1), skin, [0, .045, .028], { scale: [.9, .72, .95], jitter: .002 });                  // the jaw
+  P(head, new T.ConeGeometry(.02, .052, 4), skin, [0, .09, .102], { rot: [Math.PI / 2 + .45, 0, 0], jitter: 0 });   // the nose
+  for (const sx of [-1, 1]) {
+    P(head, A.ico(.021, 0), skin, [sx * .087, .1, -.005], { scale: [.45, 1, .75], jitter: 0 });                    // ears
+    P(head, A.ico(.0125, 1), dark, [sx * .035, .113, .086], { scale: [1.25, .75, .55], jitter: 0, cast: false });  // eyes
+    P(head, A.box(.036, .008, .012), hairM, [sx * .035, .138, .09], { rot: [0, sx * -.25, sx * -.12], jitter: 0, cast: false });   // brows
+    if (o.ruddy) P(head, A.ico(.02, 0), A.mat('#d27a66', 0, .85), [sx * .052, .078, .07], { scale: [1, .7, .4], jitter: 0, cast: false });
+  }
+  P(head, A.box(.032, .0055, .01), lipM, [0, .052, .094], { jitter: 0, cast: false });                            // the mouth
+  const hairStyle = o.hairStyle || (fem ? 'long' : 'short');
+  if (hairStyle !== 'bald') {
+    const cap = new T.Mesh(A.facet(new T.SphereGeometry(.108, 12, 8, 0, Math.PI * 2, 0, 1.45), .004, 4), hairM);
+    cap.position.set(0, .115, -.012); cap.rotation.x = -.42; cap.scale.set(.9, 1, 1); cap.castShadow = true; head.add(cap);
+  } else P(head, new T.TorusGeometry(.085, .018, 5, 12, Math.PI * 1.3), hairM, [0, .09, -.01], { rot: [Math.PI / 2, 0, Math.PI * .85], jitter: .002 });
+  if (hairStyle === 'long') { lath(head, [[0, -.02], [.08, 0], [.095, .08], [.09, .18], [.06, .22]], hairM, [0, -.04, -.04], [0, 0, 0], [.95, 1, .55], 10); }
+  if (hairStyle === 'tied') P(head, A.ico(.04, 1), hairM, [0, .1, -.11], { jitter: .002 });
+  if (o.beard) {
+    const long = o.beard === 'long' ? 2.2 : o.beard === 'full' ? 1.2 : .8;
+    P(head, A.ico(.064, 1), hairM, [0, .04 - (long - 1) * .04, .052], { scale: [1.02, long, .7], jitter: .004 });
+    P(head, A.box(.06, .014, .02), hairM, [0, .066, .092], { jitter: .002 });                                  // a moustache
+  }
+  // hats
+  const hat = G(head, [0, .19, -.006]);
+  const hatM = o.hatColor ? tex(o.hatColor, o.hat === 'straw' ? 'weave' : 'brushed', .004) : null;
+  if (o.hat === 'felt') { P(hat, A.cyl(.084, .1, .1, 9), hatM, [0, .03, 0]); P(hat, A.cyl(.17, .17, .012, 14), hatM, [0, -.02, 0], { rot: [.08, 0, 0] }); }
+  if (o.hat === 'straw') { P(hat, new T.ConeGeometry(.29, .1, 16, 1, true), hatM, [0, -.02, 0], { rot: [0, 0, 0] }); P(hat, A.cyl(.08, .1, .1, 10), hatM, [0, .04, 0]);
+    P(hat, new T.TorusGeometry(.098, .01, 4, 14), A.mat('#7a3a2a', 0, .8), [0, .0, 0], { rot: [Math.PI / 2, 0, 0], jitter: 0 }); }
+  if (o.hat === 'cap') { P(hat, A.cyl(.105, .11, .06, 10), hatM, [0, .0, 0], { rot: [-.12, 0, .1] });
+    const fe = G(hat, [-.08, .02, -.02], [-.5, 0, .5]); flat(fe, [[0, 0], [.022, -.08], [.016, -.18], [0, -.26], [-.016, -.18], [-.022, -.08]], A.mat(o.feather || '#e8e0c8', 0, .7, { side: T.DoubleSide }), [0, 0, 0], [Math.PI / 2, 0, 0]); }
+  if (o.hat === 'round') P(hat, A.cyl(.1, .102, .07, 10), hatM, [0, .0, 0]);
+  if (o.hat === 'hood') { const hd = new T.Mesh(A.facet(new T.SphereGeometry(.132, 12, 8, Math.PI / 2 + .8, Math.PI * 2 - 1.6, 0, 2.25), .005, 2), hatM); hd.position.set(0, -.085, -.022); hd.castShadow = true; hd.material.side = T.DoubleSide; hat.add(hd); }   // (open at the face)
+  // arms: a sleeve to the wrist, a hand that can hold things
+  const arms = [1, -1].map(sx => {
+    const sm = sx > 0 ? sleeveL : sleeveR;
+    const sh = R.add('sh' + sx, G(chest, [sx * (fem ? .165 : .19) * broad, .45, 0]), 11, .72);
+    P(sh, A.ico(.052, 1), sm, [-sx * .01, -.005, 0], { scale: [1.05, .85, .95], jitter: .002 });
+    bone(sh, [0, 0, 0], [0, -.27, -.005], .045 * broad, .038, sm, 7, .003);
+    const el = R.add('el' + sx, G(sh, [0, -.28, -.005]), 13, .72);
+    bone(el, [0, 0, 0], [0, -.235, .008], .038, .031, sm, 7, .003);
+    const hand = G(el, [0, -.25, .01]);
+    P(hand, A.ico(.036, 1), skin, [0, -.035, 0], { scale: [.62, 1.15, .95], jitter: .002 });
+    bone(hand, [-sx * .015, -.01, .02], [-sx * .03, -.055, .03], .012, .01, skin, 5, 0);                         // the thumb
+    return { sh, el, hand, sx };
+  });
+  // a cloak from the shoulders (open at the front), hood down behind the neck, or up
+  let cloak = null;
+  if (o.cloak) {
+    const cm = tex(o.cloak), len = o.cloakLen || .7;
+    cloak = G(chest, [0, .52, -.01]);
+    const c = new T.Mesh(A.facet(new T.CylinderGeometry(.17 * broad, (.24 + len * .16) * broad, len, 12, 6, true, .55, Math.PI * 2 - 1.1), .006, 4), cm);
+    c.position.y = -len / 2; c.scale.z = .85; c.castShadow = true; cloak.add(c);
+    clothSway(o.root || parent, c, { amp: .035, speed: 1.1, wave: 2.6, phase: r() * 9 });
+    P(cloak, new T.CylinderGeometry(.1, .19 * broad, .1, 12, 1, true), cm, [0, -.01, 0]);
+    if (o.hood !== false && o.hat !== 'hood') P(cloak, new T.TorusGeometry(.085, .04, 5, 12, Math.PI), cm, [0, .03, -.06], { rot: [-.4, 0, Math.PI], scale: [1.1, 1, 1] });
+  }
+  merge(head);
+  const me = V(0, 0, 0), qUp = new T.Quaternion(), qP = new T.Quaternion();
+  const api = {
+    g, R, hips, chest, neck, head, legs, arms, cloak, t: 0, upright: [],
+    hand: sx => arms.find(a => a.sx === sx).hand,
+    // standing at ease: breathing, weight shifting from one leg to the other, a slow look about
+    stand(t, look = 0) {
+      const shift = Math.sin(t * .21 + (o.seed || 0)) , w = shift * .5;
+      hips.position.set(w * .02, H - Math.abs(w) * .012, 0);
+      R.want('hips', 0, 0, w * .04); R.want('chest', .02 + (o.stoop || 0), 0, -w * .035);
+      for (const L of legs) { const bent = Math.max(0, -w * L.sx); R.want('th' + L.sx, -bent * .12, 0, L.sx * .02); R.want('kn' + L.sx, bent * .24); R.want('an' + L.sx, -bent * .12); }
+      for (const a of arms) { R.want('sh' + a.sx, .04 + Math.sin(t * .9 + a.sx) * .02, 0, a.sx * .07); R.want('el' + a.sx, -.18); }
+      R.want('neck', .04 - (o.stoop || 0) * .6, look * .4, 0); R.want('head', -.02, look * .5 + Math.sin(t * .17) * .08, 0);
+      chest.scale.set(1, 1 + Math.sin(t * 1.5) * .008, 1);
+    },
+    // walking: legs swing through and lift, arms swing against them, hips sway, shoulders counter-twist
+    walk(ph, amp = 1, stride = 1) {
+      const s0 = Math.sin(ph); hips.position.set(Math.sin(ph) * .012 * amp, H - Math.abs(Math.cos(ph)) * .028 * amp, 0);
+      for (const L of legs) {
+        const p = ph + (L.sx > 0 ? 0 : Math.PI), s = Math.sin(p), lift = Math.max(0, Math.sin(p + 1.35));
+        R.want('th' + L.sx, -s * .44 * amp * stride, 0, L.sx * .02); R.want('kn' + L.sx, (.1 + .7 * lift) * amp); R.want('an' + L.sx, (s * .18 - lift * .2) * amp);
+      }
+      for (const a of arms) R.want('sh' + a.sx, Math.sin(ph + (a.sx > 0 ? 0 : Math.PI)) * .36 * amp, 0, a.sx * .06), R.want('el' + a.sx, -.22 - Math.max(0, -Math.sin(ph + (a.sx > 0 ? 0 : Math.PI))) * .3 * amp);
+      R.want('hips', 0, -s0 * .07 * amp, s0 * .03 * amp); R.want('chest', .05 + (o.stoop || 0), s0 * .1 * amp, -s0 * .02 * amp);
+      R.want('neck', .02 - (o.stoop || 0) * .6, -s0 * .04 * amp, 0); R.want('head', 0, -s0 * .04 * amp, 0);
+    },
+    // leaning on the wall top in front of them, forearms on the stones
+    lean(k, t) {
+      R.want('chest', .34 * k + (o.stoop || 0) * (1 - k), 0, 0); R.want('hips', .05 * k, 0, 0); hips.position.z = -.06 * k;
+      for (const a of arms) { R.want('sh' + a.sx, -1.05 * k + .04, a.sx * -.15 * k, a.sx * (.07 + .12 * k)); R.want('el' + a.sx, -.18 - 1.25 * k); }
+      R.want('neck', -.18 * k, Math.sin(t * .2) * .2 * k, 0); R.want('head', -.15 * k, 0, Math.sin(t * .13) * .05 * k);
+    },
+    // down on its heels (laying things out, tying a rope)
+    crouch(k) {
+      hips.position.y = H - .44 * k; hips.position.z = -.08 * k;
+      for (const L of legs) { R.want('th' + L.sx, -1.55 * k, 0, L.sx * .12 * k); R.want('kn' + L.sx, 2.25 * k); R.want('an' + L.sx, -.72 * k); }
+      R.want('chest', .5 * k, 0, 0); R.want('neck', .2 * k, 0, 0);
+      for (const a of arms) { R.want('sh' + a.sx, -.75 * k, 0, a.sx * .1); R.want('el' + a.sx, -.5 * k); }
+    },
+    // talking: a hand comes up and turns as they speak, the head nods
+    talk(t, sx = -1, k = 1) {
+      const q = Math.sin(t * 2.3) * .5 + Math.sin(t * 3.7) * .3;
+      R.want('sh' + sx, (-.45 - q * .2) * k, 0, sx * .18 * k); R.want('el' + sx, (-1.15 + q * .3) * k);
+      R.want('head', .05 * Math.sin(t * 3.1) * k, 0, .04 * Math.sin(t * 1.3) * k);
+    },
+    wave(t, k = 1) { R.want('sh-1', -2.55 * k, 0, -.35 * k); R.want('el-1', -.35 * k + Math.sin(t * 9) * .25 * k); },
+    // turn the head toward a point in the world (within what a neck can do)
+    lookAt(x, z, k = 1) {
+      g.getWorldPosition(me); let y = Math.atan2(x - me.x, z - me.z) - g.rotation.y; y = Math.atan2(Math.sin(y), Math.cos(y));
+      y = Math.max(-1.2, Math.min(1.2, y)) * k; R.want('neck', R.J.neck.want[0], y * .45, 0); R.want('head', R.J.head.want[0], y * .55, 0);
+    },
+    step(t, dt) { api.t = t; R.step(dt);
+      if (api.upright.length) { g.updateMatrixWorld(true); g.getWorldQuaternion(qUp); for (const u of api.upright) { u.parent.getWorldQuaternion(qP); u.quaternion.copy(qP.invert().multiply(qUp)); } } },   // (a staff stands, a basket hangs, straight)
+  };
+  api.stand(0);
+  return api;
+}
+// what each trade looks like and carries: build(person) adds the props; walk: their gait
+const TRADES = {
+  minstrel: { o: r => ({ tunic: ['#7a2a38', '#2a4a7a', '#6a3a7a'][Math.floor(r() * 3)], sleeves: ['#d4a83a', '#7a2a38'], hose: ['#c8a038', '#7a2a38'], hem: 'thigh',
+                         hat: 'cap', hatColor: '#3a5a8a', feather: '#efe6d0', hairStyle: r() < .5 ? 'long' : 'short' }),
+              props(p, r) { const back = G(p.chest, [0, .27, -.17], [.1, 0, .55]); lute(back); sash(p.chest, .7, '#5a3a22'); }, pace: 1.15 },
+  woodcutter: { o: r => ({ tunic: '#5a4a32', hose: ['#3e3a30'], hem: 'thigh', broad: 1.12, beard: r() < .7 ? 'full' : 'short', hat: r() < .5 ? 'hood' : '', hatColor: '#4a5a3a', boot: '#2e2218' }),
+                props(p) { const b = G(p.chest, [0, .25, -.2], [.12, 0, 0]); sticks(b); const ax = G(p.hand(-1), [0, -.05, .015], [Math.PI, 0, 0]); axe(ax); }, pace: 1.0 },   // (carried at his side, head down)
+  herbalist: { o: r => ({ fem: r() < .6, tunic: '#6a7a52', skirt: '#5a6a48', hose: ['#4a3a2a'], hem: 'ankle', hat: 'straw', hatColor: '#c8a868', hairStyle: 'tied', cloak: '#7a6a4a', cloakLen: .62 }),
+               props(p) { const st = G(p.hand(-1), [0, -.05, .02]); staff(st, 1.55); const el = p.arms.find(a => a.sx === 1).el, bk = G(el, [0, -.13, .02]); bk.scale.setScalar(.8); basket(bk); p.upright.push(st, bk); }, pace: .95, stride: .7 },   // (the basket in the crook of her arm)
+  messenger: { o: r => ({ tunic: '#3a5a6a', hose: ['#2e2a26'], hem: 'thigh', cloak: '#6a2a22', cloakLen: .45, hood: true, hat: 'round', hatColor: '#2a2420', boot: '#2a1e16' }),
+               props(p) { const s = G(p.hips, [.17, -.02, .04], [0, 0, -.1]); satchel(s); sash(p.chest, -.75, '#4a3018'); }, pace: 1.5 },
+  scholar: { o: r => ({ tunic: '#2a2630', hose: ['#2a2420'], hem: 'ankle', hat: 'round', hatColor: '#1a1618', hairStyle: r() < .4 ? 'bald' : 'short', beard: r() < .5 ? 'short' : '', stoop: .08 }),
+             props(p) { const b = G(p.hips, [-.17, .02, -.02], [0, 0, .12]); books(b); sash(p.chest, .75, '#3a2818'); }, pace: .9, stride: .7 },
+};
+// the pedlars: each always looks the same (they come round again), each with their own mule
+const PEDLAR_LOOK = {
+  tinker: { o: { tunic: '#6a4a30', hose: ['#3a3028'], hem: 'knee', broad: 1.22, hat: 'felt', hatColor: '#3a3028', beard: 'short', hair: '#6b4a2a', ruddy: true, skin: '#e2b892', seed: 31, height: 1.66 },
+            apron: '#5a3a22', mule: { coat: '#8c8984', muzzle: '#d6d0c6', load: 'pots' } },
+  spicer: { o: { fem: true, tunic: '#8a4a2a', skirt: '#6a3a22', hose: ['#3a2a20'], hem: 'ankle', hat: 'hood', hatColor: '#8e4a2c', cloak: '#8e4a2c', cloakLen: .95, hood: false, hair: '#3a271a', skin: '#cf9e78', seed: 32, height: 1.78 },
+            mule: { coat: '#5e4434', muzzle: '#c8b496', load: 'panniers' } },
+  curios: { o: { tunic: '#2e4a7a', hose: ['#2a2a30'], hem: 'calf', beard: 'long', hair: '#e4e0d6', hairStyle: 'bald', hat: 'round', hatColor: '#2a3a5a', stoop: .16, skin: '#efcfb0', seed: 33, height: 1.74, broad: .9 },
+            mule: { coat: '#cfc4b0', muzzle: '#efe8da', load: 'box' } },
+};
+// a strap worn across the body from one shoulder to the other hip, hugging the chest (tilt: which way it crosses)
+function sash(chest, tilt, color) { const g = G(chest, [0, .27, 0], [0, 0, tilt]); P(g, new T.TorusGeometry(.2, .011, 4, 20), A.mat(color, 0, .8), [0, 0, 0], { rot: [Math.PI / 2, 0, 0], scale: [Math.min(1.35, .19 / (.2 * Math.cos(tilt))), .72, 1], jitter: 0 }); }
+function lute(g) {   // a pear-shaped body, a neck, a pegbox bent back
+  const wood = tex('#a8743a', 'brushed', .003), dk = A.mat('#3a2414', 0, .6);
+  lath(g, [[0, -.2], [.1, -.17], [.13, -.08], [.12, .02], [.08, .1], [.03, .14]], wood, [0, 0, 0], [0, 0, 0], [1, 1, .5], 10);
+  P(g, new T.CircleGeometry(.025, 10), dk, [0, -.02, .065], { jitter: 0, cast: false });
+  P(g, A.box(.04, .26, .02), dk, [0, .26, .01]); P(g, A.box(.045, .08, .02), dk, [0, .42, -.02], { rot: [-.9, 0, 0] });
+}
+function sticks(g) { const wd = tex('#6a5236', 'bark', .004), cord = A.mat('#8a7450', 0, .9);
+  for (let i = 0; i < 9; i++) bone(g, [(i % 3 - 1) * .045, -.32 + (i * 7 % 5) * .01, Math.floor(i / 3) * .04 - .04], [(i % 3 - 1) * .05 + (i % 2) * .01, .34 - (i * 3 % 4) * .02, Math.floor(i / 3) * .04 - .04], .02, .016, wd, 5, .002);
+  for (const y of [-.15, .15]) P(g, new T.TorusGeometry(.085, .009, 4, 12), cord, [0, y, 0], { rot: [Math.PI / 2, 0, 0], scale: [1.05, 1, .85], jitter: 0 }); merge(g); }
+function axe(g) { bone(g, [0, -.1, 0], [0, .62, 0], .017, .015, tex('#8a6a42', 'brushed', .003), 6, 0);
+  P(g, A.box(.15, .09, .022), A.mat('#7a7e84', .6, .35), [.06, .56, 0], { jitter: .003 }); P(g, A.box(.04, .1, .024), A.mat('#5a5e64', .6, .4), [.14, .56, 0], { jitter: 0 }); }
+function staff(g, len) { const wd = tex('#7a6244', 'bark', .003); bone(g, [0, -len * .66, 0], [0, len * .34, 0], .02, .017, wd, 6, .004); P(g, A.ico(.03, 0), wd, [0, len * .34, 0]); }
+function basket(g) { const w = tex('#b08a52', 'weave', .006), b = G(g, [0, -.24, 0]);   // (hung by its handle from g)
+  lath(b, [[.1, 0], [.12, .04], [.13, .1], [.135, .11]], w, [0, 0, 0], [0, 0, 0], [1, 1, .75], 12).material.side = T.DoubleSide;
+  P(b, A.cyl(.1, .1, .01, 12), w, [0, .005, 0], { scale: [1, 1, .75] });
+  P(b, new T.TorusGeometry(.12, .009, 4, 14, Math.PI), w, [0, .11, 0], { scale: [1, 1.05, 1], jitter: 0 });
+  for (let i = 0; i < 6; i++) P(b, new T.ConeGeometry(.025, .11, 4), A.mat(['#5a7a3a', '#7a9a4a', '#8a6aa8'][i % 3], 0, .8), [(i % 3 - 1) * .06, .12, (i > 2 ? .03 : -.03)], { rot: [(i - 3) * .1, 0, (i % 3 - 1) * .3] }); merge(b); }
+function satchel(g) { const l = tex('#6a4424', 'brushed', .004); P(g, A.box(.2, .17, .07), l, [0, -.12, 0], { jitter: .004 }); P(g, A.box(.2, .07, .075), l, [0, -.05, .004], { rot: [-.15, 0, 0], jitter: .003 }); P(g, A.box(.03, .03, .01), A.mat('#b89a58', .7, .35), [0, -.08, .045], { jitter: 0 }); merge(g); }
+function books(g) { const cs = ['#6a2a22', '#2a3a5a', '#4a3a22'];
+  cs.forEach((c, i) => P(g, A.box(.16 - i * .015, .04, .2 - i * .02), tex(c, 'brushed', .003), [0, -.06 + i * .042, 0], { rot: [0, i * .15 - .1, 0], jitter: .003 }));
+  P(g, new T.TorusGeometry(.1, .008, 4, 12), A.mat('#3a2818', 0, .8), [0, -.02, 0], { rot: [0, 0, Math.PI / 2], scale: [.7, 1, 1.15], jitter: 0 }); merge(g); }
+// a person of a trade (or a pedlar), with their things
+function tradeFolk(parent, form, seed, root, they) {
+  const r = A.rand(seed), T0 = TRADES[form], o = T0 ? T0.o(r) : PEDLAR_LOOK[form].o;
+  if (T0 && they) { o.fem = they === 'she'; if (o.fem) { delete o.beard; if (o.hairStyle === 'bald') o.hairStyle = 'tied'; } }   // (as the brain has them: a man or a woman)
+  if (T0 && o.fem && !o.hairStyle) o.hairStyle = r() < .5 ? 'long' : 'tied';
+  const p = roadFolk(parent, { seed, root, height: (o.fem ? 1.56 : 1.64) + r() * .2, ...o });
+  if (T0) T0.props(p, r);
+  if (PEDLAR_LOOK[form]?.apron) { const ap = new T.Mesh(A.facet(new T.CylinderGeometry(.17, .23, .62, 10, 3, true, -.9, 1.8), .004, 2), tex(PEDLAR_LOOK[form].apron, 'brushed', .004)); ap.position.set(0, .2, .01); ap.scale.z = .95; p.chest.add(ap); }
+  p.talkHand = { woodcutter: 1, herbalist: 0 }[form] ?? -1;   // (the free hand: the other holds an axe, a staff)
+  p.pace = T0?.pace || .95; p.stride = T0?.stride || (PEDLAR_LOOK[form]?.o.hem === 'ankle' ? .7 : .9);
+  return p;
+}
+// a point along a path at a distance (not a share): [x, z, heading]
+function atDist(pts, s) {
+  for (let i = 1; i < pts.length; i++) { const dx = pts[i][0] - pts[i - 1][0], dz = pts[i][1] - pts[i - 1][1], L = Math.hypot(dx, dz);
+    if (s <= L || i === pts.length - 1) { const k = L ? Math.max(0, Math.min(1, s / L)) : 0; return [pts[i - 1][0] + dx * k, pts[i - 1][1] + dz * k, Math.atan2(dx, dz)]; } s -= L; }
+  return [...pts.at(-1), 0];
+}
+const pathLen = pts => pts.slice(1).reduce((a, q, i) => a + Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1]), 0);
+// the road from one end to the turn-off for the keep (fromWest: the west end first)
+function roadTo(x, fromWest) { const half = ROAD_PATH.filter(([px]) => fromWest ? px < x - 1 : px > x + 1); return fromWest ? half : half.reverse(); }
+// what a pedlar lays out: small things on a cloth, each recognisable by its shape
+function wareModel(parent, name) {
+  const g = G(parent), n = name.toLowerCase(), brass = A.mat('#c8a050', .7, .3), iron = A.mat('#5a5e64', .6, .4), wood = tex('#8a6a42', 'brushed', .003);
+  if (n.includes('bell')) { lath(g, [[0, .1], [.03, .095], [.04, .06], [.045, .02], [.06, 0]], brass, [0, 0, 0], [0, 0, 0], [1, 1, 1], 10); bone(g, [0, .1, 0], [0, .16, 0], .01, .008, wood, 5, 0); }
+  else if (n.includes('mirror')) { P(g, A.cyl(.05, .05, .008, 14), A.mat('#d8dce0', .9, .08), [0, .006, 0]); bone(g, [0, .004, -.05], [0, .004, -.12], .008, .008, wood, 5, 0); }
+  else if (n.includes('lantern')) { P(g, A.cyl(.04, .045, .11, 8), A.mat('#e8c890', 0, .4, { transparent: true, opacity: .8 }), [0, .06, 0]); P(g, new T.ConeGeometry(.05, .04, 8), iron, [0, .13, 0]); }
+  else if (n.includes('nails')) for (let i = 0; i < 7; i++) bone(g, [(i - 3) * .012, .006, -.04], [(i - 3) * .012 + .004, .006, .04], .004, .002, iron, 4, 0);
+  else if (n.includes('pot')) { lath(g, [[0, 0], [.06, .005], [.065, .05], [.055, .07]], A.mat(n.includes('honey') ? '#b88a3a' : '#b06a3a', n.includes('honey') ? 0 : .6, .4), [0, 0, 0], [0, 0, 0], [1, 1, 1], 10); }
+  else if (n.includes('whetstone')) P(g, A.box(.12, .025, .04), A.mat('#6a6e72', 0, .9), [0, .012, 0]);
+  else if (n.includes('blanket')) for (let i = 0; i < 3; i++) P(g, A.box(.18, .025, .13), tex(['#8a6a4a', '#6a4a3a', '#9a7a5a'][i], 'weave', .006), [0, .012 + i * .026, 0], { rot: [0, i * .05, 0], jitter: .004 });
+  else if (n.includes('candles')) for (let i = 0; i < 5; i++) bone(g, [(i - 2) * .02, .012, -.07], [(i - 2) * .02, .012, .07], .009, .009, A.mat('#efe0b0', 0, .6), 6, 0);
+  else if (n.includes('salt') || n.includes('seeds')) P(g, new T.ConeGeometry(.035, .1, 6), A.mat(n.includes('salt') ? '#e8e2d4' : '#c8a878', 0, .9), [0, .05, 0], { rot: [0, 0, Math.PI] });
+  else if (n.includes('thread')) P(g, new T.TorusGeometry(.04, .016, 6, 12), tex('#a82a2a', 'weave', .004), [0, .016, 0], { rot: [Math.PI / 2, 0, 0] });
+  else if (n.includes('salve') || n.includes('jar')) { P(g, A.cyl(.03, .03, .06, 9), A.mat('#8aa0a0', .1, .3), [0, .03, 0]); P(g, A.cyl(.033, .033, .015, 9), A.mat('#5a3a22', 0, .8), [0, .065, 0]); }
+  else if (n.includes('map')) { bone(g, [-.08, .015, 0], [.08, .015, 0], .015, .015, A.mat('#e0d0a8', 0, .9), 8, 0); }
+  else if (n.includes('beads')) for (let i = 0; i < 10; i++) P(g, A.ico(.011, 0), A.mat('#3a7ac8', .2, .2), [Math.cos(i * .6) * .05, .011, Math.sin(i * .6) * .035]);
+  else if (n.includes('whistle')) bone(g, [-.05, .01, 0], [.05, .01, 0], .012, .009, wood, 6, 0);
+  else if (n.includes('book')) { P(g, A.box(.12, .03, .16), tex('#5a3a2a', 'brushed', .003), [0, .015, 0]); P(g, A.box(.11, .026, .15), A.mat('#e8dcc0', 0, .9), [.006, .016, 0]); }
+  else if (n.includes('compass')) { P(g, A.cyl(.04, .04, .018, 12), brass, [0, .009, 0]); P(g, A.box(.004, .002, .05), A.mat('#a02a22'), [0, .02, 0]); }
+  else P(g, A.box(.08, .05, .08), wood, [0, .025, 0]);
+  return g;
+}
+// A MULE, made like the deer: long-faced, with its great long ears that turn on their own, a short upright mane,
+// a mealy pale muzzle, dark gentle eyes with a catch-light, sturdy legs and small hooves, a long switching tail.
+// It carries its pedlar's load. It walks in a four-beat stride; standing, it grazes, rests a hind leg, flicks its
+// ears and swishes its tail at flies, and now and then shakes its head.
+function muleNew(parent, o) {
+  const coat = texMat(o.coat, 'fur', { bump: .007 }), pale = texMat(o.muzzle, 'fur', { bump: .004 }), dark = A.mat('#1e1612', 0, .75), hoofM = A.mat('#1a1410', .1, .5);
+  const maneM = A.mat('#2a201a', 0, .9), tack = tex('#4a3020', 'brushed', .004), metal = A.mat('#b89a58', .7, .35);
+  const g = G(parent), R = rig(), body = G(g, [0, .98, 0]), BY = .98;
+  lath(body, [[0, -.58], [.15, -.57], [.25, -.5], [.29, -.36], [.285, -.14], [.28, .06], [.29, .24], [.26, .4], [.17, .53], [0, .58]], coat, [0, 0, 0], [Math.PI / 2, 0, 0], [.8, 1, 1], 12);   // a deep, round barrel
+  lath(body, [[0, -.3], [.18, -.22], [.19, .05], [.17, .28], [0, .36]], pale, [0, -.13, .03], [Math.PI / 2, 0, 0], [.7, 1, .55]);
+  merge(body);
+  const tail = R.add('tail', G(body, [0, .16, -.56], [.25, 0, 0]), 7, .35);   // (hangs down; it swings back when it swishes)
+  bone(tail, [0, 0, 0], [0, -.16, -.06], .04, .03, coat, 6, 0); lath(tail, [[0, 0], [.045, .08], [.06, .28], [.035, .5], [0, .55]], maneM, [0, -.14, -.06], [Math.PI, 0, 0], [1, 1, .7], 7);
+  const neck = R.add('neck', G(body, [0, .14, .46], [.75, 0, 0]), 4, .85);
+  lath(neck, [[.17, 0], [.145, .18], [.11, .38], [.09, .5]], coat, [0, 0, 0], [0, 0, 0], [.72, 1, 1], 10);
+  P(neck, A.box(.025, .5, .07), maneM, [0, .26, -.08], { rot: [-.08, 0, 0], jitter: .003 });                    // the short upright mane
+  const head = R.add('head', G(neck, [0, .52, 0], [-.25, 0, 0]), 6, .75);
+  P(head, A.ico(.125, 1), coat, [0, 0, 0], { scale: [.8, .92, 1.05], jitter: .002 });
+  P(head, new T.CylinderGeometry(.075, .108, .36, 9), coat, [0, -.035, .2], { rot: [Math.PI / 2 + .12, 0, 0], scale: [1, 1, 1.12], jitter: .002 });   // the long heavy face
+  P(head, A.ico(.088, 1), pale, [0, -.06, .38], { scale: [.95, .85, .9], jitter: .002 });                        // the mealy muzzle
+  for (const sx of [-1, 1]) { P(head, A.ico(.015, 0), dark, [sx * .042, -.05, .455], { scale: [.7, 1, .5], jitter: 0, cast: false });
+    const e = G(head, [sx * .088, .035, .1], [0, sx * .95, 0]);
+    P(e, new T.SphereGeometry(.024, 10, 8), A.mat('#120c08', .3, .15), [0, 0, 0], { scale: [1, .85, .7], jitter: 0, cast: false });
+    P(e, A.ico(.005, 1), new T.MeshBasicMaterial({ color: '#ffffff' }), [-.007 * sx, .008, .016], { jitter: 0, cast: false }); }
+  P(head, new T.TorusGeometry(.1, .012, 4, 12), tack, [0, -.05, .32], { rot: [.12, 0, 0], scale: [.85, 1, 1], jitter: 0 });   // the halter
+  P(head, new T.TorusGeometry(.12, .011, 4, 12), tack, [0, .02, .03], { rot: [0, Math.PI / 2, .25], jitter: 0 });
+  const ring = G(head, [0, -.135, .32]); P(ring, new T.TorusGeometry(.015, .004, 4, 8), metal, [0, 0, 0], { jitter: 0 });
+  merge(head);
+  const earM = texMat(o.coat, 'fur', { bump: .004 });
+  const ears = [-1, 1].map(sx => { const e = R.add('ear' + sx, G(head, [sx * .06, .085, -.03], [-.25, 0, -sx * .32]), 9, .4);
+    const m = lath(e, [[0, 0], [.042, .03], [.06, .11], [.056, .19], [.034, .26], [0, .29]], earM, [0, 0, 0], [0, 0, 0], [1, 1, .38], 8);   // broad, long, like a leaf
+    P(e, new T.CircleGeometry(.045, 8), pale, [0, .13, .02], { scale: [.9, 2.2, 1], jitter: 0, cast: false });                                  // pale inside
+    P(e, A.ico(.022, 0), maneM, [0, .265, 0], { scale: [1.1, 1.2, .5], jitter: 0, cast: false }); return e; });   // a dark tip
+  const jaw = G(head, [0, -.08, .25]); P(jaw, A.box(.06, .02, .12), pale, [0, 0, .02], { jitter: 0, cast: false });
+  const legs = {};
+  for (const [key, sx, front] of [['LF', -1, 1], ['RF', 1, 1], ['LH', -1, 0], ['RH', 1, 0]]) {
+    legs[key] = front
+      ? limb(body, [sx * .13, -.12, .38], [[0, -.4, -.02, .08, .052, coat], [0, -.34, .01, .044, .038, coat], [0, -.08, .025, .048, .046, hoofM]])
+      : limb(body, [sx * .14, -.08, -.4], [[0, -.38, .1, .1, .058, coat], [0, -.4, -.08, .045, .038, coat], [0, -.085, .025, .048, .046, hoofM]]);
+    P(body, A.ico(front ? .13 : .16, 1), coat, front ? [sx * .13, -.15, .37] : [sx * .135, -.12, -.38], { scale: front ? [.55, 1.3, .9] : [.62, 1.3, 1], jitter: .002 });
+    legs[key].front = front;
+  }
+  // the load: a pad and girth, and the pedlar's own things
+  const pack = G(body, [0, .25, -.02]);
+  P(pack, A.box(.5, .04, .62), tex('#7a2a22', 'weave', .005), [0, .02, 0], { jitter: .004 });
+  P(body, new T.TorusGeometry(.285, .02, 4, 16), tack, [0, 0, .12], { rot: [0, Math.PI / 2, 0], scale: [1, 1, .8], jitter: 0 });
+  if (o.load === 'panniers') for (const sx of [-1, 1]) { const st = tex('#c89a4a', 'weave', .006);
+    P(pack, A.box(.16, .34, .44), st, [sx * .3, -.12, 0], { jitter: .006 }); P(pack, A.box(.17, .05, .45), tex('#7a2a22', 'weave', .004), [sx * .3, -.04, 0], { jitter: 0 });
+    P(pack, A.box(.17, .05, .45), tex('#2a4a6a', 'weave', .004), [sx * .3, -.2, 0], { jitter: 0 }); }
+  if (o.load === 'pots') { const cu = A.mat('#b0703a', .65, .35), fe = A.mat('#5e6266', .6, .4);
+    for (const sx of [-1, 1]) { P(pack, A.box(.14, .3, .46), tex('#4a3a2a', 'brushed', .004), [sx * .3, -.1, 0], { jitter: .006 });
+      for (const [z, y, r0, m] of [[-.14, -.08, .1, cu], [.13, -.12, .085, fe]]) {                             // pans hung flat on each side
+        P(pack, A.cyl(r0, r0 * .9, .025, 12), m, [sx * .385, y, z], { rot: [0, 0, Math.PI / 2], jitter: 0 });
+        bone(pack, [sx * .39, y + r0 * .9, z], [sx * .39, y + r0 + .13, z], .009, .009, A.mat('#3a2a1a', 0, .7), 4, 0); } }
+    const kt = G(pack, [0, .14, -.06]); lath(kt, [[0, -.08], [.09, -.07], [.1, .0], [.075, .06], [.03, .08]], cu, [0, 0, 0], [0, 0, 0], [1, 1, 1], 10);   // a kettle on top
+    bone(kt, [.08, .0, 0], [.16, .07, 0], .012, .008, cu, 5, 0); P(kt, new T.TorusGeometry(.06, .008, 4, 10, Math.PI), fe, [0, .08, 0], { jitter: 0 });
+    P(pack, A.box(.3, .1, .2), tex('#5a4a3a', 'weave', .005), [0, .06, .18], { jitter: .006 }); }
+  if (o.load === 'box') { P(pack, A.box(.46, .34, .42), tex('#3a5a7a', 'brushed', .004), [0, .2, 0], { jitter: .004 });
+    for (let i = 0; i < 6; i++) P(pack, A.box(.12, .08, .01), tex(['#c8a050', '#a84a3a', '#5a8a5a'][i % 3], 'brushed', .003), [((i % 3) - 1) * .14, .12 + Math.floor(i / 3) * .12, .215], { jitter: 0 });
+    for (const sx of [-1, 1]) P(pack, A.box(.1, .26, .36), tex('#5a4a3a', 'weave', .005), [sx * .28, -.12, 0], { jitter: .006 }); }
+  merge(pack);
+  const api = { g, R, body, neck, head, ears, jaw, tail, legs, ring, gait: 0, earT: 0, earK: 1, swish: -9, shake: -9, rest: 1,
+    // where it is going (or standing): moved: how far it went this frame
+    tick(t, dt, moved, graze = 0) {
+      const spd = moved / Math.max(dt, 1e-3), amp = Math.min(1, spd / .8);
+      api.gait += moved / 1.35 * Math.PI * 2;
+      for (const key in legs) { const L = legs[key], p = api.gait + WALK4[key] * Math.PI * 2, lift = Math.max(0, Math.cos(p));
+        L[0].rotation.x = -Math.sin(p) * (L.front ? .38 : .34) * amp; L[1].rotation.x = (L.front ? 1 : -1) * lift * .75 * amp; L[2].rotation.x = (L.front ? .45 : .5) * lift * amp; }
+      const resting = amp < .05 ? 1 : 0;                                         // standing, it rests one hind leg, hip dropped
+      if (resting) { legs.RH[1].rotation.x = -.22; legs.RH[2].rotation.x = .35; legs.RH[0].rotation.x = .08; body.rotation.z = .025; } else body.rotation.z = 0;
+      body.position.y = BY + Math.sin(api.gait * 2) * .012 * amp - resting * .012;
+      if (t > api.earT) { api.earT = t + 1 + Math.random() * 4; api.earK = Math.random() < .5 ? -1 : 1; }
+      ears.forEach((e, k) => { const sx = k ? 1 : -1, tw = sx === api.earK && api.earT - t < .3 ? Math.sin((api.earT - t) / .3 * Math.PI) : 0;
+        R.want('ear' + sx, -.25 + tw * .35 + (graze ? .3 : 0), Math.sin(t * .4 + k * 2) * .35 + tw * .4, -sx * (.32 + tw * .2)); });
+      if (resting && Math.random() < dt * .12) api.swish = t; if (resting && Math.random() < dt * .02) api.shake = t;
+      const sw = t - api.swish, sh = t - api.shake;
+      R.want('tail', .2 + amp * .15 + (sw < .8 ? Math.sin(sw / .8 * Math.PI) * .35 : 0), 0, sw < .8 ? Math.sin(sw * 14) * .5 : Math.sin(t * .7) * .05);
+      R.want('neck', graze ? 1.85 : .88 - amp * .05 + Math.sin(api.gait * 2) * .03 * amp, sh < 1 ? Math.sin(sh * 16) * .25 * (1 - sh) : 0, 0);
+      R.want('head', graze ? -.2 : -.25, 0, sh < 1 ? Math.sin(sh * 16) * .3 * (1 - sh) : 0);
+      jaw.rotation.x = graze ? Math.max(0, Math.sin(t * 6)) * .15 : 0;
+      R.step(dt);
+    } };
+  return api;
+}
+// a lead rope from a hand to the halter ring (or to a tethering peg), sagging a little
+function leadRope(root) {
+  const N = 10, pos = new Float32Array(N * 3), geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+  const line = new T.Line(geo, new T.LineBasicMaterial({ color: '#5a4630' })); line.frustumCulled = false; root.add(line);
+  const a = new T.Vector3(), b = new T.Vector3();
+  return (from, to, sag = .25) => { from.getWorldPosition(a); (to.isObject3D ? to.getWorldPosition(b) : b.copy(to));
+    for (let i = 0; i < N; i++) { const k = i / (N - 1); pos.set([a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k - Math.sin(k * Math.PI) * sag, a.z + (b.z - a.z) * k], i * 3); }
+    geo.attributes.position.needsUpdate = true; };
 }
 
 // ------------------------------------------------------------------ the abyssals

@@ -26,6 +26,7 @@ import beings
 import creatures
 import encounters
 import llm
+import people
 
 MIND_BUDGET = 60000         # tokens a day for every being's mind together (of the model's ~200,000)
 # How much the beings' minds talk to each other. "arrival" (the default): when a second
@@ -49,7 +50,8 @@ SYSTEM = (
     "out. You never speak or decide for him, and you never change an outcome you are given.\n"
     "Stay in character: what you are, your traits, why you came. Peril, never gore; nothing religious; "
     "nothing cruel for its own sake. Write what someone watching would see, in plain short sentences, "
-    "present tense, calling yourself 'it' (or 'they' for many). No narrator flourishes. Reply in English, as JSON only.")
+    "present tense, calling yourself 'it' (or 'they' for many; a person by their name or 'they'). No narrator "
+    "flourishes. Reply in English, as JSON only.")
 
 
 def mind_mode():
@@ -78,10 +80,11 @@ def _ago(t, now):
 AGE_HISTORY = {"young": 1, "old": 6}   # how much of its kind's past with him a being carries
 
 
-def history(world, kind, now, n=HISTORY):
-    """This kind's last few meetings with him, from its side."""
+def history(world, kind, now, n=HISTORY, person=None):
+    """This kind's last few meetings with him, from its side (a person's: only their own)."""
     out = []
-    for e in [e for e in encounters._lines(world / "encounters.jsonl") if e.get("kind") == kind][-n:]:
+    for e in [e for e in encounters._lines(world / "encounters.jsonl") if e.get("kind") == kind
+              and (person is None or e.get("person") == person)][-n:]:
         t = encounters._parse(e.get("time"))
         steps = "; then ".join(f"he chose to {s.get('choice', '').replace('_', ' ')} ({s.get('how', '')[:90]}), "
                               f"and it went {'his way' if s.get('result') == 'good' else 'your way' if s.get('result') == 'bad' else 'nowhere much'}"
@@ -91,8 +94,58 @@ def history(world, kind, now, n=HISTORY):
     return out
 
 
+def _who_person(a):
+    """Someone on the road: who they are, in their own terms."""
+    kind, p = a["kind"], a.get("person") or {}
+    form = (a.get("variant") or {}).get("kind", "")
+    lines = []
+    if kind == "knight":
+        age = {"young": "You are young, hardly more than a squire.", "old": "You are old and grey, with long years on the road.", "": ""}[p.get("age", "")]
+        lines += [f"You are {p.get('name', 'a knight')}, a knight errant riding the old road on a {p.get('horse', 'bay')} horse, "
+                  f"carrying {people.blazon(p.get('arms'))}. {age}".strip(),
+                  f"Your manner: {people.MANNERS.get(p.get('manner'), '')}. You would gladly spar with blunted blades if he asks, "
+                  "or you might offer; you never fight in earnest here."]
+    elif kind == "pedlar":
+        lines += [beings.FORM_MIND["pedlar"].get(form, "You are a pedlar with a mule."),
+                  "You trade: you want something for what is on your cloth (a thing he has, some work, a song or a story), "
+                  "and you haggle in your own manner. Fair rules settle whether a deal is struck, and nothing changes hands "
+                  "unless you are told a deal was struck. On your cloth today: "
+                  + ", ".join(w for w in (a.get("wares") or []) if w not in (a.get("sold") or [])) + "."]
+    else:
+        lines += [f"You are {p.get('name', 'a traveller')}, " + beings.FORM_MIND["traveller"].get(form, "a traveller on the road.")[4:]]
+    lines += [f"Your nature this time: {creatures.nature_of(a)}.", f"This time you stopped at the keep because: {a.get('drive', '')}."]
+    likes = encounters.likes_of(a)
+    if likes:
+        lines.append(f"You care for: {', '.join(likes)}.")
+    if a.get("road_news"):
+        lines.append(f"What people say along the road lately: {a['road_news']}")
+    if p.get("they") in ("he", "she"):
+        lines.append(f"(You are a {'man' if p['they'] == 'he' else 'woman'}.)")
+    lines.append("You are an ordinary person of this world, and you can talk. The knight is a stranger who lives alone in the "
+                 "ruined keep, on foot (he has no horse); you talk to him over the low courtyard wall.")
+    return "\n".join(lines)
+
+
+def road_news(world, now):
+    """What travellers would have heard lately: what the visiting peoples have built nearby, and the beings seen at the keep."""
+    state = creatures.load(world)
+    seen = []
+    for a in reversed(state.get("appearances", [])):
+        s = encounters._parse(a.get("start"))
+        if s and s < now and now - s < dt.timedelta(days=21) and a.get("seen") and creatures.KINDS.get(a["kind"], {}).get("lane") != "road":
+            name = creatures.KINDS[a["kind"]]["name"]
+            if name not in seen:
+                seen.append(name)
+    parts = [creatures.places_line(world, now)]
+    if seen:
+        parts.append("Folk say they have seen strange things about the ruined keep lately: " + ", ".join(seen[:4]) + ".")
+    return " ".join(x for x in parts if x)
+
+
 def _who(a):
     kind = a["kind"]
+    if creatures.KINDS[kind].get("lane") == "road":
+        return _who_person(a)
     c, k = beings.CHARACTERS[kind], creatures.KINDS[kind]
     if c.get("looks_seeing") and a.get("seeing", 0) < 2:    # he can't see what it truly is yet: neither may it say
         lines = [f"You are a being that looks like {c['looks']}. What you truly are ({c['looks_seeing']}) the knight "
@@ -145,9 +198,14 @@ def _ask(brain, task, prompt, max_tokens):
 def arrive(brain, a, world, setting, now=None):
     """Its first thought on arriving. Returns {why, approach, doing, says} or None (the rules carry on)."""
     now = now or dt.datetime.now(dt.timezone.utc)
-    past = history(world, a["kind"], now, AGE_HISTORY.get(encounters.age_of(a), HISTORY))
+    person = (a.get("person") or {}).get("id")
+    if person:                                     # someone: their own meetings with him, and the talk of the road
+        a["road_news"] = road_news(world, now)
+        past = history(world, a["kind"], now, HISTORY, person)
+    else:
+        past = history(world, a["kind"], now, AGE_HISTORY.get(encounters.age_of(a), HISTORY))
     prompt = (f"{_who(a)}\n\n{setting}\n\n" +
-              ("Your past meetings with the knight (your kind remembers):\n" + "\n".join(past) + "\n\n" if past else
+              (f"Your past meetings with the knight ({'you remember' if person else 'your kind remembers'}):\n" + "\n".join(past) + "\n\n" if past else
                "You have never met this knight.\n\n") +
               "You are arriving now. Decide, in character:\n"
               "- why: why you have come this time, in a short line (if you have come before, a different reason or "
@@ -252,5 +310,5 @@ def reply(brain, b, a, reaction, world, setting):
     return t if t["does"] else None
 
 
-def told(does, says):
-    return (does + (f' It says: "{says}"' if says else "")).strip()
+def told(does, says, who="It"):
+    return (does + (f' {who} says: "{says}"' if says else "")).strip()

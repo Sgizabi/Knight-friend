@@ -106,7 +106,7 @@ def run(years, policy, seed=1, detail=False):
             state, best = creatures.load(w), creatures.load_bestiary(w)
             today = creatures._keeper_day(now)
             notable_today = len({a["id"] for a in state["appearances"]
-                                 if a.get("day") == today.isoformat() and not a.get("companion")})
+                                 if a.get("day") == today.isoformat() and not a.get("companion") and a["kind"] not in creatures.ROAD})
             max_notable_day = max(max_notable_day, notable_today)
             changed = False
             for a in sorted(state["appearances"],
