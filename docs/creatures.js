@@ -7134,6 +7134,11 @@ export function start(key, api) {
       img.src = document.querySelector('canvas').toDataURL('image/jpeg', .85); img.style.display = ''; return 'ok'; },
     focus(i, d = 1.2, yaw = .6, up = .3, adv = 0, lift = .1) { if (adv) window.__keep.advance(adv); const o = cur.root.children[i], p = o.getWorldPosition(new T.Vector3()), y = p.y + lift;
       window.__keep.view([p.x + Math.sin(yaw) * d, y + up, p.z + Math.cos(yaw) * d], [p.x, y, p.z]); return this.snap() + ' ' + p.toArray().map(v => v.toFixed(2)); },
+    frame(yaw = .6, k = 1.1, up = .15, adv = 0) { if (adv) window.__keep.advance(adv); const r = cur.root; r.updateMatrixWorld(true);   // for testing: the whole being in view, from a side
+      const mn = new T.Vector3(1e9, 1e9, 1e9), mx = new T.Vector3(-1e9, -1e9, -1e9);
+      r.traverse(o => { if (!o.isMesh || o.isSprite) return; for (let v = o; v; v = v.parent) if (!v.visible) return; o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld); mn.min(b.min); mx.max(b.max); });
+      const c = mn.clone().add(mx).multiplyScalar(.5), d = Math.max(1.2, mx.distanceTo(mn) * k);
+      return this.snap([c.x + Math.sin(yaw) * d, c.y + d * up, c.z + Math.cos(yaw) * d], [c.x, c.y, c.z]) + ' ' + mx.distanceTo(mn).toFixed(1); },
     probe(x, z, from = 2.2, reach = 1.6) { surfaceY(x, z, from, reach); const rc = new T.Raycaster(new T.Vector3(x, from, z), new T.Vector3(0, -1, 0), 0, reach);   // for testing: what is under a point
       return rc.intersectObjects(SURF, false).map(h => ({ y: +h.point.y.toFixed(3), col: h.object.material.color?.getHexString(), up: +h.face.normal.clone().transformDirection(h.object.matrixWorld).y.toFixed(2), at: h.object.getWorldPosition(new T.Vector3()).toArray().map(v => +v.toFixed(2)) })); },
     keep(name) { localStorage.setItem('snap:' + name, document.getElementById('snapimg').src); return name; },   // keep the last snap (to compare looks across reloads)
