@@ -82,11 +82,16 @@
           "Grey sky still drumming"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-27T03:30:27+00:00",
+    "live_thought": {
+      "text": "Rain drums, fire steadies, I watch the stone glow.",
+      "time": "2026-11-27T03:30:27+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T02:42:50+00:00",
+    "since": "2026-11-27T03:30:27+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -94,18 +99,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 36.4,
+    "warmth": 85.7,
+    "inspiration": 47.5,
+    "spirit": 82.1
+  },
+  "needs_prev": {
     "rest": 37.1,
     "warmth": 84.9,
     "inspiration": 47.5,
     "spirit": 83.5
   },
-  "needs_prev": {
-    "rest": 53.9,
-    "warmth": 84.4,
-    "inspiration": 54.6,
-    "spirit": 74.9
-  },
-  "needs_at": "2026-11-27T02:42:50+00:00",
+  "needs_at": "2026-11-27T03:30:27+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2152,7 +2157,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T02:42:50+00:00",
+    "updated": "2026-11-27T03:30:27+00:00",
     "seen_until": "2026-11-27T02:25:25+00:00"
   },
   "gifts": [],
@@ -2301,17 +2306,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-27T02:00:00+00:00",
-      "end": "2026-11-27T03:00:00+00:00",
-      "kinds": [
-        "hares",
-        "owl",
-        "bats",
-        "fox",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-27T03:00:00+00:00",
       "end": "2026-11-27T04:00:00+00:00",
       "kinds": [
@@ -2362,6 +2356,11 @@
       "start": "2026-11-27T09:00:00+00:00",
       "end": "2026-11-27T10:00:00+00:00",
       "kinds": []
+    },
+    {
+      "start": "2026-11-27T10:00:00+00:00",
+      "end": "2026-11-27T11:00:00+00:00",
+      "kinds": []
     }
   ],
   "creatures": {
@@ -2369,5 +2368,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T02:42:50+00:00"
+  "exported": "2026-11-27T03:30:27+00:00"
 }
