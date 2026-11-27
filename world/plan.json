@@ -1,7 +1,7 @@
 {
   "start": "2026-11-27T11:00:30+00:00",
   "mood": "restless",
-  "applied_until": "2026-11-27T12:00:37+00:00",
+  "applied_until": "2026-11-27T12:30:30+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -12,7 +12,7 @@
     }
   ],
   "live_thought": {
-    "text": "The wind rattles the stones, I could watch it a while.",
-    "time": "2026-11-27T12:00:37+00:00"
+    "text": "Stone whispers, wind rattles, I could watch it a while.",
+    "time": "2026-11-27T12:30:30+00:00"
   }
 }
