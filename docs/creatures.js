@@ -2627,12 +2627,19 @@ const BEASTS = {
         const target = -8.4 + Math.sin(t * .09) * 1.5, v = target - x; x = target;   // the stretch of wall with no buildings behind it
         if (Math.abs(v) > 1e-4) dir = Math.sign(v);
         g.position.x = x; g.rotation.y += ((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - g.rotation.y) * Math.min(1, dt * 3);
-        armSide.scale.x = dir > 0 ? -1 : 1;                              // the lantern always held out beyond the wall, never over the roofs
+        // The lantern is always held out beyond the wall, never over the roofs, so it changes hands at
+        // each turn: as it slows to turn, the lantern hand comes in to the middle in front of it and the
+        // free hand comes up to meet it; they trade there (s flips at the turning point, when both hands
+        // are at the middle, so nothing jumps), and the other arm carries it out again.
+        const c = Math.cos(t * .09), s = c > 0 ? -1 : 1;
+        const u0 = Math.max(0, Math.min(1, 1 - Math.abs(c) / .22)), u = u0 * u0 * (3 - 2 * u0);
+        armSide.position.x = .26 * s; armSide.scale.x = s; armSide.rotation.y = -s * 1.2 * u;
+        free.position.x = -.26 * s; free.scale.x = s;
         const stride = Math.abs(Math.cos(t * .09)) > .15 ? 1 : .2, ph = t * 3.2;
         legs.forEach((l, i) => { l.rotation.x = Math.sin(ph + i * Math.PI) * .35 * stride; });
         knees.forEach((kn, i) => { kn.rotation.x = Math.max(0, Math.sin(ph + i * Math.PI + Math.PI + 1.3)) * .7 * stride; });   // the knee bends as the leg comes through
         rg.want('skirt', -.05 * stride - Math.abs(Math.sin(ph)) * .05 * stride, 0, Math.sin(ph) * .04 * stride);   // the skirt trails, and swings with the hips
-        rg.want('free', Math.sin(ph + Math.PI) * .25 * stride, 0, -.06); rg.step(dt);
+        rg.want('free', Math.sin(ph + Math.PI) * .25 * stride * (1 - u) - 1.0 * u, 0, s * (-.06 * (1 - u) + .31 * u)); rg.step(dt);
         body.position.y = Math.abs(Math.sin(ph)) * .03 * stride;
         cage.rotation.z = Math.sin(ph) * .08 * stride; head.rotation.y = Math.sin(t * .3) * .5;
         thing.position.set(Math.sin(t * 2.3) * .04, -.09 + Math.sin(t * 3.1) * .04, Math.cos(t * 2.7) * .04);
