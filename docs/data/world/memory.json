@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.678,
-    "craft": 23.678
+    "repair": 23.731,
+    "craft": 23.731
   },
   "projects": [
     {
@@ -20,14 +20,14 @@
       "title": "Bathhouse Builder – Shim Summary (Enhanced)",
       "started": "2026-11-22T01:01:30+00:00",
       "status": "in progress",
-      "versions": 13,
-      "about": "Added hover tooltips showing shim level and improved dark‑mode handling, plus minor code cleanup.",
-      "updated": "2026-11-26T23:01:40+00:00",
-      "next": "Next I need to test the tooltip on mobile and finish the dark‑mode stylesheet tweaks."
+      "versions": 14,
+      "about": "Added mobile‑friendly touch tooltips, refined dark‑mode handling, compacted code and UI tweaks while staying under 6000 ",
+      "updated": "2026-11-27T01:01:40+00:00",
+      "next": "Test tooltip on several mobile browsers, adjust touch area, and push final commit."
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 0,
+  "entries_since_condense": 1,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,15 +38,12 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 21,
-      "strength": 10.76,
+      "strength": 10.33,
       "last": "2026-11-26T21:00:31+00:00"
     }
   ],
   "last_long": "2026-11-26T02:30:20+00:00",
   "recent_thoughts": [
-    "Stone under my hands, cold but steady.",
-    "The forge heat hums, metal waiting.",
-    "Stone warmth steadies me, fire crackles",
     "Stone under my pen, steady as the walls.",
     "The fire flickers, stone cold beside me.",
     "The fire's crackle feels like a stone's sigh.",
@@ -55,10 +52,13 @@
     "The fire crackles, stones keep their quiet watch.",
     "The iron glows, steady as the old walls.",
     "Stone glints, glasshouse cold, I watch rain brew.",
-    "Rain drums on stone, fire hums low."
+    "Rain drums on stone, fire hums low.",
+    "The rain drums, the fire holds steady on the bench.",
+    "Rain drums, fire steadies, I keep writing.",
+    "Rain drums, fire steadies, I watch the stone glow."
   ],
-  "last_glance": "2026-11-26T22:30:23+00:00",
-  "visits_seen_until": "2026-11-26T22:55:32+00:00",
+  "last_glance": "2026-11-27T00:30:30+00:00",
+  "visits_seen_until": "2026-11-27T00:55:32+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},

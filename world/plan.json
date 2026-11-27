@@ -1,51 +1,46 @@
 {
-  "start": "2026-11-26T23:02:43+00:00",
-  "mood": "content",
+  "start": "2026-11-27T01:02:43+00:00",
+  "mood": "restless",
   "steps": [
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "zzz",
-      "note": "",
+      "emote": "sigh",
+      "note": "warm up before night work",
       "thoughts": [
-        "Rain beats the stones, but the fire is cooperative"
+        "The stones are still cold enough to bite."
       ]
     },
     {
       "place": "workbench",
       "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "",
+      "minutes": 30,
+      "emote": "dots",
+      "note": "finish mobile tooltip sizing",
       "thoughts": [
-        "Time to log the next row of courtyard stones"
+        "Why does the copy button love the left margin?"
       ]
     },
     {
-      "place": "desk",
-      "action": "write",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
+      "place": "forge",
+      "action": "work",
+      "minutes": 25,
+      "emote": "spark",
+      "note": "heat a new piece of metal for a latch",
       "thoughts": [
-        "Inventory list needs a fresh line"
+        "Metal sings louder than the thunder."
       ]
     },
     {
       "place": "bedroll",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "heart",
-      "note": "",
+      "action": "sleep",
+      "minutes": 40,
+      "emote": "zzz",
+      "note": "catch some rest before dawn",
       "thoughts": [
-        "Warmth is good, but I should watch the roof"
+        "Hope the roof holds through the hail."
       ]
     }
-  ],
-  "applied_until": "2026-11-27T00:30:30+00:00",
-  "live_thought": {
-    "text": "Rain drums, fire steadies, I watch the stone glow.",
-    "time": "2026-11-27T00:30:30+00:00"
-  }
+  ]
 }

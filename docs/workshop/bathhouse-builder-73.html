@@ -16,6 +16,8 @@
 }
 body{margin:0;padding:1em;font-family:sans-serif;background:var(--bg);color:var(--fg)}
 h1{margin-top:0}
+.control{display:flex;flex-wrap:wrap;gap:.2em;align-items:center;margin:.3em 0}
+.control button.copy{margin-left:auto}
 #stack{
   width:200px;height:200px;margin:0 auto;position:relative;
   border:2px solid var(--border);background:var(--panel)
@@ -23,22 +25,20 @@ h1{margin-top:0}
 .block{
   position:absolute;bottom:0;left:0;width:100%;height:20px;
   background:var(--block);border:1px solid var(--border);box-sizing:border-box;
-  cursor:pointer
+  cursor:pointer;touch-action:none
 }
-.control{
-  display:flex;flex-wrap:wrap;gap:.2em;align-items:center;margin:.3em 0
+.tooltip{
+  position:absolute;padding:2px 4px;border-radius:3px;font-size:10px;
+  background:var(--tooltip-bg);color:var(--tooltip-fg);
+  visibility:hidden;pointer-events:none;white-space:nowrap
 }
-.control button.copy{margin-left:auto}
 #log,#summary,#preview{
   margin-top:1em;padding:5px;background:var(--panel);
   border:1px solid var(--border);max-height:150px;overflow:auto
 }
 pre{margin:0;white-space:pre-wrap}
 #darkToggle{margin-left:auto;cursor:pointer}
-.tooltip{
-  position:absolute;padding:2px 4px;border-radius:3px;font-size:10px;
-  background:var(--tooltip-bg);color:var(--tooltip-fg);visibility:hidden;pointer-events:none
-}
+.dark body{background:var(--bg);color:var(--fg)}
 </style>
 </head>
 <body>
@@ -80,20 +80,28 @@ function draw(){
   for(let i=0;i<s.l;i++){
     const d=document.createElement('div');
     d.className='block';
-    d.style.bottom=(i*20)+'px';
+    d.style.bottom=i*20+'px';
     d.dataset.level=i+1;
     const tip=document.createElement('div');
     tip.className='tooltip';
     tip.textContent='Level '+(i+1);
     d.appendChild(tip);
-    d.onmouseenter=e=>{tip.style.visibility='visible';tip.style.left=e.offsetX+'px';tip.style.top=e.offsetY-20+'px'};
-    d.onmouseleave={()=>{tip.style.visibility='hidden'}};
+    d.onmouseenter=e=>showTip(tip,e);
+    d.onmouseleave=()=>hideTip(tip);
+    d.ontouchstart=e=>{showTip(tip,e.touches[0]);e.preventDefault();};
+    d.ontouchend=()=>hideTip(tip);
     stack.appendChild(d);
   }
   secSum.textContent='Section '+cur+' total: '+s.t;
   overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.t,0);
   updateCSV();
 }
+function showTip(tip,e){
+  tip.style.visibility='visible';
+  tip.style.left=e.offsetX+'px';
+  tip.style.top=(e.offsetY-20)+'px';
+}
+function hideTip(tip){tip.style.visibility='hidden';}
 function logMsg(m){
   const p=document.createElement('p');p.textContent=m;log.appendChild(p);
   log.scrollTop=log.scrollHeight;
@@ -121,8 +129,7 @@ function exportTest(){
   logMsg('Export test passed.');
 }
 function copyPreview(){
-  navigator.clipboard.writeText(preview.textContent)
-    .then(()=>logMsg('Preview copied')).catch(()=>logMsg('Copy failed'));
+  navigator.clipboard.writeText(preview.textContent).then(()=>logMsg('Preview copied')).catch(()=>logMsg('Copy failed'));
 }
 function runUITest(){
   logMsg('UI test start');add();add();rem();reset();add();resetAll();logMsg('UI test end');
@@ -130,7 +137,7 @@ function runUITest(){
 sel.onchange=()=>{cur=+sel.value;draw();};
 $('add').onclick=add;$('remove').onclick=rem;$('reset').onclick=reset;$('resetAll').onclick=resetAll;
 $('export').onclick=exportCSV;$('exportTest').onclick=exportTest;$('copy').onclick=copyPreview;
-$('clearLog').onclick=()=>{log.innerHTML='';};
+$('clearLog').onclick=()=>log.innerHTML='';
 $('runTest').onclick=runUITest;
 $('darkToggle').querySelector('input').onchange=e=>document.documentElement.classList.toggle('dark',e.target.checked);
 draw();

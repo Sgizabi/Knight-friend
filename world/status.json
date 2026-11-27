@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-27T01:00:33+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-27T01:02:43+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue work on the Bathhouse Builder page",
-  "thought": "The stone rows have been enough for today. I need to get back to the Bathhouse Builder page and finish the tooltip and dark‑mode tweaks."
+  "note": "",
+  "thought": ""
 }

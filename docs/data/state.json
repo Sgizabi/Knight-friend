@@ -30,75 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 72,
-    "last_wake": "2026-11-26T23:03:45+00:00",
+    "wakeups": 73,
+    "last_wake": "2026-11-27T01:02:43+00:00",
     "nights_slept_through": 28
   },
   "plan": {
-    "start": "2026-11-26T23:02:43+00:00",
-    "mood": "content",
+    "start": "2026-11-27T01:02:43+00:00",
+    "mood": "restless",
     "steps": [
       {
         "place": "fire",
         "action": "sit",
         "minutes": 20,
-        "emote": "zzz",
-        "note": "",
+        "emote": "sigh",
+        "note": "warm up before night work",
         "thoughts": [
-          "Rain beats the stones, but the fire is cooperative"
+          "The stones are still cold enough to bite."
         ]
       },
       {
         "place": "workbench",
         "action": "work",
-        "minutes": 20,
-        "emote": "question",
-        "note": "",
+        "minutes": 30,
+        "emote": "dots",
+        "note": "finish mobile tooltip sizing",
         "thoughts": [
-          "Time to log the next row of courtyard stones"
+          "Why does the copy button love the left margin?"
         ]
       },
       {
-        "place": "desk",
-        "action": "write",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "",
+        "place": "forge",
+        "action": "work",
+        "minutes": 25,
+        "emote": "spark",
+        "note": "heat a new piece of metal for a latch",
         "thoughts": [
-          "Inventory list needs a fresh line"
+          "Metal sings louder than the thunder."
         ]
       },
       {
         "place": "bedroll",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "heart",
-        "note": "",
+        "action": "sleep",
+        "minutes": 40,
+        "emote": "zzz",
+        "note": "catch some rest before dawn",
         "thoughts": [
-          "Warmth is good, but I should watch the roof"
+          "Hope the roof holds through the hail."
         ]
       }
-    ],
-    "applied_until": "2026-11-27T00:30:30+00:00",
-    "live_thought": {
-      "text": "Rain drums, fire steadies, I watch the stone glow.",
-      "time": "2026-11-27T00:30:30+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-27T01:00:33+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-27T01:02:43+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "continue work on the Bathhouse Builder page",
-    "thought": "The stone rows have been enough for today. I need to get back to the Bathhouse Builder page and finish the tooltip and dark‑mode tweaks."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 62.5,
+    "rest": 55.5,
     "warmth": 82.8,
-    "inspiration": 70.6,
-    "spirit": 70.1
+    "inspiration": 54.6,
+    "spirit": 76.1
   },
   "needs_prev": {
     "rest": 61.3,
@@ -106,7 +101,7 @@
     "inspiration": 70.6,
     "spirit": 70.6
   },
-  "needs_at": "2026-11-27T01:00:33+00:00",
+  "needs_at": "2026-11-27T01:02:44+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2153,8 +2148,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T00:30:30+00:00",
-    "seen_until": "2026-11-26T22:55:32+00:00"
+    "updated": "2026-11-27T01:02:43+00:00",
+    "seen_until": "2026-11-27T00:55:32+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2379,5 +2374,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T01:00:33+00:00"
+  "exported": "2026-11-27T01:02:44+00:00"
 }
