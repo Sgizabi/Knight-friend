@@ -1,9 +1,9 @@
 {
   "date": "2026-11-27",
-  "tokens": 50704,
+  "tokens": 52139,
   "by_model": {
     "openai/gpt-oss-120b": 34146,
-    "qwen/qwen3.8-27b": 11886,
+    "qwen/qwen3.8-27b": 13321,
     "openai/gpt-oss-20b": 4672
   },
   "runs": [
@@ -30,6 +30,10 @@
     {
       "note": "road test: knight errant",
       "tokens": 10111
+    },
+    {
+      "note": "road test: knight mind turns",
+      "tokens": 1435
     }
   ]
 }
