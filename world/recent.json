@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-20T02:40:37+00:00",
-    "activity": "evening",
-    "mood": "sleepy",
-    "emote": "zzz",
-    "text": "The forge finally stands solid. I tightened the last bolts on the bellows and checked the chimney for cracks. The anvil settled into place without a wobble, which surprised me. While cleaning the workbench I found a shard of glass I hadn't noticed before; it fit nicely in the pocket I keep for broken pieces. I tested the lantern with fresh oil; the light held steady. The roof gap still lets a cold draft in, but the heat from the forge keeps the floor warm enough to sit a while. I noted the mortar on the east wall looks darker where I mixed extra sand today.",
-    "creations": []
-  },
-  {
     "time": "2026-11-20T13:01:36+00:00",
     "activity": "repair",
     "mood": "content",
@@ -525,6 +517,15 @@
     "mood": "content",
     "emote": "spark",
     "text": "I swapped a rattling roof board for a fresh cut. The new piece sits tight and stops the wind from whistling through that spot. No extra glass shards this round. The fire stayed steady while I worked.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-27T19:01:36+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "content",
+    "emote": "dots",
+    "text": "No new cracks in the stone today. I cleared a few loose pieces on the eleventh row and tightened the mortar. The fire kept its heat while I moved around.",
     "creations": []
   }
 ]

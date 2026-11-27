@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-27T19:00:32+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-27T19:01:36+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "count the stones, note any new cracks, and tighten mortar where needed",
-  "thought": "The wind is louder on the roof boards today. I think I should keep checking the stones before the gap gets bigger."
+  "note": "",
+  "thought": ""
 }

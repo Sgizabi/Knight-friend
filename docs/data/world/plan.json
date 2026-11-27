@@ -1,25 +1,15 @@
 {
-  "start": "2026-11-27T17:01:38+00:00",
+  "start": "2026-11-27T19:01:36+00:00",
   "mood": "content",
   "steps": [
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "heart",
-      "note": "",
-      "thoughts": [
-        "The fire's heat feels like a coworker on a break."
-      ]
-    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "question",
+      "emote": "dots",
       "note": "",
       "thoughts": [
-        "Need to finish the tooltip flicker test."
+        "Lantern guard still snug, no wobble"
       ]
     },
     {
@@ -29,17 +19,27 @@
       "emote": "dots",
       "note": "",
       "thoughts": [
-        "Check the stone rows for new cracks."
+        "Roof boards look tighter now"
       ]
     },
     {
-      "place": "forge",
-      "action": "work",
+      "place": "fire",
+      "action": "sit",
       "minutes": 20,
-      "emote": "music",
+      "emote": "dots",
       "note": "",
       "thoughts": [
-        "Heat from the forge might melt the extra glass safely."
+        "Warmth feels steady, no need for extra logs"
+      ]
+    },
+    {
+      "place": "desk",
+      "action": "write",
+      "minutes": 20,
+      "emote": "dots",
+      "note": "",
+      "thoughts": [
+        "Updating inventory list, adding today’s stone count"
       ]
     }
   ]
