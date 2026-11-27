@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-27T02:33:30+00:00",
+  "since": "2026-11-27T02:37:38+00:00",
   "place": "workbench",
   "action": "work",
   "emote": "dots",
-  "note": "continue",
-  "thought": "I’ve been staring at the same stone rows for hours. The fire’s steady, but my mind wants to move. The bathhouse builder page still has that stray newline and th"
+  "note": "Finish testing the tooltip on mobile browsers, shrink the touch area around the copy button, and remove the remaining stray newline before committing.",
+  "thought": "The stone rows are steady now, but the bathhouse page still has that stray newline and the copy button feels cramped on mobile."
 }
