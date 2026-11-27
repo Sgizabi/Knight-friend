@@ -78,11 +78,16 @@
           "Check the shim tooltip on the tablet again"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-27T15:30:25+00:00",
+    "live_thought": {
+      "text": "The forge heat hums, iron glints, I could hammer a bit longer.",
+      "time": "2026-11-27T15:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T15:01:37+00:00",
+    "since": "2026-11-27T15:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 89.7,
+    "warmth": 67.7,
+    "inspiration": 89.6,
+    "spirit": 68.1
+  },
+  "needs_prev": {
     "rest": 91.1,
     "warmth": 68.8,
     "inspiration": 89.6,
     "spirit": 68.5
   },
-  "needs_prev": {
-    "rest": 93.8,
-    "warmth": 67.8,
-    "inspiration": 85.2,
-    "spirit": 68.9
-  },
-  "needs_at": "2026-11-27T15:01:37+00:00",
+  "needs_at": "2026-11-27T15:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2148,7 +2153,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T15:01:37+00:00",
+    "updated": "2026-11-27T15:30:25+00:00",
     "seen_until": "2026-11-27T14:55:32+00:00"
   },
   "gifts": [],
@@ -2384,5 +2389,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T15:01:37+00:00"
+  "exported": "2026-11-27T15:30:25+00:00"
 }

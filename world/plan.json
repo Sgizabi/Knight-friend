@@ -42,5 +42,10 @@
         "Check the shim tooltip on the tablet again"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-27T15:30:25+00:00",
+  "live_thought": {
+    "text": "The forge heat hums, iron glints, I could hammer a bit longer.",
+    "time": "2026-11-27T15:30:25+00:00"
+  }
 }
