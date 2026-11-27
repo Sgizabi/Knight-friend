@@ -78,11 +78,16 @@
           "Updating inventory list, adding today’s stone count"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-27T19:30:24+00:00",
+    "live_thought": {
+      "text": "The stone underfoot feels solid, like an old joke waiting.",
+      "time": "2026-11-27T19:30:24+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T19:01:36+00:00",
+    "since": "2026-11-27T19:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -90,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 78.6,
+    "warmth": 80.8,
+    "inspiration": 84.3,
+    "spirit": 70.9
+  },
+  "needs_prev": {
     "rest": 80.4,
     "warmth": 83.1,
     "inspiration": 84.3,
     "spirit": 71.4
   },
-  "needs_prev": {
-    "rest": 82.9,
-    "warmth": 82.6,
-    "inspiration": 77.6,
-    "spirit": 71.9
-  },
-  "needs_at": "2026-11-27T19:01:36+00:00",
+  "needs_at": "2026-11-27T19:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2152,7 +2157,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T19:01:36+00:00",
+    "updated": "2026-11-27T19:30:24+00:00",
     "seen_until": "2026-11-27T18:55:30+00:00"
   },
   "gifts": [],
@@ -2402,5 +2407,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T19:01:36+00:00"
+  "exported": "2026-11-27T19:30:25+00:00"
 }

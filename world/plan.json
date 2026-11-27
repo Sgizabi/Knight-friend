@@ -42,5 +42,10 @@
         "Updating inventory list, adding today’s stone count"
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-27T19:30:24+00:00",
+  "live_thought": {
+    "text": "The stone underfoot feels solid, like an old joke waiting.",
+    "time": "2026-11-27T19:30:24+00:00"
+  }
 }
