@@ -28,7 +28,7 @@ h1{margin-top:0}
   cursor:pointer;touch-action:none
 }
 .touch{
-  position:absolute;bottom:0;left:0;width:100%;height:40px;opacity:0;
+  position:absolute;bottom:-10px;left:0;width:100%;height:30px;opacity:0;
 }
 .tooltip{
   position:absolute;padding:2px 4px;border-radius:3px;font-size:10px;
@@ -74,7 +74,7 @@ pre{margin:0;white-space:pre-wrap}
 <script>
 let cur=0;
 const sections=[{l:0,t:0},{l:0,t:0},{l:0,t:0}];
-const undo=[]; // {action:'add'|'rem', sec, before}
+const undo=[]; // {action,sec,before}
 const $=i=>document.getElementById(i);
 const stack=$('stack'),log=$('log'),sel=$('section'),secSum=$('sectionSum'),overall=$('overallSum'),preview=$('csvPreview');
 
@@ -94,9 +94,9 @@ function draw(){
     touch.className='touch';
     d.appendChild(touch);
     d.onmouseenter=e=>showTip(tip,e);
-    d.onmouseleave=>hideTip(tip);
+    d.onmouseleave=()=>hideTip(tip);
     d.ontouchstart=e=>{showTip(tip,e.touches[0]);e.preventDefault();};
-    d.ontouchend=>hideTip(tip);
+    d.ontouchend=()=>hideTip(tip);
     touch.onclick=e=>{e.stopPropagation();showTip(tip,{offsetX:10,offsetY:10});setTimeout(()=>hideTip(tip),800);};
     stack.appendChild(d);
   }
@@ -166,23 +166,19 @@ function runUITest(){
 function undoLast(){
   const act=undo.pop();
   if(!act)return;
-  if(act.action==='add'){
-    const s=sections[act.sec];s.l=act.before; s.t=act.before; logMsg('Undo add');
-  }else if(act.action==='rem'){
-    const s=sections[act.sec];s.l=act.before; s.t=act.before; logMsg('Undo remove');
-  }else if(act.action==='reset'){
-    const s=sections[act.sec];s.l=act.before.l; s.t=act.before.t; logMsg('Undo reset');
-  }else if(act.action==='resetAll'){
+  const s=sections[act.sec];
+  if(act.action==='add'){s.l=act.before;s.t=act.before;}
+  else if(act.action==='rem'){s.l=act.before;s.t=act.before;}
+  else if(act.action==='reset'){s.l=act.before.l;s.t=act.before.t;}
+  else if(act.action==='resetAll'){
     act.before.forEach((b,i)=>{sections[i].l=b.l;sections[i].t=b.t;});
-    logMsg('Undo reset all');
   }
-  draw();
+  logMsg('Undo '+act.action);draw();
 }
 sel.onchange=()=>{cur=+sel.value;draw();};
 $('add').onclick=add;$('remove').onclick=rem;$('reset').onclick=reset;$('resetAll').onclick=resetAll;
 $('export').onclick=exportCSV;$('exportTest').onclick=exportTest;$('copy').onclick=copyPreview;
-$('clearLog').onclick=()=>log.innerHTML='';
-$('runTest').onclick=runUITest;
+$('clearLog').onclick=()=>log.innerHTML='';$('runTest').onclick=runUITest;
 $('darkToggle').querySelector('input').onchange=e=>document.documentElement.classList.toggle('dark',e.target.checked);
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='z')undoLast();});
 draw();

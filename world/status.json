@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-27T02:37:38+00:00",
-  "place": "workbench",
-  "action": "work",
+  "since": "2026-11-27T02:41:46+00:00",
+  "place": "courtyard",
+  "action": "pace",
   "emote": "dots",
-  "note": "Finish testing the tooltip on mobile browsers, shrink the touch area around the copy button, and remove the remaining stray newline before committing.",
-  "thought": "The stone rows are steady now, but the bathhouse page still has that stray newline and the copy button feels cramped on mobile."
+  "note": "log sizes and stability, note any movement, add markers if needed",
+  "thought": "I’m still uneasy about the stone rows. I’ll keep checking them before the roof gives out."
 }

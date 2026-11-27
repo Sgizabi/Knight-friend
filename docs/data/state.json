@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-27T02:37:38+00:00",
-    "place": "workbench",
-    "action": "work",
+    "since": "2026-11-27T02:41:46+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "Finish testing the tooltip on mobile browsers, shrink the touch area around the copy button, and remove the remaining stray newline before committing.",
-    "thought": "The stone rows are steady now, but the bathhouse page still has that stray newline and the copy button feels cramped on mobile."
+    "note": "log sizes and stability, note any movement, add markers if needed",
+    "thought": "I’m still uneasy about the stone rows. I’ll keep checking them before the roof gives out."
   },
   "needs": {
-    "rest": 47.1,
+    "rest": 40.1,
     "warmth": 84.9,
-    "inspiration": 51.5,
-    "spirit": 79.4
+    "inspiration": 35.5,
+    "spirit": 83.5
   },
   "needs_prev": {
     "rest": 53.9,
@@ -106,7 +106,7 @@
     "inspiration": 54.6,
     "spirit": 74.9
   },
-  "needs_at": "2026-11-27T02:37:38+00:00",
+  "needs_at": "2026-11-27T02:41:46+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2370,5 +2370,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T02:37:38+00:00"
+  "exported": "2026-11-27T02:41:46+00:00"
 }
