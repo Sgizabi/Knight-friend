@@ -1335,7 +1335,8 @@ const BEASTS = {
         const base = G(root, [hx, -.6, hz], [0, Math.PI, 0]); base.scale.setScalar(big);   // rearing up, leaning down the lane, away from him and the tree
         const segs = chain(base, n, .58, .95, .78, hide, { sides: 9, jitter: .04, each: (i, j, ra) => {
           P(j, A.cyl(ra * 1.07, ra * 1.07, .14, 9), band, [0, .05, 0], { jitter: .02 });
-          for (let k = 0; k < 6; k++) { const a = k / 6 * 6.28; P(j, A.box(.18, .3, .1), band, [Math.cos(a) * ra * 1.02, .3, Math.sin(a) * ra * 1.02], { rot: [0, -a, 0] }); }
+          for (let k = 0; k < 6; k++) { const a = k / 6 * 6.28; if (NEWLOOK) P(j, A.box(.3, .2, .07), hide, [Math.cos(a) * ra * 1.0, .3, Math.sin(a) * ra * 1.0], { rot: [0, Math.PI / 2 - a, 0], jitter: .02 });   // (new look: ridges of hide)
+            else P(j, A.box(.18, .3, .1), band, [Math.cos(a) * ra * 1.02, .3, Math.sin(a) * ra * 1.02], { rot: [0, -a, 0] }); }
           if (old && i < n - 1) {                                       // crusted with stone, roots trailing off it
             for (let k = 0; k < 4; k++) { const a = i * 2.1 + k * 1.7; P(j, A.ico(.16 + r() * .14, 0), k % 2 ? A.M.stone : A.M.stoneL, [Math.cos(a) * ra * .97, .1 + r() * .4, Math.sin(a) * ra * .97], { scale: [1, .8, .6], cast: false }); }
             if (i % 2 === 0) for (let k = 0; k < 2; k++) { const a = i * 1.3 + k * 3.1; bone(j, [Math.cos(a) * ra, .4, Math.sin(a) * ra], [Math.cos(a) * (ra + .22), -.35 - r() * .4, Math.sin(a) * (ra + .22)], .035, .01, rootM, 4); }
@@ -1491,7 +1492,8 @@ const BEASTS = {
       P(g, A.cyl(.44, .52, .5, 8), rust, [0, 1.72, 0]);
       for (let i = 0; i < 5; i++) P(g, A.box(.2, .45, .04), i % 2 ? dark : iron, [(i - 2) * .17, 1.55, .5 - Math.abs(i - 2) * .05], { rot: [.1, (i - 2) * -.2, 0] });
       const chest = G(g, [0, 2.3, 0]);
-      P(chest, A.cyl(.56, .44, .85, 8), iron, [0, 0, 0], { scale: [1, 1, .72] });
+      P(chest, NEWLOOK ? A.cyl(.6, .36, .9, 9) : A.cyl(.56, .44, .85, 8), iron, [0, 0, 0], { scale: [1, 1, .72] });   // (new look: broad at the chest, in at the waist)
+      if (NEWLOOK) for (let i = 0; i < 3; i++) P(chest, A.cyl(.4 + i * .03, .43 + i * .03, .1, 9), i % 2 ? rust : iron, [0, -.4 - i * .09, 0], { scale: [1, 1, .75] });   // the lames below it
       P(chest, A.ico(.42, 1), rust, [0, .1, .16], { scale: [1.1, 1, .6] });
       for (let i = 0; i < 4; i++) P(chest, A.box(.04, .18, .02), A.mat('#120f0d'), [(i - 1.5) * .18, -.05 + (i % 2) * .15, .43], { rot: [0, 0, .5], cast: false });
       for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) P(chest, A.ico(.32 - k * .04, 1), k % 2 ? rust : iron, [sx * (.6 + k * .05), .35 - k * .14, 0], { scale: [1.1, .55, 1] });
@@ -1512,9 +1514,18 @@ const BEASTS = {
         P(chest, A.ico(.07 + rm() * .07, 0), rm() < .7 ? moss : lichen, [sx * (.5 + rm() * .25), .42 + rm() * .12, (rm() - .5) * .4], { scale: [1, .45, 1], cast: false }); }
       for (let i = 0; i < 6; i++) P(head, A.ico(.05 + rm() * .04, 0), moss, [(rm() - .5) * .34, .2 + rm() * .1, (rm() - .5) * .34], { scale: [1, .5, 1], cast: false });
       for (const sx of [-1, 1]) P(g, A.ico(.1, 0), moss, [sx * .27, 1.08, .14], { scale: [1, .5, 1], cast: false });
-      // cloak strips, tattered
+      // cloak strips, tattered (new look: one mantle hung from the shoulders, its hem torn into strips)
       const cloak = [];
-      for (let i = 0; i < 6; i++) {
+      if (NEWLOOK) {
+        const mantle = new T.Mesh(A.facet(new T.CylinderGeometry(.62, .82, 1.6, 12, 8, true, Math.PI - 1.35, 2.7), .04, 2), cloth);
+        mantle.position.set(0, -.3, -.04); mantle.scale.z = .74; mantle.castShadow = true; chest.add(mantle);
+        clothSway(root, mantle, { amp: .06, speed: .8, wave: 2.5 });
+        for (let i = 0; i < 7; i++) {
+          const a = Math.PI - 1.15 + i / 6 * 2.3, c = G(chest, [Math.sin(a) * .8, -1.05, Math.cos(a) * .8 * .74 - .04], [0, a + Math.PI, 0]);
+          clothSway(root, clothStrip(c, .13, .1, .55 + ((i * 37) % 5) * .1, cloth, { rows: 6, rag: .2, curl: -.04 }), { amp: .09, speed: .9, phase: i * 1.9 });
+          cloak.push(c);
+        }
+      } else for (let i = 0; i < 6; i++) {
         const c = G(chest, [(i - 2.5) * .19, .45, -.36]);
         const len = 1.9 + ((i * 37) % 5) * .12;
         if (NEWLOOK) clothSway(root, clothStrip(c, .11, .1, len, cloth, { rows: 9, rag: .14, curl: -.05 }), { amp: .1, speed: .9, phase: i * 1.9 });   // (new look: tattered cloth that stirs)
@@ -1525,7 +1536,8 @@ const BEASTS = {
       for (const sx of [-1, 1]) {
         bone(chest, [sx * .62, .25, 0], [sx * .48, -.35, .32], .13, .11, iron);
         bone(chest, [sx * .48, -.35, .32], [sx * .1, -.62, .55], .11, .09, rust);
-        P(chest, A.ico(.12, 0), dark, [sx * .08, -.68, .58]);
+        if (NEWLOOK) { P(chest, A.box(.17, .15, .2), dark, [sx * .08, -.68, .58], { jitter: .01 }); P(chest, A.box(.19, .05, .14), iron, [sx * .08, -.6, .58]); }   // gauntlets on the pommel
+        else P(chest, A.ico(.12, 0), dark, [sx * .08, -.68, .58]);
       }
       const sword = G(g, [0, 0, .58]);
       P(sword, A.box(.14, 1.6, .035), A.mat('#5d5a55', .7, .4), [0, .58, 0], { jitter: .01 });
@@ -1540,6 +1552,7 @@ const BEASTS = {
       });
       return (t) => {
         chest.scale.set(1, 1 + Math.sin(t * .8) * .015, 1);
+        if (NEWLOOK) chest.position.y = 2.3 + Math.sin(t * .8) * .012 - pulse(t, 17, 3) * .03;   // its shoulders rise with each breath, and now and then it settles
         head.rotation.y = Math.sin(t * .2) * .35; head.rotation.x = .08 + Math.sin(t * .17) * .05;
         cloak.forEach((c, i) => { c.rotation.x = -.12 - Math.sin(t * .9 + i) * .08; c.rotation.z = Math.sin(t * .6 + i * .7) * .04; });
         eyeMat.emissiveIntensity = 2.6 + Math.sin(t * 7) * .4 + (Math.sin(t * 23) > .95 ? -2 : 0);
@@ -2054,7 +2067,9 @@ const BEASTS = {
       }
       // the body under the coat, and the coat: long ragged strips from the shoulders
       P(body, A.cyl(.2, .14, .9, 6), skin, [0, 2.15, 0], { scale: [1, 1, .7] });
-      P(body, A.cyl(.26, .2, .22, 7), cloth, [0, 2.5, 0], { scale: [1, 1, .75] });   // the shoulders of the coat
+      if (!NEWLOOK) P(body, A.cyl(.26, .2, .22, 7), cloth, [0, 2.5, 0], { scale: [1, 1, .75] });   // the shoulders of the coat
+      else { const mantle = new T.Mesh(A.facet(new T.CylinderGeometry(.15, .38, .5, 10, 3, true), .03, 2), cloth);   // a mantle over its shoulders
+        mantle.position.y = 2.44; mantle.scale.z = .8; mantle.castShadow = true; body.add(mantle); clothSway(root, mantle, { amp: .03, speed: .7, wave: 3 }); }
       const strips = [];
       for (let i = 0; i < (old ? 11 : 8); i++) {
         const a = (i / (old ? 11 : 8)) * Math.PI * 1.6 - Math.PI * .8 + Math.PI, c = G(body, [Math.sin(a) * .22, 2.55, Math.cos(a) * .16], [0, a, 0]);
@@ -2079,6 +2094,7 @@ const BEASTS = {
       }
       // the head: smooth and pale, no face at all
       const neck = G(body, [0, 2.62, 0]), head = G(neck, [0, .18, .03]); if (young) head.scale.setScalar(1.3);
+      if (NEWLOOK) neck.rotation.x = young ? .04 : old ? .2 : .12;   // its head carried forward a little (the old: more)
       bone(neck, [0, 0, 0], [0, .2, .03], .05, .045, skin);
       P(head, A.ico(.15, 2), headM, [0, 0, 0], { scale: [.85, 1.15, .95], jitter: .004 });
       // the antlers, every tip an ear: each stands upright, its opening (+z of its holder) turned to listen
@@ -2495,15 +2511,25 @@ const BEASTS = {
       const g = G(root, [-10.3, 0, .25], [0, 1.25, 0]);
       const cloth = surf(ds('#3b3430'), 'weave', .02), clothD = surf(ds('#2a2522'), 'weave', .02), hide = A.mat('#5b4a3e', 0, .9), petalM = ds('#d7b7ae', 0, .7), petalOut = ds('#6e5a52', 0, .8);
       const tendrilM = A.mat('#e5cfc6', 0, .55), tipM = glow('#ffd9c9', 1.4);
-      const cloak = new T.Mesh(A.facet(new T.CylinderGeometry(.2, .45, 1.55, 9, NEWLOOK ? 7 : 2, true), .06, 2), cloth); cloak.position.y = .85; cloak.castShadow = true; g.add(cloak);
+      const cloak = new T.Mesh(A.facet(new T.CylinderGeometry(NEWLOOK ? .29 : .2, .45, NEWLOOK ? 1.45 : 1.55, 10, NEWLOOK ? 7 : 2, true), .06, 2), cloth); cloak.position.y = NEWLOOK ? .88 : .85; cloak.castShadow = true; g.add(cloak);
       if (NEWLOOK) clothSway(root, cloak, { amp: .06, speed: 1.1, wave: 3 });
-      for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; P(g, new T.ConeGeometry(.08, .25, 3), clothD, [Math.cos(a) * .43, .05, Math.sin(a) * .43], { rot: [Math.PI, 0, 0] }); }
+      if (!NEWLOOK) for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; P(g, new T.ConeGeometry(.08, .25, 3), clothD, [Math.cos(a) * .43, .05, Math.sin(a) * .43], { rot: [Math.PI, 0, 0] }); }
+      else for (let i = 0; i < 11; i++) {   // NEW LOOK: a tattered hem, torn strips of the cloak hanging over its edge
+        const a = i / 11 * 6.28 + .2, c = G(g, [Math.sin(a) * .41, .5 + (i % 3) * .04, Math.cos(a) * .41], [0, a, 0]);
+        clothSway(root, clothStrip(c, .07, .06, .38 + (i * 37 % 5) * .03, i % 2 ? clothD : cloth, { rows: 5, rag: .3, curl: .05 }), { amp: .05, speed: 1.1, phase: i * 1.7 });
+      }
       P(g, A.ico(.25, 1), cloth, [0, 1.6, 0], { scale: [1.3, .7, 1] });
       const hood = G(g, [0, 1.72, 0]);
       const hm = new T.Mesh(A.facet(new T.SphereGeometry(.21, 8, 6, 0, 6.28, 0, 2.1), .02, 1), clothD); hm.position.set(0, .12, -.03); hm.castShadow = true; hood.add(hm);
-      bone(g, [.3, 1.45, .15], [.38, .95, .3], .05, .04, cloth); bone(g, [.38, .95, .3], [.42, .95, .45], .04, .03, hide);
+      if (!NEWLOOK) {
+        bone(g, [.3, 1.45, .15], [.38, .95, .3], .05, .04, cloth); bone(g, [.38, .95, .3], [.42, .95, .45], .04, .03, hide);
+        bone(g, [-.3, 1.45, .1], [-.34, .9, .15], .05, .04, cloth);
+      } else {   // sleeves, and both hands on the staff, one above the other
+        bone(g, [.32, 1.5, .1], [.4, 1.08, .34], .085, .07, cloth); P(g, A.ico(.05, 0), hide, [.44, 1.06, .47], { scale: [.9, 1.1, 1] });
+        bone(g, [-.32, 1.5, .08], [-.16, 1.16, .3], .085, .072, cloth); bone(g, [-.16, 1.16, .3], [.36, 1.3, .46], .072, .065, cloth);
+        P(g, A.ico(.05, 0), hide, [.43, 1.31, .49], { scale: [.9, 1.1, 1] });
+      }
       bone(g, [.45, 0, .5], [.45, 1.9, .5], .03, .025, A.M.woodD);   // a walking staff
-      bone(g, [-.3, 1.45, .1], [-.34, .9, .15], .05, .04, cloth);
       const head = G(hood, [0, .12, .04]); head.scale.setScalar(1.45);
       const bloomLight = softLight('#ffcbb8', 0, 1.4); bloomLight.position.set(0, .2, .25); head.add(bloomLight);
       const apB = root.userData.appearance || {}, canBloom = !apB.id || (apB.seeing ?? 0) >= 2;   // he sees it bloom only from seeing step 2
@@ -2532,6 +2558,12 @@ const BEASTS = {
         }
         bloomLight.intensity = open * 2.2 * (canBloom ? 1 : 0);
         head.rotation.x = -open * .25; hood.rotation.y = Math.sin(t * .4) * .2 * (1 - open);
+        if (NEWLOOK) {   // it breathes, shifts its weight now and then, and leans in a little, politely, as it blooms
+          const br = Math.sin(t * 1.1);
+          cloak.scale.set(1 + br * .012, 1, 1 + br * .012);
+          hood.position.set(Math.sin(t * .23) * .02, 1.72 + br * .008, 0);
+          hood.rotation.x = open * (canBloom ? .12 : .05); hood.rotation.z = Math.sin(t * .23) * .03;
+        }
       };
     },
   },
@@ -2547,21 +2579,39 @@ const BEASTS = {
       const coat = surf(ds('#2b2a2e', 0, .85), 'weave', .02), coatL = surf(ds('#3e3b40', 0, .85), 'weave', .02), leather = surf(A.M.leather, 'hammered', .008), iron = surf(A.M.iron, 'hammered', .02, 4);
       const body = G(g);
       const legs = [];
-      for (const sx of [-1, 1]) { const l = G(body, [sx * .1, 1.0, 0]); bone(l, [0, 0, 0], [0, -1.0, 0], .055, .045, leather); P(l, A.box(.1, .07, .24), leather, [0, -1.0, .06]); legs.push(l); }
-      const coatM = new T.Mesh(A.facet(new T.CylinderGeometry(.22, .4, 1.3, 9, NEWLOOK ? 6 : 2, true), .05, 1), coat); coatM.position.y = 1.35; coatM.castShadow = true; body.add(coatM);
+      const knees = [], rg = rig();
+      for (const sx of [-1, 1]) { const l = G(body, [sx * .1, 1.0, 0]);
+        if (NEWLOOK) { bone(l, [0, 0, 0], [0, -.5, .02], .06, .05, leather); const kn = G(l, [0, -.5, .02]); bone(kn, [0, 0, 0], [0, -.5, -.02], .05, .04, leather); P(kn, A.box(.11, .08, .26), leather, [0, -.5, .05]); knees.push(kn); }
+        else { bone(l, [0, 0, 0], [0, -1.0, 0], .055, .045, leather); P(l, A.box(.1, .07, .24), leather, [0, -1.0, .06]); }
+        legs.push(l); }
+      // NEW LOOK: the coat's skirt is open at the front (the legs show as it walks) and hangs from the waist on a spring of
+      // its own, so it swings behind the stride; the old look: one closed tube
+      const skirt = rg.add('skirt', G(body, [0, 1.95, 0]), 5, .45);
+      const coatM = new T.Mesh(A.facet(NEWLOOK ? new T.CylinderGeometry(.24, .44, 1.3, 11, 6, true, .42, Math.PI * 2 - .84) : new T.CylinderGeometry(.22, .4, 1.3, 9, 2, true), .05, 1), coat);
+      coatM.position.y = -.6; coatM.castShadow = true; skirt.add(coatM);
       if (NEWLOOK) clothSway(root, coatM, { amp: .05, speed: 1.2, wave: 3 });
       for (const sx of [-1, 1]) { if (NEWLOOK) { const tg = G(body, [sx * .17, .9, -.27], [-.12, 0, 0]); clothSway(root, clothStrip(tg, .12, .09, .8, coatL, { rows: 8, rag: .05 }), { amp: .08, speed: 1.0, phase: sx * 2 }); }
         else sheet(body, [[sx * .05, .9, -.3], [sx * .3, .9, -.2], [sx * .28, .05, -.42], [sx * .1, .25, -.45]], [[0, 1, 2], [0, 2, 3]], coatL); }
-      P(body, A.cyl(.26, .22, .7, 8), coat, [0, 2.2, 0], { scale: [1, 1, .75] });
+      if (!NEWLOOK) P(body, A.cyl(.26, .22, .7, 8), coat, [0, 2.2, 0], { scale: [1, 1, .75] });
+      else {   // a fitted coat: broad at the shoulders, in at the waist, a belt, and a short cape over the shoulders
+        P(body, A.cyl(.31, .2, .72, 10), coat, [0, 2.2, 0], { scale: [1, 1, .7] });
+        P(body, A.cyl(.215, .215, .07, 10), leather, [0, 1.87, 0], { scale: [1, 1, .72] });
+        const cape = new T.Mesh(A.facet(new T.CylinderGeometry(.2, .42, .42, 11, 3, true), .03, 2), coatL); cape.position.y = 2.36; cape.scale.z = .8; cape.castShadow = true; body.add(cape);
+        clothSway(root, cape, { amp: .03, speed: 1.1, wave: 4 });
+      }
       P(body, A.cyl(.17, .26, .2, 8), coatL, [0, 2.55, 0]);   // high collar
       const head = G(body, [0, 2.72, 0]);
       P(head, A.ico(.15, 1), A.mat('#1a1918'), [0, 0, 0]);
       const hood = new T.Mesh(A.facet(new T.SphereGeometry(.2, 8, 6, 0, 6.28, 0, 2.2), .02, 3), coat); hood.position.set(0, .05, -.04); hood.castShadow = true; head.add(hood);
       P(head, A.box(.24, .12, .06), coatL, [0, -.06, .14]);   // a scarf across its face
       for (const sx of [-1, 1]) P(head, A.ico(.016, 0), glow('#e6f3ff', 2.5), [sx * .05, .03, .15], { cast: false });
-      bone(body, [-.24, 2.45, 0], [-.27, 1.6, .05], .045, .035, coat);
-      const arm = G(body, [.24, 2.45, 0]); const armSide = arm;
-      bone(arm, [0, 0, 0], [.32, -.35, .25], .045, .04, coat); bone(arm, [.32, -.35, .25], [.6, -.45, .5], .04, .035, coat);
+      const free = rg.add('free', G(body, [-.26, 2.45, 0]), 4, .6);   // the free arm, swinging a little as it walks
+      const sR = NEWLOOK ? [.07, .062, .058] : [.045, .035, .035];
+      bone(free, [0, 0, 0], [-.03, -.85, .05], sR[0], sR[1], coat);
+      if (NEWLOOK) { P(free, A.cyl(.065, .07, .08, 8), coatL, [-.03, -.8, .05]); P(free, A.ico(.05, 0), leather, [-.03, -.9, .06], { scale: [.8, 1.2, .9] }); }   // a cuff, a gloved hand
+      const arm = G(body, [.26, 2.45, 0]); const armSide = arm;
+      bone(arm, [0, 0, 0], [.32, -.35, .25], sR[0], sR[2], coat); bone(arm, [.32, -.35, .25], [.6, -.45, .5], sR[2], sR[1], coat);
+      if (NEWLOOK) { P(arm, A.cyl(.07, .07, .08, 8), coatL, [.56, -.44, .46], { rot: [0, 0, 1.2] }); P(arm, A.ico(.05, 0), leather, [.62, -.48, .52]); }
       const cage = G(arm, [.62, -.55, .52]); cage.scale.setScalar(1.6);
       bone(cage, [0, .1, 0], [0, .32, 0], .008, .008, iron, 4);
       for (const y of [.1, -.28]) { const ring = new T.Mesh(new T.TorusGeometry(.11, .012, 4, 10), iron); ring.rotation.x = Math.PI / 2; ring.position.y = y; cage.add(ring); }
@@ -2580,6 +2630,9 @@ const BEASTS = {
         armSide.scale.x = dir > 0 ? -1 : 1;                              // the lantern always held out beyond the wall, never over the roofs
         const stride = Math.abs(Math.cos(t * .09)) > .15 ? 1 : .2, ph = t * 3.2;
         legs.forEach((l, i) => { l.rotation.x = Math.sin(ph + i * Math.PI) * .35 * stride; });
+        knees.forEach((kn, i) => { kn.rotation.x = Math.max(0, Math.sin(ph + i * Math.PI + Math.PI + 1.3)) * .7 * stride; });   // the knee bends as the leg comes through
+        rg.want('skirt', -.05 * stride - Math.abs(Math.sin(ph)) * .05 * stride, 0, Math.sin(ph) * .04 * stride);   // the skirt trails, and swings with the hips
+        rg.want('free', Math.sin(ph + Math.PI) * .25 * stride, 0, -.06); rg.step(dt);
         body.position.y = Math.abs(Math.sin(ph)) * .03 * stride;
         cage.rotation.z = Math.sin(ph) * .08 * stride; head.rotation.y = Math.sin(t * .3) * .5;
         thing.position.set(Math.sin(t * 2.3) * .04, -.09 + Math.sin(t * 3.1) * .04, Math.cos(t * 2.7) * .04);
