@@ -1,18 +1,50 @@
 {
-  "start": "2026-11-27T11:00:30+00:00",
-  "mood": "restless",
-  "applied_until": "2026-11-27T12:30:30+00:00",
+  "start": "2026-11-27T13:01:34+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 120,
-      "emote": "zzz",
-      "note": "asleep for the night"
+      "place": "courtyard",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Finish stone counting for the row",
+      "thoughts": [
+        "That slab looks like it wants a break.",
+        "Wind rattles the loose stones again."
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Sharpen hammer and check bellows",
+      "thoughts": [
+        "Bellows still sigh when I pull.",
+        "Maybe I can add a leather strap."
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Stack a few dry logs for later",
+      "thoughts": [
+        "Logs are stubborn, they slip.",
+        "Good to have extra wood before the wind picks up."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Take a short break, watch the flames",
+      "thoughts": [
+        "Fire is a decent coworker.",
+        "Hope the roof holds through the gust."
+      ]
     }
-  ],
-  "live_thought": {
-    "text": "Stone whispers, wind rattles, I could watch it a while.",
-    "time": "2026-11-27T12:30:30+00:00"
-  }
+  ]
 }

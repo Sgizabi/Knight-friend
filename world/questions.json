@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261125",
-      "items": [
-        {
-          "id": "t20261125-0",
-          "text": "Did the glass shard make a nice song on the bench?"
-        },
-        {
-          "id": "t20261125-1",
-          "text": "What’s the story behind that mossy slab?"
-        },
-        {
-          "id": "t20261125-2",
-          "text": "Did the lantern guard nick hurt more than the cold?"
-        },
-        {
-          "id": "t20261125-3",
-          "text": "How’s the bathhouse after the final verification?"
-        },
-        {
-          "id": "t20261125-4",
-          "text": "Do you ever miss the wind through the broken window?"
-        },
-        {
-          "id": "t20261125-5",
-          "text": "What’s the favorite sound in the newly mended courtyard?"
-        }
-      ]
-    },
-    {
       "date": "20261126",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261126-5",
           "text": "Is the bathhouse finally feeling just right in narrow view?"
+        }
+      ]
+    },
+    {
+      "date": "20261127",
+      "items": [
+        {
+          "id": "t20261127-0",
+          "text": "Did the new slab wobble mess up your night?"
+        },
+        {
+          "id": "t20261127-1",
+          "text": "That copy‑button still nudging left—still bugging you?"
+        },
+        {
+          "id": "t20261127-2",
+          "text": "How’s the lantern guard fitting the post now?"
+        },
+        {
+          "id": "t20261127-3",
+          "text": "Ever catch the thunder rattling the roof while you work?"
+        },
+        {
+          "id": "t20261127-4",
+          "text": "Do you ever miss the old broken window’s view?"
+        },
+        {
+          "id": "t20261127-5",
+          "text": "Is the bathhouse tooltip flicker driving you mad?"
         }
       ]
     }

@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-27T13:00:30+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-27T13:01:35+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "record sizes and note any new shifts",
-  "thought": "The wind rattles the repaired roof, the fire chats about the next batch of wood, and the stones feel like they’re waiting for another count."
+  "note": "",
+  "thought": ""
 }

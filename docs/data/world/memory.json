@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and repaired roofs with fresh boards. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 23.782,
-    "craft": 23.782
+    "repair": 23.831,
+    "craft": 23.831
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 2,
+  "entries_since_condense": 3,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -37,28 +37,28 @@
       "action": "pace",
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
-      "times": 23,
-      "strength": 11.837,
-      "last": "2026-11-27T02:41:47+00:00"
+      "times": 24,
+      "strength": 12.324,
+      "last": "2026-11-27T13:00:32+00:00"
     }
   ],
   "last_long": "2026-11-27T02:30:23+00:00",
   "recent_thoughts": [
-    "The fire's crackle feels like a stone's sigh.",
-    "Stone under my hands, cold but steady.",
-    "The iron glows, steady as the old walls.",
-    "The fire crackles, stones keep their quiet watch.",
-    "The iron glows, steady as the old walls.",
     "Stone glints, glasshouse cold, I watch rain brew.",
     "Rain drums on stone, fire hums low.",
     "The rain drums, the fire holds steady on the bench.",
     "Rain drums, fire steadies, I keep writing.",
     "Rain drums, fire steadies, I watch the stone glow.",
     "Rain drums, fire steadies, I watch the stone glow.",
-    "Metal glows, I wait for it to harden."
+    "Metal glows, I wait for it to harden.",
+    "Rain drums, fire steadies, I watch the stone glow.",
+    "Rain drums, fire steadies, stone glints in the dim.",
+    "Rain drums, fire steadies, I watch the stone glow.",
+    "The wind rattles the stones, I could watch it a while.",
+    "Stone whispers, wind rattles, I could watch it a while."
   ],
-  "last_glance": "2026-11-27T02:00:25+00:00",
-  "visits_seen_until": "2026-11-27T02:25:25+00:00",
+  "last_glance": "2026-11-27T12:30:30+00:00",
+  "visits_seen_until": "2026-11-27T12:55:29+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},
@@ -67,7 +67,7 @@
     "answer": 1
   },
   "questions_waiting": [],
-  "questions_date": "20261126",
+  "questions_date": "20261127",
   "beings_since": [],
   "last_encounter": "2026-11-24T00:31:49+00:00"
 }

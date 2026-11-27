@@ -30,41 +30,73 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 74,
-    "last_wake": "2026-11-27T11:00:30+00:00",
+    "wakeups": 75,
+    "last_wake": "2026-11-27T13:01:35+00:00",
     "nights_slept_through": 32
   },
   "plan": {
-    "start": "2026-11-27T11:00:30+00:00",
-    "mood": "restless",
-    "applied_until": "2026-11-27T12:30:30+00:00",
+    "start": "2026-11-27T13:01:34+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
-        "emote": "zzz",
-        "note": "asleep for the night"
+        "place": "courtyard",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Finish stone counting for the row",
+        "thoughts": [
+          "That slab looks like it wants a break.",
+          "Wind rattles the loose stones again."
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Sharpen hammer and check bellows",
+        "thoughts": [
+          "Bellows still sigh when I pull.",
+          "Maybe I can add a leather strap."
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Stack a few dry logs for later",
+        "thoughts": [
+          "Logs are stubborn, they slip.",
+          "Good to have extra wood before the wind picks up."
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Take a short break, watch the flames",
+        "thoughts": [
+          "Fire is a decent coworker.",
+          "Hope the roof holds through the gust."
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "Stone whispers, wind rattles, I could watch it a while.",
-      "time": "2026-11-27T12:30:30+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-27T13:00:30+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-27T13:01:35+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "record sizes and note any new shifts",
-    "thought": "The wind rattles the repaired roof, the fire chats about the next batch of wood, and the stones feel like they’re waiting for another count."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
+    "rest": 97.0,
     "warmth": 60.7,
-    "inspiration": 78.9,
+    "inspiration": 85.2,
     "spirit": 70.1
   },
   "needs_prev": {
@@ -73,7 +105,7 @@
     "inspiration": 77.7,
     "spirit": 70.6
   },
-  "needs_at": "2026-11-27T13:00:30+00:00",
+  "needs_at": "2026-11-27T13:01:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2120,8 +2152,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T12:30:30+00:00",
-    "seen_until": "2026-11-27T02:25:25+00:00"
+    "updated": "2026-11-27T13:01:35+00:00",
+    "seen_until": "2026-11-27T12:55:29+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2365,5 +2397,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T13:00:30+00:00"
+  "exported": "2026-11-27T13:01:35+00:00"
 }
