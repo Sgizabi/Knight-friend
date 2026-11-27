@@ -24,7 +24,8 @@ import beings
 import weather
 
 # what each being is. when: day (8-17 ET), dusk (17-20), night (20-5), dark (dusk or night), any.
-# likes: weather that draws it (three times as likely then). needs: what must be true for it to come.
+# likes: weather that draws it (three times as likely then). needs: what must be true for it to come
+# (clear: a clear-ish sky; after_rain: rain in the last hours; wind: a wind or a gale; gale: a gale or a storm).
 # render: the keep page's name for how it looks. arrives: it comes by meteor or ship (and leaves a trace).
 # forms: shapes it can come in that are not ages (which heads, which disguise), weighted; fresh: never
 # the same form twice running. natures: its nature is drawn for each visit (KINDS nature is what the caps count).
@@ -89,6 +90,14 @@ KINDS = {
     "burrow2":      dict(name="the Burrowfolk diggers", nature="neutral", rarity="uncommon", step=0, when="dark", minutes=(40, 90), arrives="mounds", arc="burrow", stage=2),
     "burrow3":      dict(name="the Burrowfolk mushroom farmers", nature="gentle", rarity="uncommon", step=1, when="dark", likes=["rain"], minutes=(60, 120), arc="burrow", stage=3),
     "burrow4":      dict(name="the Burrow-Mother", nature="gentle", rarity="rare", step=1, when="dusk", minutes=(30, 60), arc="burrow", stage=4, reads="young"),
+    # the Kitemakers, the people of the wind (ARCS): they come only when the wind is up. A scout lands on the tower; flocks
+    # pass over; in a gale (or a storm) they come down out of it to rest on the walls; and once, the great migration, with
+    # their Wind-Chief circling the keep. (likes = their own weather: since they need it anyway, this makes a windy day
+    # three times as likely to bring them, so a people who can only come on some days still comes about as often as others.)
+    "kite1":        dict(name="a Kitemaker scout", nature="gentle", rarity="uncommon", step=0, when="day", needs="wind", likes=["wind", "gale"], minutes=(20, 40), arrives="silk", arrive_chance=.6, arc="kite", stage=1),
+    "kite2":        dict(name="a flock of Kitemakers", nature="gentle", rarity="uncommon", step=0, when="day", needs="wind", likes=["wind", "gale"], minutes=(20, 40), arc="kite", stage=2),
+    "kite3":        dict(name="the Kitemakers sheltering on the walls", nature="neutral", rarity="uncommon", step=1, when="any", needs="gale", likes=["gale", "storm"], minutes=(60, 150), arrives="silk", arrive_chance=.8, arc="kite", stage=3),
+    "kite4":        dict(name="the Wind-Chief and the great migration", nature="proud", rarity="rare", step=1, when="day", needs="wind", likes=["wind", "gale"], minutes=(50, 70), arc="kite", stage=4),
 }
 
 # Story arcs: each stage unlocks the next once it has been met enough times. If he drives them
@@ -104,7 +113,9 @@ ARCS = {"glassy": {"stages": ["glassy1", "glassy2", "glassy3", "glassy4"], "adva
         # soon: once a stage is passed, the next comes within days, not whenever the dice say (the diggers come looking
         # for the youngster soon after it was lost). remember: the arc keeps how he treated that stage's being (MOODS).
         "burrow": {"stages": ["burrow1", "burrow2", "burrow3", "burrow4"], "advance_after": [1, 1, 2, 1], "rest_days": 60,
-                   "linger": [3], "soon": [2], "remember": 1, "place": {"at": 3, "kind": "hollow", "build_days": 14}}}
+                   "linger": [3], "soon": [2], "remember": 1, "place": {"at": 3, "kind": "hollow", "build_days": 14}},
+        # the Kitemakers: the scout once; flocks and gale-shelterers keep coming on windy days after the Wind-Chief has been
+        "kite": {"stages": ["kite1", "kite2", "kite3", "kite4"], "advance_after": [1, 2, 2, 1], "rest_days": 60, "linger": [2, 3]}}
 SOON_CHANCE = .6                  # a 'soon' stage comes on the first day it can (the day after next, usually) with this chance, else the next
 # How a being that reads the arc comes this time (its variant 'kind', its nature that visit), from how he treated
 # the remembered stage's being ("kind": he reached out to it; "harsh": he drove it off; "": neither, or he only
@@ -127,7 +138,8 @@ CHAINS = {"thincrowd": {"every": 1, "most": 5}, "crawl": {"every": 2, "most": 4}
 # Ecology: what has been about lately shifts who comes next. Built from traits, not pair by pair.
 DRAWN_BY = {"wyrm": ["hill"], "moths": ["lanternheads", "warden"], "larva": ["moon2", "nightgrown"],
             "glassbeak": ["nightgrown", "glassy1", "moon2"], "brood": ["nightgrown", "glassy3"], "ashwolves": ["dragon"]}
-TRACE_DAYS = {"meteor": 4, "ship": 3, "hole": 3, "mounds": 5}   # (a hole in the courtyard, a line of mounds across the plain)
+TRACE_DAYS = {"meteor": 4, "ship": 3, "hole": 3, "mounds": 5, "silk": 2}   # (a hole in the courtyard, mounds across the plain, silk left snagged on the stones)
+LEFT_AFTER = {"hole", "mounds", "silk"}   # traces left once it has gone (while it is here, it shows them itself)
 
 # Meetings: when a second being's stay overlaps the first's, the two are about at the same time
 # and each is met on its own, in turn (there is no 'companion' that comes as part of another any
@@ -160,7 +172,8 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "clockhead", "stranger", "ninefold", "leech", "seam", "stitched",                         # last wave
             "manyjoint", "hill", "glassy2", "glassy3", "glassy4",
             "tidekin1", "tidekin2", "tidekin3", "tidekin4",                                         # the peoples: the Tidekin
-            "burrow1", "burrow2", "burrow3", "burrow4"}                                             #   the Burrowfolk
+            "burrow1", "burrow2", "burrow3", "burrow4",                                             #   the Burrowfolk
+            "kite1", "kite2", "kite3", "kite4"}                                                     #   the Kitemakers
 
 
 def nature_of(a):
@@ -182,6 +195,8 @@ HOSTILE_PER_WEEK = 2              # at most this many hostile visits in a keeper
 HOURS = {"day": range(8, 17), "dusk": range(17, 20), "night": [20, 21, 22, 23, 0, 1],   # (keeper's hours: evenings, when people look in)
          "dark": [17, 18, 19, 20, 21, 22, 23, 0], "any": range(8, 23)}
 CLEARISH = {"clear", "wind", "still", "starfall", "aurora"}
+WINDY = {"wind", "gale"}          # needs="wind"
+WILD_WIND = {"gale", "storm"}     # needs="gale": wind too wild even for the Kitemakers to stay up in
 
 
 def enabled():
@@ -251,6 +266,8 @@ def _possible(kind, t, sched):
     wkind = p.get("kind") if p else "clear"
     needs = k.get("needs")
     if needs == "clear" and wkind not in CLEARISH:
+        return 0
+    if (needs == "wind" and wkind not in WINDY) or (needs == "gale" and wkind not in WILD_WIND):
         return 0
     if needs == "after_rain":
         earlier = [weather.at(sched, t - dt.timedelta(hours=h)) for h in (1, 3, 6, 9)]
@@ -755,7 +772,7 @@ def export(world: Path, now=None):
                 item["stance_says"] = encounters.STANCE_SAYS[a["stance"]]
         shown.append(item)
     def left_at(a):                                # a hole or mounds are left once it has gone (while it is here, it shows them itself)
-        return a.get("end") if a.get("arrival") in ("hole", "mounds") else a["start"]
+        return a.get("end") if a.get("arrival") in LEFT_AFTER else a["start"]
     traces = [{"kind": a["arrival"], "id": a["id"], "since": left_at(a)} for a in state["appearances"]
               if a.get("arrival") and not a.get("cancelled") and _parse(left_at(a)) and
               _parse(left_at(a)) <= now < _parse(left_at(a)) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]

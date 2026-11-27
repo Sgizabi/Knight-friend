@@ -463,6 +463,59 @@ CHARACTERS = {
                "song", "little one", "youngster", "speak", "voice"],
         danger=0, gifts=["a stone from deep under the plain, warm, with veins that glow faintly"],
         trace="a great round patch of churned earth on the plain, already settling"),
+    # the Kitemakers, the people of the wind (they come only when it blows). What they shed is real silk and down: kept.
+    "kite1": B(
+        traits=["curious", "light", "quick", "watchful", "of the wind"],
+        drives=["scouting ahead of its people on the wind", "looking for somewhere high to rest", "riding the wind front to see what lies along it",
+                "following the wind to the highest stones about"],
+        signs=["a bright speck wheeling high over the plain, too steady for a bird",
+               "something like a loose kite rides the wind toward the keep, as often against the wind as with it"],
+        looks="a long-limbed, very light being no taller than a child, with sheets of patterned silk stretched between its arms and legs "
+              "like a kite; it glides in on the wind, lands on top of the tower with a snap of silk, folds the silk about itself and "
+              "looks around, the fine filaments on its head streaming in the wind",
+        tell="it holds its silk half open while it is unsure, ready to let the wind take it; folded right up, it is at ease",
+        likes=["high", "wind", "kite", "silk", "thread", "cloth", "ribbon", "string", "colour", "pattern", "still", "quiet", "watch", "wave",
+               "flag", "banner"],
+        danger=0, gifts=["a strip of patterned kite-silk, red and gold, light as breath"],
+        trace="a strip of patterned silk caught on the tower's stones, snapping in the wind"),
+    "kite2": B(
+        traits=["many", "light", "joyful", "restless", "travelling", "of the wind"],
+        drives=["riding the wind front across the plain", "passing over on their way along the wind", "playing in the gusts over the keep",
+                "following the way their scout went"],
+        signs=["specks of colour gather on the wind above the hills to the west", "a far, thin whistling, like wind through many strings"],
+        looks="a flock of Kitemakers, a dozen or more, sweeping over the keep on the wind: long-limbed gliders with silk between arm and "
+              "leg, each patterned differently like a kite, red and gold and blue and green, two long ribbon-tails streaming behind each; "
+              "they wheel over the courtyard, low enough to hear their silk thrum, and ride on",
+        tell="when they are pleased they tumble over and over in the air; when they are wary they climb high and go silent",
+        likes=["wave", "flag", "banner", "cloth", "ribbon", "colour", "kite", "cheer", "whistle", "song", "music", "watch", "wind"],
+        danger=0, gifts=["a long striped tail-ribbon that came loose and drifted down into the courtyard",
+                         "a tuft of fine pale down from the edge of a Kitemaker's silk"],
+        trace="a ribbon of silk come down in the courtyard"),
+    "kite3": B(
+        traits=["many", "tired", "wary", "light", "sheltering", "of the wind"],
+        drives=["the gale is too much even for them: they have come down to rest out of it", "sheltering on the lee side of the walls until the wind drops",
+                "waiting out the wild wind", "resting their silk"],
+        signs=["in the howling wind, shapes are tumbling down out of the sky toward the keep", "something taps and scrabbles along the top of the wall"],
+        looks="a dozen or so Kitemakers clinging along the tops of the keep's walls out of the wild wind, silk wrapped tight round "
+              "themselves like folded kites, heads tucked low, huddled in a row on the lee side of the stones; now and then one loses "
+              "its grip, is snatched up by the wind with a crack of silk, and scrambles back",
+        tell="they huddle closer together, all at once, when something worries them; they open their silk a little when they're at ease",
+        likes=["shelter", "lee", "quiet", "still", "wait", "sit", "thread", "rope", "food", "water", "bread", "blanket", "fire", "warm", "cloth"],
+        danger=0, takes=True, gifts=["a scrap of patterned silk left snagged on the wall-top", "a fine pale filament, like a feather, from a Kitemaker's crest"],
+        trace="scraps of patterned silk snagged along the wall-tops, and small clawed scratches in the stone"),
+    "kite4": B(
+        traits=["ancient", "huge", "ragged", "proud", "wise", "many", "of the wind"],
+        drives=["leading their people on the great migration", "to circle once the stone house its people have spoken of",
+                "the wind has turned for the year, and they all go with it"],
+        signs=["the western sky is speckled with colour, more and more of it, coming on the wind",
+               "a deep thrumming in the air, like a great kite-string pulled taut, and the light begins to dim"],
+        looks="the great migration: hundreds upon hundreds of Kitemakers streaming over on the wind, so many that the light dims, and "
+              "among them their Wind-Chief, three times the size of the rest, its silk ragged and faded and covered in patterns older "
+              "than any of the others', circling the keep once, slowly, low over the walls",
+        tell="it turns its long head to follow you as it circles, and the whole flock follows its turns",
+        likes=["bow", "wave", "banner", "flag", "kite", "salute", "respect", "watch", "silence", "quiet", "colour", "silk", "cloth", "song"],
+        danger=0, gifts=["a long ribbon of the Wind-Chief's old silk, faded, patterned with lines older than anyone can read"],
+        trace="the sky empty again, and silk and down drifting over the plain"),
 }
 
 # More than one way to keep a being back, so no answer is the answer forever. Each individual
@@ -506,7 +559,7 @@ MORE_WEAKNESSES = {
 
 # Weather that blunts a being's main weakness (fire is hard to keep up in the rain, a steady
 # flame in a gale, a gaze in the fog).
-FAILS_IN = {"fog": ["rain", "storm"], "crawl": ["rain", "storm"], "bentone": ["wind", "storm"], "longman": ["fog"],
+FAILS_IN = {"fog": ["rain", "storm"], "crawl": ["rain", "storm"], "bentone": ["wind", "gale", "storm"], "longman": ["fog"],
             "thincrowd": ["fog"], "manyjoint": ["storm"], "ashwolves": ["snow"]}
 
 # What a young or an old one looks like, where age changes the whole shape of it (not just its
@@ -708,6 +761,14 @@ REACTS = {
                 "Their humming stops; they pick up their baskets and go down into the earth."),
     "burrow4": ("She lowers her great head until her nose is almost on the ground before you, and breathes out, long and warm.",
                 "She gives a low rumble you feel through your boots, and turns her nose away from you."),
+    "kite1": ("It opens its silk wide in the wind, holds it there a moment, and folds it again, looking at you.",
+              "It lets the wind snatch it off the tower, and is a speck over the plain in moments."),
+    "kite2": ("A few of them tumble over and over in the air above you before they ride on.",
+              "They climb high all at once, silent, and the wind takes them away."),
+    "kite3": ("Along the wall, one after another, they open their silk a little and settle.",
+              "They throw themselves into the wind in a rush of silk, and are blown away over the plain."),
+    "kite4": ("The Wind-Chief dips low over the courtyard, so low you feel the wind of it, and the whole flock dips after it.",
+              "The Wind-Chief climbs, and the whole sky of them turns away from the keep after it."),
     "glassy4": ("Its crest brightens, and it inclines its head toward you.",
                 "Its crest dims; its attendants close around it and it turns away."),
 }

@@ -565,4 +565,30 @@ _kn.visits.fetch, _vis._now = _kfetch, _vnow
 __import__("os").environ.pop("KNIGHT_CREATURES")
 if _old is not None:
     __import__("os").environ["KNIGHT_CREATURES"] = _old
+# the wind: a gale is its own weather (wind builds to it, it blows itself out to wind); it chills, tires, spoils sleep
+# and stops courtyard work; the Kitemakers come only when the wind is up, and shelter on the walls only in a gale or storm
+assert "gale" in weather.NORMAL and weather.words({"kind": "gale", "intensity": .9}) == "a howling gale"
+assert weather.blocks_courtyard({"kind": "gale", "intensity": .5}) and not weather.blocks_courtyard({"kind": "wind", "intensity": 1})
+assert weather.deltas({"kind": "gale", "intensity": 1}, 0, sleeping=True)["rest"] < weather.deltas({"kind": "wind", "intensity": 1}, 0, sleeping=True)["rest"] < 0
+import random as _rnd  # noqa: E402
+_after = [weather._draw(_rnd.Random(_i), _t0, {"kind": "gale", "intensity": .9})[0] for _i in range(400)]
+assert .45 < _after.count("wind") / 400 < .8 and all(k in weather.NORMAL + weather.ABNORMAL for k in _after)
+_built = [weather._draw(_rnd.Random(_i), _t0, {"kind": "wind", "intensity": .6})[0] for _i in range(400)]
+assert .1 < _built.count("gale") / 400 < .3
+_sky = lambda k: {"periods": [{"start": "2000-01-01T00:00:00+00:00", "end": "2100-01-01T00:00:00+00:00", "kind": k, "intensity": .8}]}
+for _k, _ok in (("kite1", {"wind", "gale"}), ("kite3", {"gale", "storm"})):
+    for _w in ("clear", "wind", "gale", "storm", "rain"):
+        assert (creatures._possible(_k, _t0, _sky(_w)) > 0) == (_w in _ok), (_k, _w)
+assert creatures._possible("kite2", _t0, _sky("wind")) == 3                      # (their own weather: three times as likely)
+_kt = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {}, "arcs": {}}
+for _k, _n in (("kite1", 1), ("kite2", 2), ("kite3", 2), ("kite4", 1)):
+    for _i in range(_n):
+        _kt["appearances"].append({"id": f"{_k}-{_i}", "kind": _k, "start": "2026-01-01T00:00:00+00:00", "end": "2026-01-01T01:00:00+00:00"})
+        creatures.witness(_kt, _bb, _t0)
+assert _kt["arcs"]["kite"]["stage"] == 5                                         # the Wind-Chief comes once
+assert not creatures.arc_open(_kt, "kite1", _t0) and not creatures.arc_open(_kt, "kite4", _t0)
+assert creatures.arc_open(_kt, "kite2", _t0) and creatures.arc_open(_kt, "kite3", _t0)   # flocks and shelterers keep coming
+assert all(g not in _bg.INTANGIBLE for k in ("kite1", "kite2", "kite3", "kite4") for g in _bg.CHARACTERS[k]["gifts"])   # what they shed is kept
+_ka = creatures._appearance("kite3", _d0, _t0, _rnd.Random(3), _kt)
+assert _ka.get("arrival") in (None, "silk") and "silk" in creatures.LEFT_AFTER and creatures.TRACE_DAYS["silk"] == 2
 print("all checks passed")

@@ -26,7 +26,8 @@ const OBSTACLES = [
 ];
 // what a being is meant to touch (it perches on, or leans in at, or lives inside)
 const ALLOWED = { dragon2: ['courtyard west wall', 'courtyard north wall'], doorway: ['the lintel'], watcher: ['keep north wall'], well: ['the well'],
-  manyjoint: ['keep north wall', 'keep west wall'] };   // (its fingertips press on the stone)
+  manyjoint: ['keep north wall', 'keep west wall'],   // (its fingertips press on the stone)
+  kite1: ['keep north wall', 'keep east wall'], kite3: ['courtyard north wall', 'courtyard south wall', 'keep north wall'] };   // (they perch on the wall-tops)
 const NATURE = { fog: 'hostile', axolotl: 'gentle', bellcrab: 'neutral', glassbeak: 'nuisance', ashwolves: 'hostile',
   dragon2: 'proud', longman2: 'hostile', whale: 'gentle', moths: 'nuisance', barrow: 'proud', thorn: 'neutral',
   lanternheads: 'gentle', brood: 'nuisance', thincrowd: 'hostile', doorway: 'hostile', basilisk: 'hostile', wyrm: 'hostile',
@@ -34,7 +35,8 @@ const NATURE = { fog: 'hostile', axolotl: 'gentle', bellcrab: 'neutral', glassbe
   listener: 'neutral', cartographer: 'gentle', moon2: 'neutral', bentone: 'hostile', watcher: 'hostile', nightgrown: 'neutral', lander: 'neutral',
   clockhead: 'neutral', stranger: 'hostile', ninefold: 'neutral', leech: 'neutral', seam: 'neutral', stitched: 'neutral', manyjoint: 'hostile', hill: 'neutral', glassy2: 'neutral', glassy3: 'neutral', glassy4: 'neutral',
   tidekin1: 'gentle', tidekin2: 'gentle', tidekin3: 'gentle', tidekin4: 'gentle',
-  burrow1: 'gentle', burrow2: 'neutral', burrow3: 'gentle', burrow4: 'gentle' };
+  burrow1: 'gentle', burrow2: 'neutral', burrow3: 'gentle', burrow4: 'gentle',
+  kite1: 'gentle', kite2: 'gentle', kite3: 'neutral', kite4: 'proud' };
 // beings that come in forms that are not ages (brain/creatures.py KINDS forms): each is checked
 const FORMS = { clockhead: ['', 'clock', 'hourglass', 'metronome', 'galaxy', 'mask'], stranger: ['cape', 'woodsman', 'bark', 'traveller', 'bare'],
   burrow4: ['thanks', 'scold'] };   // (the Burrow-Mother's two moods)

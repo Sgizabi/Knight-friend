@@ -16,24 +16,27 @@ import json
 import random
 from pathlib import Path
 
-NORMAL = ["clear", "cloudy", "rain", "storm", "fog", "wind", "snow"]
+NORMAL = ["clear", "cloudy", "rain", "storm", "fog", "wind", "gale", "snow"]
 ABNORMAL = ["ash", "starfall", "aurora", "upward_rain", "glass_hail", "still"]
 NIGHT_ONLY = {"starfall", "aurora"}
 ABNORMAL_CHANCE = .02        # per period: roughly once every week or two
 STREAK = .4                  # chance the next period keeps the same kind of weather
+# Wind builds and dies down: after a wind, now and then a gale; after a gale, usually a wind again
+# (it blows itself out) before anything else. Checked before the streak.
+BUILDS = {"wind": ("gale", .18), "gale": ("wind", .55)}
 AHEAD_HOURS = 30             # how far ahead the schedule reaches
 KEEP_HOURS = 26              # how much of the past it keeps (the keep replays plans that far back)
 
 # by month in the keeper's calendar: how likely each kind is
 SEASON_WEIGHTS = {
-    "winter": {"clear": 22, "cloudy": 28, "rain": 6, "storm": 1, "fog": 12, "wind": 12, "snow": 19},
-    "spring": {"clear": 26, "cloudy": 22, "rain": 24, "storm": 8, "fog": 8, "wind": 12, "snow": 0},
-    "summer": {"clear": 40, "cloudy": 18, "rain": 14, "storm": 14, "fog": 4, "wind": 10, "snow": 0},
-    "autumn": {"clear": 22, "cloudy": 26, "rain": 22, "storm": 5, "fog": 13, "wind": 12, "snow": 0},
+    "winter": {"clear": 22, "cloudy": 28, "rain": 6, "storm": 1, "fog": 12, "wind": 13, "gale": 3, "snow": 19},
+    "spring": {"clear": 26, "cloudy": 22, "rain": 24, "storm": 8, "fog": 8, "wind": 13, "gale": 2, "snow": 0},
+    "summer": {"clear": 40, "cloudy": 18, "rain": 14, "storm": 14, "fog": 4, "wind": 9, "gale": 1, "snow": 0},
+    "autumn": {"clear": 22, "cloudy": 26, "rain": 22, "storm": 5, "fog": 13, "wind": 13, "gale": 4, "snow": 0},
 }
 SNOW_BY_MONTH = {11: 3, 3: 4}  # a little snow at the edges of winter
 HOURS = {"clear": (4, 9), "cloudy": (4, 9), "rain": (3, 7), "storm": (1, 3), "fog": (3, 6), "wind": (3, 6),
-         "snow": (3, 8)}
+         "gale": (2, 5), "snow": (3, 8)}
 ABNORMAL_HOURS = (1.5, 4)
 
 # How it moves the knight's needs, per minute, at full intensity and full exposure (out in the
@@ -46,6 +49,7 @@ EFFECTS = {
     "storm": {"warmth": -.14, "rest": -.02, "spirit": -.003},
     "fog": {"warmth": -.03},
     "wind": {"warmth": -.06},
+    "gale": {"warmth": -.12, "rest": -.01},
     "snow": {"warmth": -.16},
     "ash": {"warmth": -.02, "spirit": -.004},
     "starfall": {"inspiration": .04, "spirit": .004},
@@ -55,7 +59,7 @@ EFFECTS = {
     "still": {"spirit": -.004},
 }
 # and while it sleeps, wherever it sleeps: a storm or a wind rattling the keep spoils rest
-SLEEP_EFFECTS = {"storm": {"rest": -.08}, "glass_hail": {"rest": -.04}, "wind": {"rest": -.02}}
+SLEEP_EFFECTS = {"storm": {"rest": -.08}, "glass_hail": {"rest": -.04}, "wind": {"rest": -.02}, "gale": {"rest": -.06}}
 
 # how it is told, plainly
 WORDS = {
@@ -64,7 +68,8 @@ WORDS = {
     "rain": ("a light rain", "steady rain", "heavy rain"),
     "storm": ("a thunderstorm", "a thunderstorm", "a violent thunderstorm"),
     "fog": ("a light mist", "fog", "thick fog"),
-    "wind": ("a breeze", "a strong wind", "a gale"),
+    "wind": ("a breeze", "a strong wind", "a strong, gusting wind"),
+    "gale": ("a gale", "a gale", "a howling gale"),
     "snow": ("light snow", "snow", "heavy snow"),
     "ash": ("ash drifting down from a sky with no fire in it",) * 3,
     "starfall": ("stars falling across the night sky",) * 3,
@@ -119,14 +124,18 @@ def _draw(rng, start, last):
         kinds = [k for k in ABNORMAL if k not in NIGHT_ONLY or _is_night(start)]
         kind = rng.choice(kinds)
         return kind, round(rng.uniform(.6, 1.0), 2), rng.uniform(*ABNORMAL_HOURS)
-    if last and last.get("kind") in NORMAL and rng.random() < STREAK:
+    build = BUILDS.get((last or {}).get("kind"))
+    if build and rng.random() < build[1]:
+        kind = build[0]                                        # the wind rises to a gale, or the gale blows itself out
+        intensity = rng.uniform(.55, 1.0) if kind == "gale" else rng.uniform(.45, .9)
+    elif last and last.get("kind") in NORMAL and rng.random() < STREAK:
         kind = last["kind"]
         intensity = min(1.0, max(.3, last.get("intensity", .6) + rng.uniform(-.25, .25)))
     else:
         weights = dict(SEASON_WEIGHTS[season(start)])
         weights["snow"] = weights["snow"] or SNOW_BY_MONTH.get(keeper_time(start).month, 0)
         kind = rng.choices(list(weights), list(weights.values()))[0]
-        intensity = rng.uniform(.3, 1.0)
+        intensity = rng.uniform(.5 if kind == "gale" else .3, 1.0)   # (a gale is never mild)
     return kind, round(intensity, 2), rng.uniform(*HOURS[kind])
 
 
@@ -173,7 +182,7 @@ def blocks_courtyard(period):
     if not period:
         return False
     k, i = period.get("kind"), period.get("intensity", .6)
-    return k in ("storm", "glass_hail") or (k in ("rain", "snow") and i >= .65)
+    return k in ("storm", "glass_hail", "gale") or (k in ("rain", "snow") and i >= .65)
 
 
 def words(period):

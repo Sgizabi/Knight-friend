@@ -13,7 +13,7 @@ import weather
 ALL = {"winter", "spring", "summer", "autumn"}
 WARM = {"spring", "summer", "autumn"}
 WET = {"rain", "storm", "upward_rain", "glass_hail", "snow"}
-WILD = {"storm", "glass_hail", "ash"}
+WILD = {"storm", "gale", "glass_hail", "ash"}
 
 # hours are the keeper's (US Eastern); chance: how often it is about in an hour that suits it
 KINDS = {

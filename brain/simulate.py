@@ -247,6 +247,8 @@ def run(years, policy, seed=1, detail=False):
                               "burrow": creatures.load(w)["arcs"].get("burrow", {}).get("stage", 1),
                               "hollow": bool(creatures.load(w)["arcs"].get("burrow", {}).get("place")),
                               "mother": creatures.load(w)["arcs"].get("burrow", {}).get("met", {}).get("burrow4", 0),
+                              "kite": creatures.load(w)["arcs"].get("kite", {}).get("stage", 1),
+                              "kite_met": dict(creatures.load(w)["arcs"].get("kite", {}).get("met", {})),
                               "max_notable_day": max_notable_day,
                               "max_enc_day": max(v["enc"] for v in day_tokens.values()),
                               "max_mind_day": max(v["mind"] for v in day_tokens.values())})
@@ -272,13 +274,13 @@ def kinds_report():
 
 def report(policy, ys):
     print(f"\n== {policy}")
-    print("year  meets  wary  known-works  stale  found(deep)  injuries/mo  damage/mo  losses/mo  solved  hopeless  seeing arc tidekin burrow")
+    print("year  meets  wary  known-works  stale  found(deep)  injuries/mo  damage/mo  losses/mo  solved  hopeless  seeing arc tidekin burrow kite")
     for y in ys:
         works = y["reuse_ok"] / y["reuse"] if y.get("reuse") else 0
         print(f"{y['year']:>4}  {y['encounters']:>5}  {y.get('n_hostile', 0) + y.get('n_nuisance', 0):>4}  "
               f"{works:>11.0%}  {y.get('stale', 0):>5}  {y.get('found', 0):>5}({y.get('found_deep', 0)})    "
               f"{y.get('injury', 0) / 12:>11.2f}  {y.get('damage', 0) / 12:>9.2f}  {y.get('loss', 0) / 12:>9.2f}  "
-              f"{','.join(y['solved']) or '-':>6}  {','.join(y['hopeless']) or '-':>8}  {y['seeing']:>6} {y['arc']}   {y['tidekin']}{' +village' if y['village'] else ''}   {y['burrow']}{' +hollow' if y['hollow'] else ''}{' (mother met)' if y['mother'] else ''}")
+              f"{','.join(y['solved']) or '-':>6}  {','.join(y['hopeless']) or '-':>8}  {y['seeing']:>6} {y['arc']}   {y['tidekin']}{' +village' if y['village'] else ''}   {y['burrow']}{' +hollow' if y['hollow'] else ''}{' (mother met)' if y['mother'] else ''}   {y['kite']} {y['kite_met']}")
     tot = {k: sum(y.get(k, 0) for y in ys) for k in
            ("encounters", "seconds", "companions", "overlaps", "exchanges", "slept", "capped", "danger_violations")}
     print(f"  totals over {len(ys)}y: encounters {tot['encounters']}, second spawns met {tot['seconds']}, "

@@ -5413,36 +5413,158 @@ const BEASTS = {
     },
   },
 
-  // ---- (mockups, to be made properly with their arcs)
-  kitemakers: {
-    name: 'The Kitemakers', hour: 13,
-    blurb: 'A people of the wind: light, long-limbed gliders with silk between arm and leg, patterned like kites, who ride the wind fronts on windy days. First a scout glides in and lands on the keep; then a flock passes over; they rest on the walls in a gale; and once, a great migration darkens the sky for an hour while their Wind-Chief, the largest, its silk ragged with ancient patterns, circles the keep once. They leave dropped silk he can keep.',
-    view: [[10.5, 4.4, 1.5], [5.6, 5.0, -4.4]],
-    variants: [['', 'a scout, landing on the keep'], ['flock', 'the great migration, and the Wind-Chief']],
-    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'someone is on the roof' },
+  // THE KITEMAKERS, the people of the wind (ARCS kite: they come only when the wind is up)
+  kite1: {
+    name: 'A Kitemaker scout', hour: 13,
+    blurb: 'The first chapter of the people of the wind, on a windy day. A bright speck wheels over the plain, too steady for a bird, and rides the wind in over the keep: a long-limbed, very light being no taller than a child, with patterned silk stretched between its arms and legs like a kite and two ribbon tails with bows. It overshoots, turns back into the wind, flares its silk and lands on the top of the tower corner with a snap. There it folds the silk about itself and looks around, filaments streaming from its head; when it is unsure it holds the silk half open, ready to let the wind take it; now and then it stretches the silk out wide. At the end it leans into the wind, opens its silk, and the wind lifts it straight up and away, like a kite. It may leave a strip of its silk caught on the stones.',
+    view: [[9.4, 4.6, 1.4], [5.0, 3.9, -4.0]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'someone is on the tower' },
     build(root) {
-      const kind = root.userData.appearance?.variant?.kind || '';
-      if (kind === 'flock') {
-        this.view = [[-34, 6, 36], [0, 9, 0]];
-        const chief = kiteFolk(root, 2.1, { chief: true, seed: 41 }), flock = Array.from({ length: 14 }, (_, i) => ({ k: kiteFolk(root, .8 + (i % 3) * .1, { seed: 50 + i }), i }));
-        const at = (a, R, H) => [Math.cos(a) * R, H + Math.sin(a * 2) * 1.2, Math.sin(a) * R];
-        const fly = (K, a, R, H, t) => { const p = at(a, R, H), q = at(a + .02, R, H); K.g.position.set(...p); K.g.rotation.set(0, Math.atan2(q[0] - p[0], q[2] - p[2]), -.35); K.body.rotation.set(Math.PI / 2 - .12, 0, 0); K.pose(1, t); };
-        return t => {
-          fly(chief, t * .07, 14, 13, t);                              // the Wind-Chief circles the keep once, slowly
-          for (const { k, i } of flock) fly(k, t * .07 - .2 - Math.floor(i / 4) * .09 - (i % 4) * .025, 12.5 + (i % 4) * 1.3, 11.5 + Math.floor(i / 4) * 1.1 + Math.sin(t * 1.3 + i) * .3, t + i);
-        };
-      }
-      // a scout: glides in on the wind, lands on the corner of the keep's wall, looks about, and goes
-      const k = kiteFolk(root, 1, { seed: 33 }), LAND = V(5.3, 4.22, -4.3);
-      const inC = new T.CatmullRomCurve3([V(36, 17, -22), V(21, 11, -12), V(10.5, 6.6, -6.4), LAND.clone().add(V(.25, .35, 0))]);
-      const outC = new T.CatmullRomCurve3([LAND.clone(), V(1.5, 6.8, -9), V(-13, 10.5, -15), V(-42, 17, -22)]);
-      const P0 = V(), P1 = V();
-      return t => {
-        const c = t % 26; let spread = 1, pitch = Math.PI / 2 - .15, stand = 0;
-        if (c < 7.4) { const u = 1 - (1 - c / 7.4) ** 1.5; inC.getPointAt(u, P0); inC.getPointAt(Math.min(1, u + .01), P1); if (u > .995) P1.copy(P0).add(V(-1, 0, 0)); const fl = smooth(.82, 1, u); pitch = (Math.PI / 2 - .15) * (1 - fl); stand = fl; k.g.rotation.set(0, Math.atan2(P1.x - P0.x, P1.z - P0.z), 0); }   // flaring as it lands
-        else if (c < 16) { P0.copy(LAND); spread = 1 - smooth(7.4, 8.4, c) + pulse(c - 11, 99, 1.6) * .7; pitch = 0; stand = 1; k.g.rotation.set(0, -2.2 + Math.sin(c * .45) * .7, 0); k.head.rotation.set(Math.sin(c * .9) * .1, Math.sin(c * .6) * .6, pulse(c, 4.4, 1) * .3); }   // folded; a stretch of the silk; looking about
-        else { const u = ((c - 16) / 10) ** 1.25; outC.getPointAt(Math.min(1, u), P0); outC.getPointAt(Math.min(1, u + .01), P1); spread = smooth(16, 16.6, c); pitch = (Math.PI / 2 - .2) * smooth(16, 16.8, c); stand = 1 - smooth(16, 16.6, c); k.g.rotation.set(0, Math.atan2(P1.x - P0.x, P1.z - P0.z), 0); }
-        k.g.visible = !(c > 25.5); k.g.position.copy(P0); k.body.rotation.set(pitch, 0, 0); k.body.position.y = stand * .78; k.pose(spread, t);
+      const clock = visitClock(root, 150), k = kiteFolk(root, 1, { seed: 33 });
+      const lx = 5.06, lz = -4.06, ly = surfaceY(lx, lz, 6, 4) ?? 3.42, LAND = V(lx, ly, lz), hold = V();
+      const inC = new T.CatmullRomCurve3([V(-78, 26, 16), V(-34, 15, 10), V(-8, 9.5, 3.5), V(9.5, 7.2, -.8), V(10.2, 5.6, -5.4), V(lx + 1.6, ly + .9, lz - .2), LAND.clone()]);
+      const outC = new T.CatmullRomCurve3([LAND.clone(), V(lx, ly + 1.3, lz), V(lx - 2.6, ly + 3.4, lz - .8), V(-9, 13, -9), V(-40, 27, -22), V(-95, 42, -34)]);
+      const IN = 15, OUT = 11, P0 = V(), P1 = V(); let lastU = 0;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t), ws = A.wind?.s || 0;
+        let pose;
+        if (since < IN) {                                                 // in on the wind; overshoots, turns back into it, flares and lands
+          const u = 1 - Math.pow(1 - since / IN, 1.6); inC.getPointAt(Math.min(1, u), P0); inC.getPointAt(Math.min(1, u + .004), P1);
+          const fl = smooth(.9, 1, u); k.flyTo(P0, P1, dt, fl);
+          pose = { spread: 1 - smooth(.985, 1, u) * .6, fly: 1 - fl, legs: fl, crouch: smooth(.98, 1, u) * .6 };
+        } else if (left > OUT) {                                          // on the tower: folded, looking about; the silk half open when unsure; a stretch
+          const s2 = since - IN, w = Math.floor(s2 / 5), unsure = nz(w * 7 + 3) > .62 ? 1 : 0, stretch = pulse(s2 + 6, 23, 3.2);
+          k.perch(LAND, -Math.PI / 2 + Math.sin(s2 * .23) * .35, dt);     // facing into the wind (from the west), as kites do
+          const atCam = nz(w + 11) > .7 ? smooth(0, .6, s2 - w * 5) : 0, about = (nz(w) - .5) * 1.6;
+          pose = { spread: Math.max(unsure * .45, stretch), crouch: .35 - stretch * .3, armsUp: stretch, look: about * (1 - atCam) + k.camYaw() * atCam, nod: Math.sin(s2 * .7) * .05 };
+          if (s2 < 1.6) pose.spread = 1 - smooth(0, 1.6, s2);
+        } else {                                                          // leans into the wind, opens up, and the wind takes it straight up
+          const u = Math.pow(Math.max(0, (OUT - left) / OUT), 1.3), go = smooth(.12, .2, u);
+          if (u < .12) { k.perch(LAND, -Math.PI / 2, dt); pose = { spread: smooth(0, .1, u), crouch: .35 + u * 3 }; }
+          else { const v = (u - .12) / .88; outC.getPointAt(Math.min(1, v), P0); outC.getPointAt(Math.min(1, v + .004), P1); k.flyTo(P0, P1, dt, 0, true); pose = { spread: 1, fly: go * smooth(0, .25, v), legs: 1 - go }; }
+        }
+        k.pose(pose, t, dt);
+        k.g.visible = !(left < .5 && since > IN);
+      };
+    },
+  },
+  kite2: {
+    name: 'A flock of Kitemakers', hour: 12,
+    blurb: 'The second chapter: on windy days, flocks of them. A dozen or more ride in on the wind from the west and wheel over the keep, low enough to hear their silk thrum: each patterned differently like a kite, red and gold and blue and green, ribbon tails streaming. When they are pleased, one and then another tumbles right over in the air; when wary, they climb high and go quiet (if he has driven them off before, they keep higher). In the end they ride on east with the wind.',
+    view: [[-14.5, 3.0, 13.5], [-6, 8.5, 0]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'kites, but alive' },
+    build(root) {
+      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 200);
+      const N = 13, flock = Array.from({ length: N }, (_, i) => ({ k: kiteFolk(root, .82 + nz(i + 3) * .26, { seed: 50 + i }), i, ph: nz(i + 9) * 6.28, roll: 0, rollAt: -9 }));
+      const H = 9.5 - reg * 1.1 + (reg < 0 ? 3 : 0), CX = -6, P0 = V(), P1 = V();
+      const at = (f, since, left, out) => {                               // in from the west, wheeling over the keep, away east with the wind
+        const i = f.i, s = since + i * .3, a = s * (.3 + nz(i) * .05) + i * .42, R = 13 + (i % 4) * 2.2 + Math.sin(s * .13 + i) * 2;
+        out.set(CX + Math.cos(a) * R, H + (i % 3) * 1.4 + Math.sin(a * 2 + i) * 1.6 + Math.sin(s * .37 + i * 1.7) * .9, Math.sin(a) * R * .72);
+        const wIn = smooth(10 + i * .9, 20 + i * .9, since), wOut = smooth(22, 12, left - i * .6);
+        if (wIn < 1) out.lerpVectors(V(-110 + (since - i * .9) * 7, H + 7, (i - 6) * 1.6), out.clone(), wIn);
+        if (wOut > 0) out.lerp(V(10 + (22 - left) * 8 + i * 1.2, H + 4 + (22 - left) * .6, (i - 6) * 1.6), wOut);
+        return out;
+      };
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        for (const f of flock) {
+          at(f, since, left, P0); at(f, since + .05, left - .05, P1);
+          if (reg >= 0 && since - f.rollAt > 9 && since > 22 && left > 22 && nz(Math.floor(t * .5) * 13 + f.i) > .985) f.rollAt = since;   // pleased: a tumble
+          const r = smooth(f.rollAt, f.rollAt + 1.3, since);
+          f.k.flyTo(P0, P1, dt, 0, false, r * Math.PI * 2);
+          f.k.pose({ spread: 1, fly: 1, flutter: .5 }, t + f.ph, dt);
+          f.k.g.visible = Math.abs(P0.x) < 160;
+        }
+      };
+    },
+  },
+  kite3: {
+    name: 'The Kitemakers sheltering on the walls', hour: 15,
+    blurb: 'The third chapter, in a gale or a storm: wind too wild even for them. They come tumbling down out of the sky one after another and cling along the tops of the keep\'s walls, a dozen or so, silk wrapped tight round themselves like folded kites, heads tucked low, all facing into the wind. They shuffle closer; when something worries them they all huddle in at once; at ease, they open their silk a little. Now and then a gust tears one off its perch: its silk cracks open, it tumbles away downwind, rights itself, and works its way back to its place. When the wind drops they throw themselves back into it, one after another. They may leave scraps of silk snagged on the stones (and, if things go badly, take a scrap of his cloth for their own).',
+    view: [[-6.2, 3.4, -.6], [-12.5, 1.2, -4.3]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'they are sheltering on the walls' },
+    build(root) {
+      const clock = visitClock(root, 180);
+      const SPOTS = [[-16.15, -4.32], [-15.35, -4.3], [-14.55, -4.31], [-12.75, -4.3], [-11.95, -4.32], [-10.2, -4.3], [-9.4, -4.31],
+        [-15.7, 4.31], [-14.9, 4.3], [-11.5, 4.3], [-10.7, 4.31], [-3.9, -4.3], [-3.1, -4.31], [-.4, -4.3]];
+      const folk = SPOTS.map(([x, z], i) => { const y = surfaceY(x, z, 5.5, 3) ?? (Math.abs(z) > 4 && x < -5 ? .9 : 4.03); return { k: kiteFolk(root, .84 + nz(i + 1) * .18, { seed: 70 + i }), at: V(x, y, z), i, off: -9, fall: 0 }; });
+      const P0 = V(), P1 = V(), dn = V(), SKY = V(-60, 30, 0);
+      let gustNext = 12;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t), ws = A.wind?.s || .9, worry = pulse(since + 4, 37, 4);
+        if (since > gustNext && left > 30) { const f = folk[Math.floor(nz(Math.floor(since)) * folk.length)]; if (since - f.off > 20) f.off = since; gustNext = since + 14 + nz(since) * 16; }
+        for (const f of folk) {
+          const come = 2 + f.i * 1.7, go = 3 + (folk.length - f.i) * 1.3;   // one after another down out of the sky; one after another back into it
+          const s = since - f.off;
+          if (since < come + 6) {                                        // tumbling down out of the gale to its perch
+            const u = smooth(come, come + 6, since), out = Math.sign(f.at.z) || -1, side = q => out * ((1 - q) * 9 + .8 * (1 - smooth(.9, .985, q)));   // (it keeps out over the far side of the wall until the last moment)
+            dn.lerpVectors(SKY, f.at, u); dn.z = f.at.z + side(u); dn.y += Math.sin(u * 9 + f.i) * (1 - u) * 1.2;
+            P1.lerpVectors(SKY, f.at, Math.min(1, u + .02)); P1.z = f.at.z + side(Math.min(1, u + .02));
+            if (u < .97) { f.k.flyTo(dn, P1, dt, smooth(.8, .97, u), false, Math.sin(since * 3 + f.i) * .6 * (1 - u)); f.k.pose({ spread: .9 * (1 - smooth(.72, .9, u)), fly: 1 - smooth(.8, .97, u), legs: smooth(.85, .97, u) }, t, dt); }   // (silk in before it comes down among the walls)
+            else { f.k.perch(f.at, -Math.PI / 2, dt); f.k.pose({ spread: 1 - smooth(.97, 1, u), crouch: 1, huddle: smooth(.97, 1, u) * .9 }, t, dt); }
+            f.k.g.visible = since > come; continue;
+          }
+          if (left < go) {                                               // back into the wind: it rises like a kite, away west
+            const u = smooth(go, go - 5, left);
+            const out = Math.sign(f.at.z) || -1;                          // (out over the side away from the courtyard)
+            P0.set(f.at.x - u * u * 30, f.at.y + u * 9 + u * u * 6, f.at.z + out * u * 4); P1.set(f.at.x - (u + .02) ** 2 * 30 - .05, f.at.y + (u + .02) * 9 + (u + .02) ** 2 * 6, f.at.z + out * (u + .02) * 4);
+            if (u < .06) { f.k.perch(f.at, -Math.PI / 2, dt); f.k.pose({ spread: u * 16, crouch: 1 }, t, dt); }
+            else { f.k.flyTo(P0, P1, dt, 0, true); f.k.pose({ spread: 1, fly: smooth(.06, .3, u), legs: .3 }, t, dt); }
+            f.k.g.visible = u < .99; continue;
+          }
+          if (s >= 0 && s < 9) {                                         // a gust tears it off: up and away downwind, then it works its way back
+            const u = s / 9, out = Math.sign(f.at.z) || -1;              // (blown out over the far side of the wall, never over the courtyard)
+            const path = (q, o) => { const aw = Math.sin(Math.min(1, q * 1.25) * Math.PI), side = .8 * smooth(0, .06, q) * (1 - smooth(.88, .97, q));
+              return o.set(f.at.x + aw * 5.5, f.at.y + Math.sin(q * Math.PI) * 2.6 + (q < .15 ? q * 6 : 0), f.at.z + out * (side + aw * 1.4)); };
+            path(u, P0); path(Math.min(1, u + .01), P1);
+            if (u > .97) { f.k.perch(f.at, -Math.PI / 2, dt); f.k.pose({ spread: .2, crouch: 1, huddle: .5 }, t, dt); }
+            else { f.k.flyTo(P0, P1, dt, smooth(.84, .97, u), false, (u < .35 ? Math.sin(u * 30) * .9 : 0)); f.k.pose({ spread: 1 - smooth(.84, .95, u) * .8, fly: 1 - smooth(.84, .97, u), legs: smooth(.86, .97, u), flutter: 1 }, t, dt); }
+            continue;
+          }
+          f.k.perch(f.at, -Math.PI / 2 + Math.sin(t * .3 + f.i) * .12, dt);   // huddled, into the wind; shuffles; at ease the silk opens a little
+          const ease = (1 - worry) * pulse(t + f.i * 3.3, 19 + f.i, 3.5);
+          f.k.pose({ crouch: 1, huddle: .9 - ease * .5 + worry * .1, spread: ease * .35, look: Math.sin(t * .4 + f.i * 2) * .25 * ease, flutter: ws }, t, dt);
+          f.k.g.position.x += (worry * (f.i % 2 ? .06 : -.06));          // (they all huddle in at once)
+        }
+      };
+    },
+  },
+  kite4: {
+    name: 'The Wind-Chief and the great migration', hour: 14,
+    blurb: 'The last chapter, once. On a windy day the western sky fills with specks of colour, more and more of them, until the light dims: hundreds upon hundreds of Kitemakers streaming over on the wind in the great migration of their year. Among them comes their Wind-Chief, three times the size of the rest, its silk faded, ragged and torn and covered in patterns older than any of the others\', white filaments streaming from its head, and it circles the keep once, slowly, low over the walls, a few of its people close behind it, turning its long head to follow whoever is watching. (Lower and closer if he has been kind to them; higher and further if he has driven them off.) Then it climbs back into the stream, and the stream goes on all the while, thinning only at the end. They may drop a ribbon of the old silk.',
+    view: [[-22, 3.2, 20], [-4, 12, 0]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'the whole sky is full of them' },
+    build(root) {
+      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 300);
+      const stream = kiteStream(root, A.qLevel === 'low' ? 140 : 320);
+      const chief = kiteFolk(root, 2.6, { chief: true, seed: 41 });
+      const near = Array.from({ length: 10 }, (_, i) => kiteFolk(root, .85 + nz(i + 5) * .2, { seed: 90 + i }));
+      const R = 14 + (reg < 0 ? 6 : 0) - (reg > 0 ? 1.5 : 0), H = 8.5 + (reg < 0 ? 6 : 0) - (reg > 0 ? 1 : 0), CX = -6, P0 = V(), P1 = V(), Q0 = V(), Q1 = V();
+      const sky = A.sky; let skyBase = sky?.intensity ?? 0, skySet = -1;
+      this.exit = () => { if (sky && skySet >= 0) sky.intensity = skyBase; };
+      const CIRCLE = 75;                                                  // seconds for its one slow circle
+      const chiefAt = (s, out) => {
+        if (s < 0) return out.set(-140 + (s + 60) * 2.2, 30 + s * .2, -10);   // coming in high, in the stream
+        if (s < CIRCLE) { const a = Math.PI + s / CIRCLE * Math.PI * 2, dip = Math.sin(s / CIRCLE * Math.PI) * (reg > 0 ? 2.2 : 1); return out.set(CX + Math.cos(a) * R, H - dip + Math.sin(a * 2) * .6, Math.sin(a) * R * .8); }
+        const u = s - CIRCLE; return out.set(CX - R + u * 3.2, H + u * .9, Math.sin(u * .05) * 6);   // climbing back into the stream, away east
+      };
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t), dens = smooth(0, 45, since) * smooth(0, 45, left);
+        stream.tick(t, dens);
+        if (sky) { if (Math.abs(sky.intensity - skySet) > 1e-4) skyBase = sky.intensity; skySet = skyBase * (1 - .28 * dens); sky.intensity = skySet; }   // the light dims under them
+        const s = since - 40;                                             // it comes in with the stream, then circles once
+        chiefAt(s, P0); chiefAt(s + .05, P1);
+        chief.flyTo(P0, P1, dt); chief.pose({ spread: 1, fly: 1, flutter: .3, look: s > 0 && s < CIRCLE ? chief.camYaw() * .7 : 0 }, t * .6, dt);
+        chief.g.visible = P0.x < 170 && left > 1;
+        near.forEach((k, i) => {                                          // a few of its people close behind it
+          const lag = 1.2 + i * .55; chiefAt(s - lag, Q0); chiefAt(s - lag + .05, Q1);
+          const o = V(Math.sin(i * 2.1) * (1.6 + i * .2), Math.cos(i * 1.7) * 1.2 + .4, Math.cos(i * 2.9) * (1.6 + i * .2));
+          Q0.add(o); Q1.add(o); k.flyTo(Q0, Q1, dt); k.pose({ spread: 1, fly: 1, flutter: .5 }, t + i, dt); k.g.visible = Q0.x < 170 && left > 1;
+        });
       };
     },
   },
@@ -6524,44 +6646,228 @@ function mushroomHollow(root, grown = 1, leaving = false) {
 // days); the diggers' line of mounds across the plain (settling over five)
 function holeTrace(root, days) { burrowHole(root, ...YH, .27, .015).lift(1, Math.min(1, days / 3)); return () => {}; }
 function moundsTrace(root, days) { TRAIL.forEach(([x, z], i) => moundAt(root, x, z, .36 + nz(i + 2) * .12).grow(1 - .4 * Math.min(1, days / 5), days < 2)); return () => {}; }
-// THE KITEMAKERS: light, long-limbed gliders with silk between arm and leg, patterned like kites, who
-// ride the wind fronts. The Wind-Chief is the largest, its silk ragged and its patterns very old.
+// THE KITEMAKERS, the people of the wind: light, long-limbed gliders the size of a child, with silk stretched between
+// arm and leg like a kite's sail (each patterned its own way, with dark seams along the long finger-bones that hold it
+// like a kite's sticks), two ribbon tails with bows, and fine filaments streaming back from the head. Gentle faces: a
+// short soft muzzle, big dark eyes with a catch-light (hidden when they blink), small swept-back ears. The Wind-Chief is
+// three times the size, its fur grizzled, its silk faded, ragged and torn, covered in older, finer patterns, its
+// filaments long and white, with four tails. The silk is rebuilt each frame between the arm and the leg and billows
+// (more in the wind). pose: spread (silk open), fly (body level, belly down), legs (reaching forward to land), crouch,
+// huddle (wrapped tight, head tucked), armsUp (a stretch), look (head yaw), nod, flutter.
+const KITE_PAL = [['#c8443a', '#e8c068', '#22304a'], ['#2f7f8a', '#efe2c0', '#c8443a'], ['#d9862c', '#33507e', '#f0e6cc'],
+  ['#7a3f8a', '#e6d6a8', '#2f7f8a'], ['#3f7a4a', '#e8b04a', '#8a2f2a'], ['#22304a', '#e8c068', '#d9862c'], ['#e0d6bc', '#c8443a', '#22304a']];
+const KITE_TEX = {};
+function kiteSilk(pal, chief) {
+  // u: from the body (0) out to the edge (1); v: from the arm's edge (canvas top) to the leg's (bottom)
+  return KITE_TEX[pal + (chief ? 'c' : '')] ??= canvasTex(256, 128, (c, w, h) => {
+    const [c1, c2, c3] = KITE_PAL[pal], q = A.rand(pal * 7 + (chief ? 99 : 1));
+    c.fillStyle = c1; c.fillRect(0, 0, w, h);
+    c.fillStyle = c2; c.beginPath(); c.moveTo(w * .18, h * .5); c.lineTo(w * .58, h * .04); c.lineTo(w * .98, h * .5); c.lineTo(w * .58, h * .96); c.closePath(); c.fill();   // the great diamond
+    c.fillStyle = c1; c.beginPath(); c.moveTo(w * .42, h * .5); c.lineTo(w * .58, h * .3); c.lineTo(w * .74, h * .5); c.lineTo(w * .58, h * .7); c.closePath(); c.fill();
+    c.fillStyle = c3; c.fillRect(0, h * .88, w, h * .12); c.fillRect(0, 0, w, h * .05);                                            // bands at both edges
+    for (let i = 0; i < 9; i++) { c.fillStyle = i % 2 ? c2 : c3; c.beginPath(); const x = w * (.08 + i * .1); c.moveTo(x, h * .88); c.lineTo(x + w * .05, h * .8); c.lineTo(x + w * .1, h * .88); c.fill(); }   // a row of little teeth
+    c.strokeStyle = 'rgba(26,20,16,.85)'; c.lineWidth = 2.2;                                                                        // seams, like a kite's stitching
+    c.beginPath(); for (const y of [.05, .35, .65, .88]) { c.moveTo(0, h * y); c.lineTo(w, h * (y * .6 + .2)); } c.stroke();
+    c.lineWidth = 1.2; c.beginPath(); c.moveTo(w * .18, h * .5); c.lineTo(w * .58, h * .04); c.lineTo(w * .98, h * .5); c.lineTo(w * .58, h * .96); c.closePath(); c.stroke();
+    if (chief) {                                                                                                                    // faded, with older, finer patterns, and torn
+      c.globalAlpha = .45; c.fillStyle = '#a89a84'; c.fillRect(0, 0, w, h); c.globalAlpha = .7; c.strokeStyle = '#3a2c20'; c.lineWidth = 1;
+      for (let r = 0; r < 6; r++) { c.beginPath(); for (let x = 0; x <= w; x += 6) c.lineTo(x, h * (.12 + r * .13) + ((x / 6) % 2 ? 3 : -3)); c.stroke(); }   // rows of zigzag
+      for (let k = 0; k < 14; k++) { const x = q() * w, y = q() * h * .85; for (let rr = 3; rr < 11; rr += 3) { c.beginPath(); c.arc(x, y, rr, 0, 6.3); c.stroke(); } }   // rings within rings
+      c.globalAlpha = 1; c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000';
+      for (let k = 0; k < 7; k++) { c.beginPath(); c.ellipse(w * (.25 + q() * .7), h * (.15 + q() * .6), 3 + q() * 7, 2 + q() * 5, q() * 3, 0, 6.3); c.fill(); }   // holes
+      c.beginPath(); c.moveTo(0, h); for (let x = 0; x <= w; x += 7) c.lineTo(x, h - 4 - q() * h * .16); c.lineTo(w, h); c.closePath(); c.fill();   // a ragged trailing edge
+      c.beginPath(); c.moveTo(w, 0); for (let y = 0; y <= h; y += 7) c.lineTo(w - 3 - q() * w * .06, y); c.lineTo(w, h); c.closePath(); c.fill();
+    }
+  });
+}
 function kiteFolk(parent, s = 1, o = {}) {
-  const r = A.rand(o.seed || 9);
-  const skin = A.mat(o.chief ? '#9aa0a6' : '#b9c2c9', 0, .7), dark = A.mat('#0e1014', .2, .3);
-  const PAL = [['#c8443a', '#e8c068'], ['#2f7f8a', '#efe2c0'], ['#d9862c', '#3d5a8a'], ['#7a3f8a', '#e6d6a8'], ['#3f7a4a', '#e8b04a']], [c1, c2] = PAL[Math.floor(r() * PAL.length)];
-  const tex = canvasTex(128, 128, (c, w) => {
-    c.fillStyle = c1; c.fillRect(0, 0, w, w);
-    c.fillStyle = c2; c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w, w / 2); c.lineTo(w / 2, w); c.lineTo(0, w / 2); c.closePath(); c.fill();
-    c.strokeStyle = '#1a1410'; c.lineWidth = 3; c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2, w); c.moveTo(0, w / 2); c.lineTo(w, w / 2); c.stroke(); c.strokeRect(1, 1, w - 2, w - 2);
-    if (o.chief) { c.globalAlpha = .4; c.fillStyle = '#8a8070'; c.fillRect(0, 0, w, w); c.globalAlpha = 1; c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000'; for (let k = 0; k < 8; k++) { c.beginPath(); c.arc(r() * w, r() * w, 4 + r() * 9, 0, 6.3); c.fill(); } }   // faded and torn
+  const r = A.rand(o.seed || 9), chief = !!o.chief, pal = o.pal ?? Math.floor(nz((o.seed || 9) * 1.37) * KITE_PAL.length), [c1, c2, c3] = KITE_PAL[pal];
+  const furM = new T.MeshStandardMaterial({ color: chief ? '#b4aea3' : '#d2c8b4', roughness: .92, flatShading: true, bumpMap: bumpTex('fur'), bumpScale: .004 });
+  const pale = A.mat(chief ? '#d6d2c8' : '#efe7d6', 0, .9), dark = A.mat('#1c1612', .1, .55), spar = A.mat(chief ? '#7d7266' : '#5e4a36', 0, .7);
+  const silkT = kiteSilk(pal, chief);
+  const silkM = new T.MeshStandardMaterial({ map: silkT, side: T.DoubleSide, roughness: .62, flatShading: true, alphaTest: chief ? .5 : 0,
+    emissive: '#ffffff', emissiveMap: silkT, emissiveIntensity: .13 });   // (a little light comes through silk)
+  const g = G(parent), R = rig(); g.scale.setScalar(s);
+  const body = R.add('body', G(g, [0, .52, 0]), 6, .85);
+  lath(body, [[0, -.06], [.085, -.015], [.082, .08], [.07, .17], [.09, .28], [.1, .35], [.08, .41], [0, .445]], furM, [0, 0, 0], [0, 0, 0], [1, 1, .78], 10);   // slight and narrow-waisted
+  lath(body, [[0, .0], [.05, .03], [.05, .2], [.055, .3], [0, .36]], pale, [0, 0, .028], [0, 0, 0], [.9, 1, .6], 8);                                    // a pale front
+  const neck = R.add('neck', G(body, [0, .42, .01]), 9, .8); bone(neck, [0, 0, 0], [0, .07, .012], .034, .028, furM, 7, .002);
+  const head = R.add('head', G(neck, [0, .085, .018]), 11, .7);
+  const KS = [1, .94, 1.1], RA = KS.map(k => .082 * k);
+  const onSkull = (dx, dy, dz, inset = 0) => { const d = V(dx, dy, dz).normalize(), tt = 1 / Math.hypot(d.x / RA[0], d.y / RA[1], d.z / RA[2]); return d.multiplyScalar(tt - inset).toArray(); };
+  P(head, A.ico(.082, 2), furM, [0, 0, 0], { scale: KS, jitter: .002 });
+  P(head, A.ico(.04, 1), pale, [0, -.034, .058], { scale: [1.05, .74, 1], jitter: .001 });                    // a short soft muzzle
+  P(head, A.ico(.0075, 1), A.mat('#6a4440', .05, .4), [0, -.02, .097], { scale: [1.5, .8, .6], jitter: 0 });  // a small nose
+  P(head, new T.SphereGeometry(.0835, 4, 10, Math.PI / 2 - .13, .26, 0, 2.1), dark, [0, 0, 0], { scale: KS, jitter: 0, cast: false });   // a dark stripe from the brow back over the crown
+  head.scale.setScalar(1.15);
+  for (const sx of [-1, 1]) { const ep = onSkull(sx * .62, .52, -.42, .004); const e = P(head, new T.ConeGeometry(.022, .07, 5), furM, ep, { jitter: .001 }); e.rotation.set(-1.1, 0, sx * .5); }   // small ears, swept back
+  const eyeM = new T.MeshStandardMaterial({ color: '#07090b', roughness: .08, metalness: .25 }), glintM = new T.MeshBasicMaterial({ color: '#ffffff' }), er = .03;
+  const eyes = [-1, 1].map(sx => {
+    const e = G(head, onSkull(sx * .5, .2, .84, er * .32), [0, sx * .48, 0]);
+    P(e, new T.SphereGeometry(er, 12, 9), eyeM, [0, 0, 0], { scale: [1, 1, .72], jitter: 0, cast: false });
+    const glint = P(e, A.ico(er * .17, 1), glintM, [-er * .3 * sx, er * .36, er * .66], { jitter: 0, cast: false });
+    if (chief) P(e, new T.SphereGeometry(er * 1.12, 12, 6, 0, 6.283, 0, 1.25), furM, [0, 0, 0], { rot: [-.55, 0, 0], scale: [1, 1, .8], jitter: 0, cast: false });   // heavy old lids, half down
+    return { e, glint };
   });
-  const memM = new T.MeshStandardMaterial({ map: tex, side: T.DoubleSide, roughness: .8, alphaTest: .5, flatShading: true });
-  const g = G(parent), body = G(g); g.scale.setScalar(s);
-  P(body, A.ico(.16, 1), skin, [0, 0, 0], { scale: [.85, 2.6, .6] });
-  const head = G(body, [0, .55, .02]); P(head, A.ico(.11, 1), skin, [0, .05, 0], { scale: [.8, 1.25, .9] });
-  for (const sx of [-1, 1]) P(head, A.ico(.025, 1), dark, [sx * .045, .07, .085], { scale: [1, .6, .5] });   // calm dark eyes
-  const crest = [], crestM = A.mat(o.chief ? '#d8d0c0' : c2, 0, .8);
-  for (let k = 0; k < 5; k++) { const f = G(head, [(k - 2) * .025, .15, -.04]); bone(f, [0, 0, 0], [0, .06, -.3], .006, .002, crestM, 3); crest.push(f); }   // fine filaments streaming back
-  const limb = (at, len) => { const a = G(body, at); bone(a, [0, 0, 0], [0, -len, 0], .025, .02, skin); const b = G(a, [0, -len, 0]); bone(b, [0, 0, 0], [0, -len, 0], .02, .014, skin); return { a, b, tip: G(b, [0, -len, 0]) }; };
-  const L = { armL: limb([-.1, .32, 0], .42), armR: limb([.1, .32, 0], .42), legL: limb([-.07, -.38, 0], .4), legR: limb([.07, -.38, 0], .4) };
-  const sheets = [-1, 1].map(sx => {                                   // the silk, rebuilt each frame between arm and leg
-    const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(18), 3)); geo.setAttribute('uv', new T.BufferAttribute(new Float32Array([0, 1, .5, 1, 1, 1, 1, 0, .5, 0, 0, 0]), 2)); geo.setIndex([0, 1, 4, 0, 4, 5, 1, 2, 3, 1, 3, 4]);
-    const m = new T.Mesh(geo, memM); m.castShadow = true; m.frustumCulled = false; body.add(m); return { geo, sx };
+  const filN = chief ? 9 : 6, filM = A.mat(chief ? '#f2eee4' : c2, 0, .8), crest = G(head, onSkull(0, .8, -.3));   // fine filaments streaming back from the crown
+  for (let k = 0; k < filN; k++) { const c0 = V(...onSkull((k - (filN - 1) / 2) * .16, .8, -.3)).sub(crest.position), a = (k - (filN - 1) / 2) * .12, L = (chief ? .3 : .17) * (.8 + r() * .4);
+    bone(crest, c0.toArray(), [c0.x + Math.sin(a) * L, c0.y + .03, c0.z - Math.cos(a) * L], .004, .0015, filM, 3, 0); }
+  merge(crest); crest.children.forEach(c => { c.castShadow = false; });
+  merge(head);
+  // arms: shoulder, elbow, wrist; three long fingers like a kite's sticks fan out to hold the silk's outer edge
+  const arm = sx => {
+    const sh = R.add('sh' + sx, G(body, [sx * .082, .385, 0]), 9, .78); bone(sh, [0, 0, 0], [0, -.25, 0], .036, .025, furM, 6, .002); P(sh, A.ico(.036, 1), furM, [0, 0, 0], { jitter: .002 }); merge(sh);
+    const el = R.add('el' + sx, G(sh, [0, -.25, 0]), 10, .78); bone(el, [0, 0, 0], [0, -.27, 0], .025, .016, furM, 6, .002);
+    const wr = G(el, [0, -.27, 0]), hand = G(wr); let tip = null;   // three long fingers, fanned like a kite's sticks
+    [0, 1, 2].forEach(i => { const a = sx * (i * .3 + .05), Lf = .2 - i * .03, end = [Math.sin(a) * Lf, -Math.cos(a) * Lf, 0]; bone(hand, [0, 0, 0], end, .008, .004, spar, 4, 0); if (!i) tip = G(hand, end); });
+    merge(hand); hand.children.forEach(c => { c.castShadow = false; });
+    return { sh, el, wr, hand, tip };
+  };
+  const leg = sx => {
+    const hp = R.add('hp' + sx, G(body, [sx * .058, .0, 0]), 9, .8); bone(hp, [0, 0, 0], [0, -.25, 0], .045, .026, furM, 6, .002);
+    const kn = R.add('kn' + sx, G(hp, [0, -.25, 0]), 10, .8); bone(kn, [0, 0, 0], [0, -.27, 0], .025, .014, furM, 6, .002);
+    const an = G(kn, [0, -.27, 0]); for (const a of [-.4, 0, .4]) bone(an, [0, 0, 0], [Math.sin(a) * .03, -.012, .07], .006, .003, dark, 4, 0);   // long gripping toes
+    merge(an); an.children.forEach(c => { c.castShadow = false; });
+    return { hp, kn, an };
+  };
+  const L = { a: { [-1]: arm(-1), 1: arm(1) }, l: { [-1]: leg(-1), 1: leg(1) } };
+  // the tails: two ribbons (four for the Wind-Chief) of short pieces, with a little bow at each joint, like a kite's
+  const TAILS = chief ? [-1.5, -.5, .5, 1.5] : [-1, 1], TN = chief ? 9 : 6, TL = chief ? .12 : .13, nBow = Math.floor(TN / 2), per = TN * 6 + nBow * 6;
+  const tailGeo = new T.BufferGeometry(), tailPos = new Float32Array(TAILS.length * per * 3), tailCol = new Float32Array(TAILS.length * per * 3);
+  { const cc = [c1, c2, c3].map(c => new T.Color(c)); let o = 0;
+    TAILS.forEach((_, ti) => { for (let k = 0; k < TN; k++) for (let v = 0; v < 6; v++, o++) cc[(k + ti) % 2].toArray(tailCol, o * 3);
+      for (let b = 0; b < nBow * 6; b++, o++) cc[2].toArray(tailCol, o * 3); }); }
+  tailGeo.setAttribute('position', new T.BufferAttribute(tailPos, 3)); tailGeo.setAttribute('color', new T.BufferAttribute(tailCol, 3)); tailGeo.setAttribute('normal', new T.BufferAttribute(new Float32Array(tailPos.length), 3));
+  const tailMesh = new T.Mesh(tailGeo, new T.MeshStandardMaterial({ vertexColors: true, side: T.DoubleSide, roughness: .75, flatShading: true })); tailMesh.frustumCulled = false; body.add(tailMesh);
+  merge(body);
+  // the silk: a grid between the arm (shoulder, elbow, wrist, the first finger's tip) and the leg (hip, knee, ankle)
+  const NC = 6, NR = 3, sheets = [-1, 1].map(sx => {
+    const geo = new T.BufferGeometry(), pos = new Float32Array((NC + 1) * (NR + 1) * 3), uv = [], idx = [];
+    for (let m = 0; m <= NR; m++) for (let i = 0; i <= NC; i++) uv.push(i / NC, 1 - m / NR);
+    for (let m = 0; m < NR; m++) for (let i = 0; i < NC; i++) { const a = m * (NC + 1) + i, b = a + 1, c = a + NC + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
+    geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+    const mesh = new T.Mesh(geo, silkM); mesh.castShadow = true; mesh.frustumCulled = false; body.add(mesh); return { geo, pos, sx };
   });
-  const tailM = A.mat(c1, 0, .8), tails = [-1, 1].map(sx => { const ch = chain(body, 6, .22, .02, .01, tailM); ch[0].position.set(sx * .04, -.4, -.05); return ch; });   // two kite tails
-  const v = new T.Vector3(), local = q => { q.getWorldPosition(v); return body.worldToLocal(v).toArray(); };
-  return {
-    g, body, head,
-    pose(spread, t) {
-      for (const [k, sx] of [['armL', -1], ['armR', 1]]) { L[k].a.rotation.set(0, 0, sx * (.12 + spread * 1.42)); L[k].b.rotation.set(0, 0, sx * (.35 - spread * .3)); }
-      for (const [k, sx] of [['legL', -1], ['legR', 1]]) { L[k].a.rotation.set(0, 0, sx * (.04 + spread * .62)); L[k].b.rotation.set(0, 0, -sx * .1 * spread); }
-      g.updateMatrixWorld(true);
-      for (const S of sheets) { const [a, l] = S.sx < 0 ? [L.armL, L.legL] : [L.armR, L.legR], arr = S.geo.attributes.position.array; [a.a, a.b, a.tip, l.tip, l.b, l.a].forEach((q, i) => arr.set(local(q), i * 3)); S.geo.attributes.position.needsUpdate = true; S.geo.computeVertexNormals(); }
-      tails.forEach((ch, i) => ch.forEach((j, k) => { j.rotation.x = .25 + Math.sin(t * 6 + k * .8 + i) * .25 * (.4 + spread); j.rotation.z = Math.sin(t * 4.3 + k + i * 2) * .15; }));
-      crest.forEach((f, k) => { f.rotation.x = Math.sin(t * 7 + k) * .15 * (.4 + spread); });
+  const inv = new T.Matrix4(), loc = (q, out) => out.setFromMatrixPosition(q.matrixWorld).applyMatrix4(inv);   // (matrices worked out once a frame)
+  const TP = Array.from({ length: 4 }, () => V()), BPts = Array.from({ length: 3 }, () => V()), tp = V(), bp = V(), pp = V(), wp = V();
+  const along = (pts, f, out) => {   // a point a fraction f of the way along a polyline
+    let tot = 0; for (let i = 1; i < pts.length; i++) tot += pts[i].distanceTo(pts[i - 1]);
+    let d = f * tot; for (let i = 1; i < pts.length; i++) { const l = pts[i].distanceTo(pts[i - 1]); if (d <= l || i === pts.length - 1) return out.lerpVectors(pts[i - 1], pts[i], l ? Math.min(1, d / l) : 0); d -= l; }
+    return out.copy(pts.at(-1));
+  };
+  const me = V(), cam = V(), last = V(), cur = V(), nxt = V(), dir = V(), wid = V(), a1 = V(), a2 = V(), b1 = V(), b2 = V(); let yaw = 0, bank = 0, climb = 0, first = true, blinkAt = 2 + r() * 4, blinkFrom = -9, rollNow = 0;
+  const api = {
+    g, body, head, R, chief,
+    // fly along a path: at P0, heading for P1; the body banks into turns (roll: a whole tumble, from outside)
+    flyTo(P0, P1, dt, flare = 0, rising = false, roll = 0) {
+      const dx = P1.x - P0.x, dz = P1.z - P0.z, dy = P1.y - P0.y, hz = Math.hypot(dx, dz);
+      const want = hz > 1e-5 ? Math.atan2(dx, dz) : yaw; let dyaw = Math.atan2(Math.sin(want - yaw), Math.cos(want - yaw));
+      if (first) { yaw = want; dyaw = 0; first = false; }
+      yaw += dyaw * Math.min(1, dt * 6); bank += (Math.max(-.9, Math.min(.9, -dyaw * 9)) - bank) * Math.min(1, dt * 3);
+      climb += ((hz > 1e-5 || dy ? Math.atan2(dy, Math.max(hz, 1e-4)) : 0) * (rising ? 1 : .7) - climb) * Math.min(1, dt * 4);
+      rollNow = roll; g.position.copy(P0); g.rotation.set(0, yaw, bank * (1 - flare) + roll);
+    },
+    // stand on a perch (feet at `at`), turning to face `face`
+    perch(at, face, dt) { g.position.copy(at); const d = Math.atan2(Math.sin(face - yaw), Math.cos(face - yaw)); yaw += d * Math.min(1, dt * 3); bank *= .9; climb *= .9; g.rotation.set(0, yaw, bank); first = false; },
+    camYaw() { g.getWorldPosition(me); cam.copy(A.camera.position); let y = Math.atan2(cam.x - me.x, cam.z - me.z) - g.rotation.y; y = Math.atan2(Math.sin(y), Math.cos(y)); return Math.max(-1.1, Math.min(1.1, y)); },
+    pose(p, t, dt = 1 / 60) {
+      const sp = p.spread ?? 0, fl = p.fly ?? 0, lg = p.legs ?? 0, cr = p.crouch ?? 0, hu = p.huddle ?? 0, up = p.armsUp ?? 0, ws = A.wind?.s || 0;
+      const fpitch = Math.PI / 2 - .12 - climb * .85;
+      R.want('body', fl * fpitch + hu * .3 + cr * .12 - lg * .5 * (1 - fl), 0, 0);
+      for (const sx of [-1, 1]) {
+        const a = L.a[sx], l = L.l[sx], fold = 1 - sp;
+        R.want('sh' + sx, -.12 * fold - hu * .2 - up * 2.4, 0, sx * (.12 + sp * 1.4 - up * .2) - sx * .13 * fold);   // open: straight out; folded: hanging inside the furled silk
+        R.want('el' + sx, -(.35 + hu * .4) * fold * (1 - up), 0, -sx * .12 * sp);
+        a.hand.rotation.set(2.5 * fold * (1 - up * .8), 0, 0);   // the long fingers fold back down along the forearm
+        R.want('hp' + sx, -(1.05 * cr + .9 * lg) * (1 - fl), 0, sx * (.04 + sp * .45 * (.3 + fl * .7)));
+        R.want('kn' + sx, (1.95 * cr + .6 * lg) * (1 - fl), 0, -sx * .05 * sp);
+      }
+      R.want('neck', -fl * fpitch * .82 + hu * .55 + (p.nod ?? 0) + lg * .35 * (1 - fl), (p.look ?? 0) * .45, 0);
+      R.want('head', -fl * .12 + hu * .3, (p.look ?? 0) * .55, Math.sin(t * .9) * .05 * (1 - fl));
+      R.step(dt);
+      if (t > blinkAt + .3 || t < blinkAt - 9) blinkAt = t + 1 + r() * 4;   // (time jumped: no blink for that)
+      else if (t > blinkAt) { blinkFrom = t; blinkAt = t + 2.5 + r() * 5; }
+      const shut = Math.max(hu > .7 ? .85 : 0, t - blinkFrom < .13 ? 1 : 0);
+      eyes.forEach(E => { E.e.scale.y = 1 - shut * .9; E.glint.visible = shut < .5; });
+      const speedish = fl * (1 + ws) + ws * .6;
+      crest.rotation.set(.2 - fl * .3 + Math.sin(t * (7 + ws * 9)) * (.05 + speedish * .1), Math.sin(t * 4.1) * .05 * (1 + speedish), Math.sin(t * 5.3) * .06 * (1 + speedish));
+      { let o = 0; const put = q => { tailPos[o++] = q.x; tailPos[o++] = q.y; tailPos[o++] = q.z; };   // the tails: ribbons with a bow at every other joint, rippling
+        TAILS.forEach((sx, ti) => {
+          let ax = 0, az = 0; cur.set(sx * .022, -.03, -.05); const bows = [];
+          for (let k = 0; k < TN; k++) {
+            ax += (k ? .1 : .3 * (1 - fl)) + Math.sin(t * (4 + ws * 6 + fl * 4) - k * .9 + ti) * (.18 + .25 * (fl + ws)) * (k / TN + .2);
+            az += Math.sin(t * 3.1 - k * .7 + ti * 2) * .12 * (1 + ws);
+            dir.set(Math.sin(az), -Math.cos(ax) * Math.cos(az), -Math.sin(ax) * Math.cos(az)); wid.set(Math.cos(az) * .014, Math.sin(az) * .014, 0);
+            nxt.copy(cur).addScaledVector(dir, TL);
+            a1.copy(cur).sub(wid); a2.copy(cur).add(wid); b1.copy(nxt).sub(wid); b2.copy(nxt).add(wid); put(a1); put(b1); put(a2); put(a2); put(b1); put(b2);
+            if (k % 2) bows.push([cur.clone(), dir.clone(), wid.clone()]);
+            cur.copy(nxt);
+          }
+          for (const [c, d, w] of bows.slice(0, nBow)) for (const sgn of [-1, 1]) { put(c); a1.copy(c).addScaledVector(w, sgn * 3.2).addScaledVector(d, .02); put(a1); a2.copy(c).addScaledVector(w, sgn * 3.2).addScaledVector(d, -.02); put(a2); }
+          for (let b = bows.length; b < nBow; b++) for (let v = 0; v < 6; v++) put(cur);
+        });
+        tailGeo.attributes.position.needsUpdate = true; }
+      // the silk, between the arm and the leg; it billows (up, in flight) and the trailing edge flutters
+      g.updateMatrixWorld(true); inv.copy(body.matrixWorld).invert();
+      for (const S of sheets) {
+        const a = L.a[S.sx], l = L.l[S.sx];
+        loc(a.sh, TP[0]); loc(a.el, TP[1]); loc(a.wr, TP[2]); loc(a.tip, TP[3]); loc(l.hp, BPts[0]); loc(l.kn, BPts[1]); loc(l.an, BPts[2]);
+        TP[0].x *= .8; BPts[0].x *= .8;
+        const W = Math.pow(1 - sp, 1.3) * (1 - fl) * (1 - up) * (1 - lg * .7);   // folded, the silk is wrapped right round the body, like a furled kite
+        const span = TP[3].distanceTo(BPts[2]) + .01, bil = (.025 + .05 * sp) * (1 + ws * .5), fq = 8 + ws * 14 + fl * 6, fa = (.004 + ws * .012 + (p.flutter ?? 0) * .008) * (.4 + sp);
+        for (let i = 0; i <= NC; i++) {
+          const f = i / NC; along(TP, f, tp); along(BPts, f, bp);
+          for (let m = 0; m <= NR; m++) {
+            const v = m / NR, o = (m * (NC + 1) + i) * 3; pp.lerpVectors(tp, bp, v);
+            const belly = Math.sin(Math.PI * v) * Math.sin(Math.PI * (.12 + f * .82));
+            if (i === NC) { const cx = (tp.x + bp.x) * .5 * .7; pp.x += (cx - pp.x) * Math.sin(Math.PI * v) * .22 * sp; }   // the outer edge curves in between the fingertip and the ankle
+            pp.z -= belly * bil + Math.sin(t * fq + i * 1.4 + m * 1.1) * fa * v * (.3 + f);
+            if (W > .001) {                                               // round the body: from the middle of the back to the front, shoulders to shins
+              const th = S.sx * (Math.PI - f * (Math.PI - .1)), rr = .115 + .07 * Math.min(1, v * 1.6) - .01 * v + Math.sin(t * fq * .5 + i + m) * fa * .6 * v;
+              wp.set(Math.sin(th) * rr, .41 - v * (.88 - cr * .45), Math.cos(th) * rr * .92 + cr * .14 * v * Math.max(0, Math.cos(th)));
+              pp.lerp(wp, W);
+            }
+            S.pos[o] = pp.x; S.pos[o + 1] = pp.y; S.pos[o + 2] = pp.z;
+          }
+        }
+        S.geo.attributes.position.needsUpdate = true; S.geo.computeVertexNormals();
+      }
     },
   };
+  (parent.userData.kites ??= []).push(api);   // (for testing: the root knows its kites)
+  return api;
+}
+// The great migration, far off: hundreds of them streaming over on the wind, each a small kite of its own colour
+// (one draw for all of them). tick(t, density 0..1): how many are about.
+function kiteStream(root, n) {
+  const geo = new T.BufferGeometry(), pts = [[0, 0, .34], [-.5, .03, -.02], [0, 0, -.34], [.5, .03, -.02], [0, .06, 0]];
+  geo.setAttribute('position', new T.Float32BufferAttribute([0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4].flatMap(i => pts[i]), 3)); geo.computeVertexNormals();
+  const m = new T.MeshBasicMaterial({ color: '#d8d0c4', side: T.DoubleSide });   // (far off: flat colour, no lighting to pay for)
+  const mesh = new T.InstancedMesh(geo, m, n), d = new T.Object3D(), col = new T.Color();
+  for (let k = 0; k < n; k++) mesh.setColorAt(k, col.set(KITE_PAL[k % KITE_PAL.length][k % 3 ? 0 : 1]));
+  mesh.instanceColor.needsUpdate = true; mesh.frustumCulled = false; root.add(mesh);
+  const lane = Array.from({ length: n }, (_, k) => ({ x0: nz(k + 1) * 300, z: (nz(k + 2) - .5) * 150, y: 15 + nz(k + 3) * 30 + Math.abs(nz(k + 2) - .5) * 20, v: 6 + nz(k + 4) * 4, s: 1.4 + nz(k + 5) * 1.3, ph: nz(k + 6) * 6.3 }));
+  return { mesh, tick(t, dens) {
+    const shown = Math.round(n * Math.max(0, Math.min(1, dens))); mesh.count = shown;
+    for (let k = 0; k < shown; k++) { const L = lane[k], x = ((L.x0 + t * L.v) % 300) - 150;
+      d.position.set(x, L.y + Math.sin(t * .6 + L.ph) * 1.6, L.z + Math.sin(t * .23 + L.ph * 2) * 4);
+      d.rotation.set(Math.sin(t * 1.3 + L.ph) * .15, Math.PI / 2 + Math.sin(t * .4 + L.ph) * .25, Math.sin(t * .9 + L.ph) * .3);
+      d.scale.set(L.s * (.85 + Math.sin(t * 2.2 + L.ph) * .15), L.s, L.s); d.updateMatrix(); mesh.setMatrixAt(k, d.matrix); }
+    mesh.instanceMatrix.needsUpdate = true;
+  } };
+}
+// What they leave, once they have gone: a strip of patterned silk caught on the stones, snapping in the wind
+// (the scout's on the tower corner; the gale-shelterers' along the courtyard's north wall).
+function silkTrace(root, of, days) {
+  const spots = of === 'kite1' ? [[5.02, -4.12, 1]] : [[-15.0, -4.32, 2], [-12.3, -4.3, 4], [-9.8, -4.31, 3]];
+  spots.forEach(([x, z, pal], i) => {
+    const y = surfaceY(x, z, 6, 4) ?? .9, h = G(root, [x, y + .01, z], [0, -Math.PI / 2 + i, 0]);
+    const m = new T.MeshStandardMaterial({ map: kiteSilk(pal, false), side: T.DoubleSide, roughness: .65, flatShading: true });
+    const strip = clothStrip(h, .05, .03, .42, m, { rows: 8, rag: .25 }); strip.rotation.set(Math.PI / 2 - .25, 0, 0);
+    clothSway(root, strip, { amp: .12, speed: 3, wave: 6 });
+    h.scale.setScalar(Math.max(.4, 1 - days * .25));
+  });
+  return t => { for (const c of root.userData.cloth || []) c(t); };
 }
 
 // ------------------------------------------------------------------ the abyssals
@@ -6800,10 +7106,12 @@ function clothSway(root, mesh, o = {}) {
   const geo = mesh.geometry, P0 = geo.attributes.position.array.slice(), pos = geo.attributes.position;
   let top = -1e9, bot = 1e9; for (let i = 1; i < P0.length; i += 3) { top = Math.max(top, P0[i]); bot = Math.min(bot, P0[i]); }
   const len = Math.max(.01, top - bot), amp = o.amp ?? .08, sp = o.speed ?? 1.4, k = o.wave ?? 2.2, ph = o.phase ?? Math.random() * 9;
+  let tw = null, last = 0;   // (its own clock, which runs faster in the wind: api.wind)
   (root.userData.cloth ??= []).push(t => {
+    const ws = A.wind?.s || 0, am = amp * (1 + ws * 1.4); tw = tw === null ? t : tw + Math.max(0, Math.min(.1, t - last)) * (1 + ws * 1.8); last = t;
     for (let i = 0; i < P0.length; i += 3) {
-      const x = P0[i], y = P0[i + 1], z = P0[i + 2], w = Math.pow((top - y) / len, 1.4), q = t * sp + ph - (top - y) * k + x * 1.7 + z * 1.3;
-      pos.array[i] = x + Math.sin(q) * amp * .5 * w; pos.array[i + 2] = z + (Math.sin(q * .83 + 1.3) * .7 + .25) * amp * w; pos.array[i + 1] = y + Math.abs(Math.sin(q)) * amp * .15 * w;
+      const x = P0[i], y = P0[i + 1], z = P0[i + 2], w = Math.pow((top - y) / len, 1.4), q = tw * sp + ph - (top - y) * k + x * 1.7 + z * 1.3;
+      pos.array[i] = x + Math.sin(q) * am * .5 * w; pos.array[i + 2] = z + (Math.sin(q * .83 + 1.3) * .7 + .25) * am * w; pos.array[i + 1] = y + Math.abs(Math.sin(q)) * am * .15 * w;
     }
     pos.needsUpdate = true;
   });
@@ -8040,6 +8348,7 @@ export function spawnTrace(tr, api) {
   const root = new T.Group(); A.scene.add(root);
   const tick = tr.kind === 'village' ? reedVillage(root, tr.grown ?? 1, !!tr.leaving) :   // (what the lake folk built: it stays)
     tr.kind === 'hollow' ? mushroomHollow(root, tr.grown ?? 1, !!tr.leaving) :   // (the Burrowfolk's hollow: it stays)
+    tr.kind === 'silk' ? silkTrace(root, of, age / 86400) :   // (silk the Kitemakers left snagged on the stones)
     tr.kind === 'hole' ? holeTrace(root, age / 86400) : tr.kind === 'mounds' ? moundsTrace(root, age / 86400) :   // (the youngster's hole, the diggers' mounds: they settle)
     tr.kind === 'meteor' ? meteorScene(root, ...(METEOR_AT[of] || [9.5, 19]), { age: age < 90 ? 0 : age }) : shipScorch(root, SHIP_AT[of] || [], age / 86400);   // (fell in the last minute or so: seen falling, from the start)
   A.onTick.push(tick);

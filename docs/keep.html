@@ -184,7 +184,7 @@ const M = {
   cape: mat('#5a2b27', 0, .95, { side: THREE.DoubleSide }), leather: mat('#4a3424', .1, .8), plume: mat('#8e3428'),
   stone: mat('#575049'), stoneD: mat('#3d3732'), stoneL: mat('#6b635a'), floor: mat('#3a332d'),
   wood: mat('#6b4a30'), woodD: mat('#3f2b1c'), woodL: mat('#8a6440'), cloth: mat('#6a3f35'), paper: mat('#e3d6bb'),
-  grass: mat('#3e4a2c'), grassL: mat('#55633a'), dirt: mat('#2b241e'), iron: mat('#3a3a3c', .7, .5),
+  grass: mat('#3e4a2c'), grassL: mat('#55633a'), tuft: mat('#3e4a2c', 0, .9, { name: 'tuft' }), tuftL: mat('#55633a', 0, .9, { name: 'tuft' }), dirt: mat('#2b241e'), iron: mat('#3a3a3c', .7, .5),
   glass: new THREE.MeshStandardMaterial({ color: '#9fc3d8', transparent: true, opacity: .22, roughness: .1, metalness: .2, depthWrite: false }),
 };
 const BM = {   // the courtyard buildings
@@ -222,8 +222,9 @@ function finishBake(group) {
   solids.length = 0;
   for (const [material, geos] of bake) {
     const mesh = new THREE.Mesh(mergeGeometries(geos, false), material);
-    if (material !== M.dirt && material !== M.grass && material !== M.floor) solids.push(mesh);
-    mesh.castShadow = material !== M.floor && material !== M.grass && material !== M.dirt;
+    const soft = material === M.dirt || material === M.grass || material === M.tuft || material === M.tuftL;   // (the camera sees through grass)
+    if (!soft && material !== M.floor) solids.push(mesh);
+    mesh.castShadow = material !== M.floor && !soft;
     mesh.receiveShadow = true;
     group.add(mesh);
     geos.forEach(g => g.dispose());
@@ -322,7 +323,7 @@ function buildWorld(st) {
   for (let i = 0; i < 60; i++) {
     const x = -16.6 + hash(i, 5, 1) * 10.6, z = -3.8 + hash(i, 1, 7) * 7.6;
     if (Math.abs(z - .1) < .6 || builtOn(x, z)) continue;          // not on the path, not inside a building
-    slab(new THREE.ConeGeometry(.06, .3 + hash(i, 2, 3) * .25, 4), i % 3 ? M.grassL : M.grass, [x, .15, z], { jitter: .02 });
+    slab(new THREE.ConeGeometry(.06, .3 + hash(i, 2, 3) * .25, 4), i % 3 ? M.tuftL : M.tuft, [x, .15, z], { jitter: .02 });
   }
   info(g, [1.2, 2.6, 1.2], [-8.8, 1.3, -2.2], 'A dead tree in the courtyard', '');
 
@@ -515,7 +516,7 @@ function buildLand() {
     mesh.count = k; mesh.instanceMatrix.needsUpdate = true; land.add(mesh); return mesh;
   };
   const reedGeo = new THREE.ConeGeometry(.04, 1, 3); reedGeo.translate(0, .5, 0);
-  instanced(reedGeo, mat('#6b7a3a'), 60, d => {
+  instanced(reedGeo, swayMat(new THREE.MeshStandardMaterial({ color: '#6b7a3a', roughness: .9, flatShading: true }), .5), 60, d => {
     const a = rnd() * 6.28, rr = 9.6 + rnd() * 2.2; const x = LAKE[0] + Math.cos(a) * rr, z = LAKE[1] + Math.sin(a) * rr * .8;
     d.position.set(x, Math.max(LAKE_LEVEL, landHeight(x, z)), z); d.rotation.set((rnd() - .5) * .3, 0, (rnd() - .5) * .3); d.scale.setScalar(.6 + rnd() * .8); return true;
   });
@@ -535,14 +536,26 @@ function buildLand() {
   const trunkGeo = new THREE.CylinderGeometry(.12, .2, 1.4, 5); trunkGeo.translate(0, .7, 0);
   const crownGeo = facet(new THREE.ConeGeometry(.95, 2.8, 6), .08, 5); crownGeo.translate(0, 2.8, 0);
   const crown2 = facet(new THREE.ConeGeometry(.7, 2.0, 6), .06, 6); crown2.translate(0, 3.9, 0);
-  const crownMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .95, flatShading: true });
+  const crownMat = swayMat(new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .95, flatShading: true }), .028);
   const place = (d, k) => { const [x, z, s, a] = spots[k]; d.position.set(x, landHeight(x, z) - .1, z); d.rotation.set(0, a, 0); d.scale.set(s, s * (.9 + spots[k][4] * .4), s); return true; };
-  instanced(trunkGeo, M.woodD, spots.length, place);
+  instanced(trunkGeo, swayMat(M.woodD.clone(), .028), spots.length, place);   // (trunk and crowns bend as one)
   for (const g of [crownGeo, crown2]) {
     const m = instanced(g, crownMat, spots.length, place);
     spots.forEach(([, , , , v], k) => m.setColorAt(k, new THREE.Color().setHSL(.27 + v * .06, .32 + v * .1, .16 + v * .07)));
     m.instanceColor.needsUpdate = true;
   }
+  // grass in the open meadow round the keep (it bends in the wind; how much of it shows follows the quality setting)
+  const tuftGeo = mergeGeometries([0, 1, 2].map(b => { const c = new THREE.ConeGeometry(.035, .34 + b * .06, 3); c.translate(0, .17 + b * .03, 0);
+    c.rotateZ((b - 1) * .32); c.rotateY(b * 2.1); return c.toNonIndexed(); }));
+  const tuftMat = swayMat(new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .95, flatShading: true }), 1.3);
+  meadow = instanced(tuftGeo, tuftMat, 900, d => {
+    const a = rnd() * 6.28, rr = 1.02 + Math.pow(rnd(), .8) * .9, x = -6 + Math.cos(a) * rr * 27 * .6, z = Math.sin(a) * rr * 19 * .62;
+    if ((x > -17.8 && x < 6.2 && Math.abs(z) < 5.2) || roadDist(x, z) < 1.6 || Math.hypot(x - LAKE[0], (z - LAKE[1]) * 1.25) < 12.4 ||
+        Math.hypot(x + 24.5, z + 1.5) < 4.2 || Math.hypot(x + 3.5, z - 15.8) < 4.6) return false;   // not in the keep, on the road, in the lake, on the barrow or in the Burrowfolk's hollow
+    d.position.set(x, landHeight(x, z) - .03, z); d.rotation.set(0, rnd() * 6.28, 0); d.scale.setScalar(.7 + rnd() * .7); return true;
+  });
+  for (let k = 0; k < meadow.count; k++) meadow.setColorAt(k, new THREE.Color().setHSL(.21 + hash(k, 3, 3) * .06, .3 + hash(k, 4, 1) * .12, .2 + hash(k, 1, 5) * .08));
+  meadow.instanceColor.needsUpdate = true; meadow.userData.all = meadow.count;
   // rocks on the hills
   instanced(facet(new THREE.IcosahedronGeometry(1, 0), .15, 9), M.stone, 120, d => {
     const x = (rnd() - .5) * 230, z = (rnd() - .5) * 230, kx = (x + 6) / 27, kz = z / 19;
@@ -580,10 +593,10 @@ function setLandHaze(night, dusk) {   // the far mountains take the colours of t
 // =====================================================================================
 const WX_WORDS = { clear: ['clear', 'clear', 'clear and bright'], cloudy: ['a few clouds', 'overcast', 'heavy grey sky'],
   rain: ['light rain', 'steady rain', 'heavy rain'], storm: ['thunderstorm', 'thunderstorm', 'violent storm'],
-  fog: ['mist', 'fog', 'thick fog'], wind: ['a breeze', 'strong wind', 'a gale'], snow: ['light snow', 'snow', 'heavy snow'],
+  fog: ['mist', 'fog', 'thick fog'], wind: ['a breeze', 'strong wind', 'strong, gusting wind'], gale: ['a gale', 'a gale', 'a howling gale'], snow: ['light snow', 'snow', 'heavy snow'],
   ash: ['ash falling'], starfall: ['stars falling'], aurora: ['an aurora'], upward_rain: ['rain falling upward'],
   glass_hail: ['glass hail'], still: ['utter stillness'] };
-const WX_ICON = { clear: '☀', cloudy: '☁', rain: '☂', storm: '⚡', fog: '≋', wind: '≈', snow: '❄', ash: '⁘', starfall: '✦',
+const WX_ICON = { clear: '☀', cloudy: '☁', rain: '☂', storm: '⚡', fog: '≋', wind: '≈', gale: '≈≈', snow: '❄', ash: '⁘', starfall: '✦',
   aurora: '≀', upward_rain: '☂', glass_hail: '✧', still: '·' };
 const HALL_PLACES = ['fire', 'window', 'bookshelf', 'desk', 'easel', 'workbench', 'bedroll'];
 function weatherAt(t) {
@@ -594,6 +607,36 @@ function weatherAt(t) {
 const wxNow = () => weatherAt(Date.now()) || { kind: 'clear', intensity: .5 };
 function wxWords(w) { const a = WX_WORDS[w.kind] || WX_WORDS.clear; return a[Math.min(a.length - 1, w.intensity < .5 ? 0 : w.intensity < .8 ? 1 : 2)]; }
 
+// THE WIND: one strength for everything it moves (trees, reeds, grass, leaves, clouds, his cape, beings' cloth), with
+// gusts. It blows from the west (toward +x), the way the clouds drift. Bending happens on the graphics card (swayMat),
+// so it costs almost nothing however many trees there are. Beings read it as api.wind: { s (now, with gusts), base, gust }.
+const WIND_U = { value: new THREE.Vector4() };   // x: strength now, y: time, z: steady strength
+const windNow = { s: 0, base: 0, gust: 0 };
+const WIND_BASE = { clear: .12, cloudy: .2, rain: .3, storm: .85, fog: .03, snow: .3, still: 0, ash: .08, starfall: .1, aurora: .06, upward_rain: .05, glass_hail: .4 };
+function windBase(w) { const i = w.intensity ?? .6; return w.kind === 'wind' ? .3 + .45 * i : w.kind === 'gale' ? .85 + .35 * (i - .5) / .5 : WIND_BASE[w.kind] ?? .15; }
+function swayMat(m, k = .03) {   // bends a material's mesh with the wind: more the higher a point is above its foot (y 0)
+  m.onBeforeCompile = sh => {
+    sh.uniforms.uWind = WIND_U;
+    sh.vertexShader = 'uniform vec4 uWind;\n' + sh.vertexShader.replace('#include <project_vertex>', `
+      vec4 mvPosition = vec4(transformed, 1.0);
+      #ifdef USE_INSTANCING
+        mvPosition = instanceMatrix * mvPosition;
+        vec2 wb = (instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xz;
+      #else
+        vec2 wb = transformed.xz;
+      #endif
+      float hh = max(0.0, transformed.y);
+      float roll = sin(uWind.y * 0.9 - wb.x * 0.07 + sin(wb.y * 0.05)) * 0.5 + 0.5;   // gusts roll across from the west
+      float bend = uWind.x * (0.55 + 0.45 * roll) + uWind.z * sin(uWind.y * (2.0 + 2.5 * uWind.z) + wb.x * 0.31 + wb.y * 0.23) * 0.22;
+      float d = bend * hh * hh * ${k.toFixed(4)};
+      mvPosition.x += d; mvPosition.z += d * 0.25 * sin(uWind.y * 1.7 + wb.y); mvPosition.y -= abs(d) * 0.3;
+      mvPosition = modelViewMatrix * mvPosition;
+      gl_Position = projectionMatrix * mvPosition;`);
+  };
+  m.customProgramCacheKey = () => 'sway' + k;
+  return m;
+}
+let meadow = null;
 let landGround = null, wxCalm = 1, wxKind = '', rainInit = false, flakeInit = false;
 const wxBaseBg = new THREE.Color();
 // rain (and rain falling upward) as short streaks; snow, ash, hail and leaves as points
@@ -655,8 +698,8 @@ function addWeather() {
 // how the sky looks in this weather (after updateSky's time-of-day look)
 function weatherLook(night, dusk) {
   const w = wxNow(), k = w.kind, i = w.intensity;
-  const cover = { clear: .08, cloudy: .3 + .5 * i, rain: .75, storm: .92, snow: .7, wind: .35, fog: 0, ash: .7, glass_hail: .6, upward_rain: .5 }[k] ?? .15;
-  const grey = { cloudy: .3 * i, rain: .55 * Math.max(.5, i), storm: .8, snow: .45, fog: .35, ash: .5, glass_hail: .45, upward_rain: .35, wind: .12 }[k] || 0;
+  const cover = { clear: .08, cloudy: .3 + .5 * i, rain: .75, storm: .92, snow: .7, wind: .35, gale: .6, fog: 0, ash: .7, glass_hail: .6, upward_rain: .5 }[k] ?? .15;
+  const grey = { cloudy: .3 * i, rain: .55 * Math.max(.5, i), storm: .8, snow: .45, fog: .35, ash: .5, glass_hail: .45, upward_rain: .35, wind: .12, gale: .28 }[k] || 0;
   const tint = new THREE.Color(k === 'ash' ? (night ? '#1a1410' : '#8a7868') : night ? '#0e1118' : dusk ? '#4a4450' : k === 'snow' || k === 'fog' ? '#a9b2bc' : '#6f7884');
   scene.background.lerp(tint, grey); scene.fog.color.lerp(tint, grey);
   if (night) {
@@ -691,6 +734,13 @@ function weatherTick(t, dt) {
   const qf = qLevel === 'high' ? 1 : qLevel === 'medium' ? .5 : .2;
   camera.getWorldPosition(_wp);
   const cx = _wp.x, cy = _wp.y, cz = _wp.z;
+  // the wind: a steady strength for the weather, eased (no jumps when the weather changes), with gusts on top
+  const base = windBase(w), gusty = k === 'wind' || k === 'gale' || k === 'storm' ? 1 : .35;
+  windNow.base += (base - windNow.base) * Math.min(1, dt * .3);
+  const gust = Math.pow(Math.max(0, Math.sin(t * .21 + Math.sin(t * .067) * 2.4)), 5) * .75 + (Math.sin(t * .53) * Math.sin(t * .31 + 1) * .5 + .5) * .3;
+  windNow.gust = gust * gusty; windNow.s = windNow.base * (.75 + windNow.gust * .8);
+  WIND_U.value.set(windNow.s, t, windNow.base, 0);
+  if (meadow) meadow.count = Math.round(meadow.userData.all * (qLevel === 'high' ? 1 : qLevel === 'medium' ? .6 : .3));
   // rain, or rain going up
   const raining = k === 'rain' || k === 'storm' || k === 'upward_rain';
   rainLines.visible = raining;
@@ -711,19 +761,20 @@ function weatherTick(t, dt) {
     rainLines.material.opacity = k === 'upward_rain' ? .55 : .35 + .2 * i;
   }
   // snow, ash, glass hail, or leaves on the wind
-  const flaky = k === 'snow' || k === 'ash' || k === 'glass_hail' || k === 'wind';
+  const leafy = k === 'wind' || k === 'gale', flaky = k === 'snow' || k === 'ash' || k === 'glass_hail' || leafy;
   flakes.visible = flaky;
   if (flaky) {
-    const n = Math.floor(FLAKE_MAX * qf * (k === 'wind' ? .15 : .35 + .65 * i));
-    const fall = { snow: 1.1, ash: .7, glass_hail: 11, wind: .8 }[k], drift = k === 'wind' ? 7 * i : k === 'snow' ? .4 : .2;
-    flakes.material.color.set({ snow: '#ffffff', ash: '#4e4945', glass_hail: '#e2f4ff', wind: '#8a6a3a' }[k]);
-    flakes.material.size = { snow: .07, ash: .1, glass_hail: .05, wind: .11 }[k];
+    const n = Math.floor(FLAKE_MAX * qf * (k === 'wind' ? .15 : k === 'gale' ? .32 : .35 + .65 * i));
+    const fall = { snow: 1.1, ash: .7, glass_hail: 11, wind: .8, gale: .5 }[k], drift = leafy ? 9 * windNow.s + 1 : k === 'snow' ? .4 + windNow.s : .2;
+    flakes.material.color.set({ snow: '#ffffff', ash: '#4e4945', glass_hail: '#e2f4ff', wind: '#8a6a3a', gale: '#7d6534' }[k]);
+    flakes.material.size = { snow: .07, ash: .1, glass_hail: .05, wind: .11, gale: .1 }[k];
     if (!flakeInit) { for (let d = 0; d < FLAKE_MAX; d++) flakePos.set([cx + (Math.random() - .5) * 30, cy - 6 + Math.random() * 20, cz + (Math.random() - .5) * 30], d * 3); flakeInit = true; }
     for (let d = 0; d < n; d++) {
       const o = d * 3, ph = flakePhase[d];
-      let x = flakePos[o] + (k === 'wind' ? drift : Math.sin(t * .8 + ph) * drift) * dt, y = flakePos[o + 1] - fall * dt, z = flakePos[o + 2];
+      let x = flakePos[o] + (leafy ? drift * (.7 + .6 * Math.sin(ph * 3)) : Math.sin(t * .8 + ph) * drift) * dt,
+        y = flakePos[o + 1] - (fall - (leafy ? Math.sin(t * 2.3 + ph) * windNow.s * 1.6 : 0)) * dt, z = flakePos[o + 2] + (leafy ? Math.sin(t * 1.4 + ph) * .6 * dt : 0);   // (leaves tumble, lift and dip)
       if (y < cy - 6 || Math.abs(x - cx) > 16 || Math.abs(z - cz) > 16) {
-        x = cx + (Math.random() - .5) * (k === 'wind' ? 6 : 30) - (k === 'wind' ? 14 : 0); z = cz + (Math.random() - .5) * 30;
+        x = cx + (Math.random() - .5) * (leafy ? 6 : 30) - (leafy ? 14 : 0); z = cz + (Math.random() - .5) * 30;
         y = cy + 12 + Math.random() * 3;
       }
       flakePos[o] = x; flakePos[o + 1] = y; flakePos[o + 2] = z;
@@ -747,7 +798,7 @@ function weatherTick(t, dt) {
     streakGeo.attributes.position.needsUpdate = true;
   }
   // clouds drift with the wind
-  const windSpeed = k === 'wind' ? 4 + 6 * i : k === 'storm' ? 5 : 1;
+  const windSpeed = 1 + windNow.base * 9;
   for (const c of clouds) {
     if (!c.visible) continue;
     const u = c.userData; u.x += windSpeed * dt * .5; if (u.x > 140) u.x -= 280;
@@ -2059,7 +2110,8 @@ function whatsHere() {
   for (const [, b] of beings) if (b?.root) list.push([b.root, 'Something is here']);
   for (const [k, m] of animalMarks) if (m?.root) list.push([m.root, ANIMAL_NAMES[k] || k]);
   const TRACE_SAYS = [[/-village-/, 'A village of reeds, on the lake'], [/-hollow-/, 'A hollow of glowing mushrooms, on the plain'],
-    [/^burrow1-/, 'A hole in the courtyard, where something came up'], [/^burrow2-/, 'A line of fresh mounds, across the plain']];
+    [/^burrow1-/, 'A hole in the courtyard, where something came up'], [/^burrow2-/, 'A line of fresh mounds, across the plain'],
+    [/^kite[13]-/, 'A scrap of patterned silk, snagged on the stones']];
   for (const [id, m] of traceMarks) if (m?.root) list.push([m.root, TRACE_SAYS.find(([re]) => re.test(id))?.[1] || 'Something left a mark here']);
   for (let n = 0; n < list.length; n++) {
     const [obj, name] = list[hereI++ % list.length], box = new THREE.Box3();
@@ -2395,10 +2447,13 @@ function tick(nowMs) {
 
   // the cape stirs, more when walking
   const cp = K.cape.geometry.attributes.position, rest = K.cape.userData.rest;
+  const kp = K.root.position, ws = windNow.s * (region(kp.x, kp.z) === 'hall' ? .3 : 1), kyaw = K.root.rotation.y;
+  const wx = Math.cos(kyaw) * ws, wz = Math.sin(kyaw) * ws, fl = 1.7 + ws * 7;   // the wind in its own frame: across its back, and from in front
   for (let i = 0; i < cp.count; i++) {
-    const x = rest[i * 3], v = -rest[i * 3 + 1] / 1.02;
-    cp.setZ(i, -v * v * (.1 + (moving ? .12 : 0)) * (1 + Math.sin(t * 1.7 + x * 6 + v * 3) * .35) - v * .05
+    const x = rest[i * 3], v = -rest[i * 3 + 1] / 1.02, flap = Math.sin(t * fl + x * 6 + v * 3);
+    cp.setZ(i, -v * v * (.1 + (moving ? .12 : 0) + Math.max(0, -wz) * .45 + ws * .08) * (1 + flap * (.35 + ws * .2)) - v * .05
                - (pose.behind ? .11 * Math.min(1, v * 2.5) : 0));   // hands behind its back: the cape sits out over them
+    cp.setX(i, x + v * v * wx * .28 * (1 + flap * .3));
   }
   cp.needsUpdate = true; K.cape.geometry.computeVertexNormals();
 
@@ -2571,7 +2626,7 @@ window.__keep = { K, camera, controls, goodView, greet, tossLog,
   get flareLeft() { return +(logFlareUntil - clock.elapsedTime).toFixed(2); }, get fireIntensity() { return +fireLight.intensity.toFixed(1); } };
 let benchT = 0;
 const creatureApi = () => ({
-  THREE, scene, camera, M, BM, mat, part, facet, hash, rand, cyl, box, ico, onTick, K, fireLight, updateSky, toast, ground: landHeight,
+  THREE, scene, camera, M, BM, mat, part, facet, hash, rand, cyl, box, ico, onTick, K, fireLight, updateSky, toast, ground: landHeight, wind: windNow, sky, get qLevel() { return qLevel; },
   view: window.__keep.view, setHour(h) { skyHour = h; updateSky(); }, get hour() { return skyHour ?? (new Date().getHours() + new Date().getMinutes() / 60); },
   setFireDim(v) { fireDim = v; }, force(goal) { window.__force = goal; },
 });

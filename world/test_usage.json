@@ -1,10 +1,10 @@
 {
   "date": "2026-11-27",
-  "tokens": 16284,
+  "tokens": 26007,
   "by_model": {
-    "openai/gpt-oss-120b": 11890,
-    "qwen/qwen3.8-27b": 3138,
-    "openai/gpt-oss-20b": 1256
+    "openai/gpt-oss-120b": 18253,
+    "qwen/qwen3.8-27b": 5479,
+    "openai/gpt-oss-20b": 2275
   },
   "runs": [
     {
@@ -14,6 +14,10 @@
     {
       "note": "Burrowfolk youngster encounter test (estimate)",
       "tokens": 8142
+    },
+    {
+      "note": "Kitemakers sheltering in a gale: one encounter test",
+      "tokens": 9723
     }
   ]
 }
