@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-20T13:01:36+00:00",
-    "activity": "repair",
-    "mood": "content",
-    "emote": "spark",
-    "text": "I mixed a fresh batch of mortar and laid the last course on the east wall. The mix held better this time, no excess to scrape. A loose stone slipped off the trowel and hit my boot; I muttered about the stone's timing. The wall looks steady enough for now.",
-    "creations": []
-  },
-  {
     "time": "2026-11-20T15:01:51+00:00",
     "activity": "repair",
     "mood": "curious",
@@ -526,6 +518,14 @@
     "mood": "content",
     "emote": "dots",
     "text": "No new cracks in the stone today. I cleared a few loose pieces on the eleventh row and tightened the mortar. The fire kept its heat while I moved around.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-27T21:01:36+00:00",
+    "activity": "craft",
+    "mood": "content",
+    "emote": "sigh",
+    "text": "I fitted the new lantern guard reinforcement on the wall. It sits tight, no wobble. While tightening mortar on the east wall I found a loose slab and set it straight. The fire stayed steady. I still have the extra glass shards in my pocket, untouched.",
     "creations": []
   }
 ]

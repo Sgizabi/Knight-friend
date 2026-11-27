@@ -1,51 +1,46 @@
 {
-  "start": "2026-11-27T19:01:36+00:00",
+  "start": "2026-11-27T21:01:36+00:00",
   "mood": "content",
   "steps": [
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "dots",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "Lantern guard still snug, no wobble"
+        "stone still stubborn"
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "fire still demanding"
       ]
     },
     {
       "place": "courtyard",
       "action": "pace",
       "minutes": 20,
-      "emote": "dots",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "Roof boards look tighter now"
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "dots",
-      "note": "",
-      "thoughts": [
-        "Warmth feels steady, no need for extra logs"
+        "bracket holds"
       ]
     },
     {
       "place": "desk",
       "action": "write",
       "minutes": 20,
-      "emote": "dots",
+      "emote": "sigh",
       "note": "",
       "thoughts": [
-        "Updating inventory list, adding today’s stone count"
+        "list grows"
       ]
     }
-  ],
-  "applied_until": "2026-11-27T20:30:26+00:00",
-  "live_thought": {
-    "text": "The fire's crackle matches my steady mind.",
-    "time": "2026-11-27T20:30:26+00:00"
-  }
+  ]
 }

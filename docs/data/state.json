@@ -30,75 +30,70 @@
       "quirks": []
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 78,
-    "last_wake": "2026-11-27T19:01:36+00:00",
+    "wakeups": 79,
+    "last_wake": "2026-11-27T21:01:36+00:00",
     "nights_slept_through": 32
   },
   "plan": {
-    "start": "2026-11-27T19:01:36+00:00",
+    "start": "2026-11-27T21:01:36+00:00",
     "mood": "content",
     "steps": [
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "dots",
+        "emote": "sigh",
         "note": "",
         "thoughts": [
-          "Lantern guard still snug, no wobble"
+          "stone still stubborn"
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "sigh",
+        "note": "",
+        "thoughts": [
+          "fire still demanding"
         ]
       },
       {
         "place": "courtyard",
         "action": "pace",
         "minutes": 20,
-        "emote": "dots",
+        "emote": "sigh",
         "note": "",
         "thoughts": [
-          "Roof boards look tighter now"
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "dots",
-        "note": "",
-        "thoughts": [
-          "Warmth feels steady, no need for extra logs"
+          "bracket holds"
         ]
       },
       {
         "place": "desk",
         "action": "write",
         "minutes": 20,
-        "emote": "dots",
+        "emote": "sigh",
         "note": "",
         "thoughts": [
-          "Updating inventory list, adding today’s stone count"
+          "list grows"
         ]
       }
-    ],
-    "applied_until": "2026-11-27T20:30:26+00:00",
-    "live_thought": {
-      "text": "The fire's crackle matches my steady mind.",
-      "time": "2026-11-27T20:30:26+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-27T21:00:30+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-27T21:01:36+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "create",
-    "thought": "The fire's steady and the stones are holding, I could use the extra glass shards for something useful."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 78.8,
-    "warmth": 83.1,
-    "inspiration": 84.3,
-    "spirit": 69.4
+    "rest": 72.8,
+    "warmth": 84.9,
+    "inspiration": 72.3,
+    "spirit": 75.5
   },
   "needs_prev": {
     "rest": 78.1,
@@ -106,7 +101,7 @@
     "inspiration": 84.3,
     "spirit": 69.9
   },
-  "needs_at": "2026-11-27T21:00:30+00:00",
+  "needs_at": "2026-11-27T21:01:36+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -193,108 +188,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "Lantern Oil Seal",
-        "about": "A small metal seal for a lantern oil vial",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.06,
-              0.06,
-              0.015
-            ],
-            "pos": [
-              0.0,
-              0.0075,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.055,
-              0.055,
-              0.005
-            ],
-            "pos": [
-              0.0,
-              0.016,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "torus",
-            "size": [
-              0.058,
-              0.005
-            ],
-            "pos": [
-              0.0,
-              0.018,
-              0.0
-            ],
-            "rot": [
-              1.5708,
-              0.0,
-              0.0
-            ],
-            "color": "#999999"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.02,
-              0.005,
-              0.01
-            ],
-            "pos": [
-              0.03,
-              0.0185,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.02,
-              0.005,
-              0.01
-            ],
-            "pos": [
-              -0.03,
-              0.0185,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          }
-        ],
-        "made": "2026-11-23T17:00:33+00:00"
-      },
       {
         "name": "Reinforced Lantern Handle",
         "about": "A sturdy grip for the keep's lanterns, built from metal rods and a wooden core",
@@ -2058,6 +1951,218 @@
           }
         ],
         "made": "2026-11-25T21:00:34+00:00"
+      },
+      {
+        "name": "Lantern Guard Reinforcement",
+        "about": "A bracket that holds lantern glass shards in place",
+        "placement": "wall",
+        "parts": [
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.6,
+              0.03
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.04,
+              0.02,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.6,
+              -0.03
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.005,
+              0.005,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.6,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cone",
+            "size": [
+              0.015,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.62,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.1,
+              0.005,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.64,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "sphere",
+            "size": [
+              0.005
+            ],
+            "pos": [
+              -0.045,
+              0.65,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          },
+          {
+            "shape": "sphere",
+            "size": [
+              0.005
+            ],
+            "pos": [
+              0.045,
+              0.65,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.01,
+              0.02,
+              0.01
+            ],
+            "pos": [
+              -0.045,
+              0.66,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.01,
+              0.02,
+              0.01
+            ],
+            "pos": [
+              0.045,
+              0.66,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.005,
+              0.005,
+              0.12
+            ],
+            "pos": [
+              -0.045,
+              0.66,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.005,
+              0.005,
+              0.12
+            ],
+            "pos": [
+              0.045,
+              0.66,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          }
+        ],
+        "made": "2026-11-27T21:00:33+00:00"
       }
     ],
     "buildings": [
@@ -2157,8 +2262,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T20:30:26+00:00",
-    "seen_until": "2026-11-27T18:55:30+00:00"
+    "updated": "2026-11-27T21:01:36+00:00",
+    "seen_until": "2026-11-27T20:55:28+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2406,5 +2511,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T21:00:30+00:00"
+  "exported": "2026-11-27T21:01:36+00:00"
 }
