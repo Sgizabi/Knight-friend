@@ -1,9 +1,9 @@
 {
-  "awake": false,
-  "since": "2026-11-27T18:30:26+00:00",
+  "awake": true,
+  "since": "2026-11-27T19:00:29+00:00",
   "place": "fire",
   "action": "sit",
   "emote": "dots",
-  "note": "",
+  "note": "stirring by the fire",
   "thought": ""
 }
