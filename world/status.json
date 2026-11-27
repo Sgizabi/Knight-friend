@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-27T21:00:26+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-27T21:00:30+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "create",
+  "thought": "The fire's steady and the stones are holding, I could use the extra glass shards for something useful."
 }
