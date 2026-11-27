@@ -87,18 +87,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-27T19:00:29+00:00",
-    "place": "fire",
-    "action": "sit",
+    "since": "2026-11-27T19:00:32+00:00",
+    "place": "courtyard",
+    "action": "pace",
     "emote": "dots",
-    "note": "stirring by the fire",
-    "thought": ""
+    "note": "count the stones, note any new cracks, and tighten mortar where needed",
+    "thought": "The wind is louder on the roof boards today. I think I should keep checking the stones before the gap gets bigger."
   },
   "needs": {
-    "rest": 82.9,
-    "warmth": 82.6,
+    "rest": 83.4,
+    "warmth": 83.1,
     "inspiration": 77.6,
-    "spirit": 71.9
+    "spirit": 71.4
   },
   "needs_prev": {
     "rest": 82.9,
@@ -106,7 +106,7 @@
     "inspiration": 77.6,
     "spirit": 71.9
   },
-  "needs_at": "2026-11-27T19:00:29+00:00",
+  "needs_at": "2026-11-27T19:00:32+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2407,5 +2407,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T19:00:29+00:00"
+  "exported": "2026-11-27T19:00:32+00:00"
 }
