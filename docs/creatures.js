@@ -44,6 +44,8 @@ function procession(root, make, n = 7) {
       const y = gy(at.x, at.z);
       f.w.position.set(at.x, y + Math.abs(Math.sin(t * 5 + f.i)) * .02, at.z); f.w.lookAt(ahead.x, f.w.position.y, ahead.z);
       f.legs.forEach((l, k) => { l.rotation.x = Math.sin(t * 5 + f.i + k * Math.PI) * .35; });
+      if (f.knees) f.knees.forEach((kn, k) => { kn.rotation.x = Math.max(0, Math.sin(t * 5 + f.i + k * Math.PI + Math.PI + 1.3)) * .75; });   // the knee bends as the leg comes through
+      if (f.cloak) f.cloak.rotation.x = -.05 - Math.abs(Math.sin(t * 5 + f.i)) * .03;   // the cloak trails a little as it walks
       f.arms.forEach((a, k) => { a.rotation.x = -Math.sin(t * 5 + f.i + k * Math.PI) * .25; });
       f.flicker(t);
       f.h.material.opacity = .45 + Math.sin(t * 11 + f.i) * .08;
@@ -51,6 +53,41 @@ function procession(root, make, n = 7) {
     }
     for (const s of steps) if (s.m.visible) { const k = (t - s.born) / 6; s.m.material.opacity = Math.max(0, .7 * (1 - k)); if (k > 1) s.m.visible = false; }
   };
+}
+// THE LANTERN FOLK, made properly (new look): a figure of dark wood under a hooded travelling cloak that
+// hangs from real shoulders and is open at the front, so the legs show as it walks; knees and boots;
+// sleeves and hands. The glass lantern head with its small living flame is as it was.
+function lanternFolk(root, w, i, { wood, woodL, iron, wrap, pane }) {
+  const cloth = surf(wrap, 'weave', .02), boot = A.mat('#241a14', 0, .9);
+  const legs = [], knees = [];
+  for (const sx of [-1, 1]) {
+    const l = G(w, [sx * .085, .86, 0]); bone(l, [0, 0, 0], [0, -.42, .02], .052, .044, wood, 6);
+    const kn = G(l, [0, -.42, .02]); bone(kn, [0, 0, 0], [0, -.4, -.01], .044, .034, wood, 6);
+    P(kn, A.box(.1, .09, .2), boot, [0, -.42, .04], { jitter: .01 });
+    legs.push(l); knees.push(kn);
+  }
+  P(w, A.cyl(.12, .14, .55, 7), wood, [0, 1.12, 0], { scale: [1, 1, .75] });                 // the body under the cloak
+  for (const sx of [-1, 1]) P(w, A.ico(.075, 0), woodL, [sx * .17, 1.4, 0], { scale: [1.2, .8, 1] });   // shoulders
+  const cloak = G(w, [0, 1.47, 0]);                                                             // hangs from the shoulders, open at the front
+  const cm = new T.Mesh(A.facet(new T.CylinderGeometry(.21, .33, .92, 10, 6, true, .5, Math.PI * 2 - 1), .03, 1), cloth);
+  cm.position.y = -.46; cm.castShadow = true; cloak.add(cm); clothSway(root, cm, { amp: .05, speed: 1.4, wave: 3, phase: i * 1.7 });
+  P(cloak, new T.CylinderGeometry(.13, .23, .14, 10, 1, true), cloth, [0, .02, 0]);             // the cloak's shoulders, round the neck
+  const arms = [-1, 1].map(sx => { const a = G(w, [sx * .22, 1.4, 0]);
+    bone(a, [0, 0, 0], [sx * .04, -.5, .06], .058, .05, cloth, 6);                              // a sleeve
+    P(a, A.ico(.04, 0), woodL, [sx * .045, -.55, .07]); return a; });                          // and the hand
+  bone(w, [0, 1.43, 0], [0, 1.55, 0], .035, .035, iron, 5);
+  const head = G(w, [0, 1.72, 0]);
+  for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) bone(head, [x * .1, -.15, z * .1], [x * .1, .15, z * .1], .012, .012, iron, 4);
+  P(head, A.box(.22, .03, .22), iron, [0, -.16, 0]); P(head, new T.ConeGeometry(.17, .12, 4), iron, [0, .2, 0], { rot: [0, Math.PI / 4, 0] });
+  const ring = new T.Mesh(new T.TorusGeometry(.04, .01, 4, 8), iron); ring.position.y = .3; head.add(ring);
+  P(head, A.box(.2, .28, .2), pane, [0, 0, 0], { cast: false, jitter: 0 });
+  const flame = new T.Mesh(new T.ConeGeometry(.045, .13, 6), glow('#ffb347', 3)); flame.position.y = -.05; head.add(flame);
+  // what each carries: a hood drawn up behind the lantern, a staff, a bundle on its back; no two alike
+  if (i % 3 !== 1) { const hood = new T.Mesh(A.facet(new T.CylinderGeometry(.12, .2, .46, 8, 2, true, Math.PI - 1.3, 2.6), .02, 2), cloth);
+    hood.position.set(0, 1.66, -.02); hood.rotation.x = .12; hood.castShadow = true; w.add(hood); }
+  if (i % 2 === 0) { const st = G(arms[1], [.045, -.55, .07]); bone(st, [0, -.8, 0], [0, .62, 0], .018, .018, woodL, 5); }
+  if (i % 3 === 2) P(w, A.box(.26, .24, .16), cloth, [0, 1.22, -.34], { jitter: .02 });
+  return { legs, knees, arms, cloak, flicker: t => { flame.scale.set(1, .85 + Math.sin(t * 11 + i) * .2, 1); flame.rotation.y = t * 2; }, lightY: 1.72 };
 }
 // a tall, thin figure in the Long Man's proportions, h metres tall; returns { head }
 function thinFigure(g, h, dark, face) {
@@ -351,20 +388,28 @@ function glassFolk(parent, kind = 'scout', seed = 1) {
   const g = G(parent), hips = G(g);
   // legs: [thigh, shin, foot-bone] and their resting bend (the scout's bend backward, like a bird's)
   const L = sct ? [.62, .72, .42] : bld ? [.5, .5] : [.68, .68], REST = sct ? [-.35, .9, -.7] : [0, 0, 0];
-  const legR = (bld ? .075 : sct ? .044 : .048) * k;
+  const legR = (bld ? .075 : NEWLOOK ? (sct ? .07 : .075) : sct ? .044 : .048) * k;   // (new look: limbs with some body to them)
+  const knuckle = (j, r) => { if (NEWLOOK) P(j, A.ico(r, 0), shell, [0, 0, 0], { cast: false, jitter: .002 }); };   // a facet of crystal at a joint
   let hipY = 0; { let a = 0; L.forEach((l, i) => { a += REST[i]; hipY += l * Math.cos(a); }); } hipY = (hipY + (bld ? .05 : .03)) * k;
   hips.position.y = hipY;
   const legs = [-1, 1].map(sx => {
     const segs = []; let at = G(hips, [sx * (bld ? .17 : .1) * k, 0, 0]);
-    L.forEach((l, i) => { const j = i ? G(at, [0, -L[i - 1] * k, 0]) : at; j.rotation.x = REST[i]; const r0 = legR * (1 - i * .18), r1 = legR * (.8 - i * .18);
-      bone(j, [0, 0, 0], [0, -l * k, 0], r0, Math.max(.008, r1), shell, 6, .004); segs.push(j); at = j; });   // (each joint hangs from the one above)
+    L.forEach((l, i) => { const j = i ? G(at, [0, -L[i - 1] * k, 0]) : at; j.rotation.x = REST[i]; const r0 = legR * (1 - i * .18), r1 = legR * ((NEWLOOK ? .62 : .8) - i * .18);
+      bone(j, [0, 0, 0], [0, -l * k, 0], r0, Math.max(.008, r1), shell, 6, .004); if (i) knuckle(j, legR * (.95 - i * .15)); segs.push(j); at = j; });   // (each joint hangs from the one above)
     const foot = segs.at(-1);
-    P(foot, A.ico((bld ? .09 : .045) * k, 0), shell, [0, -L.at(-1) * k, (bld ? .07 : .05) * k], { scale: bld ? [1.2, .5, 1.6] : [.8, .45, 2], cast: false, jitter: 0 });
+    P(foot, A.ico((bld ? .09 : NEWLOOK ? .055 : .045) * k, 0), shell, [0, -L.at(-1) * k, (bld ? .07 : .05) * k], { scale: bld ? [1.2, .5, 1.6] : [.8, .45, 2], cast: false, jitter: 0 });
     return segs;
   });
   // the body: shell and the light inside it
   const body = G(g, [0, hipY, 0]), torso = G(body);
-  P(torso, A.ico(.22 * k, 1), shell, [0, .5 * k, 0], { scale: bld ? [1.5, 1.3, 1.05] : sct ? [.74, 1.6, .56] : [.8, 1.7, .6], cast: false, jitter: .006 });
+  if (!NEWLOOK) P(torso, A.ico(.22 * k, 1), shell, [0, .5 * k, 0], { scale: bld ? [1.5, 1.3, 1.05] : sct ? [.74, 1.6, .56] : [.8, 1.7, .6], cast: false, jitter: .006 });
+  else {   // NEW LOOK: a cut-crystal chest (broad at the shoulders), a narrow waist, a pelvis of its own (it doesn't twist with the chest)
+    P(torso, A.ico(.21 * k, 0), shell, [0, (bld ? .6 : .65) * k, (sct ? .02 : 0) * k], { scale: bld ? [1.5, 1.05, 1.0] : sct ? [1.12, 1.1, .82] : sov ? [1.3, 1.12, .75] : [1.22, 1.1, .74], cast: false, jitter: .008 });
+    P(torso, A.cyl((bld ? .14 : .075) * k, (bld ? .17 : .095) * k, .24 * k, 6), shell, [0, .36 * k, 0], { scale: [1, 1, .75], cast: false, jitter: .004 });
+    const pelvis = G(body);
+    P(pelvis, A.ico(.14 * k, 0), shell, [0, .14 * k, 0], { scale: bld ? [1.55, .75, 1.05] : [1.05, .72, .75], cast: false, jitter: .006 });
+    merge(pelvis);
+  }
   if (sct) for (const sx of [-1, 1]) P(torso, new T.ConeGeometry(.04 * k, .26 * k, 3), shell, [sx * .15 * k, .82 * k, -.05 * k], { rot: [-.5, 0, sx * .9], cast: false, jitter: 0 });   // sensor fins
   if (bld) for (const sx of [-1, 1]) P(torso, A.ico(.13 * k, 0), shell, [sx * .34 * k, .82 * k, 0], { scale: [1.3, .7, 1.1], cast: false, jitter: 0 });   // shoulder plates
   bone(torso, [0, .78 * k, 0], [0, (bld ? 1.0 : 1.12) * k, .02 * k], (bld ? .07 : .035) * k, (bld ? .06 : .028) * k, shell, 6, 0);   // the neck
@@ -383,8 +428,11 @@ function glassFolk(parent, kind = 'scout', seed = 1) {
   // arms: shoulder and elbow (the gardener's long, with long fingers)
   const AL = gdn ? [.55, .6] : bld ? [.42, .42] : [.48, .5];
   const arms = [-1, 1].map(sx => {
-    const sh = G(body, [sx * (bld ? .32 : .16) * k, .82 * k, 0]); bone(sh, [0, 0, 0], [0, -AL[0] * k, 0], (bld ? .045 : .022) * k, (bld ? .038 : .016) * k, shell, 5, .003);
-    const el = G(sh, [0, -AL[0] * k, 0]); bone(el, [0, 0, 0], [0, -AL[1] * k, 0], (bld ? .038 : .016) * k, (bld ? .03 : .01) * k, shell, 5, .003);
+    const aR = bld ? [.045, .038, .03] : NEWLOOK ? [.046, .033, .021] : [.022, .016, .01];
+    const sh = G(body, [sx * (bld ? .32 : NEWLOOK ? .235 : .16) * k, .82 * k, 0]); bone(sh, [0, 0, 0], [0, -AL[0] * k, 0], aR[0] * k, (aR[1] + (NEWLOOK ? .004 : 0)) * k, shell, 5, .003); knuckle(sh, (bld ? .07 : .055) * k);
+    const el = G(sh, [0, -AL[0] * k, 0]); bone(el, [0, 0, 0], [0, -AL[1] * k, 0], aR[1] * k, aR[2] * k, shell, 5, .003); knuckle(el, (bld ? .05 : .038) * k);
+    if (NEWLOOK && !gdn) P(el, new T.OctahedronGeometry((bld ? .07 : .045) * k, 0), shell, [0, -(AL[1] + (bld ? .05 : .04)) * k, .01 * k], { scale: [.75, 1.35, .45], cast: false, jitter: .003 });   // a hand, cut like a gem
+    if (gdn && NEWLOOK) P(el, new T.OctahedronGeometry(.032 * k, 0), shell, [0, -(AL[1] + .02) * k, .01 * k], { scale: [.9, 1, .5], cast: false, jitter: 0 });   // the palm its long fingers grow from
     if (gdn) for (let f = 0; f < 3; f++) { const a = (f - 1) * .25; bone(el, [0, -AL[1] * k, 0], [Math.sin(a) * .05 * k, -(AL[1] + .17) * k, .03 * k], .006 * k, .004 * k, shell, 3, 0); bone(el, [Math.sin(a) * .05 * k, -(AL[1] + .17) * k, .03 * k], [Math.sin(a) * .07 * k, -(AL[1] + .3) * k, .07 * k], .004 * k, .002 * k, shell, 3, 0); }
     merge(sh); merge(el);
     return { sh, el, sx };
@@ -405,7 +453,9 @@ function glassFolk(parent, kind = 'scout', seed = 1) {
     merge(crest);
     const robeM = new T.MeshBasicMaterial({ color: '#8fc4e8', transparent: true, opacity: .09, depthWrite: false, side: T.DoubleSide, fog: false, blending: T.AdditiveBlending });
     const robe = [];
-    for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, c = G(body, [Math.sin(a) * .2 * k, .95 * k, Math.cos(a) * .14 * k], [0, a, 0]); sheet(c, [[-.1 * k, 0, 0], [.1 * k, 0, 0], [.14 * k, -hipY - .9 * k, .1 * k], [-.14 * k, -hipY - .9 * k, .1 * k]], [[0, 1, 2], [0, 2, 3]], robeM); robe.push({ c, ph: i * 1.3 }); }
+    if (NEWLOOK) for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, c = G(body, [Math.sin(a) * .23 * k, .9 * k, Math.cos(a) * .16 * k], [0, a, 0]);
+      clothSway(parent, clothStrip(c, .1 * k, .15 * k, hipY + .82 * k, robeM, { rows: 7, rag: .08, curl: .1 * k }), { amp: .06, speed: .7, phase: i * 1.3 }); robe.push({ c, ph: i * 1.3 }); }
+    else for (let i = 0; i < 9; i++) { const a = (i / 9) * Math.PI * 2, c = G(body, [Math.sin(a) * .2 * k, .95 * k, Math.cos(a) * .14 * k], [0, a, 0]); sheet(c, [[-.1 * k, 0, 0], [.1 * k, 0, 0], [.14 * k, -hipY - .9 * k, .1 * k], [-.14 * k, -hipY - .9 * k, .1 * k]], [[0, 1, 2], [0, 2, 3]], robeM); robe.push({ c, ph: i * 1.3 }); }
     out.crestM = crestM; out.crest = crest; out.robe = robe;
   }
   const lt = softLight(c1, sov ? 3.5 : 2.4, sov ? 4.5 : 3.4); lt.position.y = hipY + .5 * k; g.add(lt); out.light = lt;
@@ -2897,6 +2947,7 @@ const BEASTS = {
       const pane = new T.MeshStandardMaterial({ color: '#ffe7b8', transparent: true, opacity: .28, roughness: .05, metalness: .1, depthWrite: false });
       const ap = root.userData.appearance || {};
       const count = Math.max(5, Math.min(9, Math.round(7 * ((ap.variant || {}).size || 1))));
+      if (NEWLOOK) return procession(root, (w, i) => lanternFolk(root, w, i, { wood, woodL, iron, wrap, pane }), count);
       return procession(root, (w, i) => {
         const legs = [-1, 1].map(sx => { const l = G(w, [sx * .08, .82, 0]); bone(l, [0, 0, 0], [0, -.82, .02], .04, .03, wood, 5); return l; });
         P(w, A.cyl(.15, .11, .62, 7), wood, [0, 1.12, 0], { scale: [1, 1, .7] });
