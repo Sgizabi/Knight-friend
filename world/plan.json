@@ -1,16 +1,15 @@
 {
-  "start": "2026-11-27T13:01:34+00:00",
-  "mood": "content",
+  "start": "2026-11-27T15:01:37+00:00",
+  "mood": "curious",
   "steps": [
     {
       "place": "courtyard",
-      "action": "work",
+      "action": "pace",
       "minutes": 20,
-      "emote": "spark",
-      "note": "Finish stone counting for the row",
+      "emote": "dots",
+      "note": "",
       "thoughts": [
-        "That slab looks like it wants a break.",
-        "Wind rattles the loose stones again."
+        "Wind makes the stones feel restless"
       ]
     },
     {
@@ -18,38 +17,30 @@
       "action": "work",
       "minutes": 20,
       "emote": "spark",
-      "note": "Sharpen hammer and check bellows",
+      "note": "",
       "thoughts": [
-        "Bellows still sigh when I pull.",
-        "Maybe I can add a leather strap."
-      ]
-    },
-    {
-      "place": "woodshed",
-      "action": "stand",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "Stack a few dry logs for later",
-      "thoughts": [
-        "Logs are stubborn, they slip.",
-        "Good to have extra wood before the wind picks up."
+        "Need to test the new hammer handle"
       ]
     },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "spark",
-      "note": "Take a short break, watch the flames",
+      "emote": "heart",
+      "note": "",
       "thoughts": [
-        "Fire is a decent coworker.",
-        "Hope the roof holds through the gust."
+        "Fire’s heat is a good excuse for a short break"
+      ]
+    },
+    {
+      "place": "bathhouse",
+      "action": "work",
+      "minutes": 20,
+      "emote": "sigh",
+      "note": "",
+      "thoughts": [
+        "Check the shim tooltip on the tablet again"
       ]
     }
-  ],
-  "applied_until": "2026-11-27T14:30:26+00:00",
-  "live_thought": {
-    "text": "The flame flickers, stones keep their secrets.",
-    "time": "2026-11-27T14:30:26+00:00"
-  }
+  ]
 }

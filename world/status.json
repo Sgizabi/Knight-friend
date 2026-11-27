@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-27T15:00:34+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-27T15:01:37+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue counting the stones in the courtyard wall and note any new cracks",
-  "thought": "The wind rattles the repaired roof. I want to see if any new cracks showed up while I was fixing the lantern guard."
+  "note": "",
+  "thought": ""
 }
