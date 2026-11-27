@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-27T18:00:37+00:00",
+    "applied_until": "2026-11-27T18:30:26+00:00",
     "live_thought": {
-      "text": "The stone feels warm under my boots, like an old friend.",
-      "time": "2026-11-27T18:00:37+00:00"
+      "text": "The fire crackles, stones warm my boots.",
+      "time": "2026-11-27T18:30:26+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T18:00:38+00:00",
+    "since": "2026-11-27T18:30:26+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 82.9,
+    "warmth": 82.6,
+    "inspiration": 77.6,
+    "spirit": 71.9
+  },
+  "needs_prev": {
     "rest": 84.1,
     "warmth": 80.9,
     "inspiration": 77.6,
     "spirit": 72.4
   },
-  "needs_prev": {
-    "rest": 85.7,
-    "warmth": 83.3,
-    "inspiration": 77.6,
-    "spirit": 73.0
-  },
-  "needs_at": "2026-11-27T18:00:38+00:00",
+  "needs_at": "2026-11-27T18:30:26+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2157,7 +2157,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T18:00:37+00:00",
+    "updated": "2026-11-27T18:30:26+00:00",
     "seen_until": "2026-11-27T16:55:30+00:00"
   },
   "gifts": [],
@@ -2406,5 +2406,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T18:00:38+00:00"
+  "exported": "2026-11-27T18:30:26+00:00"
 }
