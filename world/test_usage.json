@@ -1,19 +1,15 @@
 {
-  "date": "2026-11-26",
-  "tokens": 13163,
+  "date": "2026-11-27",
+  "tokens": 8142,
   "by_model": {
-    "openai/gpt-oss-20b": 5146,
-    "qwen/qwen3.8-27b": 1910,
-    "openai/gpt-oss-120b": 6107
+    "openai/gpt-oss-120b": 5945,
+    "qwen/qwen3.8-27b": 1569,
+    "openai/gpt-oss-20b": 628
   },
   "runs": [
     {
-      "note": "visitor help: name screening test",
-      "tokens": 4268
-    },
-    {
-      "note": "visitor help: encounter with helpers test",
-      "tokens": 8895
+      "note": "Tidekin traders: one encounter test",
+      "tokens": 8142
     }
   ]
 }

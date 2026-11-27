@@ -370,6 +370,47 @@ CHARACTERS = {
               "craft settled behind it, and a far vaster one hanging in the sky over the plain, the plain gone faintly teal beneath it",
         tell="its crest brightens when it is pleased", likes=["welcome", "bow", "gift", "show", "respect"],
         danger=0, gifts=["a gift from their people"], trace="a great scorched circle on the plain"),
+    # the Tidekin, the people of the lake
+    "tidekin1": B(
+        traits=["shy", "curious", "gentle", "skittish", "of the water"],
+        drives=["to see who lives in the stone house", "following the keep's firelight across the water", "curiosity, and nothing more",
+                "it was fishing at dusk and saw the smoke"],
+        signs=["rings spreading on the still lake where nothing jumped", "a small warm light moving under the water near the shore"],
+        looks="a sleek being like an otter with a newt's flat tail, dark green-bronze with a pale belly, head and shoulders out of "
+              "the lake at dusk, holding up a spiral shell that glows like a lantern, and watching the keep",
+        tell="it tilts its head, and its shell-light brightens, when it is curious", likes=["wave", "slow", "quiet", "sit", "fish", "shell", "light",
+                                                                                          "lantern", "song", "hum", "gift"],
+        danger=0, gifts=["a smooth river stone with a hole worn through it"], trace="small webbed prints on the shore, going back into the water"),
+    "tidekin2": B(
+        traits=["shy", "gentle", "musical", "many", "skittish", "of the water"],
+        drives=["fishing along the shore", "singing the evening in", "to look at the keep from closer", "teaching a young one to fish"],
+        signs=["a soft humming from the lake, many voices and no words", "warm lights bobbing along the shore at dusk"],
+        looks="three of the lake folk on the shore at dusk, sitting back on their tails and singing without words while one of them "
+              "fishes with a line, their shell-lanterns glowing beside them",
+        tell="when they are at ease the singing goes on; when they are uneasy it stops all at once", likes=["song", "sing", "hum", "listen", "fish",
+                                                                                                          "wave", "sit", "quiet", "bread", "gift"],
+        danger=0, gifts=["a fresh fish, still cold from the lake", "a spiral shell, the colour of the evening"],
+        trace="a ring of flattened reeds on the shore, and fish scales shining in the grass"),
+    "tidekin3": B(
+        traits=["gentle", "curious", "trading", "many", "building", "of the water"],
+        drives=["to trade", "to show what they have made", "to see what he makes", "cutting reeds for the village"],
+        signs=["a little reed boat poling along the lake's edge", "voices humming from the village of reeds across the water"],
+        looks="a few of the lake folk come up from their floating village of reeds with river stones, shells and a fish on a cord, "
+              "and set them out on a flat stone by the shore, as if to trade",
+        tell="they set out what they have and step back from it, and wait", likes=["carving", "carved", "whittle", "rope", "cord", "net", "basket", "woven", "bread", "pot", "bowl", "cloth", "made", "trade", "swap", "gift", "candle", "hook", "knot"],
+        danger=0, gifts=["a smooth river stone with a hole worn through it", "a spiral shell, the colour of the evening",
+                         "a fresh fish, still cold from the lake", "a little boat woven of reeds"],
+        trace="a flat stone by the shore, with wet marks where things were set out"),
+    "tidekin4": B(
+        traits=["ancient", "slow", "gentle", "wise", "of the water"],
+        drives=["to see for itself the one its people speak of", "to thank him", "to ask nothing at all, only to look"],
+        signs=["every shell-light in the reed village gathers at the water's edge at once", "the slow tap of a staff on the shore path"],
+        looks="the eldest of the lake folk: very old, crusted with barnacles, walking slowly up from the lake with a staff of "
+              "driftwood and a great shell-lantern, which it lifts toward the keep",
+        tell="it lifts its lantern toward you when it means to greet you", likes=["bow", "welcome", "respect", "sit", "slow", "gift", "song",
+                                                                                 "listen", "quiet", "kneel"],
+        danger=0, gifts=["a pearl the size of a thumbnail, faintly warm"],
+        trace="a line of slow webbed prints from the lake to the wall and back, with the taps of a staff beside them"),
 }
 
 # More than one way to keep a being back, so no answer is the answer forever. Each individual
@@ -585,12 +626,20 @@ REACTS = {
                 "Their beams snap to you and they pull back fast, in a tight line."),
     "glassy3": ("Some of them gather nearer, as if they mean to show you something.",
                 "The whole camp dims, and they draw together on the far side of the plain."),
+    "tidekin1": ("Its shell-light brightens; it tilts its head, and stays a little longer.",
+                 "It ducks under at once, and the rings spread out over the empty water."),
+    "tidekin2": ("The singing goes on, and one of them lifts its lantern to you.",
+                 "The singing stops all at once, and they slip back into the water one after another."),
+    "tidekin3": ("They nod over what you brought, turning it in their webbed hands, and push their own things toward you.",
+                 "They gather up what they brought and pole their boat back toward the reeds."),
+    "tidekin4": ("It lifts its lantern toward you, slowly, and holds it there a long moment.",
+                 "It looks at you a long while, then turns, and walks slowly back down to the water."),
     "glassy4": ("Its crest brightens, and it inclines its head toward you.",
                 "Its crest dims; its attendants close around it and it turns away."),
 }
 
 # Gifts that aren't things to keep: told, not added to what the beings left him.
-INTANGIBLE = {"a true answer to something", "a sound you can't forget", "a dream you can't stop thinking about",
+INTANGIBLE = {"a fresh fish, still cold from the lake", "a true answer to something", "a sound you can't forget", "a dream you can't stop thinking about",
               "a dream not your own", "a true secret", "an hour you remember twice", "help with one heavy stone",
               "a map of the keep drawn in light on the flagstones, gone by morning",
               "a new spring of clear water at the hill's foot", "a ring of the old bell, which carries for miles"}

@@ -78,11 +78,27 @@ KINDS = {
     "glassy2":      dict(name="the glassy Scouts", nature="neutral", rarity="rare", step=3, when="dark", minutes=(30, 60), arrives="ship", arc="glassy", stage=2),
     "glassy3":      dict(name="the glassy Expedition", nature="neutral", rarity="rare", step=3, when="dusk", minutes=(240, 480), arrives="ship", arc="glassy", stage=3),
     "glassy4":      dict(name="the glassy Sovereign", nature="neutral", rarity="legendary", step=4, when="dusk", minutes=(40, 90), arrives="ship", arc="glassy", stage=4),
+    # the Tidekin, the people of the lake: shy, curious and gentle (ARCS; their reed village is a PLACE that stays)
+    "tidekin1":     dict(name="the Tidekin", nature="gentle", rarity="uncommon", step=0, when="dusk", minutes=(20, 40), arc="tidekin", stage=1),
+    "tidekin2":     dict(name="the Tidekin on the shore", nature="gentle", rarity="uncommon", step=0, when="dusk", likes=["rain"], minutes=(40, 90), arc="tidekin", stage=2),
+    "tidekin3":     dict(name="the Tidekin traders", nature="gentle", rarity="uncommon", step=1, when="day", minutes=(40, 90), arc="tidekin", stage=3),
+    "tidekin4":     dict(name="the eldest of the Tidekin", nature="gentle", rarity="rare", step=1, when="dusk", minutes=(30, 60), arc="tidekin", stage=4),
 }
 
 # Story arcs: each stage unlocks the next once it has been met enough times. If he drives them
 # off (regard falls to -2), the arc rests a long while and comes back warier, further away.
-ARCS = {"glassy": {"stages": ["glassy1", "glassy2", "glassy3", "glassy4"], "advance_after": [3, 2, 1], "rest_days": 60}}
+# linger: stages that stay open once the story has passed them (the Tidekin go on trading after their
+# eldest has come). An advance_after as long as the stages closes the last one once it has been met
+# (their eldest comes to the wall once). place: something they make that STAYS in his world from that
+# stage on, growing over build_days (PLACES); if he drives them off it is taken away, and it is begun
+# again when they come back after their rest.
+ARCS = {"glassy": {"stages": ["glassy1", "glassy2", "glassy3", "glassy4"], "advance_after": [3, 2, 1], "rest_days": 60},
+        "tidekin": {"stages": ["tidekin1", "tidekin2", "tidekin3", "tidekin4"], "advance_after": [2, 2, 2, 1], "rest_days": 60,
+                    "linger": [3], "place": {"at": 3, "kind": "village", "build_days": 21}}}
+# what a place is, in plain words (for him: what he can see of it from the keep), by how far it has grown
+PLACES = {"village": ("Out at the lake's edge, the Tidekin are building something of reeds that floats on the water.",
+                      "Out at the lake's edge floats the Tidekin's village of reeds: little round huts on rafts, with shell-lights in the doorways.",
+                      "The Tidekin are taking their reed village apart and drawing it back into the reeds.")}
 
 # Slow presences: once one starts, it comes back every so many days, a step closer each time,
 # until it reaches the wall or he turns it back. Follow-ups take that day's place (one being a
@@ -123,7 +139,8 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "basilisk", "wyrm", "crawl", "golem", "well", "bloom", "warden", "larva",               # wave 3
             "listener", "cartographer", "moon2", "bentone", "watcher", "nightgrown", "glassy1",     # wave 4
             "clockhead", "stranger", "ninefold", "leech", "seam", "stitched",                         # last wave
-            "manyjoint", "hill", "glassy2", "glassy3", "glassy4"}
+            "manyjoint", "hill", "glassy2", "glassy3", "glassy4",
+            "tidekin1", "tidekin2", "tidekin3", "tidekin4"}                                         # the peoples: the Tidekin
 
 
 def nature_of(a):
@@ -254,7 +271,9 @@ def arc_open(state, kind, start):
         return True
     arc = state.get("arcs", {}).get(k["arc"], {})
     rest = _parse(arc.get("rest_until"))
-    return k["stage"] == arc.get("stage", 1) and not (rest and rest > start)
+    here = arc.get("stage", 1)
+    now_open = k["stage"] == here or (k["stage"] in ARCS[k["arc"]].get("linger", ()) and here > k["stage"])
+    return now_open and not (rest and rest > start)
 
 
 def counts_as_danger(a):
@@ -392,6 +411,50 @@ def note_arc(state, kind, regard_change, now=None):
     if arc["regard"] <= -2:
         arc["rest_until"] = _iso((now or _now()) + dt.timedelta(days=ARCS[k["arc"]]["rest_days"]))
         arc["regard"] = -1                         # when they return, warier, but they do return
+        if arc.get("place") and not arc["place"].get("gone"):
+            arc["place"]["gone"] = _iso(now or _now())   # what they built is taken away (over a day)
+
+
+def tend_places(state, now=None):
+    """Places a people makes in his world: begun when their story reaches that stage (and they aren't
+    resting after being driven off), taken away a day after he drove them off, begun again on their return."""
+    now = now or _now()
+    for name, spec in ARCS.items():
+        p = spec.get("place")
+        arc = state.get("arcs", {}).get(name)
+        if not p or not arc:
+            continue
+        place, rest = arc.get("place"), _parse(arc.get("rest_until"))
+        if place and place.get("gone") and now - _parse(place["gone"]) > dt.timedelta(days=1):
+            arc.pop("place")
+            place = None
+        if not place and arc.get("stage", 1) >= p["at"] and not (rest and rest > now):
+            arc["place"] = {"since": _iso(now)}
+
+
+def places(state, now=None):
+    """What stands in his world now: [{arc, kind, grown 0..1, leaving}]."""
+    now = now or _now()
+    out = []
+    for name, spec in ARCS.items():
+        place = state.get("arcs", {}).get(name, {}).get("place")
+        if not spec.get("place") or not place:
+            continue
+        days = (now - _parse(place["since"])).total_seconds() / 86400
+        out.append({"arc": name, "kind": spec["place"]["kind"], "since": place["since"],
+                    "grown": round(max(0, min(1, days / spec["place"]["build_days"])), 2), "leaving": bool(place.get("gone"))})
+    return out
+
+
+def places_line(world: Path, now=None):
+    """One plain line for him about what the visiting peoples have made nearby (empty if nothing)."""
+    if not enabled():
+        return ""
+    lines = []
+    for p in places(load(world), now):
+        said = PLACES[p["kind"]]
+        lines.append(said[2] if p["leaving"] else said[1] if p["grown"] >= .5 else said[0])
+    return " ".join(lines)
 
 
 def might(kind, a=None):
@@ -525,6 +588,7 @@ def update(world: Path, sched=None, now=None, keep=None):
     if keep is None:
         keep = _load(world / "keep.json", {})
     witness(state, best, now)
+    tend_places(state, now)
     today = _keeper_day(now)
     for day in (today, today + dt.timedelta(days=1)):
         key = day.isoformat()
@@ -627,6 +691,9 @@ def export(world: Path, now=None):
     traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
               if a.get("arrival") and _parse(a["start"]) and
               _parse(a["start"]) <= now < _parse(a["start"]) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]
+    for p in places(state, now):                   # what a people has built (it stays): built afresh as each hut is added (sixths)
+        traces.append({"kind": p["kind"], "id": f"{p['arc']}-{p['kind']}-{'leaving' if p['leaving'] else int(p['grown'] * 6)}",
+                       "since": p["since"], "grown": p["grown"], "leaving": p["leaving"]})
     helpers = visitors.roll(world, now)            # the roll of helpers (recent deeds, screened names only)
     return {"current": shown, "seeing": best["step"], "traces": traces,
             **({"helpers": helpers} if helpers["deeds"] else {})}

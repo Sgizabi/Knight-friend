@@ -292,6 +292,29 @@ assert _arc["arcs"]["glassy"]["stage"] == 2 and creatures.arc_open(_arc, "glassy
 creatures.note_arc(_arc, "glassy2", -1, _t0)
 creatures.note_arc(_arc, "glassy2", -1, _t0)
 assert not creatures.arc_open(_arc, "glassy2", _t0) and creatures.arc_open(_arc, "glassy2", _t0 + _dt.timedelta(days=61))
+# the Tidekin: two of each chapter, then their village is begun (a place that stays and grows); the
+# traders linger once the eldest has come (once); driven off, the village is taken away, and begun again on their return
+_td = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {}, "arcs": {}}
+for _k, _n in (("tidekin1", 2), ("tidekin2", 2)):
+    for _i in range(_n):
+        _td["appearances"].append({"id": f"{_k}-{_i}", "kind": _k, "start": "2026-01-01T00:00:00+00:00", "end": "2026-01-01T01:00:00+00:00"})
+    creatures.witness(_td, _bb, _t0)
+creatures.tend_places(_td, _t0)
+assert _td["arcs"]["tidekin"]["stage"] == 3 and creatures.arc_open(_td, "tidekin3", _t0) and not creatures.arc_open(_td, "tidekin2", _t0)
+assert [p["grown"] for p in creatures.places(_td, _t0)] == [0] and creatures.places(_td, _t0 + _dt.timedelta(days=30))[0]["grown"] == 1
+for _i in range(2):
+    _td["appearances"].append({"id": f"t3-{_i}", "kind": "tidekin3", "start": "2026-01-02T00:00:00+00:00", "end": "2026-01-02T01:00:00+00:00"})
+creatures.witness(_td, _bb, _t0)
+assert creatures.arc_open(_td, "tidekin4", _t0) and creatures.arc_open(_td, "tidekin3", _t0)   # the eldest may come; trading goes on
+_td["appearances"].append({"id": "t4", "kind": "tidekin4", "start": "2026-01-03T00:00:00+00:00", "end": "2026-01-03T01:00:00+00:00"})
+creatures.witness(_td, _bb, _t0)
+assert not creatures.arc_open(_td, "tidekin4", _t0) and creatures.arc_open(_td, "tidekin3", _t0)   # the eldest came once
+creatures.note_arc(_td, "tidekin3", -1, _t0); creatures.note_arc(_td, "tidekin3", -1, _t0)
+assert creatures.places(_td, _t0)[0]["leaving"] and not creatures.arc_open(_td, "tidekin3", _t0)
+creatures.tend_places(_td, _t0 + _dt.timedelta(days=2))
+assert not creatures.places(_td, _t0 + _dt.timedelta(days=2))                                     # taken away
+creatures.tend_places(_td, _t0 + _dt.timedelta(days=61))
+assert creatures.places(_td, _t0 + _dt.timedelta(days=61))[0]["grown"] == 0                        # begun again on their return
 # a slow presence: back every evening, one closer, until the wall (or turned back)
 _ch = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {"thincrowd": {"n": 1, "next": "2026-11-22"}}, "arcs": {}}
 _seen = []

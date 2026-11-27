@@ -4988,67 +4988,228 @@ const BEASTS = {
     exit() { A.setFireDim(1); },
   },
 
-  // ================================================================ THE VISITING PEOPLES (mockups)
-  tidekin: {
-    name: 'The Tidekin', hour: 18,
-    blurb: 'A people of the lake: smooth otter-and-newt folk, dark green-bronze with pale bellies, who carry lit shells as lanterns. Curious, shy and gentle. First one surfaces at dusk and watches him; then a few come to fish and sing along the shore; in time they build a little floating village of reeds; and once, their eldest comes to the wall.',
+  // ================================================================ THE VISITING PEOPLES
+  // THE TIDEKIN, the people of the lake (brain: creatures.py tidekin1-4, the arc 'tidekin'). Their reed
+  // village is a place that STAYS once they build it: the page gets it from state.creatures.traces as
+  // kind 'village' (spawnTrace -> reedVillage); 'reedvillage' below shows it in the preview.
+  tidekin1: {
+    name: 'The Tidekin', hour: 18.6,
+    blurb: 'The first chapter of the lake folk. At dusk one of them surfaces in the lake, head and shoulders out of the water, and holds up its shell-lantern to watch the keep. It tilts its head when it is curious, blinks its big dark eyes, now and then looks straight at whoever is watching, then ducks under and comes up again somewhere else.',
     view: [[16, 2.4, 14], [22, .2, 18.8]],
-    variants: [['', 'one, watching from the lake'], ['shore', 'a few on the shore, singing'], ['eldest', 'their eldest']],
     knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'something is watching from the lake' },
     build(root) {
-      const kind = root.userData.appearance?.variant?.kind || '', LX = 27, LZ = 23, LL = -.35;
-      const at = (d, k) => [LX - .76 * k + .65 * d, LZ - .65 * k - .76 * d];   // k: out from the lake's middle toward the keep; d: along the shore
-      const look = (cd, ck, ld, lk, ly) => { const c = at(cd, ck), l = at(ld, lk); this.view = [[c[0], gy(...c) + 2.0, c[1]], [l[0], ly, l[1]]]; };
-      const rip = Array.from({ length: 5 }, () => { const m = new T.Mesh(new T.RingGeometry(.9, 1, 32), new T.MeshBasicMaterial({ color: '#d6eaf2', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; root.add(m); return { m, t0: -99, x: 0, z: 0 }; });
-      let ri = 0; const ripple = (x, z, t) => { const q = rip[ri++ % rip.length]; Object.assign(q, { t0: t, x, z }); };
-      const ripples = t => { for (const q of rip) { const k = (t - q.t0) / 3; q.m.visible = k >= 0 && k < 1; if (q.m.visible) { q.m.position.set(q.x, LL + .03, q.z); q.m.scale.setScalar(.3 + k * 2.2); q.m.material.opacity = (1 - k) * .45; } } };
-      const faceKeep = (o, x, z) => { o.g.rotation.y = Math.atan2(-x, -z); };
-      if (kind === 'shore') {                                          // a few on the shore at dusk, singing (no words), one fishing
-        look(2.6, 15.2, 0, 10.6, .7);
-        const folk = [-1.4, 0, 1.4].map((d, i) => { const [x, z] = at(d, 10.7), o = tidekin(root, [x, gy(x, z), z], .95 + i * .05, false, 10 + i); o.g.rotation.y = Math.atan2(LX - x, LZ - z) + (i - 1) * .3; o.body.position.y = -.28; return o; });
-        const rod = G(folk[2].arms.L, [-.04, -.5, .22]); bone(rod, [0, 0, 0], [0, .6, 1.3], .012, .006, A.M.woodL, 4); bone(rod, [0, .6, 1.3], [0, -1.0, 1.9], .002, .002, A.mat('#d8d8d0'), 3);
-        const notes = Array.from({ length: 8 }, (_, i) => { const m = P(root, A.ico(.025, 0), glow('#fff0c8', 2, { fog: false }), [0, 0, 0], { cast: false }); return { m, i }; });
-        return t => {
-          folk.forEach((o, i) => {
-            const sing = i < 2 ? Math.max(0, Math.sin(t * 1.9 + i * 1.7)) : 0;
-            o.head.rotation.set(i < 2 ? -.45 - sing * .15 : .25, Math.sin(t * .3 + i) * .2, Math.sin(t * .8 + i) * .1);
-            o.jaw.rotation.x = .1 + sing * .35; o.body.rotation.z = Math.sin(t * .8 + i * 2) * .07;
-            o.arms.R.rotation.x = -.5; o.lantern.rotation.x = .5; o.arms.L.rotation.x = i === 2 ? -1.1 : -.3; o.shellM.emissiveIntensity = 1.4 + Math.sin(t * 2 + i) * .2;
-            o.tail[0].rotation.set(-1.75, .5, 0); o.tail.forEach((j, q) => { if (q) j.rotation.z = .35; });   // tail curled round beside it
-          });
-          for (const q of notes) { const o = folk[q.i % 2], k = (t * .3 + q.i / 8) % 1, p = o.g.position; q.m.position.set(p.x + Math.sin(q.i * 2 + t) * .3, p.y + 1.3 + k * 2.2, p.z + Math.cos(q.i * 3) * .3); q.m.visible = k < .9; }
-        };
-      }
-      if (kind === 'eldest') {                                         // their eldest: old and barnacled, walking the shore slowly with a staff
-        look(-1, 19, .4, 10.8, .9);
-        const o = tidekin(root, [0, 0, 0], 1.25, true, 20);
-        return t => {
-          const c = t % 40, u = c < 20 ? smooth(0, 16, c) : 1 - smooth(20, 36, c), d = -2.6 + u * 5.2, [x, z] = at(d, 10.9), walking = (c > .5 && c < 16) || (c > 20.5 && c < 36);
-          const [x2, z2] = at(d + (c < 20 ? .1 : -.1), 10.9);
-          o.g.position.set(x, gy(x, z), z);
-          const stop = !walking; o.g.rotation.y = stop ? Math.atan2(-x, -z) : Math.atan2(x2 - x, z2 - z);   // when it stops, it turns to the keep
-          o.body.position.y = walking ? Math.abs(Math.sin(t * 2.2)) * .03 : 0; o.body.rotation.z = walking ? Math.sin(t * 2.2) * .06 : 0;
-          o.arms.R.rotation.x = stop ? -1.5 : -.6; o.lantern.rotation.x = -o.arms.R.rotation.x;   // it lifts its lantern toward the keep
-          o.arms.L.rotation.x = -.5 + (walking ? Math.sin(t * 2.2) * .15 : 0);
-          o.head.rotation.set(stop ? -.1 : .1, 0, Math.sin(t * .5) * .05); o.tail[0].rotation.y = Math.sin(t * 2.2) * .3;
-        };
-      }
-      look(0, 14, 0, 6.5, -.1);                                        // one, surfacing at dusk to watch him
-      const spots = [at(-1.5, 7.2), at(1.8, 6.8), at(0, 6)], o = tidekin(root, [0, -5, 0], 1, false, 3);
-      let n = -1, dove = false;
-      return t => {
-        const c = t % 14, cyc = Math.floor(t / 14), sp = spots[cyc % 3];
-        if (cyc !== n) { n = cyc; dove = false; o.g.position.x = sp[0]; o.g.position.z = sp[1]; faceKeep(o, ...sp); ripple(sp[0], sp[1], t - c + 1.3); }
-        if (c > 12 && !dove) { dove = true; ripple(sp[0], sp[1], t); }
-        const up = smooth(1.2, 2.6, c) * (1 - smooth(11.6, 12.8, c));
-        o.g.position.y = LL - 1.8 + up * .95;   // head and shoulders out of the water
-        o.head.rotation.set(-.08 + Math.sin(t * .7) * .04, Math.sin(t * .4) * .35, pulse(t, 5.3, 1.2) * .35);   // a curious tilt of the head, now and then
-        o.arms.R.rotation.x = -1.0 - pulse(t + 1, 7, 2.5) * .5; o.lantern.rotation.x = -o.arms.R.rotation.x; o.arms.L.rotation.x = -.3;
-        o.shellM.emissiveIntensity = 1.4 + Math.sin(t * 2) * .2; o.tail[0].rotation.y = Math.sin(t * 1.3) * .5;
-        ripples(t);
+      const reg = Math.max(-2, Math.min(2, root.userData.appearance?.regard || 0));
+      const c = lk(A0 - .02, 1.42), l = lk(A0 + .02, .62); this.view = [[c[0], gy(...c) + 1.5, c[1]], [l[0], LAKE_Y + .55, l[1]]];
+      const f = tideFolk(root, [0, -9, 0], 1, { seed: 3 }), rip = ripples(root), ring = waterRing(root);
+      const SP = [.62, .57, .66, .55].map((ff, i) => lk(A0 + (i - 1.5) * .15, ff - reg * .05));   // where it comes up (warier: further out)
+      let n = -1, t0 = 0, dur = 0, sp = SP[0], dove = false;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        if (n < 0 || t > t0 + dur) { n++; t0 = t; dur = 36 + nz(n + 3) * 40; dove = false; sp = SP[(n * 3 + Math.floor(nz(n) * 2)) % SP.length];
+          f.g.position.set(sp[0], -9, sp[1]); f.g.rotation.y = Math.atan2(-sp[0], -sp[1]); rip.at(sp[0], sp[1], t + 1.3); }
+        const k = t - t0, up = smooth(1.3, 3.6, k) * (1 - smooth(dur - 7.5, dur - 5.6, k));
+        if (!dove && k > dur - 7.2) { dove = true; rip.at(sp[0], sp[1], t); }
+        f.g.position.y = LAKE_Y - 2.1 + up * 1.18;                     // head and shoulders out of the water
+        f.legs.forEach(l => { l.hip.visible = false; }); f.tail[0].visible = false;   // (all under the water)
+        f.rest(); f.tread(t);
+        // curious: a tilt of the head now and then; it lifts the lantern higher to see; sometimes it looks at whoever watches
+        const w = Math.floor(t / 7), atCam = nz(w + n * 5) > .62 ? smooth(0, 1.2, t - w * 7) * (1 - smooth(5.6, 6.8, t - w * 7)) : 0;
+        const cy = f.camYaw() * atCam, tilt = pulse(t + n * 2, 6.7, 1.5) * .42;
+        f.R.want('neck', -.05, cy * .4 + Math.sin(t * .23) * .12 * (1 - atCam), 0);
+        f.R.want('head', -.06 + Math.sin(t * .7) * .03, cy * .6 + Math.sin(t * .31) * .2 * (1 - atCam), tilt);
+        f.R.want('sh1', -2.3 - pulse(t + 1, 9.5, 2.6) * .35, 0, .3); f.R.want('el1', -.35, 0, 0);
+        f.step(t, dt, up);
+        ring.at(f.g.position.x, f.g.position.z, up, t); rip.tick(t);
+        f.g.visible = up > .001;
       };
     },
   },
+  tidekin2: {
+    name: 'The Tidekin on the shore', hour: 18.8,
+    blurb: 'The second chapter. Three of the lake folk sit back on their tails on the shore at dusk, their shell-lanterns set down beside them. Two sing without words, phrase after phrase, heads lifted; one fishes with a reed rod while a little one watches every move and bounces when a fish comes up. When they are uneasy the singing stops all at once.',
+    view: [[16, 2.4, 14], [22, .2, 18.8]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a humming from the lake' },
+    build(root) {
+      const c = lk(A0 + .14, .74), l = lk(A0 + .03, 1.07); this.view = [[c[0], LAKE_Y + 1.3, c[1]], [l[0], gy(...l) + .5, l[1]]];   // (from out over the water, facing them)
+      const sea = lk(A0 + .05, .7);
+      const place = (o, a, ff, face = sea) => { const p = lk(a, ff); o.g.position.set(p[0], gy(...p), p[1]); o.g.rotation.y = Math.atan2(face[0] - p[0], face[1] - p[1]); return p; };
+      const singers = [0, 1].map(i => { const o = tideFolk(root, [0, 0, 0], .96 + i * .06, { seed: 10 + i }); place(o, A0 - .1 + i * .085, 1.07); o.lantern.visible = false; return o; });
+      const fisher = tideFolk(root, [0, 0, 0], 1, { seed: 12 }), fp = place(fisher, A0 + .13, 1.05); fisher.lantern.visible = false;
+      const young = tideFolk(root, [0, 0, 0], .5, { seed: 13, young: true }), yp = place(young, A0 + .17, 1.1, fp);
+      const lamps = [[A0 - .13, 1.1], [A0 - .03, 1.11], [A0 + .1, 1.09]].map(([a, ff]) => { const p = lk(a, ff), L = shellLantern(root, 1.1); L.g.position.set(p[0], gy(...p) + .07, p[1]); L.g.rotation.set(.3, a, 1.35); return L; });
+      // the rod and line, and the fish when it comes
+      const rod = G(fisher.g, [0, .5, .3]); bone(rod, [0, -.12, -.12], [0, .9, 1.5], .016, .007, A.mat('#a89a62', 0, .7), 5, 0);   // (out over the water, held in both hands)
+      const tip = G(rod, [0, .9, 1.5]), bob = P(root, A.ico(.035, 1), A.mat('#d8c48a', 0, .6), [0, 0, 0], { cast: false });
+      const line = new T.Line(new T.BufferGeometry().setFromPoints([V(), V()]), new T.LineBasicMaterial({ color: '#d8d8d0', transparent: true, opacity: .6 })); line.frustumCulled = false; root.add(line);
+      const fish = G(root); P(fish, A.ico(.06, 1), A.mat('#9aa8a0', .4, .3), [0, 0, 0], { scale: [.5, .7, 1.6] }); P(fish, new T.ConeGeometry(.04, .07, 4), A.mat('#7a887e', .3, .4), [0, 0, -.11], { rot: [-Math.PI / 2, 0, 0], scale: [.3, 1, 1] });
+      const basket = lk(A0 + .155, 1.075); { const b = G(root, [basket[0], gy(...basket), basket[1]]); lath(b, [[0, 0], [.1, .01], [.13, .1], [.12, .17]], texMat('#a88f52', 'weave'), [0, 0, 0], [0, 0, 0], [1, 1, 1], 9); }
+      const notes = Array.from({ length: 10 }, (_, i) => ({ m: P(root, A.ico(.022, 0), glow('#fff0c8', 2, { fog: false }), [0, -9, 0], { cast: false }), i }));
+      const bp = lk(A0 + .1, .9), tp = V(), wp = V();
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        // the song: phrases of about nine seconds, a breath between; the two sing together, not quite in step
+        const ph = t % 11.5, singing = ph < 9 ? smooth(0, .6, ph) * (1 - smooth(8.4, 9, ph)) : 0;
+        singers.forEach((o, i) => {
+          o.rest(); o.sit(1, t);
+          const syl = Math.max(0, Math.sin(t * (3.1 + i * .2) + i * 1.4)) * singing;
+          o.R.want('neck', -.35 * singing - .05, Math.sin(t * .3 + i) * .15, Math.sin(t * .9 + i * 2) * .06);
+          o.R.want('head', -.3 * singing + .05, 0, Math.sin(t * .45 + i) * .08 * singing);
+          o.jaw.rotation.x = .05 + syl * .4; o.R.want('body', 0, 0, Math.sin(t * .95 + i * .6) * .08 * singing);
+          o.R.want('sh-1', -.35, 0, -.2); o.R.want('sh1', -.35, 0, .2); o.R.want('el-1', -.7); o.R.want('el1', -.7);   // hands folded over the belly
+          o.step(t, dt);
+        });
+        for (const q of notes) { const o = singers[q.i % 2], k = (t * .32 + q.i / 10) % 1, p = o.g.position; q.m.position.set(p.x + Math.sin(q.i * 2 + t * .7) * .3, p.y + 1.4 + k * 2.2, p.z + Math.cos(q.i * 3 + t * .5) * .3); q.m.visible = singing > .3 && k < .85; }
+        // the fisher: rod out over the water, the line slack; every so often a bite, the rod comes up and a fish with it
+        const fc = t % 26, bite = fc > 18 ? smooth(18, 18.4, fc) * (1 - smooth(23, 24, fc)) : 0, land = smooth(19, 21, fc) * (1 - smooth(23, 23.4, fc));
+        fisher.rest(); fisher.sit(1, t);
+        fisher.R.want('sh1', -.75 - bite * .5, 0, -.15); fisher.R.want('el1', -.7); fisher.R.want('sh-1', -.75 - bite * .5, 0, .15); fisher.R.want('el-1', -.7);
+        rod.rotation.x = -bite * .45 + Math.sin(t * .9) * .02;
+        fisher.R.want('neck', .15 - bite * .2, -.1, 0); fisher.R.want('head', .2 - bite * .15, 0, 0);
+        fisher.step(t, dt);
+        tip.getWorldPosition(tp);
+        if (land > 0) { wp.lerpVectors(V(bp[0], LAKE_Y, bp[1]), tp.clone().add(V(0, -.6, 0)), land); fish.position.copy(wp); fish.visible = fc < 23.2; fish.rotation.set(Math.sin(t * 18) * .4, t * 2, Math.sin(t * 15) * .5); bob.position.copy(wp).add(V(0, .1, 0)); }
+        else { fish.visible = false; bob.position.set(bp[0] + Math.sin(t * .4) * .05, LAKE_Y + .02 + Math.sin(t * 2.1) * .012 - (pulse(t, 4.7, .5) * .02), bp[1]); }
+        line.geometry.attributes.position.setXYZ(0, tp.x, tp.y, tp.z); line.geometry.attributes.position.setXYZ(1, bob.position.x, bob.position.y, bob.position.z); line.geometry.attributes.position.needsUpdate = true;
+        // the little one: watching every move, leaning in; it bounces when the fish comes up
+        young.rest(); young.sit(.6, t);
+        const hop = land > .2 && fc < 23 ? Math.abs(Math.sin(t * 9)) * .07 : 0;
+        young.g.position.y = gy(...yp) + hop; young.R.want('neck', .25 - land * .5, -.35 + land * .2, 0); young.R.want('head', .1 - land * .3, 0, pulse(t, 5.3, 1) * .35);
+        young.R.want('sh1', -.4 - land * 1.8, 0, .4 * land); young.R.want('sh-1', -.4 - land * 1.8, 0, -.4 * land);   // its arms up
+        young.step(t, dt);
+        lamps.forEach((L, i) => { L.m.emissiveIntensity = 1.5 + Math.sin(t * 2.1 + i) * .15; });
+      };
+    },
+  },
+  tidekin3: {
+    name: 'The Tidekin traders', hour: 15,
+    blurb: 'Once their village of reeds floats at the lake\'s edge, the lake folk come to trade. A reed boat poles out from the village to the shore; two of them step off with river stones, shells and a fish on a cord, set them out on a flat stone, step back, and wait, looking at the keep. In time they gather it all up and pole home. (What he gets from them is up to the rules and to what he does; the page only shows them coming.)',
+    view: [[16, 2.4, 14], [22, .2, 18.8]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a boat at the lake\'s edge' },
+    build(root) {
+      const ap = root.userData.appearance || {}, clock = visitClock(root, 150);
+      if (!ap.id) reedVillage(root, 1);                                  // (at the real keep the village is already there, from its trace)
+      const c = lk(A0 - .12, 1.55), l = lk(A0 + .03, 1.02); this.view = [[c[0], gy(...c) + 2.0, c[1]], [l[0], gy(...l) + .4, l[1]]];
+      const SH = lk(A0 + .04, 1.035), ST = lk(A0 + .02, 1.16), DOCK = lk(A0 + .08, .86);   // landing, the flat stone, the village's edge
+      const stone = G(root, [ST[0], gy(...ST), ST[1]]); P(stone, A.ico(.42, 1), surf(A.mat('#7d7a70', 0, .9), 'stone'), [0, .02, 0], { scale: [1, .28, .8], jitter: .03 });
+      const boat = reedBoat(root, 1.1), boatY = () => LAKE_Y + .05;
+      const poler = tideFolk(boat.g, [0, .12, -.78], .95, { seed: 21 }); poler.lantern.visible = false;
+      const pole = G(poler.arms[1].hand, [0, -.03, .02]); bone(pole, [0, -1.3, 0], [0, 1.1, 0], .016, .016, A.mat('#8a7a58', 0, .8), 5, 0);
+      const pair = [0, 1].map(i => { const o = tideFolk(root, [0, 0, 0], .98 + i * .04, { seed: 22 + i }); o.lantern.visible = i === 0; return { o, m: mover(-99, 0) }; });
+      // what they bring: river stones, shells, a fish on a cord (on the stone while they wait)
+      const goods = G(stone, [0, .13, 0]);
+      for (const [x, z, k] of [[-.18, .05, 0], [-.05, -.1, 0], [.1, .08, 1], [.22, -.06, 1], [0, .17, 2]]) {
+        if (k === 0) P(goods, A.ico(.06, 1), A.mat('#8e9aa0', .1, .5), [x, .03, z], { scale: [1.2, .55, 1] });
+        if (k === 1) { const s = G(goods, [x, .05, z], [1.3, x * 9, 0]); lath(s, [[0, .07], [.035, .03], [.04, -.02], [0, -.06]], A.mat('#e8d6c0', 0, .4), [0, 0, 0], [0, 0, 0], [1, 1, 1], 7); }
+        if (k === 2) P(goods, A.ico(.06, 1), A.mat('#9aa8a0', .4, .3), [x, .04, z], { scale: [.6, .5, 1.8], rot: [0, .5, 0] });
+      }
+      goods.visible = false;
+      const route = [DOCK, lk(A0 + .06, .95), SH];
+      let bx = DOCK[0], bz = DOCK[1], last = -1;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        if (since < last) { pair.forEach(p => { p.m.x = -99; }); } last = since;
+        // the boat: out from the village to the landing, waits, and back at the end
+        const go = smooth(0, 26, since), back = smooth(32, 6, left), u = Math.max(0, go - back);
+        const bp = alongPath(route, u); bx = bp[0]; bz = bp[1];
+        const ahead = alongPath(route, Math.min(1, u + (go > back ? .02 : -.02)));
+        boat.g.position.set(bx, boatY() + Math.sin(t * 1.3) * .015, bz);
+        if (Math.hypot(ahead[0] - bx, ahead[1] - bz) > .001) boat.g.rotation.y = Math.atan2(ahead[0] - bx, ahead[1] - bz);
+        boat.g.rotation.z = Math.sin(t * 1.1) * .02; boat.g.updateMatrixWorld(true);
+        const moving = (since < 26 && since > .5) || (left < 32 && left > 6);
+        // the poler: plants the pole and pushes, hand over hand, while they move; stands holding it while they wait
+        const pp = (t * .55) % 1;
+        poler.rest(); poler.R.want('sh1', moving ? -2.2 + pp * 1.4 : -2.4, 0, .1); poler.R.want('el1', moving ? -.6 + pp * .4 : -.3); poler.R.want('sh-1', moving ? -1.7 + pp * 1.2 : -1.9, 0, -.1); poler.R.want('el-1', -.5);
+        poler.R.want('body', moving ? .15 + pp * .2 : .05, 0, 0); poler.step(t, dt);
+        // the two traders: in the boat; step ashore; set the things out on the stone; step back and wait; gather up; back in the boat
+        const ashore = since > 27 && left > 34, laid = since > 38 && left > 44;
+        goods.visible = laid || (ashore && since > 36 && left > 40);
+        pair.forEach(({ o, m }, i) => {
+          o.rest();
+          const seat = boat.g.localToWorld(V(i ? .18 : -.18, .1, i ? .1 : .45));
+          let gx = seat.x, gz = seat.z, face = null, crouch = 0;
+          if (ashore) {
+            const atStone = (since < 38 && since > 31) || (left < 44 && left > 38);
+            const wait = lk(A0 + .01 + (i ? .05 : -.02), 1.26 + (i ? .02 : 0));
+            const near = [ST[0] + (SH[0] - ST[0]) * .35 + (i ? .35 : -.35), ST[1] + (SH[1] - ST[1]) * .35];
+            [gx, gz] = atStone ? near : wait; crouch = atStone && m.d < .1 ? 1 : 0;
+            face = atStone ? Math.atan2(ST[0] - m.x, ST[1] - m.z) : Math.atan2(-m.x, -m.z);   // at the stone, they look down at it; then at the keep
+          }
+          if (m.x < -50 || !ashore) { m.x = gx; m.z = gz; m.d = 0; }
+          const ph = m.to(gx, gz, .55, dt);
+          if (face !== null && m.d < .1) m.face(face, dt);
+          o.g.position.set(m.x, ashore ? gy(m.x, m.z) : seat.y, m.z); o.g.rotation.y = ashore ? m.yaw : boat.g.rotation.y;
+          if (!ashore) o.sit(1, t);
+          else if (m.d > .1) o.walk(ph, 1);
+          else { o.R.want('body', crouch * .6, 0, 0); o.R.want('hip1', -crouch * 1.1); o.R.want('hip-1', -crouch * 1.1); o.R.want('kn1', crouch * 1.6); o.R.want('kn-1', crouch * 1.6); o.g.position.y -= crouch * .22;
+                 o.R.want('sh1', -crouch * 1.2, 0, .1); o.R.want('sh-1', -crouch * 1.2, 0, -.1); }
+          if (laid && m.d < .1 && !crouch) {                             // waiting: weight shifts, a look at each other, a tilt of the head at the keep
+            const w = Math.floor(t / 8 + i * 3), look = nz(w) > .7 ? (i ? 1 : -1) : 0;
+            o.R.want('neck', 0, look * .7, 0); o.R.want('head', 0, look * .3, pulse(t + i * 3, 7.3, 1.3) * .35); o.R.want('body', 0, 0, Math.sin(t * .4 + i) * .04);
+            o.R.want('sh-1', -.25, 0, -.15); o.R.want('el-1', -.9);
+          }
+          o.step(t, dt);
+        });
+      };
+    },
+  },
+  tidekin4: {
+    name: 'The eldest of the Tidekin', hour: 18.4,
+    blurb: 'The last chapter, and it comes only once. The eldest of the lake folk walks up out of the water: very old, stooped, crusted with barnacles, in a cloak of woven reeds, leaning on a staff of driftwood, its great shell-lantern in the other hand. It comes all the way to the keep\'s wall (if they trust him; if not, it stops further off), rests once on the way, and lifts its lantern toward the keep and holds it there. Then it sits back on its tail and simply looks. At the end it walks slowly back down into the lake.',
+    view: [[16, 2.4, 14], [22, .2, 18.8]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'someone very old at the wall' },
+    build(root) {
+      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 200);
+      const goal = reg >= 1 ? [7.0, 2.9] : reg <= -1 ? [12.5, 7.5] : [7.6, 3.4];   // as near as they think wise
+      const from = lk(A0 + .04, .74), mid = [13.6, 9.6], path = [from, lk(A0 + .02, 1.02), mid, goal];
+      this.view = [[3.6, 3.0, 10.4], [11, 1.1, 7.6]];
+      const f = tideFolk(root, [0, 0, 0], 1.25, { seed: 20, elder: true, root }), m = mover(...from);
+      let last = -1, arriveT = -1, first = true;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        if (since < last) { m.x = from[0]; m.z = from[1]; arriveT = -1; } last = since;
+        const out = left > 78;
+        if (first && out && since > 90) { m.x = goal[0]; m.z = goal[1]; m.yaw = Math.atan2(-goal[0], -goal[1]); arriveT = since - 60; }   // (someone looking in late finds it already at the wall)
+        first = false;
+        f.rest();
+        const rest = out && since > 34 && since < 40;                     // it rests once on the way, leaning on its staff
+        const u = out ? Math.min(1, Math.max(0, (since - 2) / 68)) : Math.max(0, (left - 8) / 68);
+        const p = alongPath(path, u), ph = m.to(p[0], p[1], rest ? 0 : .42, dt, 1.2), moving = m.d > .06 && !rest;
+        if (out && arriveT < 0 && u >= 1 && m.d < .06) arriveT = since;
+        if (!out) arriveT = -1;
+        const k = arriveT >= 0 ? since - arriveT : -1;
+        root.userData.kt = { since, k, d: m.d, u };                       // (test hook: where it is in its visit)
+        if (k >= 0) m.face(Math.atan2(-m.x, -m.z), dt, .6);            // it turns to the keep
+        const rise = smooth(0, 4, since) * smooth(3, 8, left);
+        f.g.position.set(m.x, gy(m.x, m.z) - (1 - rise) * 1.6, m.z); f.g.rotation.y = m.yaw;
+        if (moving) f.walk(ph, .75, true);
+        // at the wall: it lifts its lantern toward the keep and holds it; then sits back on its tail and looks
+        const sitK = k >= 0 ? smooth(26, 32, k) * smooth(78, 84, left) : 0;
+        const lift = k >= 0 ? smooth(1, 4, k) * (1 - smooth(18, 22, k)) + (k > 40 ? pulse(k, 37, 6) : 0) : 0;
+        if (sitK) f.sit(sitK, t);
+        f.R.want('sh1', -.6 - lift * 1.3, 0, .15); f.R.want('el1', -.4 - lift * .3);
+        f.R.want('neck', .35 - lift * .25 + (rest ? .15 : 0), 0, 0); f.R.want('head', -.25 + lift * .12, 0, pulse(t, 11, 2) * .15);
+        f.R.want('body', .22 + (rest ? .12 : 0) - lift * .08 - sitK * .12, moving ? Math.sin(ph) * .05 : 0, moving ? Math.sin(ph) * .04 : 0);
+        f.step(t, dt);
+        f.g.visible = rise > .01;
+      };
+    },
+  },
+  reedvillage: {
+    name: 'The Tidekin\'s reed village', hour: 19,
+    blurb: 'What the lake folk build at the water\'s edge once their story has come that far: little round huts of bundled reeds on rafts, joined by walkways, with shell-lights in the doorways, racks of drying fish and reed boats tied alongside. It grows over about three weeks, hut by hut, and stays (it is a place in his world now, not a visit). If he drives them off, they take it apart and draw it back into the reeds; when they come back, they begin again.',
+    view: [[16, 2.4, 14], [22, .2, 18.8]],
+    variants: [['', 'built'], ['half', 'half built'], ['begun', 'just begun'], ['leaving', 'being taken apart']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a village of reeds, out on the lake' },
+    build(root) {
+      const kind = root.userData.appearance?.variant?.kind || '';
+      const c = lk(A0 - .1, 1.5), l = lk(A0 + .1, .8); this.view = [[c[0], gy(...c) + 2.6, c[1]], [l[0], LAKE_Y + .6, l[1]]];
+      return reedVillage(root, kind === 'half' ? .55 : kind === 'begun' ? .05 : 1, kind === 'leaving');
+    },
+  },
+
+  // ---- (mockups, to be made properly with their arcs)
   burrowfolk: {
     name: 'The Burrowfolk', hour: 19,
     blurb: 'A people under the plain: mole-and-badger diggers in leather aprons, with lantern-mushrooms growing on their backs. First a lost youngster pops up in the courtyard; then diggers come looking for it, with tunnels and mounds; they farm glowing mushrooms in a hollow on the plain; and their Burrow-Mother, huge, gentle and nearly blind, surfaces to thank him or to scold him, depending on how he treated the little one.',
@@ -5504,7 +5665,8 @@ const BEASTS = {
       const big = seedShip(root, 2.1); big.ship.position.set(Sp.x, sy, Sp.z);
       const dir = V(goal.x - Sp.x, 0, goal.z - Sp.z), len = dir.length(); dir.normalize(); const side = V(-dir.z, 0, dir.x);
       const SPOTS = [];
-      for (const u of [.15, .32, .49, .66, .83]) for (const sd of [-1, 1]) { const x = Sp.x + dir.x * len * u + side.x * sd * 1.9, z = Sp.z + dir.z * len * u + side.z * sd * 1.9; SPOTS.push({ x, z, face: Math.atan2(-side.x * sd, -side.z * sd), u }); }
+      const d0 = 3.9, d1 = len * .88;                                         // (the first pair stands clear of the great craft: hull 3.6 across from its middle)
+      for (const u of [0, 1, 2, 3, 4].map(i => (d0 + (d1 - d0) * i / 4) / len)) for (const sd of [-1, 1]) { const x = Sp.x + dir.x * len * u + side.x * sd * 1.9, z = Sp.z + dir.z * len * u + side.z * sd * 1.9; SPOTS.push({ x, z, face: Math.atan2(-side.x * sd, -side.z * sd), u }); }
       const staffM = glow('#a8e8e0', 1.3, { fog: false });
       const att = SPOTS.map((sp, i) => {
         const f = glassFolk(root, 'scout', 10 + i); f.beam.visible = false; const m = glassMover(f, sp.x, sp.z, sp.face);
@@ -5645,39 +5807,273 @@ const BEASTS = {
 // ------------------------------------------------------------------ the visiting peoples
 // THE TIDEKIN: smooth otter-and-newt folk of the lake, dark green-bronze with pale bellies, who carry
 // lit shells as lanterns. Curious, shy and gentle.
-function tidekin(parent, pos, s = 1, elder = false, seed = 1) {
-  const r = A.rand(seed);
-  const skin = A.mat(elder ? '#5c6a58' : '#3f6448', .25, .4), belly = A.mat(elder ? '#d8d2bf' : '#cfc6a6', 0, .6), dark = A.mat('#0c0f0d', .3, .2);
+// ---- the lake, for the lake folk: lk(a, f) is the point at angle a round the lake's middle, f of the way out to
+// the water's edge (f < 1 water, f > 1 the shore); A0 is the direction of the keep. (keep.html: LAKE, the water ellipse)
+const LAKE_Y = -.35, A0 = Math.atan2(-23 / 9.28, -27 / 11.6);
+const lk = (a, f) => [27 + Math.cos(a) * 11.6 * f, 23 + Math.sin(a) * 9.28 * f];
+// a point a share u of the way along a path of [x, z] points
+function alongPath(pts, u) {
+  const L = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); L.push(d); tot += d; }
+  let s = Math.max(0, Math.min(1, u)) * tot;
+  for (let i = 0; i < L.length; i++) { if (s <= L[i] || i === L.length - 1) { const k = L[i] ? Math.min(1, s / L[i]) : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k]; } s -= L[i]; }
+  return pts.at(-1);
+}
+// someone walking on two legs: eases in and out, turns toward where it goes, counts its steps (ph)
+function mover(x, z, yaw = 0) {
+  const m = { x, z, yaw, d: 0, v: 0, ph: 0 };
+  m.face = (y, dt, rate = 2) => { const e = Math.atan2(Math.sin(y - m.yaw), Math.cos(y - m.yaw)); m.yaw += e * Math.min(1, dt * rate); };
+  m.to = (tx, tz, vmax, dt, acc = 1.5) => {
+    const dx = tx - m.x, dz = tz - m.z, d = Math.hypot(dx, dz); m.d = d;
+    const want = Math.min(vmax, Math.sqrt(2 * acc * Math.max(0, d - .02)));
+    m.v += Math.max(-acc * dt * 2, Math.min(acc * dt, want - m.v));
+    if (d > .02 && m.v > 0) { const st = Math.min(d, m.v * dt); m.x += dx / d * st; m.z += dz / d * st; m.ph += st / .5 * Math.PI; m.face(Math.atan2(dx, dz), dt, 3); }
+    return m.ph;
+  };
+  return m;
+}
+// rings spreading on still water (pool of five), and a ring that stays round something in the water
+function ripples(root) {
+  const R = Array.from({ length: 5 }, () => { const m = new T.Mesh(new T.RingGeometry(.9, 1, 36), new T.MeshBasicMaterial({ color: '#d6eaf2', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.visible = false; root.add(m); return { m, t0: -99, x: 0, z: 0 }; });
+  let i = 0;
+  return { at(x, z, t) { Object.assign(R[i++ % R.length], { t0: t, x, z }); },
+           tick(t) { for (const q of R) { const k = (t - q.t0) / 3.2; q.m.visible = k >= 0 && k < 1; if (q.m.visible) { q.m.position.set(q.x, LAKE_Y + .03, q.z); q.m.scale.setScalar(.3 + k * 2.4); q.m.material.opacity = (1 - k) * .45; } } } };
+}
+function waterRing(root) {
+  const m = new T.Mesh(new T.RingGeometry(.26, .34, 28), new T.MeshBasicMaterial({ color: '#dcedf2', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; root.add(m);
+  return { at(x, z, up, t) { m.position.set(x, LAKE_Y + .025, z); m.scale.setScalar(1 + Math.sin(t * 1.6) * .1); m.material.opacity = up * (.28 + Math.sin(t * 1.6) * .06); m.visible = up > .02; } };
+}
+// their lantern: a spiral shell on a cord, lit from inside
+function shellLantern(parent, s = 1) {
+  const g = G(parent); g.scale.setScalar(s);
+  const m = glow('#ffd6a0', 1.6), pearl = A.mat('#ecdfc4', .1, .35);
+  lath(g, [[0, .075], [.028, .062], [.05, .03], [.058, -.01], [.048, -.055], [.028, -.095], [.008, -.125], [0, -.13]], m, [0, 0, 0], [0, 0, 0], [1, 1, 1], 9, .001);
+  for (let k = 0; k < 4; k++) P(g, new T.TorusGeometry(.056 - k * .012, .0035, 4, 12), pearl, [0, .018 - k * .036, 0], { rot: [Math.PI / 2 + .3, 0, k * .7], cast: false, jitter: 0 });   // the ridges of its spiral
+  P(g, new T.TorusGeometry(.03, .008, 4, 10), pearl, [0, .075, 0], { rot: [Math.PI / 2, 0, 0], cast: false, jitter: 0 });   // its lip
+  const light = softLight('#ffcf8a', 1.6, 1.3); g.add(light);
+  return { g, m, light };
+}
+// THE TIDEKIN (new look): a people of the lake, like an otter that is also a newt. A sleek body, broad at the hips;
+// a big round head with a short soft muzzle, whiskers, small round ears and big dark eyes with a catch-light;
+// webbed hands and long webbed feet; a newt's tail, flattened and finned, and a low frill down the back. Dark
+// green-bronze, mottled, with a wet sheen and a pale belly; a sash of woven reed; a spiral shell lantern on a cord.
+// The eldest is bigger and stooped, crusted with barnacles, in a cloak of reeds, with a driftwood staff, long white
+// whiskers and heavy lids. Joints are sprung (rig): the head, arms and tail settle after each movement.
+const TIDE_SKIN = {};
+function tideFolk(parent, pos, s = 1, o = {}) {
+  const r = A.rand(o.seed || 1), el = !!o.elder, yg = !!o.young, H = .38;
+  const map = TIDE_SKIN[el ? 'e' : 'a'] ??= paintTex(128, 128, (c, w) => {
+    c.fillStyle = el ? '#6e765c' : '#56663f'; c.fillRect(0, 0, w, w); const q = A.rand(el ? 7 : 3);
+    for (let i = 0; i < 70; i++) { c.fillStyle = `rgba(${el ? '56,60,44' : '40,48,28'},${.3 + q() * .3})`; c.beginPath(); c.ellipse(q() * w, q() * w, 3 + q() * 7, 2 + q() * 4, q() * 3, 0, 6.3); c.fill(); }   // mottles
+    for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(${el ? '205,196,160' : '180,150,80'},${.25 + q() * .35})`; c.fillRect(q() * w, q() * w, 1.3, 1.3); }   // bronze flecks
+  }, [2, 2]);
+  const skin = new T.MeshStandardMaterial({ map, roughness: .3, metalness: .16, flatShading: true });   // (wet: a sheen)
+  const belly = A.mat(el ? '#d6cfbb' : '#cdbe95', 0, .45), dark = A.mat('#0b0d0c', .3, .2);
+  const web = new T.MeshStandardMaterial({ color: el ? '#6f7d65' : '#4d6c54', roughness: .35, metalness: .1, side: T.DoubleSide, flatShading: true });
+  const fin = new T.MeshStandardMaterial({ color: el ? '#7a856c' : '#5b7c58', roughness: .4, side: T.DoubleSide, flatShading: true, transparent: true, opacity: .92 });
   const g = G(parent, pos); g.scale.setScalar(s);
-  const body = G(g);
-  P(body, A.ico(.3, 1), skin, [0, .78, 0], { scale: [.82, 1.45, .74] });
-  P(body, A.ico(.26, 1), belly, [0, .74, .08], { scale: [.7, 1.3, .6] });
-  const tail = chain(body, 5, .22, .11, .03, skin); tail[0].position.set(0, .42, -.18); tail[0].rotation.x = -2.0; tail[0].scale.set(.6, 1, 1);   // a newt's tail, flattened
-  for (const sx of [-1, 1]) { bone(body, [sx * .14, .45, 0], [sx * .17, .2, .06], .07, .05, skin); bone(body, [sx * .17, .2, .06], [sx * .16, .02, .12], .05, .04, skin); P(body, A.ico(.06, 0), skin, [sx * .16, .01, .2], { scale: [1.1, .35, 1.7] }); }
-  // the head: broad and flat, a short soft muzzle, small dark eyes, round ears like an otter's
-  const head = G(body, [0, 1.28, .06]);
-  P(head, A.ico(.2, 1), skin, [0, 0, 0], { scale: [1.05, .78, 1.15] });
-  P(head, A.ico(.12, 1), belly, [0, -.05, .17], { scale: [1.1, .7, 1] });
-  P(head, A.ico(.025, 0), dark, [0, -.01, .29]);
-  for (const sx of [-1, 1]) {
-    P(head, A.ico(.032, 1), dark, [sx * .11, .05, .16]);
-    P(head, A.ico(.045, 0), skin, [sx * .16, .12, -.05], { scale: [1, .8, .6] });
-    for (let w = 0; w < 2; w++) bone(head, [sx * .06, -.05, .24], [sx * .22, -.07 + w * .04, .27], .004, .002, belly, 3);   // whiskers
+  const R = rig();
+  const body = R.add('body', G(g, [0, H, 0]), 6, .85);
+  lath(body, [[0, -.08], [.17, -.05], [.235, .07], [.235, .2], [.21, .34], [.175, .45], [.125, .53], [.075, .58]], skin, [0, 0, 0], [0, 0, 0], [1, 1, .82], 12);   // pear-shaped: broad at the hips
+  lath(body, [[0, -.04], [.15, 0], [.19, .14], [.18, .3], [.14, .42], [.07, .5]], belly, [0, 0, .085], [0, 0, 0], [.86, 1, .62], 10);
+  const frill = new T.Shape(), FP = [[-.11, .62], [-.15, .6], [-.13, .55], [-.2, .5], [-.17, .44], [-.235, .36], [-.2, .29], [-.24, .2], [-.21, .12], [-.22, .04], [-.17, -.04], [-.15, .1], [-.165, .3], [-.14, .5]];
+  const FQ = FP.map(([x, y]) => [x * 1.12, y * .93]); frill.moveTo(...FQ[0]); for (const p of FQ.slice(1)) frill.lineTo(...p);
+  P(body, new T.ShapeGeometry(frill), fin, [0, 0, 0], { rot: [0, -Math.PI / 2, 0], jitter: 0 });   // a low frill down the back
+  if (!yg) {                                                          // a sash of woven reed, and a little pouch
+    const reed = texMat('#b49a5a', 'weave', { bump: .006 }), sg = G(body, [0, .28, 0], [0, 0, .62]);
+    P(sg, new T.TorusGeometry(.245, .02, 4, 18), reed, [0, 0, 0], { rot: [Math.PI / 2, 0, 0], scale: [1, .86, 1], jitter: 0 });
+    P(body, A.box(.1, .09, .05), reed, [.2, .04, .1], { rot: [0, .5, 0], jitter: .004 });
   }
-  const jaw = G(head, [0, -.1, .1]); P(jaw, A.ico(.09, 0), belly, [0, -.02, .08], { scale: [1, .45, 1.1] });
-  const arm = sx => { const a = G(body, [sx * .2, 1.02, .05]); bone(a, [0, 0, 0], [sx * .05, -.28, .1], .05, .04, skin); bone(a, [sx * .05, -.28, .1], [sx * .04, -.48, .2], .04, .03, skin); P(a, A.ico(.05, 0), skin, [sx * .04, -.5, .22], { scale: [1.3, .6, 1.2] }); return a; };
-  const arms = { L: arm(-1), R: arm(1) };
-  // a spiral shell on a cord, lit from inside: their lantern
-  const shellM = glow('#ffd9a0', 1.6), lantern = G(arms.R, [.04, -.52, .24]);
-  bone(lantern, [0, 0, 0], [0, -.16, 0], .004, .004, dark, 3);
-  P(lantern, new T.ConeGeometry(.07, .2, 9), shellM, [0, -.27, 0], { rot: [Math.PI, 0, 0], cast: false });
-  for (let k = 0; k < 3; k++) P(lantern, new T.TorusGeometry(.055 - k * .013, .01, 4, 10), A.mat('#e8d6b0', 0, .5), [0, -.2 - k * .045, 0], { rot: [Math.PI / 2, 0, 0] });
-  const glowL = softLight('#ffcf8a', 1.8, 1.4); glowL.position.y = -.27; lantern.add(glowL);
-  if (elder) {                                                         // the eldest: barnacled, with a staff of driftwood
-    for (let k = 0; k < 18; k++) { const a = Math.PI + (r() - .5) * 3.4, y = .5 + r() * .95; P(body, new T.CylinderGeometry(.018, .035, .035, 6), A.mat('#d4cdb8', 0, .8), [Math.sin(a) * .23, y, Math.cos(a) * .2], { rot: [Math.PI / 2 * Math.sign(Math.cos(a)), 0, 0] }); }
-    const staff = G(arms.L, [-.04, -.5, .22]); bone(staff, [0, .8, 0], [0, -.95, 0], .025, .03, A.M.woodL);
+  if (el) for (let k = 0; k < 30; k++) {                             // barnacles over its back and shoulders
+    const a = Math.PI + (r() - .5) * 3.3, y = .1 + r() * .48, rad = .23 - Math.max(0, y - .42) * .7, n = V(Math.sin(a), 0, Math.cos(a) * .82).normalize();
+    const b = P(body, new T.CylinderGeometry(.01 + r() * .008, .022 + r() * .012, .02 + r() * .02, 6), A.mat('#d6cfba', 0, .85), [Math.sin(a) * rad, y, Math.cos(a) * rad * .82], { jitter: .003 });
+    b.quaternion.setFromUnitVectors(V(0, 1, 0), n);
   }
-  return { g, body, head, jaw, arms, tail, lantern, shellM };
+  // the head: broad and a little flat, a short soft muzzle, whisker pads, a dark nose, big dark eyes, small round ears
+  const neck = R.add('neck', G(body, [0, .54, .01]), 8, .75);
+  bone(neck, [0, 0, 0], [0, .1, .02], .11, .095, skin, 8, .002);
+  const head = R.add('head', G(neck, [0, .15, .03]), 10, .7);
+  head.scale.setScalar(yg ? 1.4 : 1.08);
+  P(head, A.ico(.19, 2), skin, [0, 0, 0], { scale: [1.18, .8, 1.04], jitter: .003 });   // broad and flat, like a newt's
+  P(head, A.ico(.1, 2), skin, [0, -.05, .13], { scale: [1.22, .78, 1.05], jitter: .002 });
+  P(head, A.ico(.085, 1), belly, [0, -.088, .12], { scale: [1.15, .55, 1], jitter: .002 });
+  P(head, A.ico(.06, 1), A.mat('#3a1c1c', 0, .6), [0, -.085, .14], { scale: [1, .45, .9], jitter: 0, cast: false });   // (inside the mouth: seen when it sings)
+  for (const sx of [-1, 1]) { P(head, A.ico(.046, 1), belly, [sx * .046, -.055, .19], { scale: [1, .8, .8], jitter: .001 });
+    P(head, A.ico(.03, 1), skin, [sx * .16, .08, -.05], { scale: [1, .78, .45], jitter: .001 }); P(head, A.ico(.016, 1), dark, [sx * .162, .08, -.037], { scale: [1, .75, .3], jitter: 0, cast: false }); }
+  P(head, A.ico(.032, 1), dark, [0, -.022, .228], { scale: [1.35, .85, .8], jitter: 0 });
+  const eyeM = new T.MeshStandardMaterial({ color: '#06090a', roughness: .08, metalness: .25 }), glintM = new T.MeshBasicMaterial({ color: '#ffffff' });
+  const eyes = [-1, 1].map(sx => {
+    const e = G(head, [sx * .088, .026, .138], [0, sx * .32, 0]);
+    P(e, new T.SphereGeometry(el ? .042 : .051, 14, 10), eyeM, [0, 0, 0], { scale: [1, 1, .7], jitter: 0, cast: false });
+    const glint = P(e, A.ico(.011, 1), glintM, [-.015 * sx, .019, .033], { jitter: 0, cast: false });
+    const lid = P(e, A.ico(.055, 1), skin, [0, .048, .004], { scale: [1.05, .15, .78], jitter: 0, cast: false });
+    if (el) P(e, new T.ConeGeometry(.012, .05, 4), A.mat('#e8e4d8', 0, .7), [sx * .01, .05, .01], { rot: [0, 0, sx * 1.1], jitter: 0, cast: false });   // a white brow
+    return { e, glint, lid };
+  });
+  const wpts = []; for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) wpts.push(V(sx * .06, -.06 - k * .01, .2), V(sx * (el ? .33 : .24), -.075 - k * .03 + (el ? -.04 : 0), .17));
+  head.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(wpts), new T.LineBasicMaterial({ color: el ? '#f2efe6' : '#d8d2c0', transparent: true, opacity: .6 })));
+  const jaw = G(head, [0, -.08, .1]); P(jaw, A.ico(.075, 1), belly, [0, -.022, .07], { scale: [1.1, .45, 1.05], jitter: 0 });
+  merge(head);
+  // arms: shoulder, elbow, a webbed hand of four fingers
+  const arms = [-1, 1].map(sx => {
+    const sh = R.add('sh' + sx, G(body, [sx * .19, .46, .02]), 9, .7);
+    bone(sh, [0, 0, 0], [0, -.2, .02], .065, .052, skin, 7, .002); P(sh, A.ico(.068, 1), skin, [0, 0, 0], { jitter: .002 });
+    const elb = R.add('el' + sx, G(sh, [0, -.2, .02]), 10, .7);
+    bone(elb, [0, 0, 0], [0, -.18, 0], .052, .04, skin, 7, .002);
+    const hand = G(elb, [0, -.19, 0]); P(hand, A.ico(.04, 1), skin, [0, -.015, 0], { scale: [1.2, .7, .9], jitter: 0 });
+    const tips = []; for (let f = 0; f < 4; f++) { const a = (f - 1.5) * .3, tp = [Math.sin(a) * .095, -.02 - Math.cos(a) * .09, .012]; bone(hand, [Math.sin(a) * .024, -.03, 0], tp, .011, .006, skin, 5, 0); tips.push(tp); }
+    sheet(hand, [[0, -.03, .004], ...tips.map(p => [p[0] * .82, p[1] * .86, p[2]])], [[0, 1, 2], [0, 2, 3], [0, 3, 4]], web);
+    return { sh, el: elb, hand };
+  });
+  // legs: a thick thigh, a shin, a long webbed foot of three toes
+  const legs = [-1, 1].map(sx => {
+    const hip = R.add('hip' + sx, G(body, [sx * .12, 0, 0]), 9, .8);
+    bone(hip, [0, 0, 0], [0, -.19, .04], .095, .068, skin, 7, .002);
+    const kn = R.add('kn' + sx, G(hip, [0, -.19, .04]), 10, .8);
+    bone(kn, [0, 0, 0], [0, -.16, -.03], .062, .046, skin, 7, .002);
+    const an = R.add('an' + sx, G(kn, [0, -.16, -.03]), 12, .8);
+    P(an, A.ico(.05, 1), skin, [0, -.022, .06], { scale: [1, .42, 1.9], jitter: 0 });
+    const tips = []; for (let f = 0; f < 3; f++) { const a = (f - 1) * .32, tp = [Math.sin(a) * .07, -.035, .1 + Math.cos(a) * .08]; bone(an, [Math.sin(a) * .02, -.03, .1], tp, .012, .007, skin, 5, 0); tips.push(tp); }
+    sheet(an, [[0, -.03, .1], ...tips.map(p => [p[0] * .85, -.033, p[2] * .95])], [[0, 1, 2], [0, 2, 3]], web);
+    return { hip, kn, an, sx };
+  });
+  // the tail: a newt's, flattened side to side, with a fin above and below; springy
+  const tail = []; let at = G(body, [0, .04, -.17]);
+  for (let i = 0; i < 6; i++) {
+    const j = R.add('t' + i, G(at, i ? [0, 0, -.17] : [0, 0, 0]), 7 - i * .7, .45);
+    const r0 = .085 - i * .012, r1 = .085 - (i + 1) * .012;
+    const b = bone(j, [0, 0, 0], [0, 0, -.18], r0, Math.max(.014, r1), skin, 7, .001); b.scale.x = .62;
+    sheet(j, [[0, r0 * .8, 0], [0, r0 + .05 - i * .004, -.09], [0, r1 * .8, -.18], [0, -r0 * .8, 0], [0, -r0 - .025, -.09], [0, -r1 * .8, -.18]], [[0, 1, 2], [3, 5, 4]], fin);
+    tail.push(j); at = j;
+  }
+  // the lantern, on a cord from the right hand; the eldest leans on a staff of driftwood in its left
+  const lantern = G(arms[1].hand, [0, -.06, .03]);
+  bone(lantern, [0, 0, 0], [0, -.13, 0], .004, .004, dark, 3, 0);
+  const L = shellLantern(G(lantern, [0, -.2, 0]), el ? 1.5 : 1);
+  let staff = null;
+  if (el) {
+    staff = G(arms[0].hand, [0, -.04, .04]); const wood = A.mat('#8c8474', 0, .9);
+    bone(staff, [0, .55, 0], [.02, .1, .01], .03, .034, wood, 6, .006); bone(staff, [.02, .1, .01], [-.01, -.55, 0], .034, .03, wood, 6, .006); bone(staff, [-.01, -.55, 0], [0, -1.02, 0], .03, .026, wood, 6, .006);
+    P(staff, A.ico(.05, 0), wood, [.01, .58, 0], { jitter: .01 });
+    // a cloak of woven reeds from the shoulders, open at the front, and a collar of reed rope
+    const cl = texMat('#8f7c4e', 'weave', { bump: .006 });
+    P(body, new T.TorusGeometry(.14, .035, 5, 14), cl, [0, .54, -.005], { rot: [Math.PI / 2 + .15, 0, 0], jitter: .004 });
+    for (let i = 0; i < 9; i++) { const a = Math.PI + (i - 4) * .36, c = G(body, [Math.sin(a) * .22, .53, Math.cos(a) * .19], [0, a, 0]);
+      const strip = clothStrip(c, .08, .11, .66 + r() * .1, cl, { rows: 8, rag: .1, curl: -.06 });
+      if (o.root) clothSway(o.root, strip, { amp: .05, speed: .7, phase: i * 1.3 }); }
+  }
+  merge(body);
+  let blinkAt = 1 + r() * 4;
+  const cam = V(), me = V(), qUp = new T.Quaternion(), qP = new T.Quaternion();
+  const api = {
+    g, body, neck, head, jaw, arms, legs, tail, lantern, shellM: L.m, glowL: L.light, R, s,
+    // standing (the eldest stooped), arms hanging, tail down and back along the ground
+    rest() {
+      const t = api.t || 0, sway = Math.sin(t * .5 + s * 9) * .03, drift = Math.sin(t * .23 + s * 5) * .12;   // never quite still: weight shifts, a slow look about
+      body.position.y = H;
+      R.want('body', el ? .22 : 0, 0, sway); R.want('neck', el ? .35 : .05, drift * .5, 0); R.want('head', el ? -.25 : -.03, drift * .5, -sway);
+      for (const sx of [-1, 1]) { R.want('sh' + sx, .08, 0, sx * .05); R.want('el' + sx, -.4, 0, sx * -.08); R.want('hip' + sx, 0, 0, 0); R.want('kn' + sx, 0, 0, 0); R.want('an' + sx, 0, 0, 0); }
+      R.want('t0', -.7, 0, 0); for (let i = 1; i < 6; i++) R.want('t' + i, .2, 0, 0);
+    },
+    // sitting back on its tail, legs out in front (k: how far down)
+    sit(k, t = 0) {
+      body.position.y = H - .2 * k;
+      for (const sx of [-1, 1]) { R.want('hip' + sx, -1.35 * k, 0, sx * .12 * k); R.want('kn' + sx, 1.25 * k, 0, 0); R.want('an' + sx, .1 * k, 0, 0); }
+      R.want('t0', -.7 - .65 * k, 0, 0); R.want('t1', .2 + .75 * k, .15 * k, 0);
+      for (let i = 2; i < 6; i++) R.want('t' + i, .05, .3 * k + Math.sin(t * .6 + i) * .04, 0);
+    },
+    // treading water: legs pedalling slowly, the free arm paddling, the tail undulating
+    tread(t) {
+      for (const l of legs) { const p = t * 1.4 + (l.sx > 0 ? Math.PI : 0); R.want('hip' + l.sx, -.3 + Math.sin(p) * .35, 0, 0); R.want('kn' + l.sx, .5 + Math.sin(p + 1.2) * .3, 0, 0); R.want('an' + l.sx, .3, 0, 0); }
+      R.want('sh-1', -.5 + Math.sin(t * 1.1) * .3, 0, -.45); R.want('el-1', -.6 + Math.sin(t * 1.1 + 1) * .2, 0, 0);
+      R.want('t0', -1.2, Math.sin(t * 2) * .25, 0); for (let i = 1; i < 6; i++) R.want('t' + i, .05, Math.sin(t * 2 - i * .7) * .3, 0);
+    },
+    // walking upright: each leg swings through and lifts; the arms swing against it; the tail sways
+    walk(ph, amp = 1, old = false) {
+      for (const l of legs) { const p = ph + (l.sx > 0 ? Math.PI : 0), sw = Math.sin(p), lift = Math.max(0, Math.cos(p));
+        R.want('hip' + l.sx, -sw * (old ? .3 : .45) * amp, 0, 0); R.want('kn' + l.sx, lift * (old ? .55 : .8) * amp, 0, 0); R.want('an' + l.sx, -lift * .3 * amp + sw * .1, 0, 0);
+        if (!old) R.want('sh' + (-l.sx), sw * .3 * amp, 0, -l.sx * .12); }
+      body.position.y = H + Math.abs(Math.sin(ph)) * .018 * amp;
+      R.want('body', (el ? .22 : .04), Math.sin(ph) * .06 * amp, Math.sin(ph) * .04 * amp);
+      R.want('t0', -.7, 0, 0); for (let i = 1; i < 6; i++) R.want('t' + i, .2, Math.sin(ph * .5 - i * .5) * .12 * amp, 0);
+    },
+    // which way the watcher is, from where it faces (for a curious look now and then)
+    camYaw() { g.getWorldPosition(me); cam.copy(A.camera.position); let y = Math.atan2(cam.x - me.x, cam.z - me.z) - g.rotation.y; y = Math.atan2(Math.sin(y), Math.cos(y)); return Math.max(-1.1, Math.min(1.1, y)); },
+    step(t, dt) {
+      api.t = t; R.step(dt);
+      g.getWorldQuaternion(qUp);                                       // the lantern hangs straight down, the staff stands upright
+      for (const o of staff ? [lantern, staff] : [lantern]) { o.parent.getWorldQuaternion(qP); o.quaternion.copy(qP.invert().multiply(qUp)); }
+      L.m.emissiveIntensity = 1.45 + Math.sin(t * 2.3 + s * 7) * .15;
+      const bk = t > blinkAt ? Math.sin(Math.min(1, (t - blinkAt) / .22) * Math.PI) : 0; if (t > blinkAt + .22) blinkAt = t + 2.5 + r() * 5;
+      const shut = Math.max(el ? .38 : 0, bk);
+      for (const e of eyes) { e.lid.visible = shut > .06; e.lid.scale.y = .15 + shut * .95; e.lid.position.y = .048 * (1 - shut); e.glint.visible = shut < .45; }
+    },
+  };
+  api.rest();
+  return api;
+}
+// a boat of bundled reeds, its ends curling up, bound round in four places
+function reedBoat(parent, s = 1) {
+  const g = G(parent); g.scale.setScalar(s);
+  const reed = texMat('#b09456', 'weave', { bump: .006 }), bind = A.mat('#6a5432', 0, .9);
+  lath(g, [[0, -1], [.1, -.9], [.2, -.62], [.25, -.25], [.26, .2], [.22, .6], [.12, .88], [0, 1]], reed, [0, .05, 0], [Math.PI / 2, 0, 0], [1.05, 1, .42], 10);
+  for (const z of [-.9, .9]) P(g, new T.ConeGeometry(.09, .4, 6), reed, [0, .17, z * 1.08], { rot: [z > 0 ? 1.0 : -1.0, 0, 0] });   // the ends, curling up
+  for (const z of [-.62, -.22, .22, .62]) P(g, new T.TorusGeometry(.26 - Math.abs(z) * .1, .014, 4, 14), bind, [0, .05, z], { scale: [1.05, .42, 1], jitter: 0 });
+  merge(g);
+  return { g };
+}
+// THE TIDEKIN'S REED VILLAGE: little round huts of bundled reeds on rafts at the water's edge, walkways between,
+// shell-lights in the doorways (brighter at dusk and night), racks of drying fish, boats tied alongside; every
+// raft bobs a little. grown 0..1: hut by hut (the next one is a frame of hoops, with bundles of cut reed waiting);
+// leaving: two frames left, the rest gone, bundles adrift, the lights out. Still parts are merged per raft.
+let REED_T = null;
+function reedVillage(root, grown = 1, leaving = false) {
+  REED_T ??= paintTex(64, 128, (c, w, h) => { c.fillStyle = '#a88c50'; c.fillRect(0, 0, w, h); const q = A.rand(17);
+    for (let x = 0; x < w; x += 3) { c.fillStyle = `rgba(${60 + q() * 40},${48 + q() * 30},${20 + q() * 20},${.25 + q() * .3})`; c.fillRect(x, 0, 1.5, h); }
+    for (let y = 0; y < h; y += 32) { c.fillStyle = 'rgba(60,44,20,.55)'; c.fillRect(0, y, w, 3); } }, [7, 1]);
+  const reed = new T.MeshStandardMaterial({ map: REED_T, roughness: .92, flatShading: true }), raftM = texMat('#806c44', 'weave', { bump: .008 });
+  const bind = A.mat('#5e4a2c', 0, .9), doorM = new T.MeshBasicMaterial({ color: '#0d0a06' }), wood = A.mat('#6e5e44', 0, .9), lamp = glow('#ffcf8a', 1.6), fishM = A.mat('#9aa49c', .35, .35);
+  const HUTS = [[A0, .87, 1.15], [A0 - .26, .87, 1.05], [A0 + .26, .88, 1.0], [A0 + .13, .67, 1.2], [A0 - .13, .67, 1.1], [A0 + .39, .69, .95]];
+  const built = leaving ? 0 : Math.floor(grown * HUTS.length + 1e-6), frames = leaving ? [0, 1] : grown < 1 ? [built] : [];
+  const rafts = [], lights = [];
+  HUTS.forEach(([a, f, s], i) => {
+    const whole = i < built, frame = frames.includes(i);
+    if (!whole && !frame) return;
+    const [x, z] = lk(a, f), rg = G(root, [x, LAKE_Y, z], [0, Math.atan2(-x, -z), 0]);
+    for (let k = -4; k <= 4; k++) P(rg, A.cyl(.085 * s, .085 * s, 1.75 * s, 7), raftM, [0, .03, k * .18 * s], { rot: [0, 0, Math.PI / 2], jitter: .004 });
+    for (const xx of [-.6, .6]) P(rg, A.box(.08 * s, .05, 1.3 * s), bind, [xx * s, .11, 0], { jitter: .003 });
+    if (whole) {
+      lath(rg, [[.64, 0], [.66, .22], [.6, .5], [.46, .78], [.26, .98], [.07, 1.08], [0, 1.1]].map(([rr, y]) => [rr * s, y * s]), reed, [0, .12, 0], [0, 0, 0], [1, 1, 1], 12, .006);
+      for (const [y, rr] of [[.22, .675], [.5, .615], [.78, .475]]) P(rg, new T.TorusGeometry(rr * s, .018, 4, 20), bind, [0, .12 + y * s, 0], { rot: [Math.PI / 2, 0, 0], jitter: 0 });
+      for (let k = 0; k < 6; k++) P(rg, new T.ConeGeometry(.04 * s, .3 * s, 4), reed, [Math.sin(k) * .05 * s, .12 + 1.18 * s, Math.cos(k) * .05 * s], { rot: [Math.cos(k * 2.1) * .5, 0, Math.sin(k * 2.1) * .5] });   // the tuft at the top
+      P(rg, A.box(.34 * s, .5 * s, .06), doorM, [0, .12 + .25 * s, .6 * s], { jitter: 0, cast: false }); P(rg, new T.CircleGeometry(.17 * s, 10, 0, Math.PI), doorM, [0, .12 + .5 * s, .632 * s], { jitter: 0, cast: false });
+      bone(rg, [.3 * s, .1, .72 * s], [.32 * s, .12 + .95 * s, .74 * s], .014, .012, wood, 5, 0); bone(rg, [.32 * s, .12 + .95 * s, .74 * s], [.2 * s, .12 + .97 * s, .78 * s], .01, .01, wood, 4, 0);
+      const sh = G(rg, [.2 * s, .12 + .8 * s, .78 * s]); lath(sh, [[0, .06], [.04, .02], [.045, -.03], [.02, -.08], [0, -.1]], lamp, [0, 0, 0], [0, 0, 0], [1, 1, 1], 8, .001);
+      const sl = softLight('#ffcf8a', 1.4, 1.6); sl.position.copy(sh.position); rg.add(sl); lights.push(sl);
+      if (i === 1 || i === 3) {                                        // a rack of drying fish
+        for (const xx of [-.7, -.2]) bone(rg, [xx * s, .1, -.5 * s], [xx * s, .1 + .7 * s, -.5 * s], .015, .013, wood, 5, 0);
+        bone(rg, [-.72 * s, .1 + .68 * s, -.5 * s], [-.18 * s, .1 + .68 * s, -.5 * s], .012, .012, wood, 4, 0);
+        for (let k = 0; k < 4; k++) P(rg, A.ico(.05, 1), fishM, [(-.65 + k * .14) * s, .1 + .52 * s, -.5 * s], { scale: [.45, 1.6, .6] });
+      }
+    } else {                                                           // a frame of hoops, and cut reed waiting in bundles
+      for (let k = 0; k < 4; k++) P(rg, new T.TorusGeometry(.6 * s, .022, 4, 12, Math.PI), bind, [0, .12, 0], { rot: [0, k * Math.PI / 4, 0], jitter: 0 });
+      for (let k = 0; k < 3; k++) P(rg, A.cyl(.07, .07, 1.3 * s, 7), reed, [(-.25 + k * .17) * s, .2 + (k === 1 ? .1 : 0), -.35 * s], { rot: [Math.PI / 2, 0, .2] });
+    }
+    merge(rg); rafts.push({ rg, i, y0: LAKE_Y });
+  });
+  // walkways of lashed reed between neighbouring rafts; boats tied alongside
+  const walk = (i, j) => { if (!rafts.some(q => q.i === i) || !rafts.some(q => q.i === j)) return; const [x1, z1] = lk(HUTS[i][0], HUTS[i][1]), [x2, z2] = lk(HUTS[j][0], HUTS[j][1]), d = Math.hypot(x2 - x1, z2 - z1);
+    const w = P(root, A.box(.32, .05, Math.max(.2, d - 1.5)), raftM, [(x1 + x2) / 2, LAKE_Y + .06, (z1 + z2) / 2], { jitter: .003 }); w.rotation.y = Math.atan2(x2 - x1, z2 - z1); };
+  if (!leaving) { walk(0, 1); walk(0, 2); walk(0, 3); walk(1, 4); walk(3, 5); walk(3, 4); }
+  const boats = [];
+  if (!leaving) for (const [i, da, df] of [[2, .1, -.06], [4, -.12, .05]]) if (rafts.some(q => q.i === i && built > i)) { const [x, z] = lk(HUTS[i][0] + da, HUTS[i][1] + df), b = reedBoat(root, .95); b.g.position.set(x, LAKE_Y + .04, z); b.g.rotation.y = HUTS[i][0] + 1.4; boats.push(b); }
+  if (leaving) for (let k = 0; k < 5; k++) { const [x, z] = lk(A0 + (k - 2) * .14, .8 + (k % 2) * .08), b = P(root, A.cyl(.07, .07, 1.2, 7), reed, [x, LAKE_Y + .02, z], { rot: [Math.PI / 2, 0, k] }); boats.push({ g: b }); }   // bundles adrift
+  return (t) => {
+    const night = A.hour >= 17.5 || A.hour < 6.5 ? 1 : .3;
+    rafts.forEach(({ rg, i }) => { rg.position.y = LAKE_Y + Math.sin(t * .7 + i * 1.7) * .014; rg.rotation.x = Math.sin(t * .5 + i) * .012; rg.rotation.z = Math.sin(t * .6 + i * 2) * .012; });
+    boats.forEach(({ g }, i) => { g.position.y = LAKE_Y + .03 + Math.sin(t * .9 + i * 2.3) * .015; });
+    lamp.emissiveIntensity = leaving ? 0 : (1 + night * .9) + Math.sin(t * 2.1) * .1;
+    lights.forEach((l, i) => { l.intensity = leaving ? 0 : night * (1.3 + Math.sin(t * 2.3 + i) * .12); });
+  };
 }
 // THE BURROWFOLK: mole-and-badger diggers in leather aprons, lantern-mushrooms growing on their backs.
 function burrower(parent, pos, s = 1, o = {}) {
@@ -7229,7 +7625,8 @@ export function spawnTrace(tr, api) {
   T = api.THREE; A = api; A.mat = api.mat;
   const of = String(tr.id || '').split('-')[0], age = Math.max(0, (Date.now() - Date.parse(tr.since)) / 1000);
   const root = new T.Group(); A.scene.add(root);
-  const tick = tr.kind === 'meteor' ? meteorScene(root, ...(METEOR_AT[of] || [9.5, 19]), { age: age < 90 ? 0 : age }) : shipScorch(root, SHIP_AT[of] || [], age / 86400);   // (fell in the last minute or so: seen falling, from the start)
+  const tick = tr.kind === 'village' ? reedVillage(root, tr.grown ?? 1, !!tr.leaving) :   // (what the lake folk built: it stays)
+    tr.kind === 'meteor' ? meteorScene(root, ...(METEOR_AT[of] || [9.5, 19]), { age: age < 90 ? 0 : age }) : shipScorch(root, SHIP_AT[of] || [], age / 86400);   // (fell in the last minute or so: seen falling, from the start)
   A.onTick.push(tick);
   return { root, remove() { const i = A.onTick.indexOf(tick); if (i >= 0) A.onTick.splice(i, 1); A.scene.remove(root); root.traverse(o => { if (o.isMesh) o.geometry?.dispose(); }); } };
 }
