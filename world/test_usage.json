@@ -1,10 +1,10 @@
 {
   "date": "2026-11-27",
-  "tokens": 33642,
+  "tokens": 40593,
   "by_model": {
-    "openai/gpt-oss-120b": 23155,
-    "qwen/qwen3.8-27b": 7509,
-    "openai/gpt-oss-20b": 2978
+    "openai/gpt-oss-120b": 27646,
+    "qwen/qwen3.8-27b": 9313,
+    "openai/gpt-oss-20b": 3634
   },
   "runs": [
     {
@@ -22,6 +22,10 @@
     {
       "note": "road test: pedlar spicer",
       "tokens": 7635
+    },
+    {
+      "note": "road test: traveller scholar",
+      "tokens": 6951
     }
   ]
 }
