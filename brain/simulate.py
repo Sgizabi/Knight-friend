@@ -144,7 +144,7 @@ def run(years, policy, seed=1, detail=False):
                 year[f"n_{nature}"] += 1
                 day_tokens[day_key]["enc"] += 10000          # DESIGN's planning figure: ~10,000 Rooken tokens an encounter
                 day_tokens[day_key]["mind"] += 600           # its mind arriving (up to 600 tokens)
-                steps_done = 0
+                steps_done, met_steps = 0, []
                 for step in range(1, encounters.STEPS_MOST + 1):
                     choice, how = decide(policy, kind, nature, mem, rng)
                     known = (choice, how) in mem["worked"]
@@ -153,6 +153,7 @@ def run(years, policy, seed=1, detail=False):
                         "week": week + [rec], "now": start, "said": said,
                         "sky": (weather.at(sched, start) or {}).get("kind", "")}, rng)
                     encounters.apply(out, a, needs, body, keep, entry, how, start)
+                    met_steps.append((choice, out["result"]))
                     said.append(out["text"])
                     prepared = prepared or choice == "prepare"
                     wary = nature in WARY and encounters.weaknesses(kind)
@@ -194,6 +195,7 @@ def run(years, policy, seed=1, detail=False):
                     day_tokens[day_key]["mind"] += 400       # its mind answering his step (up to 400 tokens)
                     if out["ends"]:
                         break
+                creatures.remember(state, kind, met_steps)
                 year["mind_est"] += 600 + 400 * steps_done
                 log.append(rec)
                 log[:] = log[-60:]
@@ -242,6 +244,9 @@ def run(years, policy, seed=1, detail=False):
                               "seeing": best["step"], "arc": creatures.load(w)["arcs"]["glassy"].get("stage"),
                               "tidekin": creatures.load(w)["arcs"].get("tidekin", {}).get("stage", 1),
                               "village": bool(creatures.load(w)["arcs"].get("tidekin", {}).get("place")),
+                              "burrow": creatures.load(w)["arcs"].get("burrow", {}).get("stage", 1),
+                              "hollow": bool(creatures.load(w)["arcs"].get("burrow", {}).get("place")),
+                              "mother": creatures.load(w)["arcs"].get("burrow", {}).get("met", {}).get("burrow4", 0),
                               "max_notable_day": max_notable_day,
                               "max_enc_day": max(v["enc"] for v in day_tokens.values()),
                               "max_mind_day": max(v["mind"] for v in day_tokens.values())})
@@ -267,13 +272,13 @@ def kinds_report():
 
 def report(policy, ys):
     print(f"\n== {policy}")
-    print("year  meets  wary  known-works  stale  found(deep)  injuries/mo  damage/mo  losses/mo  solved  hopeless  seeing arc tidekin")
+    print("year  meets  wary  known-works  stale  found(deep)  injuries/mo  damage/mo  losses/mo  solved  hopeless  seeing arc tidekin burrow")
     for y in ys:
         works = y["reuse_ok"] / y["reuse"] if y.get("reuse") else 0
         print(f"{y['year']:>4}  {y['encounters']:>5}  {y.get('n_hostile', 0) + y.get('n_nuisance', 0):>4}  "
               f"{works:>11.0%}  {y.get('stale', 0):>5}  {y.get('found', 0):>5}({y.get('found_deep', 0)})    "
               f"{y.get('injury', 0) / 12:>11.2f}  {y.get('damage', 0) / 12:>9.2f}  {y.get('loss', 0) / 12:>9.2f}  "
-              f"{','.join(y['solved']) or '-':>6}  {','.join(y['hopeless']) or '-':>8}  {y['seeing']:>6} {y['arc']}   {y['tidekin']}{' +village' if y['village'] else ''}")
+              f"{','.join(y['solved']) or '-':>6}  {','.join(y['hopeless']) or '-':>8}  {y['seeing']:>6} {y['arc']}   {y['tidekin']}{' +village' if y['village'] else ''}   {y['burrow']}{' +hollow' if y['hollow'] else ''}{' (mother met)' if y['mother'] else ''}")
     tot = {k: sum(y.get(k, 0) for y in ys) for k in
            ("encounters", "seconds", "companions", "overlaps", "exchanges", "slept", "capped", "danger_violations")}
     print(f"  totals over {len(ys)}y: encounters {tot['encounters']}, second spawns met {tot['seconds']}, "

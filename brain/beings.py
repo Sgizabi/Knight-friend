@@ -411,6 +411,58 @@ CHARACTERS = {
                                                                                  "listen", "quiet", "kneel"],
         danger=0, gifts=["a pearl the size of a thumbnail, faintly warm"],
         trace="a line of slow webbed prints from the lake to the wall and back, with the taps of a staff beside them"),
+    # the Burrowfolk, the people under the plain
+    "burrow1": B(
+        traits=["young", "lost", "curious", "timid", "skittish", "of the earth"],
+        drives=["it dug the wrong way in the dark and came up somewhere new", "following the smell of bread down through the earth",
+                "chasing a beetle through the tunnels, much too far", "it is lost, and trying to find the way home"],
+        signs=["a scratching, somewhere under the courtyard grass", "a patch of courtyard turf trembles and lifts, and earth trickles out from under it"],
+        looks="a small furry digger no bigger than a cat, like a mole crossed with a badger cub, with a white stripe down its nose, "
+              "big dark eyes and one tiny glowing mushroom sprouting on its back, poking its head out of a fresh hole in the courtyard "
+              "and looking about",
+        tell="its nose never stops twitching; when it is frightened it ducks straight back down its hole",
+        likes=["bread", "crumb", "crumbs", "food", "beetle", "worm", "quiet", "slow", "soft", "kneel", "sit", "gentle", "hum", "gift",
+               "seed", "nut", "berry", "water"],
+        danger=0, gifts=["a round pebble it dug up, still wet with clay"],
+        trace="a hole in the courtyard, with fresh earth heaped round it and small clawed prints"),
+    "burrow2": B(
+        traits=["anxious", "protective", "many", "diggers", "wary", "of the earth"],
+        drives=["looking for their lost little one", "following the little one's scent to the keep", "calling for a youngster that did not come home",
+                "to find out where the little one went"],
+        signs=["fresh mounds of earth push up across the plain, one after another, coming toward the keep",
+               "a muffled digging under the ground near the wall"],
+        looks="two broad, low diggers like big badgers with a mole's snout and spade claws, in leather aprons, with clusters of "
+              "glowing mushrooms growing on their backs like lanterns; they push up out of fresh mounds of earth by the wall, sniff "
+              "the air, and call down into the ground",
+        tell="they stand up tall and sniff toward whatever they are unsure of; when they are angry they thump the ground with their claws",
+        likes=["little one", "youngster", "small one", "found", "safe", "home", "went", "point", "show", "bread", "gift", "quiet", "kneel"],
+        danger=1, hurts=[], damages=["wall"], harm_how={"wall": "undermined: the ground sank at its foot and stones slipped"},
+        gifts=["clay packed hard at the foot of your east wall, where it was weak"],
+        trace="a line of fresh mounds across the plain, ending at the wall"),
+    "burrow3": B(
+        traits=["gentle", "patient", "many", "growing", "of the earth"],
+        drives=["tending the mushroom hollow", "bringing up new spawn from below", "to show what grows in the hollow", "harvesting the ripe caps"],
+        signs=["a soft glow rising from the hollow on the plain", "the smell of fresh-turned earth on the wind"],
+        looks="a few of the Burrowfolk out in their hollow on the plain, tending beds of tall glowing mushrooms, gold and green and "
+              "violet, carrying baskets and watering the beds from clay pots, the mushrooms on their own backs glowing too",
+        tell="when they are pleased they hum, low, and the mushrooms on their backs brighten",
+        likes=["water", "bucket", "basket", "spade", "trowel", "dig", "help", "seed", "compost", "bread", "pot", "gift", "kneel",
+               "quiet", "made"],
+        danger=0, gifts=["a lantern-mushroom in a clay pot, which glows at night", "a basket of mushrooms, good to eat"],
+        trace="baskets left at the edge of the hollow, and the beds freshly watered"),
+    "burrow4": B(
+        traits=["ancient", "huge", "gentle", "nearly blind", "slow", "of the earth"],
+        drives=["to meet the one who met her little one"],   # (each visit's own drive comes from FORM_DRIVES: thanks or scolding)
+        signs=["the ground trembles, long and slow, and the bucket in the well rattles on its rope",
+               "every mushroom-light in the hollow on the plain goes out at once, then comes back brighter"],
+        looks="the Burrow-Mother: a huge digger as big as a cottage, grey-furred and old, her back a garden of glowing mushrooms, "
+              "rising slowly out of the plain near the keep with earth pouring off her shoulders; her eyes are milky and nearly "
+              "blind, and she finds the keep by smell, her great nose working",
+        tell="she cannot see well: she turns her nose toward a voice, and lowers her head to listen",
+        likes=["sorry", "apologise", "apologize", "thank", "welcome", "bow", "kneel", "gift", "bread", "quiet", "slow", "hum",
+               "song", "little one", "youngster", "speak", "voice"],
+        danger=0, gifts=["a stone from deep under the plain, warm, with veins that glow faintly"],
+        trace="a great round patch of churned earth on the plain, already settling"),
 }
 
 # More than one way to keep a being back, so no answer is the answer forever. Each individual
@@ -514,6 +566,11 @@ FORM_LOOKS = {
                               "though the limp keeps changing legs.",
                  "bare": "This time it wears nothing over itself: a far too tall, thin dark body and the smiling mask, walking out "
                          "into the open as if it thinks nobody can see it."},
+    # the Burrow-Mother comes as he left things with her little one (creatures.MOODS), not in a form drawn at random
+    "burrow4": {"thanks": "She lowers her great head toward the keep and holds it there, breathing slow and warm, the mushrooms on "
+                          "her back glowing gold: it looks like thanks.",
+                "scold": "She rears up out of the earth and rumbles at the keep, long and low, her nose pointed straight at it, the "
+                         "mushrooms on her back gone a hard pale white: it sounds like a scolding."},
 }
 _DISGUISES = {"cape": "a long hooded cape", "woodsman": "a woodsman's hat, coat, scarf and sticks",
               "bark": "bark and branches, as if you were a tree", "traveller": "a traveller's cloak, pack and staff"}
@@ -531,7 +588,16 @@ FORM_MIND = {
                     for f, d in _DISGUISES.items()},
                  "bare": "This time you wear no disguise, and you believe nobody can see you. If anything notices you, you "
                          "realise, look back at it, and go back into the trees. You never speak."},
+    "burrow4": {"thanks": "Your little one came home safe from the knight's stone house, and your people have not been driven from "
+                          "it. You have come up to thank him, in your way.",
+                "scold": "Your little one, or your people, were driven off from the knight's stone house. You have come up to "
+                         "scold him, in your way: you are slow to anger, and not cruel."},
 }
+# what such a being came for, by how it comes this time
+FORM_DRIVES = {"burrow4": {"thanks": ["to thank the one who was kind to her little one", "to see for herself, as well as she can, "
+                                      "the stone house where her little one came up"],
+                           "scold": ["to scold the one who drove off her little one", "to tell the stone house, in her way, "
+                                     "that her people are not to be driven off"]}}
 
 # How quickly each being gets used to a trick he keeps using (0: never; a third is quick). It
 # fades again if he leaves the trick alone (HALF_LIFE_DAYS in encounters.py). Clever and
@@ -634,17 +700,27 @@ REACTS = {
                  "They gather up what they brought and pole their boat back toward the reeds."),
     "tidekin4": ("It lifts its lantern toward you, slowly, and holds it there a long moment.",
                  "It looks at you a long while, then turns, and walks slowly back down to the water."),
+    "burrow1": ("It creeps a little way out of its hole, nose working, and its big dark eyes stay on you.",
+                "It ducks straight down its hole; after a while two dark eyes peep over the rim, and then they are gone."),
+    "burrow2": ("One of them rumbles softly to the other, and they stop digging to look at you.",
+                "They thump the ground with their claws, hard, and dig down out of sight."),
+    "burrow3": ("They hum, low, and the mushrooms on their backs brighten.",
+                "Their humming stops; they pick up their baskets and go down into the earth."),
+    "burrow4": ("She lowers her great head until her nose is almost on the ground before you, and breathes out, long and warm.",
+                "She gives a low rumble you feel through your boots, and turns her nose away from you."),
     "glassy4": ("Its crest brightens, and it inclines its head toward you.",
                 "Its crest dims; its attendants close around it and it turns away."),
 }
 
 # Gifts that aren't things to keep: told, not added to what the beings left him.
-INTANGIBLE = {"a fresh fish, still cold from the lake", "a true answer to something", "a sound you can't forget", "a dream you can't stop thinking about",
+INTANGIBLE = {"a fresh fish, still cold from the lake", "a basket of mushrooms, good to eat",
+              "clay packed hard at the foot of your east wall, where it was weak", "a true answer to something", "a sound you can't forget", "a dream you can't stop thinking about",
               "a dream not your own", "a true secret", "an hour you remember twice", "help with one heavy stone",
               "a map of the keep drawn in light on the flagstones, gone by morning",
               "a new spring of clear water at the hill's foot", "a ring of the old bell, which carries for miles"}
 # Gifts that do something: (what, where)
-GIFT_DOES = {"help with one heavy stone": ("repair", "wall")}
+GIFT_DOES = {"help with one heavy stone": ("repair", "wall"),
+             "clay packed hard at the foot of your east wall, where it was weak": ("repair", "wall")}
 
 # His options: plain verbs that fit any being; what he picks is his.
 OPTIONS = {

@@ -1,14 +1,18 @@
 {
   "date": "2026-11-27",
-  "tokens": 8142,
+  "tokens": 16284,
   "by_model": {
-    "openai/gpt-oss-120b": 5945,
-    "qwen/qwen3.8-27b": 1569,
-    "openai/gpt-oss-20b": 628
+    "openai/gpt-oss-120b": 11890,
+    "qwen/qwen3.8-27b": 3138,
+    "openai/gpt-oss-20b": 1256
   },
   "runs": [
     {
       "note": "Tidekin traders: one encounter test",
+      "tokens": 8142
+    },
+    {
+      "note": "Burrowfolk youngster encounter test (estimate)",
       "tokens": 8142
     }
   ]

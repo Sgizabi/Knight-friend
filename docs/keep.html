@@ -2058,7 +2058,9 @@ function whatsHere() {
   const list = [];
   for (const [, b] of beings) if (b?.root) list.push([b.root, 'Something is here']);
   for (const [k, m] of animalMarks) if (m?.root) list.push([m.root, ANIMAL_NAMES[k] || k]);
-  for (const [id, m] of traceMarks) if (m?.root) list.push([m.root, /-village-/.test(id) ? 'A village of reeds, on the lake' : 'Something left a mark here']);
+  const TRACE_SAYS = [[/-village-/, 'A village of reeds, on the lake'], [/-hollow-/, 'A hollow of glowing mushrooms, on the plain'],
+    [/^burrow1-/, 'A hole in the courtyard, where something came up'], [/^burrow2-/, 'A line of fresh mounds, across the plain']];
+  for (const [id, m] of traceMarks) if (m?.root) list.push([m.root, TRACE_SAYS.find(([re]) => re.test(id))?.[1] || 'Something left a mark here']);
   for (let n = 0; n < list.length; n++) {
     const [obj, name] = list[hereI++ % list.length], box = new THREE.Box3();
     obj.updateMatrixWorld(true);

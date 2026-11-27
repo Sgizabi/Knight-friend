@@ -83,6 +83,12 @@ KINDS = {
     "tidekin2":     dict(name="the Tidekin on the shore", nature="gentle", rarity="uncommon", step=0, when="dusk", likes=["rain"], minutes=(40, 90), arc="tidekin", stage=2),
     "tidekin3":     dict(name="the Tidekin traders", nature="gentle", rarity="uncommon", step=1, when="day", minutes=(40, 90), arc="tidekin", stage=3),
     "tidekin4":     dict(name="the eldest of the Tidekin", nature="gentle", rarity="rare", step=1, when="dusk", minutes=(30, 60), arc="tidekin", stage=4),
+    # the Burrowfolk, the people under the plain (ARCS): a lost youngster, then the diggers looking for it soon after,
+    # then their mushroom hollow on the plain (a PLACE), and once, their Burrow-Mother, who remembers how he treated the little one
+    "burrow1":      dict(name="a lost Burrowfolk youngster", nature="gentle", rarity="uncommon", step=0, when="dusk", minutes=(20, 45), arrives="hole", arc="burrow", stage=1),
+    "burrow2":      dict(name="the Burrowfolk diggers", nature="neutral", rarity="uncommon", step=0, when="dark", minutes=(40, 90), arrives="mounds", arc="burrow", stage=2),
+    "burrow3":      dict(name="the Burrowfolk mushroom farmers", nature="gentle", rarity="uncommon", step=1, when="dark", likes=["rain"], minutes=(60, 120), arc="burrow", stage=3),
+    "burrow4":      dict(name="the Burrow-Mother", nature="gentle", rarity="rare", step=1, when="dusk", minutes=(30, 60), arc="burrow", stage=4, reads="young"),
 }
 
 # Story arcs: each stage unlocks the next once it has been met enough times. If he drives them
@@ -94,11 +100,24 @@ KINDS = {
 # again when they come back after their rest.
 ARCS = {"glassy": {"stages": ["glassy1", "glassy2", "glassy3", "glassy4"], "advance_after": [3, 2, 1], "rest_days": 60},
         "tidekin": {"stages": ["tidekin1", "tidekin2", "tidekin3", "tidekin4"], "advance_after": [2, 2, 2, 1], "rest_days": 60,
-                    "linger": [3], "place": {"at": 3, "kind": "village", "build_days": 21}}}
+                    "linger": [3], "place": {"at": 3, "kind": "village", "build_days": 21}},
+        # soon: once a stage is passed, the next comes within days, not whenever the dice say (the diggers come looking
+        # for the youngster soon after it was lost). remember: the arc keeps how he treated that stage's being (MOODS).
+        "burrow": {"stages": ["burrow1", "burrow2", "burrow3", "burrow4"], "advance_after": [1, 1, 2, 1], "rest_days": 60,
+                   "linger": [3], "soon": [2], "remember": 1, "place": {"at": 3, "kind": "hollow", "build_days": 14}}}
+SOON_CHANCE = .6                  # a 'soon' stage comes on the first day it can (the day after next, usually) with this chance, else the next
+# How a being that reads the arc comes this time (its variant 'kind', its nature that visit), from how he treated
+# the remembered stage's being ("kind": he reached out to it; "harsh": he drove it off; "": neither, or he only
+# glimpsed it, and then the arc's regard decides). The Burrow-Mother comes to thank him or to scold him.
+MOODS = {"young": {"kind": "thanks", "harsh": "scold"}}
+MOOD_NATURE = {"thanks": "gentle", "scold": "proud"}
 # what a place is, in plain words (for him: what he can see of it from the keep), by how far it has grown
 PLACES = {"village": ("Out at the lake's edge, the Tidekin are building something of reeds that floats on the water.",
                       "Out at the lake's edge floats the Tidekin's village of reeds: little round huts on rafts, with shell-lights in the doorways.",
-                      "The Tidekin are taking their reed village apart and drawing it back into the reeds.")}
+                      "The Tidekin are taking their reed village apart and drawing it back into the reeds."),
+          "hollow": ("Out on the plain to the south, the Burrowfolk are digging a hollow, with heaps of fresh earth round it.",
+                     "Out on the plain to the south lies the Burrowfolk's hollow, where they grow their mushrooms; after dark it glows gold and green.",
+                     "The Burrowfolk are filling in their hollow on the plain, and the mushroom glow there is going out.")}
 
 # Slow presences: once one starts, it comes back every so many days, a step closer each time,
 # until it reaches the wall or he turns it back. Follow-ups take that day's place (one being a
@@ -108,7 +127,7 @@ CHAINS = {"thincrowd": {"every": 1, "most": 5}, "crawl": {"every": 2, "most": 4}
 # Ecology: what has been about lately shifts who comes next. Built from traits, not pair by pair.
 DRAWN_BY = {"wyrm": ["hill"], "moths": ["lanternheads", "warden"], "larva": ["moon2", "nightgrown"],
             "glassbeak": ["nightgrown", "glassy1", "moon2"], "brood": ["nightgrown", "glassy3"], "ashwolves": ["dragon"]}
-TRACE_DAYS = {"meteor": 4, "ship": 3}
+TRACE_DAYS = {"meteor": 4, "ship": 3, "hole": 3, "mounds": 5}   # (a hole in the courtyard, a line of mounds across the plain)
 
 # Meetings: when a second being's stay overlaps the first's, the two are about at the same time
 # and each is met on its own, in turn (there is no 'companion' that comes as part of another any
@@ -140,7 +159,8 @@ RELEASED = {"fog", "axolotl", "bellcrab", "glassbeak", "ashwolves", "dragon", "l
             "listener", "cartographer", "moon2", "bentone", "watcher", "nightgrown", "glassy1",     # wave 4
             "clockhead", "stranger", "ninefold", "leech", "seam", "stitched",                         # last wave
             "manyjoint", "hill", "glassy2", "glassy3", "glassy4",
-            "tidekin1", "tidekin2", "tidekin3", "tidekin4"}                                         # the peoples: the Tidekin
+            "tidekin1", "tidekin2", "tidekin3", "tidekin4",                                         # the peoples: the Tidekin
+            "burrow1", "burrow2", "burrow3", "burrow4"}                                             #   the Burrowfolk
 
 
 def nature_of(a):
@@ -257,7 +277,7 @@ def ecology(kind, state, start, keep=None):
     if "fire-drawn" in t and keep and any(b.get("key") == "forge" and b.get("finished") for b in keep.get("buildings", [])):
         m *= 1.6                                   # the forge's heat draws fire-lovers
     if {"thieving", "greedy"} & set(t) and any(
-            a.get("arrival") and _parse(a["start"]) and
+            a.get("arrival") in ("meteor", "ship") and _parse(a["start"]) and
             start - dt.timedelta(days=TRACE_DAYS[a["arrival"]]) <= _parse(a["start"]) < start
             for a in state["appearances"]):
         m *= 2                                     # scavengers, after something fell or landed
@@ -371,7 +391,51 @@ def _appearance(kind, day, t, rng, state, chain=None):
         a["chain"] = chain
     if k.get("arc"):
         a["regard"] = state.get("arcs", {}).get(k["arc"], {}).get("regard", 0)   # how close they dare come
+    if k.get("reads"):                             # it comes as he left things with the one it remembers
+        variant["kind"] = mood(state, kind)
+        a["nature"] = MOOD_NATURE[variant["kind"]]
+        a["drive"] = rng.choice(beings.FORM_DRIVES[kind][variant["kind"]])
     return a
+
+
+def mood(state, kind):
+    """How a being that reads its arc comes: from how he treated the remembered being, else from the arc's regard."""
+    k = KINDS[kind]
+    arc = state.get("arcs", {}).get(k["arc"], {})
+    said = MOODS[k["reads"]].get(arc.get("young", ""))
+    return said or ("thanks" if arc.get("regard", 0) >= 0 else "scold")
+
+
+def remember(state, kind, steps):
+    """The arc keeps how he treated the being of its remembered stage: steps = [(choice, result)] of the meeting.
+    Harsh if he drove it off at any step; kind if he reached out to it (offered, spoke, went closer); else neither.
+    (By what he chose, not how the dice fell: a kindness that didn't come off still counts as kind.)"""
+    k = KINDS.get(kind, {})
+    spec = ARCS.get(k.get("arc"), {})
+    if not spec.get("remember") or k.get("stage") != spec["remember"] or not steps:
+        return
+    choices = {c for c, _ in steps}
+    arc = state.setdefault("arcs", {}).setdefault(k["arc"], {"stage": 1, "met": {}, "regard": 0})
+    arc["young"] = "harsh" if "drive_off" in choices else "kind" if choices & {"offer", "speak", "approach"} else ""
+
+
+def soon_visit(state, day, sched):
+    """A stage that comes soon after the last (ARCS soon): on the first day that can have it, often, else the next."""
+    for name, spec in ARCS.items():
+        arc = state.get("arcs", {}).get(name, {})
+        soon = arc.get("soon")
+        if not soon or day.isoformat() < soon["from"]:
+            continue
+        kind, start = soon["kind"], _day_start(day)
+        if not arc_open(state, kind, start) or not released(kind):
+            arc.pop("soon")                        # (driven off meanwhile, or not out yet: it waits for the dice like any other)
+            continue
+        rng = random.Random(day.toordinal() * 11 + len(kind))
+        if day.isoformat() == soon["from"] and rng.random() >= SOON_CHANCE:
+            continue                               # not today: tomorrow for certain
+        arc.pop("soon")
+        return _appearance(kind, day, _hour_time(kind, day, rng, sched), rng, state)
+    return None
 
 
 def follow_up(state, day, sched):
@@ -595,7 +659,7 @@ def update(world: Path, sched=None, now=None, keep=None):
         if key in state["planned"]:
             continue
         state["planned"] = (state["planned"] + [key])[-10:]
-        a = follow_up(state, day, sched) or plan_day(state, day, sched, best["step"], keep=keep)
+        a = follow_up(state, day, sched) or soon_visit(state, day, sched) or plan_day(state, day, sched, best["step"], keep=keep)
         if a:
             state["appearances"].append(a)
             k = KINDS[a["kind"]]
@@ -634,6 +698,8 @@ def witness(state, best, now):
             i = stages.index(a["kind"])
             if i < len(after) and arc.get("stage", 1) == i + 1 and arc["met"][a["kind"]] >= after[i]:
                 arc["stage"] = i + 2
+                if i + 2 in ARCS[k["arc"]].get("soon", ()):   # the next comes soon after (from the first day not yet planned)
+                    arc["soon"] = {"kind": stages[i + 1], "from": (_keeper_day(now) + dt.timedelta(days=2)).isoformat()}
         entry = best["kinds"].get(a["kind"]) or {}   # (an encounter may have started it: notes, regard)
         points = WITNESS_POINTS[k["rarity"]] * (2 if not entry.get("count") else 1)
         entry.setdefault("first", a["start"])
@@ -688,9 +754,11 @@ def export(world: Path, now=None):
             if a.get("stance") in encounters.STANCE_SAYS:
                 item["stance_says"] = encounters.STANCE_SAYS[a["stance"]]
         shown.append(item)
-    traces = [{"kind": a["arrival"], "id": a["id"], "since": a["start"]} for a in state["appearances"]
-              if a.get("arrival") and _parse(a["start"]) and
-              _parse(a["start"]) <= now < _parse(a["start"]) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]
+    def left_at(a):                                # a hole or mounds are left once it has gone (while it is here, it shows them itself)
+        return a.get("end") if a.get("arrival") in ("hole", "mounds") else a["start"]
+    traces = [{"kind": a["arrival"], "id": a["id"], "since": left_at(a)} for a in state["appearances"]
+              if a.get("arrival") and not a.get("cancelled") and _parse(left_at(a)) and
+              _parse(left_at(a)) <= now < _parse(left_at(a)) + dt.timedelta(days=TRACE_DAYS[a["arrival"]])]
     for p in places(state, now):                   # what a people has built (it stays): built afresh as each hut is added (sixths)
         traces.append({"kind": p["kind"], "id": f"{p['arc']}-{p['kind']}-{'leaving' if p['leaving'] else int(p['grown'] * 6)}",
                        "since": p["since"], "grown": p["grown"], "leaving": p["leaving"]})

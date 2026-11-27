@@ -315,6 +315,54 @@ creatures.tend_places(_td, _t0 + _dt.timedelta(days=2))
 assert not creatures.places(_td, _t0 + _dt.timedelta(days=2))                                     # taken away
 creatures.tend_places(_td, _t0 + _dt.timedelta(days=61))
 assert creatures.places(_td, _t0 + _dt.timedelta(days=61))[0]["grown"] == 0                        # begun again on their return
+# the Burrowfolk: the lost youngster comes once; the diggers come looking for it soon after (the day after next, or the
+# one after that, whatever the dice); the arc remembers how he treated the youngster, and the Burrow-Mother comes to
+# thank or to scold by it (else by their regard); their mushroom hollow is a place, and the farmers linger after her
+import copy as _copy  # noqa: E402
+import beings as _bg  # noqa: E402
+_bw = {"appearances": [{"id": "b1", "kind": "burrow1", "start": "2026-01-01T00:00:00+00:00", "end": "2026-01-01T01:00:00+00:00"}],
+       "planned": [], "cooldowns": {}, "chains": {}, "arcs": {}}
+creatures.witness(_bw, _bb, _t0)
+_d0 = creatures._keeper_day(_t0)
+assert _bw["arcs"]["burrow"]["stage"] == 2 and _bw["arcs"]["burrow"]["soon"]["kind"] == "burrow2"
+assert creatures.soon_visit(_copy.deepcopy(_bw), _d0 + _dt.timedelta(days=1), {}) is None          # (tomorrow is planned already)
+_when = []
+for _n in range(30):                                                    # over many first days: on it, or the next, never later
+    _x = _copy.deepcopy(_bw); _x["arcs"]["burrow"]["soon"]["from"] = (_d0 + _dt.timedelta(days=2 + _n)).isoformat()
+    _v = [creatures.soon_visit(_x, _d0 + _dt.timedelta(days=2 + _n + _k), {}) for _k in range(2)]
+    assert any(_v) and all(v is None or v["kind"] == "burrow2" for v in _v) and "soon" not in _x["arcs"]["burrow"]
+    _when.append(0 if _v[0] else 1)
+assert 0 < sum(_when) < 30                                              # sometimes the first day, sometimes the second
+creatures.note_arc(_bw, "burrow2", -1, _t0); creatures.note_arc(_bw, "burrow2", -1, _t0)   # driven off meanwhile: no soon visit
+assert creatures.soon_visit(_copy.deepcopy(_bw), _d0 + _dt.timedelta(days=3), {}) is None
+_bm = {"arcs": {"burrow": {"stage": 4, "regard": 0}}}
+for _steps, _mood in (([("watch", "neutral"), ("offer", "neutral")], "thanks"), ([("approach", "bad")], "thanks"),
+                      ([("watch", "good"), ("drive_off", "good")], "scold"), ([("watch", "good")], "thanks")):
+    creatures.remember(_bm, "burrow1", _steps)
+    assert creatures.mood(_bm, "burrow4") == _mood, (_steps, _mood)
+_bm["arcs"]["burrow"]["regard"] = -1
+assert creatures.mood(_bm, "burrow4") == "scold"                        # neither kind nor harsh: their regard decides
+creatures.remember(_bm, "burrow2", [("drive_off", "good")]); assert _bm["arcs"]["burrow"]["young"] == ""   # (only the youngster is remembered)
+_m4 = creatures._appearance("burrow4", _d0, _t0, __import__("random").Random(1), _bm)
+assert _m4["variant"]["kind"] == "scold" and _m4["nature"] == "proud" and _m4["drive"] in _bg.FORM_DRIVES["burrow4"]["scold"]
+assert creatures.nature_of(_m4) == "proud" and _bg.FORM_LOOKS["burrow4"]["scold"] and _bg.FORM_MIND["burrow4"]["thanks"]
+assert creatures._appearance("burrow1", _d0, _t0, __import__("random").Random(1), _bm)["arrival"] == "hole"
+_bw = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {}, "arcs": {}}
+for _k, _n in (("burrow1", 1), ("burrow2", 1)):
+    for _i in range(_n):
+        _bw["appearances"].append({"id": f"{_k}-{_i}", "kind": _k, "start": "2026-01-01T00:00:00+00:00", "end": "2026-01-01T01:00:00+00:00"})
+    creatures.witness(_bw, _bb, _t0)
+creatures.tend_places(_bw, _t0)
+assert _bw["arcs"]["burrow"]["stage"] == 3 and [p["kind"] for p in creatures.places(_bw, _t0)] == ["hollow"]
+assert creatures.places(_bw, _t0 + _dt.timedelta(days=7))[0]["grown"] == .5
+for _i in range(2):
+    _bw["appearances"].append({"id": f"b3-{_i}", "kind": "burrow3", "start": "2026-01-02T00:00:00+00:00", "end": "2026-01-02T01:00:00+00:00"})
+creatures.witness(_bw, _bb, _t0)
+_bw["appearances"].append({"id": "b4", "kind": "burrow4", "start": "2026-01-03T00:00:00+00:00", "end": "2026-01-03T01:00:00+00:00"})
+creatures.witness(_bw, _bb, _t0)
+assert not creatures.arc_open(_bw, "burrow4", _t0) and creatures.arc_open(_bw, "burrow3", _t0)    # the Mother came once; farming goes on
+assert all(k in _bg.CHARACTERS and k in _bg.REACTS for k in ("burrow1", "burrow2", "burrow3", "burrow4"))
+assert _bg.GIFT_DOES[_bg.CHARACTERS["burrow2"]["gifts"][0]] == ("repair", "wall") and _bg.CHARACTERS["burrow2"]["gifts"][0] in _bg.INTANGIBLE
 # a slow presence: back every evening, one closer, until the wall (or turned back)
 _ch = {"appearances": [], "planned": [], "cooldowns": {}, "chains": {"thincrowd": {"n": 1, "next": "2026-11-22"}}, "arcs": {}}
 _seen = []

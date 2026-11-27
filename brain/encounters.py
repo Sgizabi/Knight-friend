@@ -631,7 +631,8 @@ def apply(out, a, needs, body, keep, entry, how, now=None):
         body["injuries"].append(out["injury"])
     if out["damage"]:
         key = out["damage"]
-        did = life.harm(keep, key, HOW.get(key, "damaged") if key in life.REPAIRS else "battered and damaged",
+        how_ = {**HOW, **character(a["kind"]).get("harm_how", {})}   # (some do it their own way: the diggers undermine)
+        did = life.harm(keep, key, how_.get(key, "damaged") if key in life.REPAIRS else "battered and damaged",
                         sessions=2 if character(a["kind"]).get("danger", 0) >= 3 else 1)
         out["damage_text"] = did
         if not did:

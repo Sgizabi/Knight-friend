@@ -5209,59 +5209,211 @@ const BEASTS = {
     },
   },
 
-  // ---- (mockups, to be made properly with their arcs)
-  burrowfolk: {
-    name: 'The Burrowfolk', hour: 19,
-    blurb: 'A people under the plain: mole-and-badger diggers in leather aprons, with lantern-mushrooms growing on their backs. First a lost youngster pops up in the courtyard; then diggers come looking for it, with tunnels and mounds; they farm glowing mushrooms in a hollow on the plain; and their Burrow-Mother, huge, gentle and nearly blind, surfaces to thank him or to scold him, depending on how he treated the little one.',
-    view: [[-6.4, 1.4, -.9], [-10.8, .35, .1]],
-    variants: [['', 'a lost youngster'], ['diggers', 'diggers, searching'], ['mother', 'the Burrow-Mother']],
+  // THE BURROWFOLK, the people under the plain (brain: creatures.py burrow1-4, the arc 'burrow'). A lost youngster comes
+  // up in the courtyard; the diggers come looking for it soon after, pushing a line of mounds across the plain; their
+  // mushroom hollow on the plain is a place that STAYS (trace kind 'hollow' -> mushroomHollow; 'mushroomhollow' below
+  // shows it in the preview); once, the Burrow-Mother surfaces, to thank him or to scold him (her variant kind). The
+  // youngster's hole and the diggers' mounds are left behind as traces once they have gone (kinds 'hole', 'mounds').
+  burrow1: {
+    name: 'A lost Burrowfolk youngster', hour: 18.4,
+    blurb: 'The first chapter of the people under the plain. A patch of courtyard turf trembles, lifts and breaks, and a small furry digger pops its head out: like a mole crossed with a badger cub, with a white stripe down its nose, big dark eyes and one tiny glowing mushroom on its back. It looks about, nose going, ducks back down when it is startled, peeps over the rim, then climbs out and sits by its hole, grooming its face, calling down into the earth and looking at the keep. Near the end it hops back down its hole. (It is lost; what he does about it is his.)',
+    view: [[-11.0, 1.05, .75], [-9.5, .3, -1.0]],
     knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a little nose, in the courtyard' },
     build(root) {
-      const kind = root.userData.appearance?.variant?.kind || '';
-      if (kind === 'diggers') {
-        this.view = [[-4.6, 1.9, 7.6], [-2, .6, 12.6]];
-        for (const [x, z, rr] of [[-3.6, 12.4, .55], [-.4, 13.8, .5], [-2.2, 15, .6], [1.2, 11.6, .4]]) dirtMound(root, x, z, rr, rr > .45);
-        const a = burrower(root, [-2.9, gy(-2.9, 12.1), 12.1], 1, { seed: 6 }), b = burrower(root, [-1.1, gy(-1.1, 13.0), 13.0], .95, { seed: 7 });
-        a.g.rotation.y = 2.4; b.g.rotation.y = Math.atan2(1.1, -13);
-        const clods = Array.from({ length: 10 }, (_, i) => ({ m: P(root, A.ico(.05, 0), A.mat('#4a3826', 0, 1), [0, -9, 0]), i }));
-        return t => {
-          // one digs: claws in, earth thrown back over its shoulder
-          const dig = Math.sin(t * 6); a.arms.L.rotation.x = -.6 + dig * .5; a.arms.R.rotation.x = -.6 - dig * .5; a.body.rotation.x = .35; a.head.rotation.x = .3;
-          for (const q of clods) { const k = (t * 1.2 + q.i / 10) % 1, p = a.g.position; q.m.position.set(p.x + Math.sin(a.g.rotation.y) * (-.4 - k * 1.2) + (q.i % 3 - 1) * .1, p.y + .6 + Math.sin(k * Math.PI) * .9, p.z + Math.cos(a.g.rotation.y) * (-.4 - k * 1.2)); }
-          // the other stands up tall and sniffs the air, turning, calling for the little one
-          const call = pulse(t, 6, 1.6); b.head.rotation.set(-.3 - call * .4, Math.sin(t * .5) * .8, 0); b.nose.scale.setScalar(1 + Math.max(0, Math.sin(t * 14)) * .25 * (1 - call));
-          b.arms.R.rotation.x = -1.2 + Math.sin(t * .5) * .1; b.arms.L.rotation.x = -.2;
-          for (const o of [a, b]) o.caps.forEach((m, i) => { m.emissiveIntensity = 1.4 + Math.sin(t * 1.5 + i) * .3; });
-        };
-      }
-      if (kind === 'mother') {
-        this.view = [[-7, 3.2, 3.4], [-1, 2.2, 15]];
-        const MX = -1, MZ = 15, y0 = gy(MX, MZ), r = A.rand(19);
-        for (let i = 0; i < 14; i++) { const a = i / 14 * 6.28, rr = 2.3 + r() * .5; P(root, A.box(.5 + r() * .4, .25, .4 + r() * .3), A.mat(i % 3 ? '#4a3826' : '#2e3122', 0, 1), [MX + Math.cos(a) * rr, y0 + .05, MZ + Math.sin(a) * rr], { rot: [(r() - .5) * .8, a, (r() - .5) * .8], jitter: .05 }); }   // the ground heaved up round her
-        const m = burrower(root, [MX, y0 - 4, MZ], 2.8, { mother: true, seed: 8 }); m.g.rotation.y = Math.atan2(-MX, -MZ);
-        return t => {
-          const c = t % 40, up = smooth(1, 8, c) * (1 - smooth(34, 39, c));   // she surfaces, slowly, and after a long while sinks back
-          m.g.position.y = y0 - 4.2 + up * 2.9;
-          m.head.rotation.set(.15 + Math.sin(t * .3) * .1, Math.sin(t * .2) * .35, 0);   // she cannot see well: she finds the keep by smell
-          m.nose.scale.setScalar(1 + Math.max(0, Math.sin(t * 3)) ** 3 * .3);
-          m.arms.L.rotation.x = -.9; m.arms.R.rotation.x = -.9 + Math.sin(t * .4) * .1;
-          m.caps.forEach((q, i) => { q.emissiveIntensity = 1.3 + Math.sin(t * .9 + i * .7) * .4; });
-        };
-      }
-      const H1 = [-9.7, -.5], H2 = [-11.9, .55];                       // a lost youngster, popping up in the courtyard
-      const y1 = dirtMound(root, ...H1, .35), y2 = dirtMound(root, ...H2, .35);
-      const y = burrower(root, [0, -5, 0], .42, { young: true, seed: 4 });
-      return t => {
-        const c = t % 13, first = c < 7, [hx, hz] = first ? H1 : H2, base = first ? y1 : y2;
-        const up = first ? smooth(1, 1.4, c) * (1 - smooth(6, 6.25, c)) : smooth(8, 8.4, c) * (1 - smooth(12, 12.3, c));   // up it pops; down it ducks, quick
-        y.g.position.set(hx, base - .75 + up * .72, hz);
-        y.g.rotation.y = first && c > 4 ? Math.atan2(-7.4 - hx, 1 - hz) : first ? 1.2 + Math.sin(c * 1.4) * .9 : Math.atan2(-hx, -hz);   // it looks about; then it sees him
-        y.head.rotation.set(first && c > 4 ? -.15 : 0, 0, pulse(c, 3.1, .8) * .3);
-        y.nose.scale.setScalar(1 + Math.max(0, Math.sin(t * 16)) * .3);
-        y.arms.L.rotation.x = y.arms.R.rotation.x = -1.2;               // little claws on the rim of the hole
+      const clock = visitClock(root, 120), [hx, hz] = YH, y0 = .015;
+      const hole = burrowHole(root, hx, hz, .27, y0), clods = clodSpray(root, 14);
+      const yg = burrowFolk(root, [hx, -2, hz], .5, { young: true, seed: 4 }), m = mover(hx, hz);
+      const rim = [hx + .44, hz + .2], keepYaw = Math.atan2(-7.4 - hx, 1 - hz);   // where it sits; which way the knight is
+      let last = -1, burst = 0;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        if (since < last) { m.x = hx; m.z = hz; burst = 0; } last = since;
+        hole.lift(smooth(0, 2.6, since));                                 // the turf trembles, lifts and breaks
+        if (since > 2.2 && burst < 1) { burst = 1; clods.burst(hx, y0, hz, t, 0, 6); }
+        yg.rest();
+        const out = since > 18.5 && left > 11, back = left <= 11;         // up and out by its hole; back down at the end
+        // how far out of the hole: up it pops; ducks when startled; peeps over the rim; then comes right out
+        let e = since < 3 ? 0 : since < 3.6 ? smooth(3, 3.6, since) * .62 : since < 12.6 ? .62 : since < 13 ? .62 * (1 - smooth(12.6, 13, since)) :
+          since < 15 ? 0 : since < 18.5 ? .3 + smooth(16.6, 18.5, since) * .7 : 1;
+        if (back) e = left > 8.6 ? 1 : left > 7.8 ? 1 - smooth(8.6, 7.8, left) : 0;
+        const goal = out ? rim : [hx, hz], ph = m.to(goal[0], goal[1], .35, dt, 2), moving = m.d > .04;
+        if (back && m.d < .04 && left < 9.5) m.face(Math.atan2(hx - m.x, hz - m.z), dt, 4);
+        const sitK = out && !moving ? smooth(0, .8, since - 21) : 0;
+        if (moving) yg.walk(ph, 1.2); else if (sitK) yg.sit(sitK, t);
+        // looking about: quick turns of the head; sometimes it looks at the knight, sometimes at whoever is watching
+        const w = Math.floor(t / 4.5), look = nz(w * 3 + 1) > .55 ? 1 : 0, atCam = nz(w + 7) > .7 ? smooth(0, .5, t - w * 4.5) : 0;
+        const about = Math.sin(t * 1.7) * .5 * (1 - look) + (nz(w) - .5) * .9;
+        if (!moving) m.face(look ? keepYaw : m.yaw + 0, dt, 1.5);
+        const cy = yg.camYaw() * atCam;
+        yg.R.want('neck', -.1, (about * .5) * (1 - atCam) + cy * .45, 0);
+        yg.R.want('head', -.05 - (since < 13 && since > 3.6 ? .15 : 0), about * .4 * (1 - atCam) + cy * .55, pulse(t, 5.1, 1) * .38);   // the head-tilt
+        if (e < .99) { yg.R.want('sh-1', -1.9, 0, -.35); yg.R.want('sh1', -1.9, 0, .35); yg.R.want('el-1', .4); yg.R.want('el1', .4); }   // little claws on the rim
+        if (sitK) {                                                       // sitting by its hole: it washes its face; it calls down the hole
+          const wash = pulse(t + 2, 9, 2.4), call = pulse(t + 6, 13, 2.2);
+          yg.R.want('sh-1', -2.1 * wash - .3, 0, -.5 * wash); yg.R.want('sh1', -2.1 * wash - .3, 0, .5 * wash); yg.R.want('el-1', -1.6 * wash); yg.R.want('el1', -1.6 * wash);
+          yg.R.want('head', .25 * wash - .1 + call * .6, about * .2, Math.sin(t * 9) * .1 * wash);
+          yg.R.want('neck', call * .5, 0, 0); yg.jaw.rotation.x = call * .5;
+          if (call > .1) m.face(Math.atan2(hx - m.x, hz - m.z), dt, 2);
+        }
+        yg.g.position.set(m.x, y0 - (1 - e) * .62 + (sitK ? 0 : Math.abs(Math.sin(ph)) * .01), m.z); yg.g.rotation.y = m.yaw;
+        yg.g.visible = e > .02 || since < 3;
+        yg.step(t, dt); clods.tick(t);
       };
     },
   },
+  burrow2: {
+    name: 'The Burrowfolk diggers', hour: 19.2,
+    blurb: 'The second chapter, soon after the youngster was lost. Fresh mounds of earth push up across the plain one after another, a line of them coming toward the keep, until the last comes up by the courtyard wall. Two diggers break out of the newest: broad and low like big badgers, with a mole\'s snout and spade claws, in leather aprons, with glowing mushrooms growing on their backs like lanterns. One digs, earth flying back over its shoulder; the other stands up tall, sniffs toward the keep and calls down into the ground, its mushrooms pulsing. If they are wary of him, their mounds stop further off. At the end they go back down.',
+    view: [[-5.6, 2.4, 9.4], [-10.2, .6, 5.9]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'mounds of earth, coming toward the wall' },
+    build(root) {
+      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 170);
+      const TR = TRAIL.slice(0, reg <= -1 ? TRAIL.length - 2 : TRAIL.length), n = TR.length;
+      const mounds = TR.map(([x, z], i) => moundAt(root, x, z, .36 + nz(i + 2) * .12)), clods = clodSpray(root, 24);
+      const [ax, az] = TR[n - 1], [bx, bz] = TR[n - 2];
+      const dig = burrowFolk(root, [ax, -3, az], 1, { seed: 6 }), call = burrowFolk(root, [bx, -3, bz], .95, { seed: 7 });
+      const fresh = moundAt(root, ax + .7, az - .25, .26);                // the little heap it digs at
+      const toWall = Math.atan2(-10.2 - ax, 2 - az);
+      let last = -1;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        if (since < last) mounds.forEach(q => { q.burst = 0; }); last = since;
+        mounds.forEach((q, i) => { const t0 = 1 + i * 4.2, k = smooth(t0, t0 + 1.4, since); q.grow(k);   // one after another, coming closer
+          if (k > .05 && !q.burst) { q.burst = 1; clods.burst(q.x, q.y, q.z, t, 0, 5); } });
+        const up = n * 4.2 + 2, gone = smooth(9, 6, left);
+        for (const [o, x, z, d] of [[dig, ax, az, 0], [call, bx, bz, 1.2]]) {
+          const e = smooth(up + d, up + d + 1.6, since) * (1 - gone);
+          o.rest(); o.g.position.set(x, landY(x, z) - (1 - e) * 1.4, z); o.g.visible = e > .01; o.e = e;
+        }
+        fresh.grow(smooth(up + 4, up + 20, since));
+        // the digger: at the fresh heap, digging; now and then it stops, rises and sniffs
+        const sn = pulse(t + 3, 14, 3.2), dk = (1 - sn) * smooth(up + 2, up + 4, since);
+        dig.g.rotation.y = Math.atan2(fresh.x - ax, fresh.z - az) * (1 - sn) + toWall * sn;
+        dig.dig(t, dk); dig.sniff(sn, t);
+        if (dk > .5 && Math.sin(t * 7) > .95) clods.burst(ax + Math.sin(dig.g.rotation.y) * .2, landY(ax, az) + .3, az + Math.cos(dig.g.rotation.y) * .2, t, dig.g.rotation.y + Math.PI, 2);
+        // the caller: stands tall, sniffs toward the keep, turns; calls down into the ground, its mushrooms pulsing like a signal
+        const w = Math.floor(t / 6), turn = (nz(w + 4) - .5) * 1.4, cl = pulse(t, 11, 2.6), lookCam = nz(w + 9) > .75 ? 1 : 0;
+        call.g.rotation.y = Math.atan2(-9.6 - bx, 1 - bz) + turn * .4;
+        call.sniff(1 - cl * .4, t); call.callOut(cl, t);
+        call.R.want('neck', -.25 + cl * .9, turn * .5 * (1 - lookCam) + call.camYaw() * .45 * lookCam, 0);
+        call.glow = 1 + cl * 1.2; dig.glow = 1;
+        dig.step(t, dt); call.step(t, dt); clods.tick(t);
+      };
+    },
+  },
+  burrow3: {
+    name: 'The Burrowfolk mushroom farmers', hour: 20.2,
+    blurb: 'Once their hollow is dug on the plain, the Burrowfolk farm it after dark: beds of tall lantern-mushrooms, gold, green and violet, glowing brighter as night comes on. One waters the beds from a clay pot, walking bed to bed; one crouches and picks the ripe caps into a basket; one digs a new bed at the rim, earth flying. A youngster tags along, sniffing the mushrooms and batting at one that bobs. When they are content they hum, and the mushrooms on their backs brighten in a slow wave. (At the real keep the hollow is already there, from the place.)',
+    view: [[-1.2, 2.5, 12.0], [-3.6, .2, 15.9]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a glow, out on the plain' },
+    build(root) {
+      const ap = root.userData.appearance || {}, [CX, CZ] = HOLLOW;
+      if (!ap.id) mushroomHollow(root, 1);                               // (at the real keep the hollow is already there, from its trace)
+      const at = (a, r) => [CX + Math.cos(a) * r, CZ + Math.sin(a) * r];
+      const hy = (x, z) => landY(x, z) + .03;
+      const water = burrowFolk(root, [0, 0, 0], 1, { seed: 30 }), pick = burrowFolk(root, [0, 0, 0], .96, { seed: 31 }), digr = burrowFolk(root, [0, 0, 0], 1.04, { seed: 32 });
+      const young = burrowFolk(root, [0, 0, 0], .5, { young: true, seed: 33 }), clods = clodSpray(root, 16), drops = clodSpray(root, 12, '#9cc4d8', .018);
+      const pot = clayPot(water.arms[1].hand, .9); pot.position.set(0, -.12, .05);
+      const pp = at(-.4, 1.0), bk = at(-.15, 1.15), dp = at(2.3, 2.15), yp = at(-.62, .78);
+      const basket = G(root, [bk[0], hy(...bk), bk[1]]); lath(basket, [[0, 0], [.13, .01], [.16, .12], [.15, .2]], texMat('#a88f52', 'weave'), [0, 0, 0], [0, 0, 0], [1, 1, 1], 9);
+      const inB = []; for (let k = 0; k < 6; k++) inB.push(P(basket, A.ico(.045, 1), capMats()[k % 3], [Math.sin(k * 2.4) * .07, .15, Math.cos(k * 2.4) * .07], { scale: [1, .6, 1], cast: false }));
+      const loop = [at(.6, 1.5), at(1.5, 1.2), at(2.9, 1.45), at(4.1, 1.3), at(5.3, 1.4)], wm = mover(...loop[0]);
+      const bob = G(root, [yp[0] + .3, hy(...yp), yp[1] + .1]); { bone(bob, [0, 0, 0], [0, .32, 0], .022, .016, A.mat('#e8dcc4', 0, .8), 6, 0); P(bob, new T.SphereGeometry(.1, 10, 6, 0, 6.3, 0, 1.5), capMats()[1], [0, .32, 0], { scale: [1, .62, 1], cast: false }); }
+      for (const [o, p, face] of [[pick, pp, at(-.4, .3)], [digr, dp, at(2.3, 3)], [young, yp, [yp[0] + .3, yp[1] + .1]]]) { o.g.position.set(p[0], hy(...p), p[1]); o.g.rotation.y = Math.atan2(face[0] - p[0], face[1] - p[1]); }
+      let wi = 0, wait = 0;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const hum = smooth(0, 1, pulse(t, 23, 9) * 1.6);                  // a slow wave of contentment
+        // the waterer: walks bed to bed and tips its pot over each
+        water.rest();
+        const [gx, gz] = loop[wi % loop.length], ph = wm.to(gx, gz, .42, dt);
+        if (wm.d < .05) { wait += dt; if (wait > 5.5) { wait = 0; wi++; } } else wait = 0;
+        const tip = wm.d < .05 ? smooth(.6, 1.6, wait) * (1 - smooth(4.2, 5.2, wait)) : 0;
+        if (wm.d >= .05) water.walk(ph, 1); else water.R.want('body', .35 * tip + .1, 0, 0);
+        water.R.want('sh1', -1.0 - tip * .5, 0, .1); water.R.want('el1', -.9 + tip * .3); pot.rotation.x = tip * 1.4;
+        if (tip > .6 && Math.random() < dt * 14) { const w = pot.getWorldPosition(V()); drops.burst(w.x, w.y, w.z, t, wm.yaw, 1, .2); }
+        water.g.position.set(wm.x, hy(wm.x, wm.z), wm.z); water.g.rotation.y = wm.yaw;
+        // the picker: crouched at a bed, reaching in, putting caps in the basket
+        pick.rest(); const rc = (t * .35) % 1, reach = smooth(.1, .35, rc) * (1 - smooth(.55, .8, rc));
+        pick.crouch(1); pick.R.want('sh1', -1.3 - reach * .5, 0, .1 - reach * .3); pick.R.want('el1', -.3 + reach * .3); pick.R.want('sh-1', -.6, 0, -.2);
+        pick.R.want('head', .35, pulse(t, 7, 2) * .5, 0);
+        inB.forEach((m, k) => { m.visible = k < 3 + Math.floor((t * .35) % 4); });
+        // the digger at the rim: a new bed
+        digr.rest(); digr.dig(t + 1, 1 - pulse(t, 16, 3)); digr.sniff(pulse(t, 16, 3), t);
+        if (Math.sin((t + 1) * 7) > .97 && pulse(t, 16, 3) < .1) clods.burst(dp[0], hy(...dp) + .3, dp[1], t, digr.g.rotation.y + Math.PI, 2);
+        // the youngster: sniffing a mushroom that bobs; batting at it; a bounce
+        young.rest(); young.sit(.7, t); const bat = pulse(t + 1.5, 6.5, 1.1);
+        young.R.want('sh1', -1.2 - bat * 1.2, 0, .3); young.R.want('el1', -.4 - bat * .4); young.R.want('neck', .15, -.3, 0); young.R.want('head', -.1 - bat * .2, 0, pulse(t, 4.7, 1) * .35);
+        bob.rotation.z = Math.sin(t * 2.4) * .08 + bat * .35; bob.rotation.x = Math.sin(t * 1.9) * .05;
+        young.g.position.y = hy(...yp) + (bat > .5 ? Math.abs(Math.sin(t * 10)) * .04 : 0);
+        for (const o of [water, pick, digr, young]) { o.glow = 1 + hum * .6; o.hum = hum; o.step(t, dt); }
+        clods.tick(t); drops.tick(t);
+      };
+    },
+  },
+  burrow4: {
+    name: 'The Burrow-Mother', hour: 18.6,
+    blurb: 'The last chapter, and it comes only once. The ground trembles, heaves, and breaks open on the plain near the keep, and the Burrow-Mother rises out of it, slowly, earth pouring off her shoulders: a digger as big as a cottage, grey and old, her back a garden of glowing mushrooms, her eyes milky and nearly blind. She finds the keep by smell, her great nose working. Then, as he left things with her little one: she lowers her head toward the keep and holds it there, breathing slow, her mushrooms glowing gold (thanks); or she rears up and rumbles at the keep, thumping the earth, her mushrooms gone a hard pale white (a scolding). At the end she sinks back into the plain.',
+    view: [[-3.0, 3.6, 5.6], [-8.4, 2.0, 11.8]],
+    variants: [['', 'come to thank him'], ['scold', 'come to scold him']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'exclaim', note: 'the ground is shaking' },
+    build(root) {
+      const ap = root.userData.appearance || {}, reg = Math.max(-2, Math.min(2, ap.regard || 0)), clock = visitClock(root, 160);
+      const scold = (ap.variant?.kind || '') === 'scold';
+      const [MX, MZ] = reg >= 1 ? [-9.4, 10.2] : reg <= -1 ? [-6.6, 14.2] : [-8.4, 11.8], y0 = landY(MX, MZ);
+      const heave = burrowHole(root, MX, MZ, 1.35, y0, 2.4), clods = clodSpray(root, 30), trickle = clodSpray(root, 26, '#4a3a2a', .05);
+      const m = burrowFolk(root, [MX, y0 - 5, MZ], 2.7, { mother: true, seed: 8, root }), face = Math.atan2(-9.6 - MX, 1.0 - MZ);
+      m.g.rotation.y = face;
+      let last = -1, thump = 0;
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const { since, left } = clock(t);
+        if (since < last) thump = 0; last = since;
+        const shake = smooth(0, 2, since) * (1 - smooth(9, 11, since)) + (left < 22 ? smooth(22, 20, left) * smooth(4, 7, left) : 0);
+        heave.lift(smooth(1, 8, since)); heave.g.position.y = Math.sin(t * 31) * .012 * shake;
+        if (since > 7 && since < 8 && !thump) { thump = 1; clods.burst(MX, y0 + .3, MZ, t, 0, 18, 1.8); }
+        const rise = smooth(7, 22, since) * (1 - smooth(20, 4, left)), rearK = scold ? smooth(30, 34, since) * (1 - smooth(24, 20, left)) : 0;
+        m.rest();
+        m.g.position.set(MX + Math.sin(t * 23) * .01 * shake, y0 - 3.45 + rise * 2.35 + rearK * .45, MZ);
+        if (rise > .05 && rise < .97 && Math.random() < dt * 12) { const a = Math.random() * 6.28; trickle.burst(MX + Math.cos(a) * 1.1, m.g.position.y + 2.6, MZ + Math.sin(a) * .9, t, a, 1, .5); }   // earth pouring off her
+        // she finds the keep by smell: nose working, the head swinging slowly
+        const findK = smooth(22, 26, since), sniff = Math.sin(t * .35) * .5 * (1 - smooth(30, 34, since));
+        m.R.want('neck', .1, sniff * .6, 0); m.R.want('head', -.1, sniff * .5, Math.sin(t * .23) * .06);
+        m.sniffRate = 1 + findK * 2;
+        if (!scold) {                                                     // thanks: she lowers her great head toward the keep and holds it there, breathing
+          const bow = smooth(32, 38, since) * (1 - smooth(26, 22, left)), lift = pulse(t, 19, 4) * bow * .4;
+          m.R.want('body', .25 + bow * .45, 0, 0); m.R.want('neck', .1 + bow * .55 - lift, sniff * .3, 0); m.R.want('head', -.1 + bow * .35, 0, 0);
+          m.R.want('sh-1', -.5 - bow * .6, 0, -.3); m.R.want('sh1', -.5 - bow * .6, 0, .3);
+          m.body.scale.setScalar(1 + Math.sin(t * .9) * .015 * bow);    // slow breaths
+          m.glow = 1 + bow * .5; m.tint = 0;
+        } else {                                                          // a scolding: she rears up and rumbles, and thumps the earth
+          const th = rearK ? pulse(t, 9.5, 1.4) : 0;
+          m.R.want('body', -.15 * rearK + .2, 0, Math.sin(t * 17) * .015 * rearK); m.R.want('neck', -.3 * rearK + .1, 0, 0); m.R.want('head', -.15 * rearK, 0, 0);
+          m.jaw.rotation.x = rearK * (.25 + Math.sin(t * 2.3) * .08);
+          m.R.want('sh1', -1.3 * rearK - th * .9, 0, .4); m.R.want('el1', -.5 + th * .5); m.R.want('sh-1', -.7 * rearK, 0, -.4);
+          if (th > .95 && t - thump > 2) { thump = t; clods.burst(MX + Math.sin(face) * 1.6, y0 + .2, MZ + Math.cos(face) * 1.6, t, face, 10, 1.2); }
+          m.glow = 1 + rearK * .3; m.tint = rearK;
+        }
+        m.step(t, dt); clods.tick(t); trickle.tick(t);
+        m.g.visible = rise > .005;
+      };
+    },
+  },
+  mushroomhollow: {
+    name: 'The Burrowfolk\'s mushroom hollow', hour: 20.5,
+    blurb: 'What the Burrowfolk make on the plain once their story has come that far: a shallow hollow ringed with heaped earth, with beds of tall lantern-mushrooms, gold, green and violet, that glow faintly by day and brightly after dark, tunnel mouths at the rim, clay pots, baskets and a spade. It is dug over about two weeks, bed by bed, and stays (it is a place in his world now, not a visit). If he drives them off, they fill it in and the glow goes out; when they come back, they begin again.',
+    view: [[-1.2, 2.6, 12.0], [-3.6, .2, 15.9]],
+    variants: [['', 'grown'], ['half', 'half dug'], ['begun', 'just begun'], ['leaving', 'being filled in']],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a glow, out on the plain' },
+    build(root) {
+      const kind = root.userData.appearance?.variant?.kind || '';
+      return mushroomHollow(root, kind === 'half' ? .5 : kind === 'begun' ? .05 : 1, kind === 'leaving');
+    },
+  },
+
+  // ---- (mockups, to be made properly with their arcs)
   kitemakers: {
     name: 'The Kitemakers', hour: 13,
     blurb: 'A people of the wind: light, long-limbed gliders with silk between arm and leg, patterned like kites, who ride the wind fronts on windy days. First a scout glides in and lands on the keep; then a flock passes over; they rest on the walls in a gale; and once, a great migration darkens the sky for an hour while their Wind-Chief, the largest, its silk ragged with ancient patterns, circles the keep once. They leave dropped silk he can keep.',
@@ -6075,42 +6227,303 @@ function reedVillage(root, grown = 1, leaving = false) {
     lights.forEach((l, i) => { l.intensity = leaving ? 0 : night * (1.3 + Math.sin(t * 2.3 + i) * .12); });
   };
 }
-// THE BURROWFOLK: mole-and-badger diggers in leather aprons, lantern-mushrooms growing on their backs.
-function burrower(parent, pos, s = 1, o = {}) {
-  const fur = A.mat(o.mother ? '#5c524a' : '#4a3f35', 0, .95), pale = A.mat('#e8e2d6', 0, .9), pink = A.mat('#d99a9a', 0, .6), dark = A.mat('#0d0b0a', .2, .3), claw = A.mat('#d8ccb0', .1, .5), apron = A.mat('#7a4e2c', 0, .8);
+// THE BURROWFOLK: a people under the plain, mole-and-badger diggers in leather aprons, with lantern-mushrooms growing on
+// their backs. Patient, wary of what they don't know, fond of their young; their hollow on the plain glows after dark.
+// ---- where things are: the youngster's hole in the courtyard; the diggers' trail of mounds from their hollow to the
+// courtyard's south wall (across the road, not on it); the hollow on the plain to the south (clear of the craft's ring)
+const YH = [-9.7, -1.05], HOLLOW = [-3.5, 15.8];
+const TRAIL = [[-5.0, 12.9], [-5.9, 11.5], [-6.9, 10.3], [-7.8, 9.3], [-9.0, 6.5], [-10.5, 5.35]];
+// the height of the land as it is drawn (the ground is a mesh of 2 m cells, flat between its corners), or the courtyard's grass
+function landY(x, z) {
+  if (x > -17.2 && x < -5.3 && Math.abs(z) < 4.05) return .01;
+  const ix = Math.floor((x + 140) / 2), iz = Math.floor((z + 140) / 2), x0 = -140 + ix * 2, z0 = -140 + iz * 2, u = (x - x0) / 2, v = (z - z0) / 2;
+  const h = (a, b) => gy(x0 + a * 2, z0 + b * 2);
+  return u + v <= 1 ? h(0, 0) + (h(1, 0) - h(0, 0)) * u + (h(0, 1) - h(0, 0)) * v : h(1, 1) + (h(0, 1) - h(1, 1)) * (1 - u) + (h(1, 0) - h(1, 1)) * (1 - v);
+}
+// earth thrown up as they dig (and water from a pot): a pool of little bits on arcs. (Marked see-through, so the
+// clearance check counts them as flying bits, not solid parts.) dir 0: every way.
+function clodSpray(root, n, color = '#4a3826', size = .045) {
+  const m = new T.MeshStandardMaterial({ color, roughness: 1, flatShading: true, transparent: true });
+  const Q = Array.from({ length: n }, () => { const c = new T.Mesh(A.ico(size, 0), m); c.visible = false; root.add(c); return { c, t0: -99, p: [0, 0, 0], v: [0, 0, 0] }; });
+  let i = 0;
+  return {
+    burst(x, y, z, t, dir, count = 4, spd = 1) {
+      for (let k = 0; k < count; k++) { const q = Q[i++ % n], a = dir === 0 ? Math.random() * 6.283 : dir + (Math.random() - .5) * 1.1, h = (.5 + Math.random() * .9) * spd;
+        q.t0 = t; q.p = [x, y, z]; q.v = [Math.sin(a) * h, (1.4 + Math.random() * 1.4) * Math.max(.3, spd), Math.cos(a) * h]; q.c.rotation.set(Math.random() * 3, Math.random() * 3, 0); }
+    },
+    tick(t) { for (const q of Q) { const k = t - q.t0, y = q.p[1] + q.v[1] * k - 4.9 * k * k; q.c.visible = k >= 0 && k < 2 && y > q.p[1] - .35;
+      if (q.c.visible) q.c.position.set(q.p[0] + q.v[0] * k, y, q.p[2] + q.v[2] * k); } },
+  };
+}
+const EARTH = {};
+const earthMat = (c = '#634a33') => EARTH[c] ??= texMat(c, 'stone', { bump: .012, rough: 1 });
+// a hole breaking open: the ground lifts and splits, earth heaps up round a dark mouth. lift(k): 0 whole, 1 open;
+// settled: how far the heap has sunk back over the days since (for what is left behind)
+function burrowHole(root, x, z, r, y0, lumpS = 1) {
+  const g = G(root), r0 = A.rand(Math.round(x * 31 + z * 7)), earth = earthMat(), turf = A.mat(y0 > 0 && y0 < .05 ? '#3e4a2c' : '#3c4a2a', 0, .95);
+  const hole = new T.Mesh(new T.CircleGeometry(r, 16), new T.MeshBasicMaterial({ color: '#050403' })); hole.rotation.x = -Math.PI / 2; hole.position.set(x, y0 + .03, z); g.add(hole);
+  const lumps = [], flaps = [];
+  for (let k = 0; k < 9; k++) { const a = k / 9 * 6.283 + r0() * .4, d = r * (1.12 + r0() * .25), rr = r * (.36 + r0() * .14) * lumpS;
+    const m = P(g, A.ico(rr, 1), earth, [x + Math.cos(a) * d, y0, z + Math.sin(a) * d], { scale: [1.2, .55, 1], rot: [0, a, 0], jitter: .02 * lumpS }); m.userData.s = [1.2, .55, 1]; lumps.push(m); }
+  for (let k = 0; k < 3; k++) { const a = k * 2.1 + r0(), hg = G(g, [x + Math.cos(a) * r, y0 + .01, z + Math.sin(a) * r], [0, -a + Math.PI / 2, 0]);   // torn turf, hinged at the hole's edge
+    P(hg, A.box(r * 1.1, .035 * Math.max(1, lumpS * .6), r * .7), turf, [0, .01, r * .35], { jitter: .01 }); flaps.push(hg); }
+  return { g, lift(k, settled = 0) {
+    hole.scale.setScalar(Math.max(.01, smooth(.25, .8, k) * (1 - settled * .45))); hole.visible = k > .25;
+    lumps.forEach(m => { const s = m.userData.s, q = smooth(.3, 1, k); m.scale.set(s[0] * q, s[1] * q * (1 - settled * .6), s[2] * q); m.visible = q > .01; });
+    flaps.forEach((f, i) => { f.rotation.x = -smooth(0, .7, k) * (.9 + i * .25) * (1 - settled * .7) + (k < .3 ? Math.sin(k * 60) * .03 : 0); f.visible = k > .02; });
+  } };
+}
+// a mound of fresh earth pushed up from below, with the dark of the tunnel in its top. grow(k): 0 none, 1 grown
+function moundAt(root, x, z, r) {
+  const y = landY(x, z), g = G(root, [x, y, z]), earth = earthMat(), r0 = A.rand(Math.round(x * 13 - z * 5));
+  P(g, A.ico(r, 1), earth, [0, -r * .22, 0], { scale: [1, .62, 1], jitter: .03 });
+  for (let k = 0; k < 5; k++) { const a = r0() * 6.283, d = r * (.9 + r0() * .4); P(g, A.ico(r * (.12 + r0() * .1), 0), earth, [Math.cos(a) * d, 0, Math.sin(a) * d], { jitter: .01 }); }
+  merge(g);
+  const hole = new T.Mesh(new T.CircleGeometry(r * .36, 10), new T.MeshBasicMaterial({ color: '#060403' })); hole.rotation.x = -Math.PI / 2 + .15; hole.position.y = r * .39; g.add(hole);
+  return { x, y, z, g, burst: 0, grow(k, open = true) { g.scale.set(Math.max(.01, k), Math.max(.01, k), Math.max(.01, k)); g.visible = k > .01; hole.visible = open && k > .85; } };
+}
+// a clay pot, the kind they water with
+function clayPot(parent, s = 1) {
+  const g = G(parent); g.scale.setScalar(s);
+  lath(g, [[0, 0], [.055, .004], [.08, .045], [.078, .1], [.052, .14], [.06, .158], [.05, .162]], A.mat('#9a5a3a', 0, .85), [0, 0, 0], [0, 0, 0], [1, 1, 1], 10);
+  P(g, new T.CircleGeometry(.048, 10), A.mat('#1c140e', 0, 1), [0, .155, 0], { rot: [-Math.PI / 2, 0, 0], jitter: 0, cast: false });
+  return g;
+}
+// one of the Burrowfolk (new look). A broad, low digger standing upright, leaning forward: a pear-shaped body, short
+// thick legs, short strong arms ending in spade hands with long pale claws; a round head with a long tapering snout,
+// a pink nose with a ring of little feelers round it, a white stripe from the nose over the crown, small round ears,
+// whiskers; small dark eyes with a catch-light. A leather apron with a pocket and a trowel. Lantern-mushrooms grow on
+// its back, gold, green and violet, brighter after dark (glow), and they can go a hard pale white (tint).
+// young: cat-sized, a big head and big dark eyes, softer fur, one tiny mushroom, no apron. mother: grey and grizzled,
+// huge (by s), milky nearly-blind eyes under heavy lids, a garden of mushrooms and moss on her back, roots hanging off her.
+const BURROW_FUR = {};
+function burrowFolk(parent, pos, s = 1, o = {}) {
+  const r = A.rand(o.seed || 5), yg = !!o.young, mo = !!o.mother, H = .3, key = yg ? 'y' : mo ? 'm' : 'a';
+  const map = BURROW_FUR[key] ??= paintTex(128, 128, (c, w) => {
+    c.fillStyle = yg ? '#7a6652' : mo ? '#706a62' : '#56483c'; c.fillRect(0, 0, w, w); const q = A.rand(yg ? 11 : mo ? 12 : 13);
+    for (let i = 0; i < 900; i++) { const x = q() * w, y = q() * w, l = 2 + q() * 4, d = q() > .5;
+      c.strokeStyle = d ? `rgba(${yg ? '40,30,22' : '22,18,15'},${.25 + q() * .3})` : `rgba(${mo ? '230,226,218' : yg ? '200,180,150' : '150,130,110'},${(mo ? .3 : .18) + q() * .25})`;
+      c.lineWidth = 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x + (q() - .5) * 1.5, y + l); c.stroke(); }   // short strokes of fur, grizzled
+  }, [2, 2]);
+  const fur = new T.MeshStandardMaterial({ map, roughness: .95, flatShading: true, bumpMap: bumpTex('fur'), bumpScale: .006 });
+  const stripe = A.mat(yg ? '#efe6d4' : mo ? '#dcd6cc' : '#e2dccd', 0, .9), muzzle = A.mat(yg ? '#d4bf9f' : mo ? '#9c958b' : '#86735f', 0, .9);
+  const pink = A.mat(mo ? '#b08480' : yg ? '#b8786f' : '#c98a84', 0, .55), dark = A.mat('#0c0a09', .25, .25), claw = A.mat(mo ? '#bfb4a0' : '#ddd2b8', .05, .45);
   const g = G(parent, pos); g.scale.setScalar(s);
-  const body = G(g);
-  P(body, A.ico(.38, 1), fur, [0, .55, 0], { scale: [1, 1.15, .9] });
-  if (!o.mother) {                                                     // a leather apron, with a pocket and a trowel in it
-    P(body, A.box(.48, .55, .04), apron, [0, .5, .33], { rot: [.12, 0, 0] });
-    for (const sx of [-1, 1]) bone(body, [sx * .2, .8, .3], [0, 1.0, .2], .012, .012, apron, 4);
-    P(body, A.box(.16, .12, .03), apron, [.1, .42, .37], { rot: [.12, 0, 0] }); bone(body, [.12, .44, .38], [.14, .62, .36], .012, .01, A.M.woodL, 4);
+  const R = rig();
+  const body = R.add('body', G(g, [0, H, 0]), 6, .85);
+  const BP = [[0, -.06], [.2, -.04], [.29, .07], [.315, .21], [.3, .36], [.255, .48], [.19, .57], [.1, .63], [0, .645]];
+  lath(body, BP, fur, [0, 0, 0], [0, 0, 0], [1, 1, .86], 12);
+  lath(body, [[0, -.02], [.18, .02], [.22, .15], [.2, .32], [.14, .45], [0, .5]], muzzle, [0, 0, .075], [0, 0, 0], [.82, 1, .6], 10);   // a paler belly
+  const radAt = y => { for (let i = 1; i < BP.length; i++) if (y <= BP[i][1]) { const k = (y - BP[i - 1][1]) / (BP[i][1] - BP[i - 1][1]); return BP[i - 1][0] + (BP[i][0] - BP[i - 1][0]) * k; } return 0; };
+  if (!yg && !mo) {                                                    // a leather apron: a bib and a skirt, a strap round the neck, a pocket with a trowel
+    const lea = A.mat('#6e4526', 0, .62, { side: T.DoubleSide }), stitch = A.mat('#c8a46a', 0, .8);
+    P(body, new T.CylinderGeometry(.33, .345, .48, 12, 3, true, -.95, 1.9), lea, [0, .19, 0], { scale: [1, 1, .9], jitter: .004 });
+    P(body, new T.CylinderGeometry(.26, .31, .17, 10, 1, true, -.55, 1.1), lea, [0, .5, 0], { scale: [1, 1, .9], jitter: .003 });
+    P(body, new T.TorusGeometry(.16, .014, 4, 16), lea, [0, .6, -.01], { rot: [Math.PI / 2 + .35, 0, 0], jitter: 0 });
+    P(body, new T.TorusGeometry(.32, .012, 4, 22), lea, [0, .43, 0], { rot: [Math.PI / 2, 0, 0], scale: [1, .88, 1], jitter: 0 });   // the tie round the waist
+    P(body, A.box(.13, .1, .02), lea, [.11, .12, .31], { rot: [.08, .32, 0], jitter: .003 }); P(body, A.box(.13, .008, .022), stitch, [.11, .17, .312], { rot: [.08, .32, 0], jitter: 0 });
+    bone(body, [.1, .14, .33], [.13, .3, .33], .012, .011, A.M.woodL, 5, 0); P(body, A.box(.04, .06, .008), A.mat('#8c8c88', .6, .35), [.13, .33, .33], { rot: [0, .32, 0], jitter: 0 });
   }
-  const head = G(body, [0, 1.02, .12]);                                // a long snout, a pink nose, small eyes, a white stripe like a badger's
-  P(head, A.ico(.24, 1), fur, [0, 0, 0], { scale: [1, .85, 1.1] });
-  P(head, new T.ConeGeometry(.12, .3, 8), fur, [0, -.04, .3], { rot: [Math.PI / 2, 0, 0] });
-  const nose = P(head, A.ico(.055, 1), pink, [0, -.04, .46]);
-  P(head, A.box(.07, .02, .42), pale, [0, .19, .05], { rot: [-.15, 0, 0] });
-  for (const sx of [-1, 1]) { P(head, A.ico(.028, 0), o.mother ? A.mat('#cfd4d8', 0, .4) : dark, [sx * .11, .07, .2]); P(head, A.ico(.06, 0), fur, [sx * .17, .15, -.05], { scale: [1, .7, .5] }); }   // (the Mother's eyes are milky: she is nearly blind)
-  const arm = sx => { const a = G(body, [sx * .32, .72, .12]); bone(a, [0, 0, 0], [sx * .12, -.28, .12], .08, .07, fur); const h = G(a, [sx * .12, -.32, .14]); P(h, A.ico(.09, 0), fur, [0, 0, 0], { scale: [1.3, .6, 1] }); for (let c = 0; c < 3; c++) P(h, new T.ConeGeometry(.025, .16, 5), claw, [(c - 1) * .06, -.05, .1], { rot: [1.9, 0, 0] }); return a; };
-  const arms = { L: arm(-1), R: arm(1) };
-  for (const sx of [-1, 1]) P(body, A.ico(.11, 0), fur, [sx * .18, .1, .05], { scale: [1, .8, 1.3] });
-  const caps = [], n = o.mother ? 24 : o.young ? 3 : 6, r = A.rand(o.seed || 5);   // lantern-mushrooms on its back
-  for (let i = 0; i < n; i++) {
-    const a = (r() - .5) * 2.4, y = .4 + r() * .55, st = G(body, [Math.sin(a) * .3, y + .1, -Math.cos(a) * .3 - .02]);
-    bone(st, [0, 0, 0], [0, .12, -.02], .015, .012, pale, 5);
-    const capM = glow(['#ffd08a', '#9fe8c8', '#c8b4ff'][i % 3], 1.6);
-    P(st, new T.SphereGeometry(.07, 8, 5, 0, 6.3, 0, 1.5), capM, [0, .12, -.02], { scale: [1, .7, 1], cast: false }); caps.push(capM);
+  // lantern-mushrooms on its back: gold, green and violet caps on pale stems; moss round their feet
+  const CAPC = ['#ffc870', '#8fe8b0', '#c4a8ff'], capM = CAPC.map(c => glow(c, 1.2)), base = CAPC.map(c => new T.Color(c)), white = new T.Color('#f2f4ff');
+  const stemM = A.mat('#e8dfca', 0, .75), moss = A.mat('#4f6a30', 0, 1);
+  const nCaps = yg ? 1 : mo ? 34 : 8;
+  for (let i = 0; i < nCaps; i++) {
+    const a = yg ? Math.PI : Math.PI + (r() - .5) * 2.3, y = yg ? .5 : .16 + r() * .44, rad = radAt(y), big = mo && r() < .25;
+    const n = V(Math.sin(a), .55, Math.cos(a) * .86).normalize(), b = V(Math.sin(a) * rad, y, Math.cos(a) * rad * .86), len = (yg ? .09 : .06 + r() * .1) * (big ? 1.6 : 1), top = b.clone().addScaledVector(n, len).add(V(0, len * .4, 0));
+    bone(body, b.toArray(), top.toArray(), yg ? .016 : .014, yg ? .012 : .01, stemM, 5, 0);
+    const cr = (yg ? .06 : .04 + r() * .035) * (big ? 1.7 : 1), cap = P(body, new T.SphereGeometry(cr, 9, 5, 0, 6.283, 0, 1.45), capM[yg ? 0 : i % 3], top.toArray(), { scale: [1, .62, 1], cast: false, jitter: 0 });
+    cap.quaternion.setFromUnitVectors(V(0, 1, 0), n.clone().lerp(V(0, 1, 0), .6).normalize());
+    if (!yg && r() < (mo ? .7 : .4)) P(body, A.ico(.035 + r() * .03, 0), moss, b.toArray(), { scale: [1.3, .4, 1.3], jitter: .006, cast: false });
   }
-  const lamp = softLight('#ffd8a0', o.mother ? 3 : 1.4, o.mother ? 2.2 : 1.6); lamp.position.set(0, .95, -.4); body.add(lamp);
-  return { g, body, head, nose, arms, caps };
+  if (mo) for (let i = 0; i < 9; i++) { const a = (r() - .5) * 4, y = .3 + r() * .3, rad = radAt(y) * .98, b = [Math.sin(a) * rad, y, Math.cos(a) * rad * .86];   // roots and earth still hanging off her
+    bone(body, b, [b[0] * 1.05, y - .1 - r() * .12, b[2] * 1.05], .01, .004, A.mat('#3a2c1e', 0, 1), 4, .002); }
+  const backLight = softLight('#ffd89a', 1.2, mo ? 2 : yg ? .9 : 1.3); backLight.position.set(0, .45, -.42); body.add(backLight);
+  // a short tail
+  P(body, new T.ConeGeometry(.05, .12, 6), fur, [0, .02, -.27], { rot: [-2.2, 0, 0], jitter: .004 });
+  merge(body);
+  // the head: round, with a paler face, a long tapering snout and a small pink nose (the grown ones ringed with little
+  // feelers), a white stripe from the nose over the crown, small round ears, whiskers. The eyes sit on the skull's surface.
+  const neck = R.add('neck', G(body, [0, .6, .05]), 8, .75);
+  bone(neck, [0, 0, 0], [0, .09, .03], .13, .115, fur, 8, .002);
+  const head = R.add('head', G(neck, [0, yg ? .1 : .12, .04]), 10, .7);
+  head.scale.setScalar(yg ? 1.8 : mo ? 1.05 : 1);
+  const KS = [1.05, .95, 1.0], RA = KS.map(k => .19 * k);
+  const onSkull = (dx, dy, dz, inset = 0) => { const d = V(dx, dy, dz).normalize(), t = 1 / Math.hypot(d.x / RA[0], d.y / RA[1], d.z / RA[2]); return d.multiplyScalar(t - inset).toArray(); };
+  P(head, A.ico(.19, 2), fur, [0, 0, 0], { scale: KS, jitter: .003 });
+  P(head, A.ico(.15, 2), muzzle, yg ? [0, -.012, .072] : [0, -.045, .07], { scale: yg ? [1.08, .9, .95] : [1, .78, .95], jitter: .002 });   // the paler face
+  for (const sx of [-1, 1]) P(head, A.ico(.1, 1), yg ? muzzle : fur, [sx * .09, -.06, .05], { scale: [1, .82, 1], jitter: .002 });   // cheeks
+  const SN = yg ? [[.085, 0], [.078, .05], [.06, .1], [.044, .14], [0, .155]] : [[.1, 0], [.092, .07], [.072, .15], [.05, .22], [.037, .27], [0, .285]];
+  lath(head, SN, muzzle, [0, -.05, .13], undefined, [1, .82, 1], 10);
+  const tipZ = .13 + SN.at(-1)[1] - .01, nose = G(head, [0, -.05, tipZ]);
+  P(nose, A.ico(yg ? .024 : .03, 1), A.mat('#2e2422', .1, .3), [0, 0, 0], { scale: [1.3, .95, .8], jitter: 0 });   // a dark, damp nose
+  for (const sx of [-1, 1]) P(nose, A.ico(.007, 0), dark, [sx * .013, .002, .022], { jitter: 0, cast: false });
+  if (!yg) for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283; P(nose, new T.ConeGeometry(.006, .026, 4), pink, [Math.cos(a) * .04, Math.sin(a) * .032, .004], { rot: [Math.PI / 2, 0, 0], jitter: 0, cast: false }); }   // a ring of little feelers
+  merge(nose);
+  // the white stripe: a band down the front of the skull from the crown, on along the top of the snout, and back over the crown
+  P(head, new T.SphereGeometry(.192, 4, 12, Math.PI / 2 - .2, .4, 0, 1.95), stripe, [0, 0, 0], { scale: KS, jitter: 0, cast: false });
+  P(head, new T.SphereGeometry(.192, 4, 8, Math.PI * 1.5 - .17, .34, 0, 1.25), stripe, [0, 0, 0], { scale: KS, jitter: 0, cast: false });
+  { const y1 = -.05 + SN[0][0] * .82 + .002, y2 = -.05 + SN.at(-2)[0] * .82 + .002, z1 = .13, z2 = .13 + SN.at(-2)[1], L = Math.hypot(y2 - y1, z2 - z1);
+    P(head, A.box(yg ? .04 : .045, .012, L), stripe, [0, (y1 + y2) / 2, (z1 + z2) / 2], { rot: [Math.atan2(y1 - y2, z2 - z1), 0, 0], jitter: 0, cast: false }); }
+  for (const sx of [-1, 1]) { const ep = onSkull(sx * .75, .55, -.2, .01); P(head, A.ico(.045, 1), fur, ep, { scale: [1, .85, .45], rot: [0, sx * .9, 0], jitter: .001 }); P(head, A.ico(.026, 1), pink, [ep[0] + sx * .004, ep[1], ep[2] + .012], { scale: [1, .8, .3], rot: [0, sx * .9, 0], jitter: 0, cast: false }); }
+  const eyeM = mo ? new T.MeshStandardMaterial({ color: '#c6d0d4', roughness: .3, emissive: '#2c3438', emissiveIntensity: .4 }) : new T.MeshStandardMaterial({ color: '#06080a', roughness: .08, metalness: .25 });
+  const glintM = new T.MeshBasicMaterial({ color: '#ffffff' }), er = yg ? .06 : mo ? .034 : .03;
+  const eyes = [-1, 1].map(sx => {
+    const at = yg ? onSkull(sx * .5, .14, .86, er * .25) : onSkull(sx * .52, .26, .82, er * .3);
+    const e = G(head, at, [0, sx * (yg ? .45 : .5), 0]);
+    P(e, new T.SphereGeometry(er, 14, 10), eyeM, [0, 0, 0], { scale: [1, 1, .72], jitter: 0, cast: false });
+    const glint = mo ? null : P(e, A.ico(er * .15, 1), glintM, [-er * .28 * sx, er * .34, er * .68], { jitter: 0, cast: false });
+    const lid = P(e, A.ico(er * 1.1, 1), yg ? muzzle : fur, [0, er, .002], { scale: [1.05, .15, .8], jitter: 0, cast: false });
+    return { e, glint, lid };
+  });
+  const wp = []; for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) wp.push(V(sx * .035, -.045 - k * .01, tipZ - .05), V(sx * (mo ? .32 : yg ? .14 : .22), -.055 - k * .03, tipZ - .1));
+  head.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(wp), new T.LineBasicMaterial({ color: mo ? '#f0ece4' : '#d8d0c0', transparent: true, opacity: yg ? .4 : .5 })));
+  const jaw = G(head, [0, -.1, .12]); P(jaw, A.ico(.072, 1), muzzle, [0, -.01, .07], { scale: [1, .4, 1.5], jitter: 0, cast: false });
+  P(head, A.ico(.06, 1), A.mat('#3a1c1c', 0, .6), [0, -.095, .16], { scale: [1, .45, 1.2], jitter: 0, cast: false });   // (inside the mouth, when it calls)
+  merge(head);
+  // arms: short and strong; spade hands with five long claws
+  const arms = [-1, 1].map(sx => {
+    const sh = R.add('sh' + sx, G(body, [sx * .27, .48, .05]), 9, .7);
+    bone(sh, [0, 0, 0], [sx * .02, -.17, .04], .085, .066, fur, 7, .002); P(sh, A.ico(.088, 1), fur, [0, 0, 0], { jitter: .002 });
+    const el = R.add('el' + sx, G(sh, [sx * .02, -.17, .04]), 10, .7);
+    bone(el, [0, 0, 0], [0, -.15, .03], .066, .058, fur, 7, .002);
+    const hand = G(el, [0, -.17, .04], [0, 0, sx * .25]);
+    P(hand, A.ico(.075, 1), muzzle, [0, 0, 0], { scale: [1.4, .55, 1.15], jitter: .002 });
+    for (let f = 0; f < 5; f++) P(hand, new T.ConeGeometry(.016, mo ? .12 : .1, 5), claw, [(f - 2) * .033, -.03, .07], { rot: [1.95, 0, (f - 2) * -.08], jitter: 0 });
+    merge(sh); merge(el); merge(hand);                                   // (each limb's still parts drawn as one)
+    return { sh, el, hand };
+  });
+  const legs = [-1, 1].map(sx => {
+    const hip = R.add('hip' + sx, G(body, [sx * .15, .02, 0]), 9, .8);
+    bone(hip, [0, 0, 0], [0, -.15, .03], .1, .08, fur, 7, .002);
+    const kn = R.add('kn' + sx, G(hip, [0, -.15, .03]), 10, .8);
+    bone(kn, [0, 0, 0], [0, -.12, -.02], .078, .066, fur, 7, .002);
+    const ft = G(kn, [0, -.13, -.02]); P(ft, A.ico(.066, 1), fur, [0, -.004, .04], { scale: [1.1, .45, 1.6], jitter: 0 });
+    for (let f = 0; f < 3; f++) P(ft, new T.ConeGeometry(.012, .05, 4), claw, [(f - 1) * .03, -.012, .14], { rot: [Math.PI / 2, 0, 0], jitter: 0 });
+    merge(hip); merge(kn); merge(ft);
+    return { hip, kn };
+  });
+  let blinkAt = 1 + r() * 4;
+  const cam = V(), me = V();
+  const mix = (name, x, y, z, k) => { const w = R.J[name].want; w[0] += (x - w[0]) * k; w[1] += (y - w[1]) * k; w[2] += (z - w[2]) * k; };
+  const LEAN = .22;
+  const api = {
+    g, body, neck, head, jaw, nose, arms, legs, R, s, glow: 1, tint: 0, sniffRate: 1,
+    // standing, leaning forward a little (the legs kept upright under it), arms forward, never quite still
+    rest() {
+      const t = api.t || 0, drift = Math.sin(t * .27 + s * 5) * .14, sway = Math.sin(t * .5 + s * 9) * .025;
+      body.position.y = H; body.scale.setScalar(1); jaw.rotation.x = 0;
+      R.want('body', LEAN, 0, sway); R.want('neck', .05, drift * .5, 0); R.want('head', -.1, drift * .5, -sway);
+      for (const sx of [-1, 1]) { R.want('sh' + sx, -.35, 0, sx * .12); R.want('el' + sx, -.55, 0, 0); R.want('hip' + sx, -LEAN, 0, 0); R.want('kn' + sx, 0, 0, 0); }
+    },
+    // a waddling walk: each leg swings through and lifts; the body rolls side to side; the arms swing a little
+    walk(ph, amp = 1) {
+      for (const sx of [-1, 1]) { const p = ph + (sx > 0 ? Math.PI : 0), sw = Math.sin(p), lift = Math.max(0, Math.cos(p));
+        R.want('hip' + sx, -LEAN - sw * .5 * amp, 0, 0); R.want('kn' + sx, lift * .75 * amp, 0, 0); R.want('sh' + (-sx), -.35 + sw * .3 * amp, 0, -sx * .12); }
+      body.position.y = H + Math.abs(Math.sin(ph)) * .015 * amp;
+      R.want('body', LEAN + .05, Math.sin(ph) * .08 * amp, Math.sin(ph) * .07 * amp);
+    },
+    // sitting back on its haunches (k: how far down)
+    sit(k) {
+      body.position.y = H - .17 * k;
+      R.want('body', LEAN - .3 * k, 0, 0);
+      for (const sx of [-1, 1]) { R.want('hip' + sx, -LEAN + .3 * k - 1.45 * k, 0, sx * .15 * k); R.want('kn' + sx, 1.35 * k, 0, 0); }
+    },
+    // crouched down over something (picking)
+    crouch(k) {
+      body.position.y = H - .13 * k; mix('body', LEAN + .5, 0, 0, k);
+      for (const sx of [-1, 1]) { mix('hip' + sx, -LEAN - .5 - .9, 0, sx * .2, k); mix('kn' + sx, 1.5, 0, 0, k); }
+    },
+    // digging: bent right over, the spade hands scooping in turn, earth thrown back
+    dig(t, k) {
+      if (k < .01) return; const p = t * 7;
+      body.position.y = H - .08 * k; mix('body', .8, 0, Math.sin(p) * .05, k); mix('neck', .25, 0, 0, k); mix('head', .25, 0, 0, k);
+      for (const sx of [-1, 1]) { mix('hip' + sx, -.8 - .45, 0, sx * .15, k); mix('kn' + sx, .9, 0, 0, k);
+        mix('sh' + sx, -1.25 + Math.sin(p + (sx > 0 ? Math.PI : 0)) * .75, 0, sx * .25, k); mix('el' + sx, -.35, 0, 0, k); }
+    },
+    // standing up tall and sniffing the air, paws held up at its chest
+    sniff(k, t) {
+      if (k < .01) return; api.sniffRate = 1 + k * 1.6;
+      mix('body', -.06, 0, 0, k); mix('neck', -.35, 0, 0, k); mix('head', -.25, Math.sin(t * .9) * .25, 0, k);
+      for (const sx of [-1, 1]) { mix('hip' + sx, .06, 0, 0, k); mix('sh' + sx, -.75, 0, sx * -.15, k); mix('el' + sx, -1.35, 0, 0, k); }
+    },
+    // calling: the head thrown up, the mouth open
+    callOut(k) { if (k < .01) return; mix('neck', -.75, 0, 0, k); mix('head', -.45, 0, 0, k); jaw.rotation.x = .45 * k; },
+    // which way the watcher is, from where it faces (for a look now and then)
+    camYaw() { g.getWorldPosition(me); cam.copy(A.camera.position); let y = Math.atan2(cam.x - me.x, cam.z - me.z) - g.rotation.y; y = Math.atan2(Math.sin(y), Math.cos(y)); return Math.max(-1.1, Math.min(1.1, y)); },
+    step(t, dt) {
+      api.t = t; R.step(dt);
+      nose.scale.setScalar(1 + Math.pow(Math.max(0, Math.sin(t * 9 * api.sniffRate + s * 3)), 3) * .2); api.sniffRate = 1;   // the nose never stops
+      const bk = t > blinkAt ? Math.sin(Math.min(1, (t - blinkAt) / .2) * Math.PI) : 0; if (t > blinkAt + .2) blinkAt = t + 2.2 + r() * 4.5;
+      const shut = Math.max(mo ? .5 : 0, bk);
+      for (const e of eyes) { e.lid.visible = shut > .06; e.lid.scale.y = .15 + shut * .95; e.lid.position.y = er * (1 - shut); if (e.glint) e.glint.visible = shut < .45; }
+      const night = A.hour >= 17.5 || A.hour < 6.5 ? 1 : .35;
+      capM.forEach((m, i) => { m.emissiveIntensity = (.2 + night * .85) * api.glow * (1 + Math.sin(t * 1.3 + i * 2 + s) * .06); m.emissive.copy(base[i]).lerp(white, api.tint); m.color.copy(m.emissive); });
+      backLight.intensity = night * 1.25 * api.glow;
+    },
+  };
+  api.rest();
+  return api;
 }
-function dirtMound(parent, x, z, rr, hole = true) {   // a heap of fresh earth, and the dark of a tunnel in it
-  const y = x > -17.2 && x < -5.3 && Math.abs(z) < 4.3 ? 0 : gy(x, z);   // (the courtyard floor is level)
-  P(parent, A.ico(rr, 1), A.mat('#4a3826', 0, 1), [x, y - rr * .3, z], { scale: [1, .6, 1], jitter: .03 });
-  if (hole) { const h = new T.Mesh(new T.CircleGeometry(rr * .45, 10), new T.MeshBasicMaterial({ color: '#050403' })); h.rotation.x = -Math.PI / 2; h.position.set(x, y + rr * .31, z); parent.add(h); }
-  return y + rr * .3;
+// THE BURROWFOLK'S MUSHROOM HOLLOW: a shallow hollow on the plain ringed with heaped earth; beds of tall lantern-mushrooms
+// (gold, green, violet) that glow faintly by day and brightly after dark; tunnel mouths at the rim; clay pots, baskets and a
+// spade. grown 0..1: dug bed by bed (the next bed is only buttons); leaving: filled in, the caps fallen and dark. Still parts merged.
+let CAPM = null;
+const capMats = () => CAPM ??= ['#ffc870', '#8fe8b0', '#c4a8ff'].map(c => glow(c, 1.2));
+function mushroomHollow(root, grown = 1, leaving = false) {
+  const [CX, CZ] = HOLLOW, R = 2.75, r = A.rand(23), caps = capMats(), earth = earthMat(), soil = earthMat('#3a2b1f');
+  const stemM = A.mat('#e6dcc6', 0, .7), gill = A.mat('#cbbd9e', 0, .85), dull = A.mat('#5a5048', 0, 1), hg = G(root), lights = [];
+  const fl = new T.CircleGeometry(R * .97, 30); fl.rotateX(-Math.PI / 2); const pa = fl.attributes.position;
+  for (let i = 0; i < pa.count; i++) pa.setY(i, landY(CX + pa.getX(i), CZ + pa.getZ(i)) + .03);
+  fl.computeVertexNormals(); const floor = new T.Mesh(fl, soil); floor.position.set(CX, 0, CZ); floor.receiveShadow = true; root.add(floor);   // turned soil, lying on the land
+  for (let k = 0; k < 28; k++) { const a = k / 28 * 6.283 + r() * .1, rr = R + r() * .2, x = CX + Math.cos(a) * rr, z = CZ + Math.sin(a) * rr;   // the rim of heaped earth
+    P(hg, A.ico(.38 + r() * .18, 1), earth, [x, landY(x, z) - .1, z], { scale: [1.25, .42 + r() * .15, .85], rot: [0, -a, 0], jitter: .04 }); }
+  if (grown < .34 || leaving) for (const a of [.4, 2.6, 4.4]) { const x = CX + Math.cos(a) * (R + 1.1), z = CZ + Math.sin(a) * (R + 1.1); P(hg, A.ico(.6, 1), earth, [x, landY(x, z) - .15, z], { scale: [1.2, .55, 1], jitter: .05 }); }   // spoil heaps
+  const BEDS = [[-.95, -.55, .5], [.25, -1.05, .15], [1.15, .1, -.35], [-.15, .75, .1], [-1.35, .65, .9]];
+  const full = leaving ? 0 : Math.floor(grown * BEDS.length + 1e-6), sprout = !leaving && grown < 1 ? full : -1;
+  const shroom = (x, z, h, cr, c, lean = 0) => { const y = landY(x, z) + .05, tx = x + Math.sin(lean) * h * .15, tz = z + Math.cos(lean) * h * .15;
+    bone(hg, [x, y, z], [tx, y + h, tz], Math.max(.012, cr * .2), Math.max(.01, cr * .15), stemM, 6, .002);
+    P(hg, new T.SphereGeometry(cr, 10, 5, 0, 6.283, 0, 1.42), c, [tx, y + h - cr * .05, tz], { scale: [1, .6, 1], cast: false, jitter: 0 });
+    P(hg, new T.CircleGeometry(cr * .93, 10), gill, [tx, y + h - cr * .07, tz], { rot: [Math.PI / 2, 0, 0], cast: false, jitter: 0 }); };
+  BEDS.forEach(([dx, dz, yaw], i) => {
+    const bx = CX + dx, bz = CZ + dz, ca = Math.cos(yaw), sa = Math.sin(yaw);
+    if (i >= full && i !== sprout && !leaving) return;
+    P(hg, A.ico(.5, 1), soil, [bx, landY(bx, bz) + .02, bz], { scale: [1.55, .16, .55], rot: [0, yaw, 0], jitter: .02 });   // a raised bed
+    for (let k = 0; k < (i === sprout ? 10 : 7); k++) {
+      const u = -.65 + k / (i === sprout ? 9 : 6) * 1.3 + (r() - .5) * .12, w = (r() - .5) * .3, x = bx + u * ca + w * sa, z = bz - u * sa + w * ca;
+      if (leaving) { if (r() < .4) P(hg, A.ico(.06 + r() * .05, 0), dull, [x, landY(x, z) + .06, z], { scale: [1, .45, 1], rot: [r(), r(), r()] }); continue; }   // fallen, dark
+      if (i === sprout) shroom(x, z, .04 + r() * .05, .025 + r() * .02, caps[k % 3]);
+      else { shroom(x, z, .2 + r() * .3, .08 + r() * .08, caps[Math.floor(r() * 3)], r() * 6.28); if (r() < .6) shroom(x + .12, z - .08, .08 + r() * .08, .04 + r() * .025, caps[k % 3]); }
+    }
+    if (i < full && lights.length < 3) { const l = softLight('#ffdca0', 1.3, 2.8); l.position.set(bx, landY(bx, bz) + .7, bz); root.add(l); lights.push(l); }
+  });
+  if (leaving) for (let k = 0; k < 4; k++) { const a = k * 1.6 + .3, x = CX + Math.cos(a) * 1.2, z = CZ + Math.sin(a) * 1.2; P(hg, A.ico(.45, 1), earth, [x, landY(x, z) - .05, z], { scale: [1.2, .5, 1], jitter: .04 }); }   // being filled in
+  for (const a of [-2.0, .9]) {                                         // tunnel mouths in the rim (the trail of mounds leaves from the first)
+    const x = CX + Math.cos(a) * (R - .25), z = CZ + Math.sin(a) * (R - .25), y = landY(x, z);
+    P(hg, A.ico(.42, 1), earth, [x + Math.cos(a) * .25, y + .05, z + Math.sin(a) * .25], { scale: [1.1, .6, 1], jitter: .03 });
+    if (!leaving) { const m = new T.Mesh(new T.CircleGeometry(.26, 12), new T.MeshBasicMaterial({ color: '#050403' })); m.position.set(x, y + .2, z); m.lookAt(CX, y + .25, CZ); root.add(m); }
+  }
+  if (!leaving && grown >= .34) {                                        // what they work with: clay pots, a basket of caps, a spade in the earth
+    for (const [a, d] of [[3.6, 1.95], [3.75, 2.05]]) { const x = CX + Math.cos(a) * d, z = CZ + Math.sin(a) * d, p = clayPot(hg, 1.05); p.position.set(x, landY(x, z) + .03, z); }
+    const bx = CX + Math.cos(5.2) * 2.0, bz = CZ + Math.sin(5.2) * 2.0, b = G(hg, [bx, landY(bx, bz) + .03, bz]);
+    lath(b, [[0, 0], [.13, .01], [.16, .12], [.15, .2]], texMat('#a88f52', 'weave'), [0, 0, 0], [0, 0, 0], [1, 1, 1], 9);
+    for (let k = 0; k < 5; k++) P(b, A.ico(.045, 1), caps[k % 3], [Math.sin(k * 2.4) * .07, .17, Math.cos(k * 2.4) * .07], { scale: [1, .6, 1], cast: false });
+    merge(b);
+    const sx = CX + Math.cos(1.6) * 2.5, sz = CZ + Math.sin(1.6) * 2.5, sy = landY(sx, sz), sp = G(hg, [sx, sy, sz], [.25, .4, .1]);
+    bone(sp, [0, -.05, 0], [0, .75, 0], .018, .016, A.M.woodL, 5, 0); P(sp, A.box(.16, .2, .02), A.mat('#7d7a74', .5, .4), [0, -.12, 0], { jitter: 0 }); P(sp, A.box(.12, .025, .025), A.M.woodL, [0, .77, 0], { jitter: 0 });
+    merge(sp);
+  }
+  merge(hg);
+  return t => {
+    const night = A.hour >= 17.5 || A.hour < 6.5 ? 1 : .3;
+    caps.forEach((m, i) => { m.emissiveIntensity = (.15 + night * 1.15) * (1 + Math.sin(t * .7 + i * 2) * .07); });
+    lights.forEach((l, i) => { l.intensity = night * (1.2 + Math.sin(t * .9 + i) * .1); });
+  };
 }
+// what they leave behind, once they have gone: the youngster's hole in the courtyard (the heap sinking back over three
+// days); the diggers' line of mounds across the plain (settling over five)
+function holeTrace(root, days) { burrowHole(root, ...YH, .27, .015).lift(1, Math.min(1, days / 3)); return () => {}; }
+function moundsTrace(root, days) { TRAIL.forEach(([x, z], i) => moundAt(root, x, z, .36 + nz(i + 2) * .12).grow(1 - .4 * Math.min(1, days / 5), days < 2)); return () => {}; }
 // THE KITEMAKERS: light, long-limbed gliders with silk between arm and leg, patterned like kites, who
 // ride the wind fronts. The Wind-Chief is the largest, its silk ragged and its patterns very old.
 function kiteFolk(parent, s = 1, o = {}) {
@@ -7626,6 +8039,8 @@ export function spawnTrace(tr, api) {
   const of = String(tr.id || '').split('-')[0], age = Math.max(0, (Date.now() - Date.parse(tr.since)) / 1000);
   const root = new T.Group(); A.scene.add(root);
   const tick = tr.kind === 'village' ? reedVillage(root, tr.grown ?? 1, !!tr.leaving) :   // (what the lake folk built: it stays)
+    tr.kind === 'hollow' ? mushroomHollow(root, tr.grown ?? 1, !!tr.leaving) :   // (the Burrowfolk's hollow: it stays)
+    tr.kind === 'hole' ? holeTrace(root, age / 86400) : tr.kind === 'mounds' ? moundsTrace(root, age / 86400) :   // (the youngster's hole, the diggers' mounds: they settle)
     tr.kind === 'meteor' ? meteorScene(root, ...(METEOR_AT[of] || [9.5, 19]), { age: age < 90 ? 0 : age }) : shipScorch(root, SHIP_AT[of] || [], age / 86400);   // (fell in the last minute or so: seen falling, from the start)
   A.onTick.push(tick);
   return { root, remove() { const i = A.onTick.indexOf(tick); if (i >= 0) A.onTick.splice(i, 1); A.scene.remove(root); root.traverse(o => { if (o.isMesh) o.geometry?.dispose(); }); } };

@@ -1626,6 +1626,7 @@ class Knight:
         if note:
             entry["note"] = note
         final = history[-1]["result"] if history else "neutral"
+        creatures.remember(state, kind, [(h["choice"], h["result"]) for h in history])   # (a people may remember this one)
         for x in state["appearances"]:
             if x.get("id") == a["id"]:
                 x["met"] = {"outcome": final, "steps": len(history), "time": iso()}
