@@ -79,15 +79,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-27T15:30:25+00:00",
+    "applied_until": "2026-11-27T16:00:28+00:00",
     "live_thought": {
-      "text": "The forge heat hums, iron glints, I could hammer a bit longer.",
-      "time": "2026-11-27T15:30:25+00:00"
+      "text": "The flame's steady, stones cold, I could linger a bit longer.",
+      "time": "2026-11-27T16:00:28+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T15:30:25+00:00",
+    "since": "2026-11-27T16:00:29+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +95,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 89.2,
+    "warmth": 75.0,
+    "inspiration": 89.6,
+    "spirit": 67.7
+  },
+  "needs_prev": {
     "rest": 89.7,
     "warmth": 67.7,
     "inspiration": 89.6,
     "spirit": 68.1
   },
-  "needs_prev": {
-    "rest": 91.1,
-    "warmth": 68.8,
-    "inspiration": 89.6,
-    "spirit": 68.5
-  },
-  "needs_at": "2026-11-27T15:30:25+00:00",
+  "needs_at": "2026-11-27T16:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2153,7 +2153,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T15:30:25+00:00",
+    "updated": "2026-11-27T16:00:28+00:00",
     "seen_until": "2026-11-27T14:55:32+00:00"
   },
   "gifts": [],
@@ -2309,15 +2309,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-27T15:00:00+00:00",
-      "end": "2026-11-27T16:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares"
-      ]
-    },
-    {
       "start": "2026-11-27T16:00:00+00:00",
       "end": "2026-11-27T17:00:00+00:00",
       "kinds": [
@@ -2382,6 +2373,13 @@
       "kinds": [
         "crows"
       ]
+    },
+    {
+      "start": "2026-11-27T23:00:00+00:00",
+      "end": "2026-11-28T00:00:00+00:00",
+      "kinds": [
+        "hares"
+      ]
     }
   ],
   "creatures": {
@@ -2389,5 +2387,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T15:30:25+00:00"
+  "exported": "2026-11-27T16:00:29+00:00"
 }
