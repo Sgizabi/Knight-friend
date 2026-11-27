@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-20T15:01:51+00:00",
-    "activity": "repair",
-    "mood": "curious",
-    "emote": "question",
-    "text": "I tightened a few more boards over the roof gap. One board warped when I lifted it, so I swapped it for a fresher piece from the stash. The new board fits better, but the gap still lets a cold draft in. I noted the spot where the wind whistles the most.",
-    "creations": []
-  },
-  {
     "time": "2026-11-20T17:01:39+00:00",
     "activity": "raise",
     "mood": "content",
@@ -526,6 +518,14 @@
     "mood": "content",
     "emote": "sigh",
     "text": "I fitted the new lantern guard reinforcement on the wall. It sits tight, no wobble. While tightening mortar on the east wall I found a loose slab and set it straight. The fire stayed steady. I still have the extra glass shards in my pocket, untouched.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-27T23:01:42+00:00",
+    "activity": "craft",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I made another Lantern Handle Guard and set it on the workbench table. The wood log in the woodshed is damp, so I’ll move it out to dry. I counted the steps on the broken stair again; all still firm. The fire kept its heat while I worked.",
     "creations": []
   }
 ]

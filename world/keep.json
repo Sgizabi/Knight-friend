@@ -2848,6 +2848,71 @@
         }
       ],
       "made": "2026-11-27T21:00:33+00:00"
+    },
+    {
+      "name": "Lantern Handle Guard",
+      "about": "A simple protective guard for a lantern handle, fits on the workbench",
+      "placement": "table",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "size": [
+            0.02,
+            0.02,
+            0.15
+          ],
+          "pos": [
+            0.0,
+            0.075,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#555555"
+        },
+        {
+          "shape": "box",
+          "size": [
+            0.04,
+            0.01,
+            0.15
+          ],
+          "pos": [
+            0.0,
+            0.045,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#777777"
+        },
+        {
+          "shape": "cylinder",
+          "size": [
+            0.015,
+            0.015,
+            0.02
+          ],
+          "pos": [
+            0.0,
+            0.13,
+            0.0
+          ],
+          "rot": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "color": "#333333"
+        }
+      ],
+      "made": "2026-11-27T23:00:39+00:00"
     }
   ],
   "buildings": [
