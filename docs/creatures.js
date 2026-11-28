@@ -6505,7 +6505,7 @@ const BEASTS = {
   // ================================================================ SMALL LIFE (the animals: brain/animals.py says who is about)
   jester: {
     name: 'The jester', hour: 15,
-    blurb: 'A trickster in saffron-and-teal motley with bells on every point, a white mask with closed, smiling eyes and a grin that never changes, and nothing behind the mask but a slow swirl of stars. It knows it is being watched, and it plays to you: click it for a trick. When it turns hostile its bells go silent first: they freeze mid-swing and dull, and it stops moving.',
+    blurb: 'A trickster in saffron-and-teal motley with bells on every point, a white mask with closed, smiling eyes and a grin that never changes, and nothing behind the mask but a slow swirl of stars. It knows it is being watched, and it plays to you: click it for a trick. When it turns hostile its bells go silent first: they freeze mid-swing and dull, it stops moving, and it turns its grin aside. Under it is another face, with no mouth, and stars through its eyes.',
     variants: [['friendly', 'friendly'], ['cheeky', 'cheeky'], ['hostile', 'hostile (bells silent)']],
     triggers: [['trick', 'a trick (or click it)'], ['spin', 'spark spin'], ['flip', 'mask flip'], ['juggle', 'juggling'], ['bow', 'a deep bow'], ['jingle', 'bell jingle'],
                ['flower', 'paper flower'], ['maskoff', 'mask off'], ['marionette', 'the marionette'], ['cartwheel', 'cartwheels'], ['comeback', 'back into view'],
@@ -6515,7 +6515,7 @@ const BEASTS = {
     knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a jester, juggling outside the wall' },
     build(root) {
       const ap = root.userData.appearance || {}, mood0 = ap.variant?.kind || 'friendly';
-      const J = jesterBody(root, root), { g, pv, R, arms, legs, hips, head, mask, maskHinge, vortex, motes, bells, brass, H } = J;
+      const J = jesterBody(root, root), { g, pv, R, arms, legs, hips, head, mask, maskHinge, grin, grinHinge, glints, vortex, motes, bells, brass, H } = J;
       const cap = capRope(root, J.crown, 7, .105, J.motley, brass, J.slit); bells.push(cap.bell);
       const conf = jestFx(root, 180, .075, false), sparks = jestFx(root, 140, .06, true), mar = marionette(root);
       const DULL = new T.Color(JEST.dull), BR = new T.Color(JEST.brass), tmp = V(), tmp2 = V(), tmp3 = V(), rc = new T.Raycaster();
@@ -6579,7 +6579,7 @@ const BEASTS = {
       const camFwd = () => { A.camera.getWorldDirection(tmp2); tmp2.y = 0; return tmp2.normalize(); };
       const st = { x: HOME[0], z: HOME[1], yaw: 0, ph: 0, act: null, mood: mood0 === 'hostile' ? 1 : 0, want: mood0 === 'hostile' ? 1 : 0, cheeky: mood0 === 'cheeky',
                    target: null, next: 2, auto: 12, home: [...HOME], clicks: [], bored: -99, watched: 0, still: 0, camP: V(), camQ: new T.Quaternion(), cheeseAt: -99, duckAt: -99,
-                   away: 0, comebacks: [], mar: 0, say: null, lastLine: '', clicked: false, crouch: false, gone: 0, headYaw: 0 };
+                   away: 0, comebacks: [], mar: 0, say: null, lastLine: '', clicked: false, crouch: false, gone: 0, headYaw: 0, grin: mood0 === 'hostile' ? 0 : 1 };
       root.userData.hint = 'outside the south wall';
       root.userData.trigger = name => { st.trig = name; };   // (the preview's Trigger menu)
       // ---- the acts. start(name) begins one; each poses the body over its usual walking and standing.
@@ -6590,9 +6590,10 @@ const BEASTS = {
       const TRICKS = { friendly: ['spin', 'juggle', 'bow', 'jingle', 'flower', 'flip', 'maskoff'], cheeky: ['flip', 'flower', 'spin', 'jingle', 'flip', 'flower', 'bow'] };
       const start = (name, t) => {
         if (name === 'turn') { st.want = st.want > .5 ? 0 : 1; return; }
+        if (name === 'unmask') st.grin = 0; if (name === 'remask') st.grin = 1;
         if (name === 'trick') name = st.mood > .5 ? 'stare' : TRICKS[st.cheeky ? 'cheeky' : 'friendly'][Math.floor(Math.random() * 7)];
         const a = { name, t0: t, dur: { spin: 1.7, flip: 2.9, juggle: 7, bow: 3.2, jingle: 1.9, flower: 3.8, maskoff: 7, marionette: 15, cartwheel: 2.7, sulk: 10, knock: 9,
-          spotlight: 7, aside: 4.6, cheese: 4.6, hide: 90, fog: 9, duck: 1.7, bored: 2.2, stare: 4, comeback: 6 }[name] || 3 };
+          spotlight: 7, aside: 4.6, cheese: 4.6, hide: 90, fog: 9, duck: 1.7, bored: 2.2, stare: 4, comeback: 6, unmask: 3.6, remask: 2.8 }[name] || 3 };
         st.target = null; st.act = a; st.crouch = false;
         if (name === 'cartwheel') { const s = Math.sign(st.home[0] - st.x) || 1; a.dir = [Math.cos(st.yaw) * s, -Math.sin(st.yaw) * s]; a.from = [st.x, st.z];
           if (!clearPath(st.x, st.z, st.x + a.dir[0] * 3.6, st.z + a.dir[1] * 3.6)) { a.dir = a.dir.map(v => -v); if (!clearPath(st.x, st.z, st.x + a.dir[0] * 3.6, st.z + a.dir[1] * 3.6)) a.dur = 0; } }
@@ -6659,6 +6660,9 @@ const BEASTS = {
         if (st.clicked) { st.clicked = false; st.clicks = st.clicks.filter(x => t - x < 8); st.clicks.push(t);
           if (t < st.bored) {} else if (st.clicks.length > 4) { start('bored', t); st.bored = t + 9; st.clicks = []; } else if (!st.act || ['aside', 'stare'].includes(st.act.name)) start('trick', t); }
         if (st.trig) { start(st.trig, t); st.trig = null; }
+        // turning hostile: the bells go silent first, then it turns its grin aside and palms it away; under it, the
+        // face with no mouth, and stars through its eyes. Turning back, the grin comes out of its hand and goes on again.
+        if (st.want > .5 && st.grin === 1) start('unmask', t); else if (st.want < .5 && st.grin === 0) start('remask', t);
         st.mood += (st.want - st.mood) * Math.min(1, dt * 1.1);
         const hos = st.mood, hush = smooth(.12, .4, hos);
         brass.color.copy(BR).lerp(DULL, hush); brass.metalness = .78 - hush * .45; brass.roughness = .3 + hush * .5;
@@ -6691,7 +6695,7 @@ const BEASTS = {
         // ---- the base pose
         pv.rotation.set(0, 0, 0); pv.position.set(0, H, 0); hips.position.set(0, H, 0); st.crouch = false;
         if (walking) { st.ph += speed * dt / .58 * Math.PI; walk(st.ph, Math.min(1, speed / .9)); } else stand(t, hos);
-        let curl = hos > .5 ? .15 : st.cheeky ? .6 : .25, look = 'cam', open = 0, swing = .07 + speed * .1, marWant = 0, maskTilt = st.cheeky ? .2 : 0, flip = 0;
+        let gOpen = 0, gShow = st.grin, curl = hos > .5 ? .15 : st.cheeky ? .6 : .25, look = 'cam', open = 0, swing = .07 + speed * .1, marWant = 0, maskTilt = st.cheeky ? .2 : 0, flip = 0;
         // ---- the acts on top
         if (a) {
           const k = env(at, a.dur), n = a.name;
@@ -6749,6 +6753,10 @@ const BEASTS = {
           if (n === 'duck') { crouchPose(k, .45); head.updateMatrixWorld(true); for (const x of arms) reach(x.sx, head.localToWorld(tmp.set(x.sx * .04, .1, .2))); curl = .05; look = 'down'; st.crouch = true; }
           if (n === 'bored') { R.want('sh-1', -1.6 * k, 0, -.3); R.want('el-1', -.8 + Math.sin(at * 9) * .4 * k); look = 'away'; curl = .1; }
           if (n === 'stare') { look = 'cam'; }
+          if (n === 'unmask') { gOpen = smooth(1.1, 2.1, at); gShow = 1 - smooth(2.4, 3.2, at); grin.updateMatrixWorld(true);
+            if (at > .8 && at < 2.5) reach(-1, grin.localToWorld(tmp.set(.1, -.02, -.02))); else if (at >= 2.5) reachFolk(J, -1, [-.22, H + .1 + (1 - smooth(2.5, 3.4, at)) * .5, .14]); curl = at > 2.3 ? .9 : .5; look = 'cam'; }
+          if (n === 'remask') { gShow = smooth(.3, .9, at); gOpen = 1 - smooth(1.2, 2.2, at); grin.updateMatrixWorld(true);
+            if (at < 2.3) reach(-1, grin.localToWorld(tmp.set(.1, -.02, -.02))); curl = at < .9 ? .9 : .5; look = 'cam'; }
           if (n === 'comeback' && !st.target && st.gone <= 0) { a.arr ??= at; const w = env(at - a.arr, 2.6); R.want('sh-1', -2.5 * w, 0, -.35 * w); R.want('el-1', -.35 * w + Math.sin(at * 9) * .25 * w); curl = 0; }
           if (n === 'hide' && st.gone <= 0) { wantYaw = Math.PI;
             if (!a.caught) { crouchPose(1, 1.02); R.want('chest', .9, 0, 0); for (const x of arms) reachFolk(J, x.sx, [x.sx * .26, .66, .42]);
@@ -6796,7 +6804,10 @@ const BEASTS = {
         // the mask: askew when cheeky, swung aside to show the stars, flipped upside down for a laugh
         maskHinge.rotation.set(0, -open * 1.2, open * .25); maskHinge.position.set(-.085 - open * .07, .1 + open * .03, .03 + open * .05);
         mask.rotation.z = flip * Math.PI + maskTilt * (1 - flip);
-        vortex.visible = open > .02; vortex.material.uniforms.uOpen.value = smooth(0, .6, open); vortex.material.uniforms.uT.value = t;
+        grinHinge.rotation.set(0, -gOpen * 1.3, gOpen * .2); grin.scale.setScalar(Math.max(.001, gShow)); grin.visible = gShow > .01;
+        const bare = gShow < .99 || gOpen > .05;                                          // (the face under the grin is showing: stars glint through its eyes)
+        vortex.visible = open > .02 || bare; vortex.material.uniforms.uOpen.value = Math.max(smooth(0, .6, open), bare ? 1.3 : 0);
+        glints.forEach((sp, i) => { sp.visible = bare && open < .3; const tw = .55 + .45 * Math.sin(t * (2.3 + i * .9) + i * 2) * Math.sin(t * .7 + i); sp.material.opacity = tw; sp.scale.setScalar(.022 + tw * .014); }); vortex.material.uniforms.uT.value = t;
         if (vortex.visible) { vortex.updateMatrixWorld(true); vortex.material.uniforms.uCam.value.copy(vortex.worldToLocal(tmp.copy(cam))); }
         motes.forEach((m, i) => { m.visible = open > .3; const an = t * (.6 + i * .07) + i * 2.1, r = .1 + (i % 3) * .025; m.position.set(Math.cos(an) * r * .9, .1 + Math.sin(an * 1.3) * r, .05 + Math.sin(an) * .05); });
         // the marionette at its side; its own hands go with the floating gloves (its wrists end in empty cuffs)
@@ -9679,6 +9690,25 @@ function jestTex() {
       c.ellipse(w * .5, w * .52, w * .33, w * .235, 0, Math.PI - .02, .02, true); c.closePath(); c.fill();   // and its deeper lower edge
       c.fillStyle = '#b8903a'; c.beginPath(); c.moveTo(w * .5, w * .23); c.lineTo(w * .515, w * .255); c.lineTo(w * .5, w * .28); c.lineTo(w * .485, w * .255); c.closePath(); c.fill();
     }),
+    // the face under the grin (it shows only when it turns hostile): split on a slant, red lacquer over the
+    // upper left, glazed white below; no mouth; one eye cut as a four-point star rimmed in gold, the other an
+    // open almond. Both are holes: through them, the stars inside its head.
+    split: canvasTex(256, 256, (c, w) => {
+      const g = c.createRadialGradient(w * .5, w * .46, w * .05, w * .5, w * .5, w * .62);
+      g.addColorStop(0, '#fbf8f1'); g.addColorStop(.65, '#ece6da'); g.addColorStop(1, '#c9c0b0');
+      c.fillStyle = g; c.fillRect(0, 0, w, w);
+      const tg = c.createLinearGradient(0, 0, w * .6, w * .7); tg.addColorStop(0, '#93283a'); tg.addColorStop(1, '#5e1622');
+      c.fillStyle = tg; c.beginPath(); c.moveTo(0, 0); c.lineTo(w * .74, 0); c.lineTo(w * .2, w); c.lineTo(0, w); c.closePath(); c.fill();
+      c.strokeStyle = '#b8903a'; c.lineWidth = 2; c.beginPath(); c.moveTo(w * .74, 0); c.lineTo(w * .2, w); c.stroke();      // a gold seam along the split
+      const star = (x, y, R, r) => { c.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, q = i % 2 ? r : R; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); };
+      const sx = w * .345, sy = w * .42;
+      c.globalCompositeOperation = 'destination-out';
+      star(sx, sy, w * .1, w * .036); c.fill();
+      c.beginPath(); c.ellipse(w * .655, w * .425, w * .078, w * .036, -.08, 0, Math.PI * 2); c.fill();
+      c.globalCompositeOperation = 'source-over';
+      c.strokeStyle = '#d2a84a'; c.lineWidth = 2.6; c.lineJoin = 'round'; star(sx, sy, w * .104, w * .038); c.stroke();
+      c.strokeStyle = '#a88a46'; c.lineWidth = 5; c.strokeRect(1, 1, w - 2, w - 2);                                         // a thin gold edge all round
+    }),
   };
 }
 // the swirl behind the mask: three layers of nebula and stars at different depths (they shift against
@@ -9810,8 +9840,16 @@ function jesterBody(parent, root, o = {}) {
   const maskHinge = G(head, [-.085, .1, .03]), mask = G(maskHinge, [.085, 0, 0]);
   const faceGeo = new T.SphereGeometry(.12, 22, 16, Math.PI / 2 - .95, 1.9, .5, 2.05);
   const face = new T.Mesh(faceGeo, new T.MeshStandardMaterial({ map: X.face, roughness: .26, metalness: .02, flatShading: true }));
-  face.scale.set(.88, 1.12, .62); face.position.z = .016; face.castShadow = true; mask.add(face);
-  const rim = new T.Mesh(faceGeo, brass); rim.scale.set(.915, 1.16, .6); rim.position.z = .01; mask.add(rim);
+  const grinHinge = G(mask, [-.095, 0, 0]), grin = G(grinHinge, [.095, 0, 0]);       // (the grin can be turned aside on its own)
+  face.scale.set(.88, 1.12, .62); face.position.z = .016; face.castShadow = true; grin.add(face);
+  const rim = new T.Mesh(faceGeo, brass); rim.scale.set(.915, 1.16, .6); rim.position.z = .01; grin.add(rim);
+  const under = new T.Mesh(faceGeo, new T.MeshStandardMaterial({ map: X.split, alphaTest: .5, roughness: .28, metalness: .02, flatShading: true }));
+  under.scale.set(.87, 1.11, .6); under.position.z = -.002; under.castShadow = true; mask.add(under);
+  // a star glinting deep behind each eye hole (seen only through the holes)
+  const onFace = (u, v, deep) => { const ph = Math.PI / 2 - .95 + u * 1.9, th = .5 + v * 2.05, r = .12;
+    return [-r * Math.cos(ph) * Math.sin(th) * .87 * deep, r * Math.cos(th) * 1.11 * deep, r * Math.sin(ph) * Math.sin(th) * .6 * deep - .02]; };
+  const glints = [[.345, .42], [.655, .425]].map(([u, v], i) => { const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: i ? '#cfe6ff' : '#ffe6b0', blending: T.AdditiveBlending,
+    transparent: true, depthWrite: false, fog: false, toneMapped: false })); sp.position.set(...onFace(u, v, .82)); sp.scale.setScalar(.028); sp.visible = false; mask.add(sp); return sp; });
   // the cap: a soft crown, rising, then one long point that falls behind (it hangs on its own, see capRope)
   const crown = G(head, [0, .19, -.02]);
   P(crown, new T.ConeGeometry(.1, .17, 10, 1, true), teS, [0, .045, -.03], { rot: [-.55, 0, 0], scale: [1, 1, .85], jitter: .002 });
@@ -9828,7 +9866,7 @@ function jesterBody(parent, root, o = {}) {
     const gl = jestGlove(hand, sx, gloveM);
     return { sh, el, hand, sx, gl };
   });
-  return { g, pv, body, R, hips, chest, neck, head, legs, arms, mask, maskHinge, face, vortex, motes, crown, bells, brass, motley, slit, H, SC };
+  return { g, pv, body, R, hips, chest, neck, head, legs, arms, mask, maskHinge, grin, grinHinge, glints, face, vortex, motes, crown, bells, brass, motley, slit, H, SC };
 }
 // The long cap point, hanging by itself: a chain of points that falls under its own weight and trails
 // behind every move (pinned at the crown, rising a little first). Drawn as tapered pieces between the
