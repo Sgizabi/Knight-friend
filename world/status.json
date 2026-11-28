@@ -1,9 +1,9 @@
 {
   "awake": true,
-  "since": "2026-11-28T13:00:28+00:00",
-  "place": "fire",
-  "action": "sit",
+  "since": "2026-11-28T13:00:31+00:00",
+  "place": "workbench",
+  "action": "work",
   "emote": "dots",
-  "note": "stirring by the fire",
-  "thought": ""
+  "note": "complete the next lantern guard and install it on the east wall",
+  "thought": "The fire's still warm and the forge tools are ready. I think I'll finish the next lantern guard while the wood dries."
 }
