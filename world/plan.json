@@ -46,5 +46,10 @@
         "Wonder if the roof will hold."
       ]
     }
-  ]
+  ],
+  "applied_until": "2026-11-28T15:30:25+00:00",
+  "live_thought": {
+    "text": "The iron glows, the hammer waits.",
+    "time": "2026-11-28T15:30:25+00:00"
+  }
 }

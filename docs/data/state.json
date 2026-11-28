@@ -87,11 +87,16 @@
           "Wonder if the roof will hold."
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-28T15:30:25+00:00",
+    "live_thought": {
+      "text": "The iron glows, the hammer waits.",
+      "time": "2026-11-28T15:30:25+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-28T15:01:34+00:00",
+    "since": "2026-11-28T15:30:25+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -99,18 +104,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 87.1,
+    "warmth": 79.6,
+    "inspiration": 54.7,
+    "spirit": 75.0
+  },
+  "needs_prev": {
     "rest": 89.1,
     "warmth": 80.4,
     "inspiration": 54.7,
     "spirit": 75.6
   },
-  "needs_prev": {
-    "rest": 91.8,
-    "warmth": 79.8,
-    "inspiration": 42.7,
-    "spirit": 76.2
-  },
-  "needs_at": "2026-11-28T15:01:35+00:00",
+  "needs_at": "2026-11-28T15:30:25+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2286,7 +2291,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-28T15:01:34+00:00",
+    "updated": "2026-11-28T15:30:25+00:00",
     "seen_until": "2026-11-28T14:55:30+00:00"
   },
   "gifts": [],
@@ -2532,5 +2537,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T15:01:35+00:00"
+  "exported": "2026-11-28T15:30:25+00:00"
 }
