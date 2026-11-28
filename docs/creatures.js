@@ -6629,6 +6629,23 @@ const BEASTS = {
                 arc(.5, .5, .12, .3, Math.PI / 2, Math.PI / 2 + Math.PI * 2, 24), arc(.81, .5, .12, .3, Math.PI / 2, Math.PI / 2 + Math.PI * 2, 24)];
       }
       // ---- poses
+      // idle gestures: it drifts from one to the next every few seconds (the joints ease between them), so it never stands parked.
+      // Cheeky ones are cockier (hands on hips, a lean); friendly ones lighter (loose arms, a hand on the chin, drumming fingers).
+      const IDLES = { friendly: ['loose', 'hip', 'behind', 'chin', 'drum', 'twirl', 'loose'], cheeky: ['hips', 'lean', 'behind', 'hips', 'twirl', 'chin'] };
+      const idle = t => {
+        const L = IDLES[st.cheeky ? 'cheeky' : 'friendly'], i = Math.floor(t / 5.5), kind = L[Math.floor(nz(i * 3.1 + 7) * L.length)];
+        st.idleKind = kind; st.idleCurl = .3;
+        const lo = sx => { R.want('sh' + sx, .1 + Math.sin(t * 1.1 + sx) * .06, 0, sx * .2); R.want('el' + sx, -.55 - Math.sin(t * 1.3 + sx) * .12); };
+        if (kind === 'loose') { lo(1); lo(-1); st.idleCurl = .25; }
+        if (kind === 'hip') { reachFolk(J, 1, [.21, H + .07, .04]); lo(-1); }
+        if (kind === 'hips' || kind === 'lean') { for (const sx of [1, -1]) reachFolk(J, sx, [sx * .21, H + .07, .04]); st.idleCurl = .6; }
+        if (kind === 'lean') { hips.position.x += .04; R.want('hips', 0, .1, .07); R.want('th-1', -.12, 0, .16); R.want('kn-1', .4); R.want('an-1', .55); R.want('th1', 0, 0, .03); R.want('kn1', .02); }   // weight on one leg, the other crossed over on its toe
+        if (kind === 'behind') { for (const sx of [1, -1]) reachPole(J, sx, [sx * .07, H + .06, -.17], [.5, -.6, -.6]); st.idleCurl = .5; }
+        if (kind === 'chin') { head.updateMatrixWorld(true); reachPole(J, -1, LOCAL(head.localToWorld(tmp.set(-.02, -.03, .14)), tmp3).toArray(), [.3, -.9, .3]);
+          reachPole(J, 1, [-.03, H + .3, .19], [.6, -.8, .2]); st.idleCurl = .55; }
+        if (kind === 'drum') { reachPole(J, -1, [-.12, H + .2, .22], [.5, -.8, .2]); lo(1); st.idleCurl = -1; }
+        if (kind === 'twirl') { lo(1); R.want('sh-1', -.55, 0, -.35); R.want('el-1', -1.05 + Math.sin(t * 2.2) * .15); st.idleCurl = .1; }
+      };
       const stand = (t, hos) => {
         const lively = (1 - hos) * (st.cheeky ? .45 : 1), b = Math.abs(Math.sin(t * 3.3)) * lively;
         hips.position.set(Math.sin(t * 1.65) * .014 * lively, H + b * .028 - .012, 0);
@@ -6636,8 +6653,7 @@ const BEASTS = {
         for (const L of legs) { R.want('th' + L.sx, -.05 * lively * Math.sin(t * 1.65 + L.sx), 0, L.sx * (.05 + .03 * (1 - hos))); R.want('kn' + L.sx, .07 + .06 * b); R.want('an' + L.sx, .3 * lively + .04); }
         R.want('chest', .02 - .04 * lively, 0, -Math.sin(t * 1.65) * .025 * lively);
         if (hos > .5) for (const a of arms) { R.want('sh' + a.sx, .02, 0, a.sx * .05); R.want('el' + a.sx, -.05); }
-        else if (st.cheeky) for (const a of arms) reachFolk(J, a.sx, [a.sx * .2, H + .06, .03]);      // hands on hips
-        else for (const a of arms) { R.want('sh' + a.sx, .06 + Math.sin(t * 1.1 + a.sx) * .08, 0, a.sx * (.2 + Math.sin(t * .9 + a.sx * 2) * .05)); R.want('el' + a.sx, -.4 - Math.sin(t * 1.3 + a.sx) * .15); }
+        else idle(t);
         J.chest.scale.set(1, 1 + (hos > .5 ? 0 : Math.sin(t * 1.4) * .01), 1);                         // (when hostile, it does not breathe)
       };
       const walk = (ph, amp) => {   // a light, skipping walk on its toes: it rises mid-stride, arms swing wide
@@ -6696,7 +6712,9 @@ const BEASTS = {
         // ---- the base pose
         pv.rotation.set(0, 0, 0); pv.position.set(0, H, 0); hips.position.set(0, H, 0); st.crouch = false;
         if (walking) { st.ph += speed * dt / .58 * Math.PI; walk(st.ph, Math.min(1, speed / .9)); } else stand(t, hos);
-        let gOpen = 0, gShow = st.grin, curl = hos > .5 ? .15 : st.cheeky ? .6 : .25, look = 'cam', open = 0, swing = .07 + speed * .1, marWant = 0, maskTilt = st.cheeky ? .2 : 0, flip = 0;
+        if (!walking && !a && hos < .5) { let e0 = wantYaw - st.yaw; e0 = Math.atan2(Math.sin(e0), Math.cos(e0));
+          if (Math.abs(e0) > .45) { st.ph += dt * 11; walk(st.ph, .4); } }                     // (far round: it steps round to face you)
+        let gOpen = 0, gShow = st.grin, curl = hos > .5 ? .15 : walking ? .3 : Math.max(.05, st.idleCurl ?? .3), look = 'cam', open = 0, swing = .07 + speed * .1, marWant = 0, maskTilt = st.cheeky ? .2 : 0, flip = 0;
         // ---- the acts on top
         if (a) {
           const k = env(at, a.dur), n = a.name;
@@ -6801,7 +6819,7 @@ const BEASTS = {
         else if (look === 'balls') { R.want('neck', -.2, 0, 0); R.want('head', -.25, 0, 0); }
         else if (look === 'puppet') { g.updateMatrixWorld(true); lookW(mar.grp.getWorldPosition(tmp2), .8); }
         // turning, slow when hostile; the body sits on the ground where it stands
-        let e = wantYaw - st.yaw; e = Math.atan2(Math.sin(e), Math.cos(e)); st.yaw += e * Math.min(1, dt * (walking ? 7 : hos > .5 ? .7 : 3.2));
+        let e = wantYaw - st.yaw; e = Math.atan2(Math.sin(e), Math.cos(e)); st.yaw += e * Math.min(1, dt * (walking ? 7 : hos > .5 ? .7 : 4.6));
         g.position.set(st.x, gy(st.x, st.z), st.z); g.rotation.y = st.yaw;
         // the mask: askew when cheeky, swung aside to show the stars, flipped upside down for a laugh
         // taking a mask off: drawn straight forward off the face first, then carried out beside the head and held there,
@@ -6822,6 +6840,9 @@ const BEASTS = {
         for (const x of arms) x.gl.h.visible = st.mar < .4;
         for (const x of arms) x.gl.curl(curl, hos > .5 ? 0 : 1);
         if (st.act?.name === 'maskoff') arms[0].gl.curl(.05, 1);                         // (the presenting hand open)
+        const idling = !a && !walking && hos < .5;
+        if (idling && st.idleKind === 'drum') arms[1].gl.fingers.forEach((f, i) => f.rotation.z = .25 + Math.max(0, Math.sin(t * 13 - i * 1.3)) * .9);   // fingers drumming, one after another
+        arms[1].gl.h.rotation.y = idling && st.idleKind === 'twirl' ? Math.sin(t * 3.1) * 1.3 : 0;                       // a lazy twirl of the wrist
         // the bells swing with every move; when it turns hostile they stop dead, mid-swing
         if (hush < .5) { const amp = swing * (a?.name === 'sulk' ? .1 : 1); bells.forEach((b, i) => { const w = 8 + (i % 5) * 1.3; b.rotation.x = Math.sin(t * w + i) * amp + Math.sin(t * 1.7 + i) * .04; b.rotation.z = Math.cos(t * w * .8 + i * 2) * amp * .7; }); }
         R.step(dt);
@@ -9696,8 +9717,8 @@ function jestTex() {
     motley: paintTex(128, 128, (c, w) => {
       c.fillStyle = JEST.teal; c.fillRect(0, 0, w, w);
       c.fillStyle = JEST.saffron; c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w, w / 2); c.lineTo(w / 2, w); c.lineTo(0, w / 2); c.closePath(); c.fill();
-      c.strokeStyle = JEST.seam; c.lineWidth = 2.5; c.stroke();
-    }, [4, 2]),
+      c.strokeStyle = JEST.seam; c.lineWidth = 3; c.stroke();
+    }, [7, 4]),
     // the mask's face, laid out over the front of a sphere (u across, v from brow to chin): glazed white,
     // two closed eyes arched up, one wide crescent grin, all in black lacquer; a little gold diamond on the brow
     face: canvasTex(256, 256, (c, w) => {
@@ -9836,6 +9857,13 @@ function jesterBody(parent, root, o = {}) {
   const chest = R.add('chest', G(hips, [0, .03, 0]), 10, .85);
   lath(chest, [[.15, -.02], [.17, .06], [.19, .17], [.215, .3], [.225, .4], [.2, .47], [.14, .52], [.08, .55], [.05, .56]], motley, [0, 0, 0], [0, 0, 0], [.95, 1, .78], 14);
   P(hips, new T.TorusGeometry(.14, .016, 5, 16), A.mat('#2a1a10', .1, .6), [0, .03, 0], { rot: [Math.PI / 2, 0, 0], scale: [.96, .78, 1], jitter: 0 });
+  { const prof = [[.15, -.02], [.17, .06], [.19, .17], [.215, .3], [.225, .4], [.2, .47], [.14, .52]], rAt = y => { for (let i = 1; i < prof.length; i++) if (y <= prof[i][1]) { const [r0, y0] = prof[i - 1], [r1, y1] = prof[i]; return r0 + (r1 - r0) * (y - y0) / (y1 - y0); } return .14; };
+    const seamM = A.mat(JEST.seam, 0, .8);
+    for (let y = .03; y < .5; y += .045) { const z = rAt(y) * .78; P(chest, A.box(.014, .05, .012), seamM, [0, y, z - .002], { rot: [-(rAt(y + .02) - rAt(y - .02)) * .78 / .04 * .9, 0, 0], jitter: 0, cast: false }); }   // the seam, padded either side
+    for (const y of [.1, .19, .28, .37]) P(chest, A.ico(.013, 1), brass, [0, y, rAt(y) * .78 + .006], { jitter: 0, cast: false }); }                                // brass buttons
+  { const leather = A.mat('#4a2c18', .1, .7), pouch = G(hips, [.15, -.01, .08], [0, .9, 0]);
+    P(pouch, A.box(.075, .085, .038), leather, [0, -.04, 0], { jitter: .003 }); P(pouch, A.box(.08, .035, .042), leather, [0, -.005, .002], { rot: [-.15, 0, 0], jitter: .002 });
+    P(pouch, A.ico(.009, 0), brass, [0, -.02, .024], { jitter: 0, cast: false }); merge(pouch); }
   for (let i = 0; i < 9; i++) {
     const a = (i / 9) * Math.PI * 2, pt = G(hips, [Math.sin(a) * .17, .03, Math.cos(a) * .135], [0, a, 0]);
     const s = clothStrip(G(pt, [0, 0, 0], [.32, 0, 0]), .062, .014, .2, i % 2 ? saS : teS, { rows: 3, rag: .45 });
@@ -9881,7 +9909,8 @@ function jesterBody(parent, root, o = {}) {
   const arms = [1, -1].map(sx => {
     const sm = sx > 0 ? sa : te;
     const sh = R.add('sh' + sx, G(chest, [sx * .2, .45, 0]), 12, .75);
-    P(sh, A.ico(.09, 1), motley, [sx * .015, -.035, 0], { scale: [1, 1.12, .95], jitter: .003 });
+    P(sh, A.ico(.09, 1), sm, [sx * .015, -.035, 0], { scale: [1, 1.12, .95], jitter: .003 });
+    for (let k = 0; k < 5; k++) { const an = -1.2 + k * .6; P(sh, A.ico(.03, 0), sx > 0 ? te : sa, [sx * .015 + Math.sin(an) * sx * .088, -.035, Math.cos(an) * .084], { scale: [.32, 2.4, .32], rot: [0, an * sx, 0], jitter: 0, cast: false }); }   // the slashes
     bone(sh, [0, 0, 0], [0, -.27, -.005], .043, .036, sm, 7, .003);
     const el = R.add('el' + sx, G(sh, [0, -.28, -.005]), 14, .75);
     bone(el, [0, 0, 0], [0, -.22, .008], .036, .03, sm, 7, .003);
