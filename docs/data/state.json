@@ -84,15 +84,15 @@
         ]
       }
     ],
-    "applied_until": "2026-11-28T13:30:25+00:00",
+    "applied_until": "2026-11-28T14:00:29+00:00",
     "live_thought": {
-      "text": "Stone dust on the bench, just enough to keep the hand busy.",
-      "time": "2026-11-28T13:30:25+00:00"
+      "text": "The stone's cold edge reminds me to tighten the lantern guard.",
+      "time": "2026-11-28T14:00:29+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-28T13:30:25+00:00",
+    "since": "2026-11-28T14:00:29+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -100,18 +100,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 91.4,
+    "warmth": 75.6,
+    "inspiration": 42.7,
+    "spirit": 76.9
+  },
+  "needs_prev": {
     "rest": 92.0,
     "warmth": 70.8,
     "inspiration": 42.7,
     "spirit": 77.6
   },
-  "needs_prev": {
-    "rest": 94.0,
-    "warmth": 68.9,
-    "inspiration": 42.7,
-    "spirit": 78.3
-  },
-  "needs_at": "2026-11-28T13:30:25+00:00",
+  "needs_at": "2026-11-28T14:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2287,7 +2287,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-28T13:30:25+00:00",
+    "updated": "2026-11-28T14:00:29+00:00",
     "seen_until": "2026-11-28T12:55:30+00:00"
   },
   "gifts": [],
@@ -2302,12 +2302,6 @@
   },
   "weather": {
     "periods": [
-      {
-        "start": "2026-11-27T08:55:33+00:00",
-        "end": "2026-11-27T11:46:39+00:00",
-        "kind": "glass_hail",
-        "intensity": 0.93
-      },
       {
         "start": "2026-11-27T11:46:39+00:00",
         "end": "2026-11-27T15:17:25+00:00",
@@ -2461,18 +2455,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-28T13:00:00+00:00",
-      "end": "2026-11-28T14:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "deer",
-        "fish",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-28T14:00:00+00:00",
       "end": "2026-11-28T15:00:00+00:00",
       "kinds": [
@@ -2536,6 +2518,15 @@
         "fish",
         "cat"
       ]
+    },
+    {
+      "start": "2026-11-28T21:00:00+00:00",
+      "end": "2026-11-28T22:00:00+00:00",
+      "kinds": [
+        "songbirds",
+        "hares",
+        "fish"
+      ]
     }
   ],
   "creatures": {
@@ -2543,5 +2534,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T13:30:25+00:00"
+  "exported": "2026-11-28T14:00:29+00:00"
 }
