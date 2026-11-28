@@ -6503,6 +6503,322 @@ const BEASTS = {
   },
 
   // ================================================================ SMALL LIFE (the animals: brain/animals.py says who is about)
+  jester: {
+    name: 'The jester', hour: 15,
+    blurb: 'A trickster in saffron-and-teal motley with bells on every point, a white mask with closed, smiling eyes and a grin that never changes, and nothing behind the mask but a slow swirl of stars. It knows it is being watched, and it plays to you: click it for a trick. When it turns hostile its bells go silent first: they freeze mid-swing and dull, and it stops moving.',
+    variants: [['friendly', 'friendly'], ['cheeky', 'cheeky'], ['hostile', 'hostile (bells silent)']],
+    triggers: [['trick', 'a trick (or click it)'], ['spin', 'spark spin'], ['flip', 'mask flip'], ['juggle', 'juggling'], ['bow', 'a deep bow'], ['jingle', 'bell jingle'],
+               ['flower', 'paper flower'], ['maskoff', 'mask off'], ['marionette', 'the marionette'], ['cartwheel', 'cartwheels'], ['comeback', 'back into view'],
+               ['sulk', 'sulk (ignored)'], ['knock', 'knock on the glass'], ['spotlight', 'spotlight on Rooken'], ['aside', 'an aside'], ['cheese', 'say cheese'],
+               ['hide', 'hide (fly close to catch it)'], ['fog', 'write in the fog'], ['turn', 'turn hostile / back']],
+    view: [[-4.4, 2.2, 12.4], [-8.6, 1.25, 6.4]],
+    knight: { place: 'courtyard', action: 'stand', emote: 'question', note: 'a jester, juggling outside the wall' },
+    build(root) {
+      const ap = root.userData.appearance || {}, mood0 = ap.variant?.kind || 'friendly';
+      const J = jesterBody(root, root), { g, pv, R, arms, legs, hips, head, mask, maskHinge, vortex, motes, bells, brass, H } = J;
+      const cap = capRope(root, J.crown, 7, .105, J.motley, brass, J.slit); bells.push(cap.bell);
+      const conf = jestFx(root, 180, .075, false), sparks = jestFx(root, 140, .06, true), mar = marionette(root);
+      const DULL = new T.Color(JEST.dull), BR = new T.Color(JEST.brass), tmp = V(), tmp2 = V(), tmp3 = V(), rc = new T.Raycaster();
+      const HOME = [-8.6, 6.5], CONF = [JEST.saffron, JEST.teal, '#f4efe2', '#c9a24a'];
+      const balls = ['#e8a838', '#3fb3b0', '#f6f1e6'].map(c => { const m = P(J.body, A.ico(.045, 1), new T.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: .35, flatShading: true }), [0, 0, 0], { jitter: 0 }); m.visible = false; return m; });
+      const flower = G(arms[0].hand, [0, -.1, .03]); flower.visible = false;
+      bone(flower, [0, 0, 0], [0, -.18, .05], .006, .005, A.mat('#3e6a32', 0, .8), 4, 0);
+      for (let i = 0; i < 6; i++) P(flower, new T.ConeGeometry(.03, .06, 3), A.mat(i % 2 ? '#e8d6c0' : '#d4574a', 0, .7, { side: T.DoubleSide }), [Math.cos(i) * .022, -.2, .055 + Math.sin(i) * .022], { rot: [Math.PI, 0, i], jitter: 0 });
+      // ---- the screen it plays to: a layer over the page for its words, the ripples of its knocking, a camera flash
+      if (!document.getElementById('jest-css')) { const css = document.createElement('style'); css.id = 'jest-css'; css.textContent = `.jest-lay{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.jest-say{position:absolute;max-width:min(250px,70vw);padding:7px 11px;background:#f3ead6;color:#2a1e12;border-radius:13px;font:italic 17px/1.25 Georgia,serif;transform:translate(-50%,-100%);box-shadow:0 2px 10px rgba(0,0,0,.35);opacity:0;transition:opacity .35s}
+.jest-say:after{content:'';position:absolute;left:50%;bottom:-8px;margin-left:-8px;border:8px solid transparent;border-top-color:#f3ead6;border-bottom:0}
+.jest-say.eerie{background:#121418;color:#cfc8b8}.jest-say.eerie:after{border-top-color:#121418}
+.jest-ring{position:absolute;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:2px solid rgba(235,245,255,.85);box-shadow:0 0 8px rgba(200,230,255,.7),inset 0 0 8px rgba(200,230,255,.55);animation:jestRing 1s ease-out forwards}
+@keyframes jestRing{from{transform:scale(.15);opacity:1}to{transform:scale(5.5);opacity:0}}
+.jest-flash{position:absolute;inset:0;background:#fffdf6;opacity:0;transition:opacity .6s ease-out}`; document.head.append(css); }
+      const lay = document.createElement('div'); lay.className = 'jest-lay'; document.body.append(lay);
+      const sayEl = document.createElement('div'); sayEl.className = 'jest-say'; lay.append(sayEl);
+      const flash = document.createElement('div'); flash.className = 'jest-flash'; lay.append(flash);
+      const calm = matchMedia('(prefers-reduced-motion: reduce)').matches, phone = matchMedia('(pointer: coarse)').matches || innerWidth < 640;
+      const cv = document.querySelector('canvas');
+      // the mouse (computers only): where it points; a click (not a drag) on the jester asks for a trick
+      const ptr = { x: 0, y: 0, at: -1e9 }; let down = null;
+      const toPtr = e => { const r = cv.getBoundingClientRect(); ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = -(e.clientY - r.top) / r.height * 2 + 1; };
+      const onMove = e => { if (e.pointerType === 'mouse') { toPtr(e); ptr.at = performance.now(); } };
+      const onDown = e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; };
+      const onUp = e => { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 7 && performance.now() - down.t < 450) { toPtr(e); if (hit() < .3) st.clicked = true; } down = null; };
+      addEventListener('pointermove', onMove); cv.addEventListener('pointerdown', onDown); cv.addEventListener('pointerup', onUp);
+      // how near the pointer's ray passes to its body (a line from its feet to the top of its head)
+      const hit = () => { rc.setFromCamera(ptr, A.camera); const o = rc.ray.origin, d = rc.ray.direction; let best = 9;
+        g.getWorldPosition(tmp); for (let i = 0; i <= 8; i++) { tmp2.set(tmp.x, tmp.y + (.15 + i * .24) * J.SC * (st.crouch ? .55 : 1), tmp.z).sub(o); const along = tmp2.dot(d); if (along > 0) best = Math.min(best, tmp2.addScaledVector(d, -along).length()); } return best; };
+      const fogPlane = new T.Mesh(new T.PlaneGeometry(1.1, .55), new T.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide }));
+      const fogCv = document.createElement('canvas'); fogCv.width = 512; fogCv.height = 256; const fogTex = new T.CanvasTexture(fogCv); fogPlane.material.map = fogTex; fogPlane.visible = false; root.add(fogPlane);
+      const beam = new T.Mesh(new T.ConeGeometry(1.05, 6.5, 28, 1, true), new T.MeshBasicMaterial({ color: '#fff0c4', transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide, blending: T.AdditiveBlending, fog: false,
+        alphaMap: canvasTex(4, 64, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#000'); gr.addColorStop(.25, '#444'); gr.addColorStop(1, '#fff'); c.fillStyle = gr; c.fillRect(0, 0, w, h); }) }));
+      const pool = new T.Mesh(new T.CircleGeometry(1.15, 32), new T.MeshBasicMaterial({ map: puff(), color: '#fff3cf', transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending }));
+      pool.rotation.x = -Math.PI / 2; beam.visible = pool.visible = false; root.add(beam, pool);
+      // what it says, to you (on your screen only): playful when friendly, cheeky when cheeky, quiet and wrong when hostile.
+      // It only knows what your own screen knows (a small screen, your clock, how long you have watched); nothing is sent anywhere.
+      const lines = () => { const hr = new Date().getHours(), late = hr < 5, morn = hr >= 5 && hr < 11, eve = hr >= 18, long = st.watched > 150, hos = st.mood > .5, ch = st.cheeky;
+        if (hos) return ['You can keep watching.', 'The bells have stopped. Did you notice?', 'He doesn\'t know you\'re here.', late || eve ? 'Is it dark where you are, too?' : 'Is it quiet where you are?', 'Don\'t look away on my account.'];
+        const L = ch ? ['Caught you looking.', 'Squint all you like. I\'m still handsomer than the knight.', 'Applause goes there. No, there.', 'Do I owe you money? You keep staring.']
+                     : ['Ah! An audience!', 'Wave to the knight! He can\'t see you, but wave.', 'Shall I juggle? I shall juggle.', 'Every show needs one good watcher.'];
+        if (phone) L.push(ch ? 'Tiny window, tiny jester. Fair is fair.' : 'Such a small window you watch through!');
+        if (late) L.push(ch ? 'Up past midnight? Scandalous.' : 'Up past midnight, are we? So is he.');
+        if (morn) L.push('Good morning, out there!');
+        if (long) L.push(ch ? 'Still here? Don\'t you have a kingdom to run?' : 'You\'ve stayed a long while. I\'m flattered.');
+        if (heardNow(10)) L.push(ch ? 'Who knocked? Bold.' : 'A visitor! How exciting.');
+        if (!phone && performance.now() - ptr.at < 4000) L.push(ch ? 'That little arrow of yours is very nosy.' : 'I see your little arrow.');
+        return L; };
+      const say = (text, secs = 4.5) => { st.say = { text, until: performance.now() + secs * 1000 }; sayEl.textContent = text; sayEl.classList.toggle('eerie', st.mood > .5); };
+      const sayAny = () => { const L = lines(); let s; do s = L[Math.floor(Math.random() * L.length)]; while (L.length > 1 && s === st.lastLine); st.lastLine = s; say(s); };
+      const ring = (wp, big) => { const p = tmp3.copy(wp).project(A.camera); if (p.z > 1) return; const r = document.createElement('div'); r.className = 'jest-ring';
+        r.style.left = (p.x * .5 + .5) * innerWidth + 'px'; r.style.top = (-p.y * .5 + .5) * innerHeight + 'px'; if (!big) r.style.width = r.style.height = '26px'; lay.append(r); setTimeout(() => r.remove(), 1100);
+        if (big && !calm) { let k = 0; const sh = () => { cv.style.transform = k < 5 ? `translate(${(Math.random() - .5) * 6}px,${(Math.random() - .5) * 4}px)` : ''; if (k++ < 5) requestAnimationFrame(sh); }; sh(); } };
+      const camFlash = () => { flash.style.transition = 'none'; flash.style.opacity = calm ? .35 : .85; requestAnimationFrame(() => requestAnimationFrame(() => { flash.style.transition = ''; flash.style.opacity = 0; })); };
+      this.exit = () => { removeEventListener('pointermove', onMove); cv.removeEventListener('pointerdown', onDown); cv.removeEventListener('pointerup', onUp); lay.remove(); cv.style.transform = ''; mar.remove(); };
+      // ---- where it may stand: outside the walls, on open ground (not in the keep, not in the courtyard)
+      const ok = (x, z) => !KEEP_OUT.some(([x0, x1, z0, z1]) => x > x0 - .4 && x < x1 + .4 && z > z0 - .4 && z < z1 + .4) && !inSolid(x, .5, z, .5) && Math.abs(x) < 60 && Math.abs(z) < 55;
+      const clearPath = (x0, z0, x1, z1) => { for (let i = 1; i <= 12; i++) if (!ok(x0 + (x1 - x0) * i / 12, z0 + (z1 - z0) * i / 12)) return false; return true; };
+      const camFwd = () => { A.camera.getWorldDirection(tmp2); tmp2.y = 0; return tmp2.normalize(); };
+      const st = { x: HOME[0], z: HOME[1], yaw: 0, ph: 0, act: null, mood: mood0 === 'hostile' ? 1 : 0, want: mood0 === 'hostile' ? 1 : 0, cheeky: mood0 === 'cheeky',
+                   target: null, next: 2, auto: 12, home: [...HOME], clicks: [], bored: -99, watched: 0, still: 0, camP: V(), camQ: new T.Quaternion(), cheeseAt: -99, duckAt: -99,
+                   away: 0, comebacks: [], mar: 0, say: null, lastLine: '', clicked: false, crouch: false, gone: 0, headYaw: 0 };
+      root.userData.hint = 'outside the south wall';
+      root.userData.trigger = name => { st.trig = name; };   // (the preview's Trigger menu)
+      // ---- the acts. start(name) begins one; each poses the body over its usual walking and standing.
+      const env = (at, dur, a = .35, b = .35) => smooth(0, a, at) * (1 - smooth(dur - b, dur, at));
+      const LOCAL = (w, out) => g.worldToLocal(out.copy(w));
+      const reach = (sx, w) => reachFolk(J, sx, LOCAL(w, tmp3).toArray());
+      const pop = to => { g.getWorldPosition(tmp); tmp.y += 1; conf.burst(tmp, 46, CONF, 2.4, 1.8); st.gone = .45; st.popTo = to; };
+      const TRICKS = { friendly: ['spin', 'juggle', 'bow', 'jingle', 'flower', 'flip', 'maskoff'], cheeky: ['flip', 'flower', 'spin', 'jingle', 'flip', 'flower', 'bow'] };
+      const start = (name, t) => {
+        if (name === 'turn') { st.want = st.want > .5 ? 0 : 1; return; }
+        if (name === 'trick') name = st.mood > .5 ? 'stare' : TRICKS[st.cheeky ? 'cheeky' : 'friendly'][Math.floor(Math.random() * 7)];
+        const a = { name, t0: t, dur: { spin: 1.7, flip: 2.9, juggle: 7, bow: 3.2, jingle: 1.9, flower: 3.8, maskoff: 7, marionette: 15, cartwheel: 2.7, sulk: 10, knock: 9,
+          spotlight: 7, aside: 4.6, cheese: 4.6, hide: 90, fog: 9, duck: 1.7, bored: 2.2, stare: 4, comeback: 6 }[name] || 3 };
+        st.target = null; st.act = a; st.crouch = false;
+        if (name === 'cartwheel') { const s = Math.sign(st.home[0] - st.x) || 1; a.dir = [Math.cos(st.yaw) * s, -Math.sin(st.yaw) * s]; a.from = [st.x, st.z];
+          if (!clearPath(st.x, st.z, st.x + a.dir[0] * 3.6, st.z + a.dir[1] * 3.6)) { a.dir = a.dir.map(v => -v); if (!clearPath(st.x, st.z, st.x + a.dir[0] * 3.6, st.z + a.dir[1] * 3.6)) a.dur = 0; } }
+        if (name === 'comeback' || name === 'knock') {   // to a spot on screen: walk there if it can, else pop there in a burst of confetti
+          const f = camFwd(), c = A.camera.position, rgt = V(-f.z, 0, f.x), near = name === 'knock' ? 1.7 : 7;
+          let spot = null;
+          for (const [d, s] of name === 'knock' ? [[1.7, 0], [2.2, 0], [9, 0], [12, .5], [7, -.5]] : [[7, .55], [7, -.55], [9, .4], [5, .5], [11, 0], [14, .3]]) {
+            const x = c.x + f.x * d + rgt.x * s * d * .6, z = c.z + f.z * d + rgt.z * s * d * .6;
+            if (ok(x, z) && (name !== 'knock' || d > 3 || c.y - gy(x, z) < 2.8)) { spot = [x, z, d]; break; } }
+          if (!spot) { a.dur = 0; return; }
+          a.spot = spot; a.near = spot[2] < 3;
+          if (Math.hypot(spot[0] - st.x, spot[1] - st.z) < 9 && clearPath(st.x, st.z, spot[0], spot[1])) st.target = [spot[0], spot[1], 2.6];
+          else pop(spot);
+          if (name === 'comeback') { st.comebacks = st.comebacks.filter(x => t - x < 180); st.comebacks.push(t); }
+        }
+        if (name === 'hide') { const spot = [-11.3, 5.0]; st.yaw = Math.PI; pop(spot); a.peek = Math.random() * 9;
+          if (!ROOT_LIVE) A.view([-12.6, 4.4, -11.5], [-11.3, .9, 5]); }
+        if (name === 'fog') { const c = fogCv.getContext('2d'); c.clearRect(0, 0, 512, 256); fogTex.needsUpdate = true; a.word = st.mood > .5 ? 'BOO' : 'HI!'; a.strokes = strokesFor(a.word); a.pen = null; }
+        if (name === 'aside') sayAny();
+        if (name === 'sulk') say(st.cheeky ? 'Fine. Ignore the genius.' : 'Fine. I\'ll just sit here, then.', 4);
+        if (name === 'spotlight') say('Behold: the knight!', 3.5);
+        if (name === 'knock') say(st.mood > .5 ? 'Knock, knock.' : st.cheeky ? 'Oi! You in there!' : 'Hello? Anyone in there?', 3.4);
+        if (name === 'bored') say(st.cheeky ? 'Enough! The artist rests.' : 'All right, all right! Later!', 3);
+        if (name === 'stare') say(lines()[Math.floor(Math.random() * 5)], 3.6);
+      };
+      const ROOT_LIVE = !!ap.id;
+      // the letters it draws in the mist: strokes of [u, v] points (v up), the pen lifts between them
+      function strokesFor(w) {
+        const arc = (cx, cy, rx, ry, a0, a1, n = 14) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
+        if (w === 'HI!') return [[[.14, .82], [.14, .18]], [[.4, .82], [.4, .18]], [[.14, .5], [.4, .5]], [[.6, .82], [.6, .18]], [[.82, .84], [.82, .38]], [[.82, .2], [.822, .17]]];
+        return [[[.08, .82], [.08, .18]], [[.08, .82], ...arc(.14, .66, .13, .16, Math.PI / 2, -Math.PI / 2), [.08, .5]], [[.08, .5], ...arc(.15, .34, .15, .16, Math.PI / 2, -Math.PI / 2), [.08, .18]],
+                arc(.5, .5, .12, .3, Math.PI / 2, Math.PI / 2 + Math.PI * 2, 24), arc(.81, .5, .12, .3, Math.PI / 2, Math.PI / 2 + Math.PI * 2, 24)];
+      }
+      // ---- poses
+      const stand = (t, hos) => {
+        const lively = (1 - hos) * (st.cheeky ? .45 : 1), b = Math.abs(Math.sin(t * 3.3)) * lively;
+        hips.position.set(Math.sin(t * 1.65) * .014 * lively, H + b * .028 - .012, 0);
+        R.want('hips', 0, Math.sin(t * .8) * .05 * lively, Math.sin(t * 1.65) * .03 * lively);
+        for (const L of legs) { R.want('th' + L.sx, -.05 * lively * Math.sin(t * 1.65 + L.sx), 0, L.sx * (.05 + .03 * (1 - hos))); R.want('kn' + L.sx, .07 + .06 * b); R.want('an' + L.sx, .3 * lively + .04); }
+        R.want('chest', .02 - .04 * lively, 0, -Math.sin(t * 1.65) * .025 * lively);
+        if (hos > .5) for (const a of arms) { R.want('sh' + a.sx, .02, 0, a.sx * .05); R.want('el' + a.sx, -.05); }
+        else if (st.cheeky) for (const a of arms) reachFolk(J, a.sx, [a.sx * .2, H + .06, .03]);      // hands on hips
+        else for (const a of arms) { R.want('sh' + a.sx, .06 + Math.sin(t * 1.1 + a.sx) * .08, 0, a.sx * (.2 + Math.sin(t * .9 + a.sx * 2) * .05)); R.want('el' + a.sx, -.4 - Math.sin(t * 1.3 + a.sx) * .15); }
+        J.chest.scale.set(1, 1 + (hos > .5 ? 0 : Math.sin(t * 1.4) * .01), 1);                         // (when hostile, it does not breathe)
+      };
+      const walk = (ph, amp) => {   // a light, skipping walk on its toes: it rises mid-stride, arms swing wide
+        const s0 = Math.sin(ph); hips.position.set(s0 * .015 * amp, H + Math.abs(Math.sin(ph)) * .05 * amp - .01, 0);
+        for (const L of legs) { const p = ph + (L.sx > 0 ? 0 : Math.PI), s = Math.sin(p), lift = Math.max(0, Math.sin(p + 1.35));
+          R.want('th' + L.sx, -s * .5 * amp, 0, L.sx * .03); R.want('kn' + L.sx, (.1 + .95 * lift) * amp); R.want('an' + L.sx, (.35 + s * .15) * amp); }
+        for (const a of arms) { const s = Math.sin(ph + (a.sx > 0 ? 0 : Math.PI)); R.want('sh' + a.sx, s * .55 * amp, 0, a.sx * (.28 + Math.max(0, s) * .25)); R.want('el' + a.sx, -.5 - Math.max(0, -s) * .5); }
+        R.want('hips', 0, -s0 * .1 * amp, s0 * .04 * amp); R.want('chest', -.02, s0 * .14 * amp, -s0 * .03 * amp);
+      };
+      const lookW = (p, k = 1) => { g.updateMatrixWorld(true); const l = LOCAL(p, tmp3), hy = H + .64; let y = clampA(Math.atan2(l.x, l.z), 1.25) * k; const pit = clampA(-Math.atan2(l.y - hy, Math.hypot(l.x, l.z)), .6) * k;
+        R.want('neck', pit * .4, y * .45, R.J.neck.want[2]); R.want('head', pit * .6, y * .55, R.J.head.want[2]); };
+      const crouchPose = (k, deep = 1) => { hips.position.y = H - .5 * k * deep; hips.position.z = -.08 * k;
+        for (const L of legs) { R.want('th' + L.sx, -1.6 * k * deep, 0, L.sx * .16 * k); R.want('kn' + L.sx, 2.3 * k * deep); R.want('an' + L.sx, -.6 * k * deep); }
+        R.want('chest', .55 * k, 0, 0); };
+      const glow2 = (w, n, col, spd = 1.2, life = .7) => { for (let i = 0; i < n; i++) sparks.emit(w.x, w.y, w.z, (Math.random() - .5) * spd, (Math.random() - .2) * spd, (Math.random() - .5) * spd, life, col); };
+      const gloveW = (sx, out) => arms.find(a => a.sx === sx).gl.h.getWorldPosition(out);
+      // ---- each frame
+      return (t, dt = 1 / 60) => {
+        dt = Math.min(dt, .1);
+        const cam = A.camera.position;
+        if (st.clicked) { st.clicked = false; st.clicks = st.clicks.filter(x => t - x < 8); st.clicks.push(t);
+          if (t < st.bored) {} else if (st.clicks.length > 4) { start('bored', t); st.bored = t + 9; st.clicks = []; } else if (!st.act || ['aside', 'stare'].includes(st.act.name)) start('trick', t); }
+        if (st.trig) { start(st.trig, t); st.trig = null; }
+        st.mood += (st.want - st.mood) * Math.min(1, dt * 1.1);
+        const hos = st.mood, hush = smooth(.12, .4, hos);
+        brass.color.copy(BR).lerp(DULL, hush); brass.metalness = .78 - hush * .45; brass.roughness = .3 + hush * .5;
+        // the camera: is it still (for "say cheese"); is it on the jester
+        const camMoved = cam.distanceTo(st.camP) > .01 || 1 - Math.abs(A.camera.quaternion.dot(st.camQ)) > 1e-6; st.camP.copy(cam); st.camQ.copy(A.camera.quaternion);
+        st.still = camMoved ? 0 : st.still + dt;
+        head.getWorldPosition(tmp); const seen = onView(head, .95) && !st.gone, dist = cam.distanceTo(tmp);
+        st.watched = seen ? st.watched + dt : st.watched; st.away = seen ? 0 : st.away + dt;
+        // ---- what it does by itself (on this screen): wanders about its spot, shows off now and then, comes back when you look away
+        let a = st.act, at = a ? t - a.t0 : 0;
+        if (a && at > a.dur) { if (a.name === 'comeback') st.home = [st.x, st.z]; if (a.name === 'hide') { if (!a.left) pop([...HOME]); st.home = [...HOME]; } st.act = a = null; }
+        if (!a && hos < .5) {
+          if (t > st.auto && !st.target) { start(['juggle', 'cartwheel', 'bow', 'maskoff', 'spin', 'marionette', 'aside', 'flip'][Math.floor(Math.random() * 8)], t); st.auto = t + 20 + Math.random() * 14; a = st.act; at = 0; }
+          else if (st.away > 25 && !st.still && st.comebacks.filter(x => t - x < 180).length < 3) { start('comeback', t); a = st.act; at = 0; }
+          else if (st.away > 25 && st.comebacks.filter(x => t - x < 180).length >= 3 && st.still < 1) { start('sulk', t); st.comebacks = []; a = st.act; at = 0; }
+          else if (seen && st.still > 6 && dist < 22 && t - st.cheeseAt > 50) { start('cheese', t); st.cheeseAt = t; a = st.act; at = 0; }
+          else if (!phone && performance.now() - ptr.at < 1500 && t - st.duckAt > 7 && hit() < .28) { start('duck', t); st.duckAt = t; a = st.act; at = 0; }
+          else if (t > st.next && !st.target) { for (let k = 0; k < 6; k++) { const an = Math.random() * 6.283, r = .6 + Math.random() * 1.6, x = st.home[0] + Math.cos(an) * r, z = st.home[1] + Math.sin(an) * r;
+              if (ok(x, z) && clearPath(st.x, st.z, x, z)) { st.target = [x, z, 1.1]; break; } } st.next = t + 3 + Math.random() * 6; }
+        }
+        // the hush before it turns: everything stops
+        if (hos > .5 && st.target && !a) st.target = null;
+        // ---- moving
+        if (st.gone > 0) { st.gone -= dt; if (st.gone <= 0 && st.popTo) { [st.x, st.z] = st.popTo; st.popTo = null; g.getWorldPosition(tmp); conf.burst(V(st.x, gy(st.x, st.z) + 1, st.z), 46, CONF, 2.4, 1.8); } }
+        g.visible = st.gone <= 0; cap.hide(g.visible);
+        let walking = false, speed = 0;
+        if (st.target && st.gone <= 0) { const dx = st.target[0] - st.x, dz = st.target[1] - st.z, d = Math.hypot(dx, dz);
+          if (d < .04) st.target = null; else { const v = Math.min(st.target[2], .4 + d * 2.5), s = Math.min(d, v * dt); st.x += dx / d * s; st.z += dz / d * s; walking = true; speed = v; st.headYaw = Math.atan2(dx, dz); } }
+        let wantYaw = walking ? st.headYaw : Math.atan2(cam.x - st.x, cam.z - st.z);
+        // ---- the base pose
+        pv.rotation.set(0, 0, 0); pv.position.set(0, H, 0); hips.position.set(0, H, 0); st.crouch = false;
+        if (walking) { st.ph += speed * dt / .58 * Math.PI; walk(st.ph, Math.min(1, speed / .9)); } else stand(t, hos);
+        let curl = hos > .5 ? .15 : st.cheeky ? .6 : .25, look = 'cam', open = 0, swing = .07 + speed * .1, marWant = 0, maskTilt = st.cheeky ? .2 : 0, flip = 0;
+        // ---- the acts on top
+        if (a) {
+          const k = env(at, a.dur), n = a.name;
+          if (n === 'spin') { pv.rotation.y = smooth(.25, 1.35, at) * Math.PI * 2; for (const x of arms) { R.want('sh' + x.sx, 0, 0, x.sx * 1.5 * k); R.want('el' + x.sx, -.1); }
+            curl = 0; swing = .6; if (at > .25 && at < 1.4) for (const sx of [1, -1]) glow2(gloveW(sx, tmp), 2, '#ffd27a', 1.2, .8);
+            if (st.cheeky && at > 1.35 && !a.sprayed) { a.sprayed = 1; gloveW(-1, tmp); tmp2.subVectors(cam, tmp).normalize(); for (let i = 0; i < 26; i++) sparks.emit(tmp.x, tmp.y, tmp.z, tmp2.x * 4 + (Math.random() - .5), tmp2.y * 4 + Math.random(), tmp2.z * 4 + (Math.random() - .5), .9, '#ffe2a0'); } }
+          if (n === 'flip') { flip = smooth(.5, 1.1, at) * (1 - smooth(st.cheeky ? 2.2 : 1.9, 2.6, at)); mask.updateMatrixWorld(true); reach(-1, mask.localToWorld(tmp.set(.06, .02, .05)));
+            curl = .5; R.want('head', R.J.head.want[0], 0, Math.sin(at * 3) * .1); }
+          if (n === 'juggle') { const P_ = .95, hy = H + .32;
+            for (const x of arms) { const ph = (at / P_ + (x.sx > 0 ? 0 : .5)) * Math.PI * 2; reachFolk(J, x.sx, [x.sx * (.2 + Math.cos(ph) * .05), hy + Math.sin(ph) * .05, .34]); }
+            balls.forEach((b, i) => { const u = ((at / (P_ * 1.5) + i / 3) % 1), half = u < .5, w = (half ? u : u - .5) * 2, from = half ? .12 : -.12, to = -from;
+              b.visible = k > .2; b.position.set(from + (to - from) * w, hy + .04 + Math.sin(w * Math.PI) * .62, .36); });
+            curl = .55; look = 'balls'; }
+          if (n === 'bow') { const b = smooth(.3, 1.1, at) * (1 - smooth(2.3, 3.1, at));
+            R.want('chest', 1.0 * b, 0, 0); R.want('hips', .25 * b, 0, 0); R.want('sh-1', -1.0 * b, 0, -.5 * b); R.want('el-1', -1.4 * b); R.want('sh1', .7 * b, 0, 1.0 * b); R.want('el1', -.1);
+            R.want('th-1', .45 * b, 0, -.05); R.want('kn-1', .35 * b); R.want('th1', -.2 * b, 0, .05); R.want('kn1', .3 * b); look = 'down'; curl = .1; }
+          if (n === 'jingle') { pv.rotation.z = Math.sin(at * 34) * .05 * k; pv.rotation.x = Math.sin(at * 29) * .03 * k; for (const x of arms) reachFolk(J, x.sx, [x.sx * .2, H + .06, .03]); swing = 1.1;
+            if (Math.random() < .5) bells[Math.floor(Math.random() * bells.length)].getWorldPosition(tmp), glow2(tmp, 1, '#fff0b0', .6, .5); }
+          if (n === 'flower') { const f = smooth(.4, .9, at) * (1 - smooth(3.3, 3.7, at)); flower.visible = f > .01; flower.scale.setScalar(Math.max(.01, f));
+            R.want('sh1', -1.2 * k, 0, .15); R.want('el1', -.35 * k); curl = .7;
+            if (at > 2.2 && !a.done) { a.done = 1; flower.getWorldPosition(tmp); tmp.y -= .2;
+              if (st.cheeky) { tmp2.subVectors(cam, tmp).normalize(); for (let i = 0; i < 30; i++) sparks.emit(tmp.x, tmp.y, tmp.z, tmp2.x * 5 + (Math.random() - .5) * .8, tmp2.y * 5 + Math.random() * .8, tmp2.z * 5 + (Math.random() - .5) * .8, .8, '#bfe9ff'); }
+              else conf.burst(tmp, 18, ['#d4574a', '#e8d6c0', '#f4efe2'], 1, 1.4, 1); } }
+          if (n === 'maskoff') { open = smooth(.8, 1.7, at) * (1 - smooth(5.6, 6.5, at)); mask.updateMatrixWorld(true);
+            if (at < 6.4) reach(-1, mask.localToWorld(tmp.set(.1, -.02, -.02))); curl = .55;
+            R.want('sh1', -.4 * k, 0, .9 * smooth(1.6, 2.4, at) * (1 - smooth(5.5, 6.3, at))); R.want('el1', -.3); look = 'cam'; }
+          if (n === 'marionette') { marWant = smooth(.2, 1.5, at) * (1 - smooth(a.dur - 1.6, a.dur - .2, at));
+            for (const x of arms) { R.want('sh' + x.sx, -1.2 * marWant + Math.sin(t * 4.2 + x.sx) * .08, 0, x.sx * .45 * marWant); R.want('el' + x.sx, -.5 * marWant); } look = 'puppet'; }
+          if (n === 'cartwheel' && a.dur > 0) { const u = smooth(.15, a.dur - .1, at), dx = a.dir[0], dz = a.dir[1];
+            st.x = a.from[0] + dx * 3.6 * u; st.z = a.from[1] + dz * 3.6 * u; const side = Math.sign(dx * Math.cos(st.yaw) - dz * Math.sin(st.yaw)) || 1;
+            pv.rotation.z = -side * u * Math.PI * 4; for (const x of arms) { R.want('sh' + x.sx, 0, 0, x.sx * 2.75 * k); R.want('el' + x.sx, 0); } for (const L of legs) { R.want('th' + L.sx, 0, 0, L.sx * .55 * k); R.want('kn' + L.sx, .05); }
+            swing = .9; curl = 0; hips.position.y = H; wantYaw = st.yaw; }
+          if (n === 'sulk') { const s = smooth(.2, 1.4, at) * (1 - smooth(a.dur - 1.2, a.dur, at));
+            hips.position.y = H - .83 * s; hips.position.z = -.1 * s;   // sat down, hugging its knees
+            for (const L of legs) { R.want('th' + L.sx, -1.9 * s, 0, L.sx * .12 * s); R.want('kn' + L.sx, 2.5 * s); R.want('an' + L.sx, -.35 * s); }
+            R.want('chest', .35 * s, 0, 0); for (const x of arms) reachFolk(J, x.sx, [x.sx * .09, hips.position.y + .26, .42]);
+            look = 'away'; swing = .01; curl = .6; }
+          if (n === 'knock' && !st.target && st.gone <= 0) { if (a.arr == null) { a.arr = at; a.dur = at + 3; } const q = at - a.arr, KN = [.7, 1.05, 1.4], kk = KN.findIndex(x => q > x && q < x + .12);
+            const r = Math.max(0, ...KN.map(x => 1 - Math.abs(q - x) / .16)) * env(q, a.dur - a.arr);
+            tmp.copy(cam); g.getWorldPosition(tmp2); tmp.sub(tmp2); tmp.y = 0; tmp.setLength(Math.min(.55 + r * .08, tmp.length())); tmp.add(tmp2); tmp.y = Math.min(cam.y, tmp2.y + 1.95);
+            reach(-1, tmp); curl = .95;
+            if (kk >= 0 && a.k !== kk) { a.k = kk; gloveW(-1, tmp); ring(tmp, a.near); } }
+          if (n === 'spotlight') { const K0 = A.K?.root?.getWorldPosition(tmp2) || tmp2.set(-11, 0, 0), s = smooth(.6, 1.4, at) * (1 - smooth(a.dur - .8, a.dur, at));
+            beam.visible = pool.visible = s > .01; beam.material.opacity = .22 * s; pool.material.opacity = .55 * s;
+            beam.position.set(K0.x, K0.y + 3.25, K0.z); pool.position.set(K0.x, K0.y + .03, K0.z);
+            if (at < 4.2) { g.getWorldPosition(tmp); tmp.y += 1.5 * J.SC; tmp3.subVectors(K0, tmp).setY(0).setLength(.9); tmp.add(tmp3); tmp.y += .3; reach(-1, tmp); curl = 0; look = 'knight';
+              wantYaw = Math.atan2(K0.x - st.x, K0.z - st.z) + .6; }
+            else { const b = smooth(4.3, 4.9, at) * (1 - smooth(6.1, 6.8, at)); R.want('chest', .9 * b, 0, 0); R.want('sh-1', -.9 * b, 0, -.4 * b); R.want('el-1', -1.3 * b); R.want('sh1', .6 * b, 0, .9 * b); look = 'down'; } }
+          if (n === 'aside') { if (at < 3) { head.updateMatrixWorld(true); reach(1, head.localToWorld(tmp.set(.14, .1, .1))); curl = .1; } R.want('head', R.J.head.want[0], R.J.head.want[1], .18 * k); }
+          if (n === 'cheese') { const i = Math.min(2, Math.floor(at / 1.15)), pk = env(at % 1.15, 1.15, .15, .2) * (at < 3.45 ? 1 : 0);
+            if (i === 0) for (const x of arms) { R.want('sh' + x.sx, 0, 0, x.sx * 2.5 * pk); R.want('el' + x.sx, -.2); }
+            if (i === 1) { reachFolk(J, 1, [.2, H + .06, .03]); R.want('sh-1', -2.5 * pk, 0, -.5 * pk); R.want('el-1', -1.8 * pk); R.want('head', 0, 0, .25 * pk); }
+            if (i === 2) { R.want('th1', -1.2 * pk, 0, .1); R.want('kn1', 1.6 * pk); R.want('sh1', -.4, 0, 1.4 * pk); R.want('sh-1', -.4, 0, -1.4 * pk); R.want('el1', -.1); R.want('el-1', -.1); }
+            curl = 0; if (at > 3.5 && !a.flashed) { a.flashed = 1; camFlash(); } }
+          if (n === 'duck') { crouchPose(k, .45); head.updateMatrixWorld(true); for (const x of arms) reach(x.sx, head.localToWorld(tmp.set(x.sx * .04, .1, .2))); curl = .05; look = 'down'; st.crouch = true; }
+          if (n === 'bored') { R.want('sh-1', -1.6 * k, 0, -.3); R.want('el-1', -.8 + Math.sin(at * 9) * .4 * k); look = 'away'; curl = .1; }
+          if (n === 'stare') { look = 'cam'; }
+          if (n === 'comeback' && !st.target && st.gone <= 0) { a.arr ??= at; const w = env(at - a.arr, 2.6); R.want('sh-1', -2.5 * w, 0, -.35 * w); R.want('el-1', -.35 * w + Math.sin(at * 9) * .25 * w); curl = 0; }
+          if (n === 'hide' && st.gone <= 0) { wantYaw = Math.PI;
+            if (!a.caught) { crouchPose(1, 1.02); R.want('chest', .9, 0, 0); for (const x of arms) reachFolk(J, x.sx, [x.sx * .26, .66, .42]);
+              R.want('neck', -.75, Math.sin((t + a.peek) * .5) * .5, 0); R.want('head', -.35, Math.sin((t + a.peek) * .5) * .4, 0); look = 'none'; st.crouch = true; curl = .4;
+              if (dist < 12 && onView(head, .9)) { a.caught = t; a.dur = at + 5.6; } }
+            else { const c = t - a.caught; crouchPose(1 - smooth(4.6, 5.4, c), 1.02);
+              if (c < .4) look = 'none';                                                           // a frozen moment
+              else if (c < 2.2) { look = 'cam'; const j = snapsH(t, dt); R.want('neck', R.J.neck.want[0] + j[0], R.J.neck.want[1] + j[1], j[2]); R.want('sh1', j[3], 0, .3 + j[4]); R.want('sh-1', j[4], 0, -.3 + j[3]); }
+              else if (c < 4.6) { look = 'cam'; for (const x of arms) { R.want('sh' + x.sx, -1.3 + Math.sin(c * 13 + x.sx) * .35, 0, x.sx * .3); R.want('el' + x.sx, -.7 + Math.sin(c * 13 + x.sx) * .3); } curl = 0; }
+              else look = 'none';
+              if (c > 5.3 && !a.left) { a.left = 1; pop([...HOME]); st.home = [...HOME]; }
+              swing = c < 2.2 ? 0 : .5; } }
+          if (n === 'fog') { const s = a.strokes, spd = .85, op = smooth(0, .6, at) * (1 - smooth(a.dur - 1.6, a.dur, at));
+            if (!a.planeSet) { a.planeSet = 1; g.updateMatrixWorld(true); fogPlane.position.copy(g.localToWorld(tmp.set(-.12, 1.42, .62))); fogPlane.lookAt(cam); fogPlane.visible = true;
+              fogPlane.material.color.set(st.mood > .5 ? '#cfe3ef' : '#ffffff'); a.len = s.reduce((n, st_) => n + st_.slice(1).reduce((m, p, i) => m + Math.hypot(p[0] - st_[i][0], p[1] - st_[i][1]), 0) + .25, 0); }
+            fogPlane.material.opacity = op; wantYaw = Math.atan2(cam.x - st.x, cam.z - st.z);
+            let d = Math.max(0, at - .8) * spd, pen = null, drawing = false;
+            for (const S_ of s) { let L = 0; for (let i = 1; i < S_.length; i++) L += Math.hypot(S_[i][0] - S_[i - 1][0], S_[i][1] - S_[i - 1][1]);
+              if (d < .25) { const from = pen || [.5, .5], to = S_[0], u = d / .25; pen = [from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u]; break; }
+              d -= .25; if (d < L) { for (let i = 1; i < S_.length; i++) { const l = Math.hypot(S_[i][0] - S_[i - 1][0], S_[i][1] - S_[i - 1][1]); if (d <= l) { const u = d / (l || 1); pen = [S_[i - 1][0] + (S_[i][0] - S_[i - 1][0]) * u, S_[i - 1][1] + (S_[i][1] - S_[i - 1][1]) * u]; break; } d -= l; } drawing = true; break; }
+              d -= L; pen = S_[S_.length - 1]; }
+            if (pen && at < a.dur - 1.6) { const c = fogCv.getContext('2d'); if (drawing && a.pen) { c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 15; c.lineCap = 'round'; c.shadowColor = '#fff'; c.shadowBlur = 14;
+                c.beginPath(); c.moveTo(a.pen[0] * 512, (1 - a.pen[1]) * 256); c.lineTo(pen[0] * 512, (1 - pen[1]) * 256); c.stroke(); fogTex.needsUpdate = true; }
+              a.pen = drawing ? pen : null; fogPlane.updateMatrixWorld(true); reach(-1, fogPlane.localToWorld(tmp.set((pen[0] - .5) * 1.1, (pen[1] - .5) * .55, -.02))); curl = .75;
+              arms[1].gl.fingers[0].rotation.z = 0; }
+            else fogPlane.visible = op > .01;
+            if (at >= a.dur - .05) fogPlane.visible = false; }
+          if (a.yaw != null) wantYaw = a.yaw;
+        }
+        if (!a || a.name !== 'spotlight') beam.visible = pool.visible = false;
+        if (!a || a.name !== 'juggle') balls.forEach(b => b.visible = false);
+        if (!a || a.name !== 'flower') flower.visible = false;
+        if (!a || a.name !== 'fog') fogPlane.visible = false;
+        // where it looks: at you (it plays to you), at the mouse if one is moving, at Rooken, down, away
+        if (look === 'cam') { if (!phone && performance.now() - ptr.at < 2500 && hos < .5) { rc.setFromCamera(ptr, A.camera); lookW(tmp.copy(rc.ray.origin).addScaledVector(rc.ray.direction, dist), 1); }
+          else { lookW(cam, hos > .5 ? 1 : .9); if (hos < .5) R.want('head', R.J.head.want[0], R.J.head.want[1], Math.sin(t * .7) * .12 + (st.cheeky ? .1 : 0)); } }
+        else if (look === 'knight') { const K0 = A.K?.root?.getWorldPosition(tmp2); if (K0) lookW(K0, .8); }
+        else if (look === 'down') { R.want('neck', .5, 0, 0); R.want('head', .3, 0, 0); }
+        else if (look === 'away') { R.want('neck', -.05, .9, 0); R.want('head', -.18, .5, .12); }
+        else if (look === 'balls') { R.want('neck', -.2, 0, 0); R.want('head', -.25, 0, 0); }
+        else if (look === 'puppet') { g.updateMatrixWorld(true); lookW(mar.grp.getWorldPosition(tmp2), .8); }
+        // turning, slow when hostile; the body sits on the ground where it stands
+        let e = wantYaw - st.yaw; e = Math.atan2(Math.sin(e), Math.cos(e)); st.yaw += e * Math.min(1, dt * (walking ? 7 : hos > .5 ? .7 : 3.2));
+        g.position.set(st.x, gy(st.x, st.z), st.z); g.rotation.y = st.yaw;
+        // the mask: askew when cheeky, swung aside to show the stars, flipped upside down for a laugh
+        maskHinge.rotation.set(0, -open * 1.2, open * .25); maskHinge.position.set(-.085 - open * .07, .1 + open * .03, .03 + open * .05);
+        mask.rotation.z = flip * Math.PI + maskTilt * (1 - flip);
+        vortex.visible = open > .02; vortex.material.uniforms.uOpen.value = smooth(0, .6, open); vortex.material.uniforms.uT.value = t;
+        if (vortex.visible) { vortex.updateMatrixWorld(true); vortex.material.uniforms.uCam.value.copy(vortex.worldToLocal(tmp.copy(cam))); }
+        motes.forEach((m, i) => { m.visible = open > .3; const an = t * (.6 + i * .07) + i * 2.1, r = .1 + (i % 3) * .025; m.position.set(Math.cos(an) * r * .9, .1 + Math.sin(an * 1.3) * r, .05 + Math.sin(an) * .05); });
+        // the marionette at its side; its own hands go with the floating gloves (its wrists end in empty cuffs)
+        st.mar += (marWant - st.mar) * Math.min(1, dt * 2.5);
+        g.updateMatrixWorld(true); const mp = g.localToWorld(tmp.set(-.95, 0, .35));
+        mar.tick(t, dt, st.mar, mp.x, mp.z, st.yaw);
+        for (const x of arms) x.gl.h.visible = st.mar < .4;
+        for (const x of arms) x.gl.curl(curl, hos > .5 ? 0 : 1);
+        // the bells swing with every move; when it turns hostile they stop dead, mid-swing
+        if (hush < .5) { const amp = swing * (a?.name === 'sulk' ? .1 : 1); bells.forEach((b, i) => { const w = 8 + (i % 5) * 1.3; b.rotation.x = Math.sin(t * w + i) * amp + Math.sin(t * 1.7 + i) * .04; b.rotation.z = Math.cos(t * w * .8 + i * 2) * amp * .7; }); }
+        R.step(dt);
+        cap.step(dt, hush, (A.wind?.s || 0) * 2);
+        conf.tick(dt); sparks.tick(dt);
+        // its words, over its head on your screen
+        const sv = st.say && performance.now() < st.say.until && g.visible; let shown = false;
+        if (sv) { head.getWorldPosition(tmp).y += .42 * J.SC; const p = tmp.project(A.camera); if (p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1) { sayEl.style.left = (p.x * .5 + .5) * innerWidth + 'px'; sayEl.style.top = (-p.y * .5 + .5) * innerHeight + 'px'; shown = true; } }
+        sayEl.style.opacity = shown ? 1 : 0;
+      };
+      // the caught twitch: quick, unnatural snaps of head and shoulders
+      function snapsH(t, dt) { const s = st.sn ??= [snaps(.35, .09), snaps(.5, .07), snaps(.45, .11), snaps(.5, .08), snaps(.5, .1)]; return s.map(f => f(t, dt)); }
+    },
+  },
   animals: {
     name: 'Small life', hour: 13,
     blurb: 'The ordinary animals about the keep, decided hour by hour by the time of day, the season and the weather: crows on the walls, small birds in the dead tree, hares on the plain, deer at the forest edge, butterflies in summer, an owl and bats at night, a fox on the plain, fish in the lake, and now and then a stray cat. They shy away from anything big or hostile, and from the knight if he comes close.',
@@ -9329,6 +9645,284 @@ export function spawnAnimals(kind, api, o = {}) {
   return { root, tick, remove() { const i = A.onTick.indexOf(tick); if (i >= 0) A.onTick.splice(i, 1); A.scene.remove(root); root.traverse(m => { if (m.isMesh) m.geometry?.dispose(); }); } };
 }
 
+// ================================================================ THE JESTER (mockup, part 1)
+// A tall, lean trickster in saffron-and-teal motley: a ruff of dagged points with a brass bell on each,
+// one long soft cap-point that trails behind it with a big bell at the tip, white gloves, curled shoes.
+// Its face is a white glazed mask rimmed in brass, with closed, smiling eyes and a wide grin that never
+// changes. Behind the mask there is no face: a slow swirl of stars, deep inside its head. Its moods
+// show in its body, never in the mask: friendly (light, bouncing on its toes), cheeky (mask worn askew,
+// hands on hips), hostile (its bells freeze mid-swing and go dull, its cap hangs dead straight, and it
+// stops moving). It plays to whoever is watching: what it does for you happens on your screen only.
+const JEST = { saffron: '#d19634', teal: '#1f5759', seam: '#2e1c10', glove: '#eee8da', brass: '#c9a24a', dull: '#3a3127', shoe: '#18393b', void: '#05050a' };
+let JTEX = null;
+function jestTex() {
+  return JTEX ??= {
+    // the motley: saffron lozenges on teal, with dark seams between
+    motley: paintTex(128, 128, (c, w) => {
+      c.fillStyle = JEST.teal; c.fillRect(0, 0, w, w);
+      c.fillStyle = JEST.saffron; c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w, w / 2); c.lineTo(w / 2, w); c.lineTo(0, w / 2); c.closePath(); c.fill();
+      c.strokeStyle = JEST.seam; c.lineWidth = 2.5; c.stroke();
+    }, [4, 2]),
+    // the mask's face, laid out over the front of a sphere (u across, v from brow to chin): glazed white,
+    // two closed eyes arched up, one wide crescent grin, all in black lacquer; a little gold diamond on the brow
+    face: canvasTex(256, 256, (c, w) => {
+      const g = c.createRadialGradient(w * .5, w * .46, w * .05, w * .5, w * .5, w * .62);
+      g.addColorStop(0, '#fbf8f1'); g.addColorStop(.65, '#ece6da'); g.addColorStop(1, '#c9c0b0');
+      c.fillStyle = g; c.fillRect(0, 0, w, w);
+      c.fillStyle = '#0b0a0c';
+      for (const sx of [-1, 1]) {                                   // the eyes: thick in the middle, tapering, ends turned down
+        const x = w * (.5 + sx * .155), y = w * .41;
+        c.beginPath(); c.ellipse(x, y + 7, w * .098, w * .072, 0, Math.PI + .1, Math.PI * 2 - .1);
+        c.ellipse(x, y + 15, w * .08, w * .042, 0, Math.PI * 2 - .2, Math.PI + .2, true); c.closePath(); c.fill();
+      }
+      c.beginPath(); c.ellipse(w * .5, w * .55, w * .3, w * .09, 0, .1, Math.PI - .1);          // the grin: its upper edge
+      c.ellipse(w * .5, w * .52, w * .33, w * .235, 0, Math.PI - .02, .02, true); c.closePath(); c.fill();   // and its deeper lower edge
+      c.fillStyle = '#b8903a'; c.beginPath(); c.moveTo(w * .5, w * .23); c.lineTo(w * .515, w * .255); c.lineTo(w * .5, w * .28); c.lineTo(w * .485, w * .255); c.closePath(); c.fill();
+    }),
+  };
+}
+// the swirl behind the mask: three layers of nebula and stars at different depths (they shift against
+// each other as you move round it), turning slowly into a warm core. A shader: cheap, and it never repeats.
+function vortexMat() {
+  return new T.ShaderMaterial({
+    uniforms: { uT: { value: 0 }, uOpen: { value: 0 }, uCam: { value: new T.Vector3(0, 0, 1) } },
+    vertexShader: `varying vec2 vUv; varying vec3 vP; void main(){ vUv = uv; vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+    fragmentShader: `uniform float uT, uOpen; uniform vec3 uCam; varying vec2 vUv; varying vec3 vP;
+      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
+      float fbm(vec2 p){ float s = 0., a = .5; for (int i = 0; i < 4; i++) { s += a * n(p); p *= 2.07; a *= .5; } return s; }
+      void main(){
+        vec3 vd = normalize(vP - uCam); vec2 c = vUv * 2. - 1.; float edge = length(c); vec3 col = vec3(0.);
+        for (int L = 0; L < 3; L++) {
+          float fl = float(L), d = .2 + fl * .45;
+          vec2 q = c + vd.xy / max(.25, -vd.z) * d * .45;
+          float r = length(q), a = atan(q.y, q.x), sw = a + 1.9 / (r + .3) - uT * (.32 + .12 * fl);
+          vec2 pp = vec2(cos(sw), sin(sw)) * r * 2.6 + fl * 7.3;
+          float neb = fbm(pp + vec2(uT * .04, fl));
+          vec3 tint = mix(vec3(.05, .28, .32), vec3(.9, .58, .2), smoothstep(.35, .8, neb + .15 * sin(sw * 2.)));
+          col += tint * pow(neb, 2.4) * (1.3 - r * .7) * (.9 - fl * .22);
+          vec2 sp = vec2(sw * 2.4, r * 11.) * 2.; float st = h(floor(sp) + fl * 13.);
+          col += vec3(1., .93, .8) * step(.955, st) * smoothstep(.42, .0, length(fract(sp) - .5)) * (.55 + .45 * sin(uT * 2.7 + st * 40.)) * (1. - fl * .25);
+        }
+        col *= 1.5; col += vec3(1., .82, .5) * exp(-edge * 5.) * 1.2;
+        col *= smoothstep(1., .7, edge);
+        gl_FragColor = vec4(col * uOpen, 1.);
+      }`,
+  });
+}
+// a round jingle bell hanging from a pivot (the pivot swings it)
+function jestBell(parent, r, m, slit) {
+  const pv = G(parent);
+  P(pv, A.ico(r, 1), m, [0, -r * 1.1, 0], { jitter: 0 });
+  P(pv, A.box(r * 1.5, r * .2, r * .3), slit, [0, -r * 1.55, 0], { jitter: 0, cast: false });
+  P(pv, new T.TorusGeometry(r * .32, r * .1, 4, 8), m, [0, -r * .05, 0], { jitter: 0, cast: false });
+  return pv;
+}
+// a white glove: palm, four fingers that curl, a thumb, a flared cuff. curl(0) open .. 1 a fist
+function jestGlove(parent, sx, m) {
+  const h = G(parent);
+  P(h, A.ico(.042, 1), m, [0, -.045, 0], { scale: [.62, 1.05, .95], jitter: .002 });
+  const fingers = [-1.5, -.5, .5, 1.5].map(k => { const f = G(h, [-sx * .012, -.085, k * .016]); bone(f, [0, 0, 0], [0, -.06 + Math.abs(k) * .008, 0], .0105, .009, m, 5, 0); P(f, A.ico(.0095, 0), m, [0, -.06 + Math.abs(k) * .008, 0], { jitter: 0 }); return f; });
+  const thumb = G(h, [-sx * .008, -.04, .036], [.5, 0, -sx * .2]); bone(thumb, [0, 0, 0], [0, -.045, .01], .012, .01, m, 5, 0);
+  P(h, new T.CylinderGeometry(.058, .036, .075, 9, 1, true), m, [0, .018, 0], { jitter: .002 });     // the cuff, flared
+  merge(h);
+  return { h, fingers, thumb, curl(k, sp = 0) { fingers.forEach((f, i) => f.rotation.z = -sx * (k * 1.5 + sp * (i - 1.5) * .12)); thumb.rotation.z = -sx * (.2 + k * .7); } };
+}
+// a little burst of things in the air: confetti (coloured, falling) or sparks (glowing, fading). One draw each.
+function jestFx(parent, n, size, glowing) {
+  const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), M = Array.from({ length: n }, () => ({ life: 0 }));
+  const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
+  const pts = new T.Points(geo, new T.PointsMaterial({ size, map: puff(), vertexColors: true, transparent: true, depthWrite: false, fog: false,
+                                                       blending: glowing ? T.AdditiveBlending : T.NormalBlending, alphaTest: glowing ? 0 : .3 }));
+  pts.frustumCulled = false; parent.add(pts); let next = 0; const C = new T.Color();
+  return {
+    emit(x, y, z, vx, vy, vz, life, color) { const p = M[next++ % n]; Object.assign(p, { x, y, z, vx, vy, vz, life, max: life }); C.set(color); p.r = C.r; p.g = C.g; p.b = C.b; },
+    burst(at, k, colors, speed = 2.2, life = 1.6, up = 1.6) { for (let i = 0; i < k; i++) { const a = Math.random() * 6.283, s = speed * (.3 + Math.random() * .7);
+      this.emit(at.x, at.y, at.z, Math.cos(a) * s, up * (.4 + Math.random()), Math.sin(a) * s, life * (.6 + Math.random() * .4), colors[i % colors.length]); } },
+    tick(dt) {
+      const gr = glowing ? 1.2 : 3.2, drag = Math.exp(-dt * (glowing ? 1.5 : 2.6));
+      M.forEach((p, i) => {
+        if (p.life > 0) { p.life -= dt; p.vy -= gr * dt; p.vx *= drag; p.vz *= drag; p.vy *= glowing ? drag : 1; if (!glowing) p.vy = Math.max(p.vy, -.9);
+          p.x += p.vx * dt; p.y = Math.max(gy(p.x, p.z) + .01, p.y + p.vy * dt); p.z += p.vz * dt;
+          const a = glowing ? Math.max(0, p.life / p.max) : Math.min(1, p.life * 2); pos.set([p.x, p.y, p.z], i * 3); col.set([p.r * a, p.g * a, p.b * a], i * 3); }
+        else pos[i * 3 + 1] = -999;
+      });
+      geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+    },
+  };
+}
+// THE BODY. Built like the road folk's (the same joints, so the same arm-reaching works on it), but long-legged,
+// in motley, and every part of it made for show. All of it hangs from a pivot at the hips, so it can cartwheel.
+function jesterBody(parent, root, o = {}) {
+  const X = jestTex(), H = 1.0, SC = 1.17;
+  const motley = new T.MeshStandardMaterial({ map: X.motley, roughness: .78, flatShading: true, bumpMap: bumpTex('weave'), bumpScale: .35 });
+  const motleyS = new T.MeshStandardMaterial({ map: X.motley, roughness: .78, flatShading: true, side: T.DoubleSide });
+  const sa = tex(JEST.saffron), te = tex(JEST.teal), slit = A.mat('#120d08', .3, .6);
+  const saS = tex(JEST.saffron), teS = tex(JEST.teal); saS.side = teS.side = T.DoubleSide;
+  const gloveM = A.mat(JEST.glove, 0, .62), shoeM = tex(JEST.shoe, 'brushed', .004), voidM = A.mat(JEST.void, 0, 1, { side: T.DoubleSide });
+  const brass = new T.MeshStandardMaterial({ color: JEST.brass, metalness: .78, roughness: .3, flatShading: true, bumpMap: bumpTex('hammered'), bumpScale: .5 });   // (its own: its mood dulls it)
+  const g = G(parent), R = rig(); g.scale.setScalar(SC);
+  const pv = G(g, [0, H, 0]), body = G(pv, [0, -H, 0]);                       // (turn pv to spin or cartwheel it about its middle)
+  const hips = R.add('hips', G(body, [0, H, 0]), 13, .9);
+  const bells = [];
+  // legs, parti-coloured (teal on the left, saffron on the right): long and thin, shoes with curled toes and a bell on each
+  const legs = [1, -1].map(sx => {
+    const th = R.add('th' + sx, G(hips, [sx * .08, -.03, 0]), 16, .85), hm = sx > 0 ? te : sa;
+    bone(th, [0, 0, 0], [0, -.47, .012], .074, .052, hm, 7, .003);
+    const kn = R.add('kn' + sx, G(th, [0, -.48, .012]), 18, .85);
+    bone(kn, [0, 0, 0], [0, -.44, -.012], .052, .036, hm, 7, .003);
+    const an = R.add('an' + sx, G(kn, [0, -.45, -.012]), 18, .85);
+    P(an, A.ico(.05, 1), shoeM, [0, -.025, .06], { scale: [.8, .5, 2.1], jitter: .002 });
+    const toe = G(an, [0, -.02, .155], [-.2, 0, 0]);
+    P(toe, new T.TorusGeometry(.03, .011, 4, 8, Math.PI * 1.2), shoeM, [0, .03, 0], { rot: [0, Math.PI / 2, -Math.PI / 2], jitter: 0 });
+    bells.push(jestBell(G(toe, [0, .062, -.006]), .016, brass, slit));
+    return { th, kn, an, sx };
+  });
+  // the doublet, short and padded, and a ring of dagged points below the belt, alternating colours
+  const chest = R.add('chest', G(hips, [0, .03, 0]), 10, .85);
+  lath(chest, [[.15, -.02], [.17, .06], [.19, .17], [.215, .3], [.225, .4], [.2, .47], [.14, .52], [.08, .55], [.05, .56]], motley, [0, 0, 0], [0, 0, 0], [.95, 1, .78], 14);
+  P(hips, new T.TorusGeometry(.14, .016, 5, 16), A.mat('#2a1a10', .1, .6), [0, .03, 0], { rot: [Math.PI / 2, 0, 0], scale: [.96, .78, 1], jitter: 0 });
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2, pt = G(hips, [Math.sin(a) * .17, .03, Math.cos(a) * .135], [0, a, 0]);
+    const s = clothStrip(G(pt, [0, 0, 0], [.32, 0, 0]), .062, .014, .2, i % 2 ? saS : teS, { rows: 3, rag: .45 });
+    clothSway(root, s, { amp: .025, speed: 1.6, wave: 2.4, phase: i * 1.3 });
+  }
+  // the ruff: dagged points round the neck, each with a bell at its tip
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + .31, pt = G(chest, [Math.sin(a) * .1, .56, Math.cos(a) * .08], [0, a, 0]);
+    const dir = [0, Math.cos(Math.PI / 2 + .22), Math.sin(Math.PI / 2 + .22)];
+    P(pt, new T.ConeGeometry(.075, .23, 4), i % 2 ? sa : te, dir.map(v => v * .115), { rot: [Math.PI / 2 + .22, 0, 0], scale: [1, 1, .3], jitter: .002 });
+    bells.push(jestBell(G(pt, dir.map(v => v * .225)), .019, brass, slit));
+  }
+  // neck and head: a hood over darkness, open at the front; a dark hollow where a face would be; the mask over it
+  const neck = R.add('neck', G(chest, [0, .53, .005]), 11, .8);
+  bone(neck, [0, 0, 0], [0, .075, .01], .045, .042, voidM, 6, .002);
+  P(neck, new T.CylinderGeometry(.078, .15, .17, 12, 1, true), teS, [0, .02, -.005], { scale: [1, 1, .88], jitter: .003 });   // the hood falls to the shoulders
+  const head = R.add('head', G(neck, [0, .075, .012]), 13, .75);
+  const hood = new T.Mesh(A.facet(new T.SphereGeometry(.128, 14, 10, Math.PI / 2 + .85, Math.PI * 2 - 1.7, 0, 2.3), .004, 5), teS);
+  hood.position.set(0, .1, -.008); hood.scale.set(1.05, 1.15, 1.08); hood.castShadow = true; head.add(hood);
+  const hollow = new T.Mesh(new T.SphereGeometry(.1, 12, 9, Math.PI / 2 + .7, Math.PI * 2 - 1.4, 0, Math.PI), voidM);
+  hollow.position.set(0, .1, 0); hollow.scale.set(.9, 1.1, .95); head.add(hollow);
+  const vortex = new T.Mesh(new T.CircleGeometry(.09, 40), vortexMat()); vortex.position.set(0, .1, .05); vortex.scale.set(.92, 1.2, 1); vortex.visible = false; head.add(vortex);
+  const motes = Array.from({ length: 9 }, (_, i) => P(head, A.ico(.0045, 0), new T.MeshBasicMaterial({ color: i % 3 ? '#fff1d0' : '#9ff3ee', toneMapped: false }), [0, .1, .1], { jitter: 0, cast: false }));
+  motes.forEach(m => m.visible = false);
+  // the mask hangs on a hinge at its right edge (so a hand can swing it aside like a little door)
+  const maskHinge = G(head, [-.085, .1, .03]), mask = G(maskHinge, [.085, 0, 0]);
+  const faceGeo = new T.SphereGeometry(.12, 22, 16, Math.PI / 2 - .95, 1.9, .5, 2.05);
+  const face = new T.Mesh(faceGeo, new T.MeshStandardMaterial({ map: X.face, roughness: .26, metalness: .02, flatShading: true }));
+  face.scale.set(.88, 1.12, .62); face.position.z = .016; face.castShadow = true; mask.add(face);
+  const rim = new T.Mesh(faceGeo, brass); rim.scale.set(.915, 1.16, .6); rim.position.z = .01; mask.add(rim);
+  // the cap: a soft crown, rising, then one long point that falls behind (it hangs on its own, see capRope)
+  const crown = G(head, [0, .19, -.02]);
+  P(crown, new T.ConeGeometry(.1, .17, 10, 1, true), teS, [0, .045, -.03], { rot: [-.55, 0, 0], scale: [1, 1, .85], jitter: .002 });
+  // arms: puffed sleeves (saffron left, teal right), dagged cuffs, white gloves
+  const arms = [1, -1].map(sx => {
+    const sm = sx > 0 ? sa : te;
+    const sh = R.add('sh' + sx, G(chest, [sx * .2, .45, 0]), 12, .75);
+    P(sh, A.ico(.09, 1), motley, [sx * .015, -.035, 0], { scale: [1, 1.12, .95], jitter: .003 });
+    bone(sh, [0, 0, 0], [0, -.27, -.005], .043, .036, sm, 7, .003);
+    const el = R.add('el' + sx, G(sh, [0, -.28, -.005]), 14, .75);
+    bone(el, [0, 0, 0], [0, -.22, .008], .036, .03, sm, 7, .003);
+    P(el, new T.CylinderGeometry(.06, .034, .07, 6, 1, true), sx > 0 ? te : sa, [0, -.2, .008], { jitter: .002 });
+    const hand = G(el, [0, -.25, .01]);
+    const gl = jestGlove(hand, sx, gloveM);
+    return { sh, el, hand, sx, gl };
+  });
+  return { g, pv, body, R, hips, chest, neck, head, legs, arms, mask, maskHinge, face, vortex, motes, crown, bells, brass, motley, slit, H, SC };
+}
+// The long cap point, hanging by itself: a chain of points that falls under its own weight and trails
+// behind every move (pinned at the crown, rising a little first). Drawn as tapered pieces between the
+// points, with the big bell at its end. still: 0..1 (the hostile hush: it stops swinging and hangs straight).
+function capRope(root, crown, n, len, mat, bellM, slit) {
+  const pts = Array.from({ length: n + 2 }, () => ({ p: V(0, -99, 0), q: V(0, -99, 0) })), segs = [], up = V(0, 1, 0), tmp = V(), tmp2 = V();
+  for (let i = 0; i <= n; i++) { const r0 = .045 * (1 - i / (n + 1)) + .012, r1 = .045 * (1 - (i + 1) / (n + 1)) + .01;
+    const m = new T.Mesh(A.facet(new T.CylinderGeometry(r1, r0, 1, 7, 1, true), .002, i), mat); m.castShadow = true; root.add(m); segs.push(m); }
+  const bellPv = new T.Group(); root.add(bellPv); const bell = jestBell(bellPv, .045, bellM, slit);
+  const A0 = V(0, .02, 0), A1 = V(0, .14, -.11);
+  let init = false;
+  return {
+    bellPv, bell,
+    step(dt, still = 0, wind = 0) {
+      crown.updateMatrixWorld(true);
+      const a0 = crown.localToWorld(tmp.copy(A0)), a1 = crown.localToWorld(tmp2.copy(A1)), L = len * crown.getWorldScale(V()).y;
+      if (!init) { pts.forEach((P_, i) => { P_.p.set(a1.x, a1.y + (i === 0 ? -.12 : 0) - Math.max(0, i - 1) * L * .3, a1.z - Math.max(0, i - 1) * L * .9); P_.q.copy(P_.p); }); init = true; }
+      pts[0].p.copy(a0); pts[1].p.copy(a1); pts[0].q.copy(a0); pts[1].q.copy(a1);
+      const h = Math.min(dt, .05) / 2;
+      for (let s = 0; s < 2; s++) {
+        const damp = 1 - (.015 + still * .2);
+        for (let i = 2; i < pts.length; i++) { const P_ = pts[i], vx = (P_.p.x - P_.q.x) * damp, vy = (P_.p.y - P_.q.y) * damp, vz = (P_.p.z - P_.q.z) * damp;
+          P_.q.copy(P_.p); P_.p.x += vx + wind * (1 - still) * h * h * 9; P_.p.y += vy - 9.8 * h * h; P_.p.z += vz; }
+        for (let k = 0; k < 4; k++) for (let i = 1; i < pts.length - 1; i++) {
+          const a = pts[i].p, b = pts[i + 1].p, d = tmp.subVectors(b, a), l = d.length() || 1e-4, e = (l - L) / l;
+          if (i === 1) b.addScaledVector(d, -e); else { a.addScaledVector(d, e * .5); b.addScaledVector(d, -e * .5); }
+        }
+        for (let i = 2; i < pts.length; i++) { const p = pts[i].p, fl = gy(p.x, p.z) + .03; if (p.y < fl) p.y = fl; }
+      }
+      for (let i = 0; i <= n; i++) { const a = pts[i].p, b = pts[i + 1].p, m = segs[i]; m.position.addVectors(a, b).multiplyScalar(.5);
+        tmp.subVectors(b, a); m.scale.set(1, tmp.length() || 1e-3, 1); m.quaternion.setFromUnitVectors(up, tmp.normalize()); }
+      bellPv.position.copy(pts[pts.length - 1].p); bellPv.scale.setScalar(crown.getWorldScale(tmp2).y);
+    },
+    hide(v) { segs.forEach(m => m.visible = v); bellPv.visible = v; },
+  };
+}
+// The marionette: a little wooden puppet of the jester itself (its own small white mask), danced on gold
+// strings from a cross-bar held by two white gloves floating in the air above it. It copies the viewer:
+// as your view turns, it turns its head (and then itself) the same way, as if it were pulling your strings.
+function marionette(root, o) {
+  const X = jestTex(), wood = tex('#8a6440', 'bark', .003), gloveM = A.mat(JEST.glove, 0, .62), sa = tex(JEST.saffron), te = tex(JEST.teal);
+  const motley = new T.MeshStandardMaterial({ map: X.motley, roughness: .8, flatShading: true });
+  const grp = G(root), pup = G(grp), S = .95;
+  const torso = G(pup, [0, .32 * S, 0]);
+  lath(torso, [[.06, 0], [.075, .05], [.08, .12], [.065, .17], [.03, .19]].map(([r, y]) => [r * S * 1.6, y * S * 1.6]), motley, [0, 0, 0], [0, 0, 0], [1, 1, .8], 8);
+  const head = G(torso, [0, .33 * S, 0]);
+  P(head, A.ico(.06 * S * 1.6, 1), wood, [0, 0, 0], { jitter: .002 });
+  const fm = new T.Mesh(new T.SphereGeometry(.062 * S * 1.6, 14, 10, Math.PI / 2 - .95, 1.9, .5, 2.05), new T.MeshStandardMaterial({ map: X.face, roughness: .3, flatShading: true }));
+  fm.scale.set(.85, 1.05, .7); fm.position.z = .012; head.add(fm);
+  P(head, new T.ConeGeometry(.06 * S * 1.6, .16 * S * 1.6, 8), te, [0, .07 * S * 1.6, -.03], { rot: [-.9, 0, 0], jitter: .002 });
+  const limbs = [];
+  for (const sx of [1, -1]) {
+    const arm = G(torso, [sx * .09 * S * 1.6, .16 * S * 1.6, 0]); bone(arm, [0, 0, 0], [0, -.2 * S, 0], .016, .013, sx > 0 ? sa : te, 5, 0); P(arm, A.ico(.022, 0), gloveM, [0, -.21 * S, 0], { jitter: 0 });
+    const leg = G(pup, [sx * .05 * S * 1.6, .32 * S, 0]); bone(leg, [0, 0, 0], [0, -.3 * S, 0], .02, .015, sx > 0 ? te : sa, 5, 0); P(leg, A.ico(.022, 0), wood, [0, -.31 * S, .015], { scale: [.8, .6, 1.6], jitter: 0 });
+    limbs.push({ arm, leg, sx });
+  }
+  // the control: a wooden cross, two floating gloves holding it
+  const bar = G(grp, [0, 1.25, 0]);
+  P(bar, A.box(.4, .025, .025), wood, [0, 0, 0], { jitter: .002 }); P(bar, A.box(.025, .025, .3), wood, [0, 0, 0], { jitter: .002 });
+  const gls = [1, -1].map(sx => { const h = G(grp); const gl = jestGlove(h, sx, gloveM); gl.curl(.75); return { h, gl, sx }; });
+  // the strings: gold, faintly glowing, from the bar's ends to the hands, knees and head
+  const lineGeo = new T.BufferGeometry(); lineGeo.setAttribute('position', new T.BufferAttribute(new Float32Array(5 * 6), 3));
+  const strings = new T.LineSegments(lineGeo, new T.LineBasicMaterial({ color: '#ffd77a', transparent: true, opacity: .85, toneMapped: false })); strings.frustumCulled = false; root.add(strings);
+  const v1 = V(), v2 = V(), _q = new T.Quaternion();
+  let yaw0 = null, look = 0, turn = 0;
+  return {
+    grp,
+    tick(t, dt, k, x, z, faceYaw) {
+      grp.visible = strings.visible = k > .01; if (!grp.visible) { yaw0 = null; return; }
+      grp.position.set(x, gy(x, z) - (1 - k) * .6, z); grp.scale.setScalar(Math.max(.01, k));
+      // it copies the viewer's turning: how far the view has turned since it appeared
+      const cy = Math.atan2(-A.camera.matrixWorld.elements[8], -A.camera.matrixWorld.elements[10]);
+      if (yaw0 === null) { yaw0 = cy; turn = 0; }
+      let d = cy - yaw0; d = Math.atan2(Math.sin(d), Math.cos(d));
+      look += (clampA(d * 1.3, .9) - look) * Math.min(1, dt * 6); turn += (d - turn) * Math.min(1, dt * .8);
+      grp.rotation.y = faceYaw + turn;
+      // the dance: the bar rocks and bobs; the puppet hops, legs pulled up in turn, arms flung
+      const ph = t * 4.2, hop = Math.abs(Math.sin(ph)) * .07;
+      bar.position.set(Math.sin(t * 1.3) * .05, 1.25 + hop * .6 + Math.sin(t * .7) * .03, 0); bar.rotation.set(Math.sin(ph) * .12, 0, Math.sin(ph * .5) * .22);
+      pup.position.y = hop; torso.rotation.z = Math.sin(ph * .5) * .15; head.rotation.set(Math.sin(t * 2.1) * .1, look, Math.sin(ph * .5) * -.2);
+      for (const L of limbs) { const s = Math.sin(ph * .5 + (L.sx > 0 ? 0 : Math.PI)); L.leg.rotation.x = -Math.max(0, s) * 1.1; L.arm.rotation.z = L.sx * (.5 + Math.max(0, -s) * 1.6); L.arm.rotation.x = -.2; }
+      for (const G_ of gls) { G_.h.position.set(G_.sx * .24 + bar.position.x, bar.position.y + .07, 0); G_.h.rotation.set(.3, 0, -bar.rotation.z); }
+      // strings: bar ends to the hands, the knees, the head
+      grp.updateMatrixWorld(true); const a = lineGeo.attributes.position.array; let i = 0;
+      const put = (from, to) => { from.getWorldPosition(v1); to.getWorldPosition(v2); a.set([v1.x, v1.y, v1.z, v2.x, v2.y, v2.z], i); i += 6; };
+      const ends = bar.userData.ends ??= [[.2, 0, 0], [-.2, 0, 0], [0, 0, .15], [0, 0, -.15], [0, 0, 0]].map(p => G(bar, p));
+      const handOf = L => L.arm.children[1], kneeOf = L => L.leg.children[0];
+      put(ends[0], handOf(limbs[0])); put(ends[1], handOf(limbs[1])); put(ends[2], kneeOf(limbs[0])); put(ends[3], kneeOf(limbs[1])); put(ends[4], head);
+      lineGeo.attributes.position.needsUpdate = true;
+    },
+    remove() { root.remove(strings); lineGeo.dispose(); },
+  };
+}
+
 const ORDER = Object.keys(BEASTS);
 // beings that come young, grown or old, each age its own design (brain/creatures.py AGED: keep the two in step)
 const AGED = ['axolotl', 'bellcrab', 'glassbeak', 'ashwolves', 'dragon', 'dragon2', 'whale', 'thorn', 'basilisk', 'wyrm', 'larva',
@@ -9357,6 +9951,8 @@ function show(key, hour) {
       const q = new URLSearchParams(location.search).get('kind'); ui.kind.value = kinds.some(k => k[0] === q) ? q : kinds[0][0];
     }
   }
+  if (ui?.trig) { const tr = def.triggers; ui.trig.style.display = tr ? '' : 'none';   // beings with acts to fire on demand (def.triggers: [value, label])
+    if (tr) ui.trig.innerHTML = '<option value="">Trigger…</option>' + tr.map(([v, l]) => `<option value="${v}">${l}</option>`).join(''); }
   root.userData.alive = true; surfaceReset();
   root.userData.appearance = { variant: { size: 1, age: aged ? (ui?.age?.value || '') : '', kind: kinds ? ui?.kind?.value || '' : '' } };   // the preview's chosen age and kind
   A.scene.add(root);
@@ -9388,10 +9984,11 @@ function buildUI() {
   el.innerHTML = `<div class="row"><button data-d="-1" title="Previous">◀</button><b></b><small class="n"></small><button data-d="1" title="Next">▶</button>
     <select title="Time of day">${TIMES.map(([n, h]) => `<option value="${h}">${n}</option>`).join('')}</select>
     <select title="Age" class="age"><option value="">grown</option><option value="young">young</option><option value="old">old</option></select>
-    <select title="Kind" class="kind"></select></div>
+    <select title="Kind" class="kind"></select><select title="Trigger one of its acts" class="trig"></select></div>
     <p></p><small>Mockup only: not part of Rooken's world (yet). ${matchMedia('(pointer: coarse)').matches ? 'Drag to look around.' : 'Drag to look around, WASD to fly.'}</small>`;
   document.body.append(el);
-  ui = { name: el.querySelector('b'), blurb: el.querySelector('p'), count: el.querySelector('.n'), time: el.querySelector('select'), age: el.querySelector('select.age'), kind: el.querySelector('select.kind') };
+  ui = { name: el.querySelector('b'), blurb: el.querySelector('p'), count: el.querySelector('.n'), time: el.querySelector('select'), age: el.querySelector('select.age'), kind: el.querySelector('select.kind'), trig: el.querySelector('select.trig') };
+  ui.trig.onchange = () => { if (ui.trig.value) cur?.root.userData.trigger?.(ui.trig.value); ui.trig.value = ''; ui.trig.blur(); };
   ui.kind.onchange = () => { const u = new URL(location.href); u.searchParams.set('kind', ui.kind.value); history.replaceState(null, '', u); show(cur.key, A.hour); ui.kind.blur(); };
   const qAge = new URLSearchParams(location.search).get('age'); if (qAge) ui.age.value = qAge;
   ui.age.onchange = () => { const u = new URL(location.href); u.searchParams.set('age', ui.age.value); history.replaceState(null, '', u); show(cur.key, A.hour); ui.age.blur(); };
