@@ -1,9 +1,9 @@
 {
   "awake": false,
-  "since": "2026-11-28T04:30:25+00:00",
-  "place": "fire",
-  "action": "sit",
-  "emote": "dots",
-  "note": "",
+  "since": "2026-11-28T05:00:29+00:00",
+  "place": "bedroll",
+  "action": "sleep",
+  "emote": "zzz",
+  "note": "asleep for the night",
   "thought": ""
 }

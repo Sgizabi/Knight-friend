@@ -40,78 +40,41 @@
     "nights_slept_through": 32
   },
   "plan": {
-    "start": "2026-11-28T02:41:52+00:00",
+    "start": "2026-11-28T05:00:28+00:00",
     "mood": "absorbed",
+    "applied_until": "2026-11-28T05:00:28+00:00",
     "steps": [
       {
-        "place": "workbench",
-        "action": "work",
-        "minutes": 20,
-        "emote": "question",
-        "note": "Finish tooltip padding fix",
-        "thoughts": [
-          "Why does the text get cut off only on tablets?"
-        ]
-      },
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "music",
-        "note": "Heat the bellows and check the new lantern guard fit",
-        "thoughts": [
-          "The metal expands a bit when hot."
-        ]
-      },
-      {
-        "place": "woodshed",
-        "action": "stand",
-        "minutes": 20,
-        "emote": "sigh",
-        "note": "Rotate the drying log for even drying",
-        "thoughts": [
-          "Stone floor still feels cold under my boots."
-        ]
-      },
-      {
-        "place": "fire",
-        "action": "sit",
-        "minutes": 20,
-        "emote": "heart",
-        "note": "Warm up and sip the tea from the desk cup",
-        "thoughts": [
-          "The fire crackles like a coworker on break."
-        ]
+        "place": "bedroll",
+        "action": "sleep",
+        "minutes": 120,
+        "emote": "zzz",
+        "note": "asleep for the night"
       }
-    ],
-    "applied_until": "2026-11-28T04:30:25+00:00",
-    "live_thought": {
-      "text": "Stone warms my bones, fire hums low.",
-      "time": "2026-11-28T04:30:25+00:00"
-    }
+    ]
   },
   "status": {
     "awake": false,
-    "since": "2026-11-28T04:30:25+00:00",
-    "place": "fire",
-    "action": "sit",
-    "emote": "dots",
-    "note": "",
+    "since": "2026-11-28T05:00:29+00:00",
+    "place": "bedroll",
+    "action": "sleep",
+    "emote": "zzz",
+    "note": "asleep for the night",
     "thought": ""
   },
   "needs": {
+    "rest": 36.7,
+    "warmth": 89.3,
+    "inspiration": 20.3,
+    "spirit": 84.4
+  },
+  "needs_prev": {
     "rest": 35.5,
     "warmth": 88.9,
     "inspiration": 20.3,
     "spirit": 85.3
   },
-  "needs_prev": {
-    "rest": 34.3,
-    "warmth": 88.4,
-    "inspiration": 20.3,
-    "spirit": 86.2
-  },
-  "needs_at": "2026-11-28T04:30:25+00:00",
+  "needs_at": "2026-11-28T05:00:29+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2270,7 +2233,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-28T04:30:25+00:00",
+    "updated": "2026-11-28T05:00:28+00:00",
     "seen_until": "2026-11-28T02:25:32+00:00"
   },
   "gifts": [],
@@ -2438,15 +2401,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-28T04:00:00+00:00",
-      "end": "2026-11-28T05:00:00+00:00",
-      "kinds": [
-        "owl",
-        "fox",
-        "cat"
-      ]
-    },
-    {
       "start": "2026-11-28T05:00:00+00:00",
       "end": "2026-11-28T06:00:00+00:00",
       "kinds": [
@@ -2497,6 +2451,15 @@
         "deer",
         "fish"
       ]
+    },
+    {
+      "start": "2026-11-28T12:00:00+00:00",
+      "end": "2026-11-28T13:00:00+00:00",
+      "kinds": [
+        "songbirds",
+        "hares",
+        "deer"
+      ]
     }
   ],
   "creatures": {
@@ -2504,5 +2467,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T04:30:25+00:00"
+  "exported": "2026-11-28T05:00:29+00:00"
 }

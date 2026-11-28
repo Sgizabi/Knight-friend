@@ -1,51 +1,14 @@
 {
-  "start": "2026-11-28T02:41:52+00:00",
+  "start": "2026-11-28T05:00:28+00:00",
   "mood": "absorbed",
+  "applied_until": "2026-11-28T05:00:28+00:00",
   "steps": [
     {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "Finish tooltip padding fix",
-      "thoughts": [
-        "Why does the text get cut off only on tablets?"
-      ]
-    },
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "music",
-      "note": "Heat the bellows and check the new lantern guard fit",
-      "thoughts": [
-        "The metal expands a bit when hot."
-      ]
-    },
-    {
-      "place": "woodshed",
-      "action": "stand",
-      "minutes": 20,
-      "emote": "sigh",
-      "note": "Rotate the drying log for even drying",
-      "thoughts": [
-        "Stone floor still feels cold under my boots."
-      ]
-    },
-    {
-      "place": "fire",
-      "action": "sit",
-      "minutes": 20,
-      "emote": "heart",
-      "note": "Warm up and sip the tea from the desk cup",
-      "thoughts": [
-        "The fire crackles like a coworker on break."
-      ]
+      "place": "bedroll",
+      "action": "sleep",
+      "minutes": 120,
+      "emote": "zzz",
+      "note": "asleep for the night"
     }
-  ],
-  "applied_until": "2026-11-28T04:30:25+00:00",
-  "live_thought": {
-    "text": "Stone warms my bones, fire hums low.",
-    "time": "2026-11-28T04:30:25+00:00"
-  }
+  ]
 }
