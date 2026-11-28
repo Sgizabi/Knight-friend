@@ -42,7 +42,7 @@
   "plan": {
     "start": "2026-11-28T11:00:31+00:00",
     "mood": "absorbed",
-    "applied_until": "2026-11-28T12:00:31+00:00",
+    "applied_until": "2026-11-28T12:29:59+00:00",
     "steps": [
       {
         "place": "bedroll",
@@ -53,13 +53,13 @@
       }
     ],
     "live_thought": {
-      "text": "Stone cools my cheek, fire hums low.",
-      "time": "2026-11-28T12:00:31+00:00"
+      "text": "The stone feels cool against my cheek.",
+      "time": "2026-11-28T12:29:59+00:00"
     }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-28T12:00:31+00:00",
+    "since": "2026-11-28T12:30:00+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -68,17 +68,17 @@
   },
   "needs": {
     "rest": 100.0,
+    "warmth": 66.8,
+    "inspiration": 52.5,
+    "spirit": 73.5
+  },
+  "needs_prev": {
+    "rest": 100.0,
     "warmth": 68.3,
     "inspiration": 50.4,
     "spirit": 74.1
   },
-  "needs_prev": {
-    "rest": 100.0,
-    "warmth": 71.3,
-    "inspiration": 46.1,
-    "spirit": 75.3
-  },
-  "needs_at": "2026-11-28T12:00:31+00:00",
+  "needs_at": "2026-11-28T12:30:00+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2237,7 +2237,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-28T12:00:31+00:00",
+    "updated": "2026-11-28T12:29:59+00:00",
     "seen_until": "2026-11-28T02:25:32+00:00"
   },
   "gifts": [],
@@ -2491,5 +2491,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T12:00:31+00:00"
+  "exported": "2026-11-28T12:30:00+00:00"
 }
