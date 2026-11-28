@@ -2,43 +2,34 @@
 <html lang="en">
 <head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; media-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-src 'none'"><meta name="referrer" content="no-referrer">
 <meta charset="utf-8">
-<title>Bathhouse Builder – Shim Summary (Enhanced)</title>
+<title>Bathhouse Builder – Shim Summary (Enhanced) – Tablet Fix</title>
 <style>
 :root{
   --bg:#f0f0f0;--fg:#333;--panel:#fff;--border:#555;--block:#a2d5f2;
-  --tooltip-bg:#222;--tooltip-fg:#fff
-}
+  --tt-bg:#222;--tt-fg:#fff}
 @media (prefers-color-scheme:dark){
   :root{
     --bg:#202020;--fg:#ddd;--panel:#2a2a2a;--border:#777;--block:#5a7ea5;
-    --tooltip-bg:#eee;--tooltip-fg:#000
-  }
+    --tt-bg:#eee;--tt-fg:#000}
 }
 body{margin:0;padding:1em;font-family:sans-serif;background:var(--bg);color:var(--fg)}
 h1{margin-top:0}
 .control{display:flex;flex-wrap:wrap;gap:.2em;align-items:center;margin:.3em 0}
 .control button.copy{margin-left:auto}
-#stack{
-  width:200px;height:200px;margin:0 auto;position:relative;
-  border:2px solid var(--border);background:var(--panel)
-}
-.block{
-  position:absolute;bottom:0;left:0;width:100%;height:20px;
+#stack{width:200px;height:200px;margin:0 auto;position:relative;
+  border:2px solid var(--border);background:var(--panel)}
+.block{position:absolute;bottom:0;left:0;width:100%;height:20px;
   background:var(--block);border:1px solid var(--border);box-sizing:border-box;
-  cursor:pointer;touch-action:none
-}
-.touch{
-  position:absolute;bottom:-10px;left:0;width:100%;height:30px;opacity:0;
-}
+  cursor:pointer;touch-action:none}
+.touch{position:absolute;bottom:-10px;left:0;width:100%;height:30px;opacity:0}
 .tooltip{
   position:absolute;padding:2px 4px;border-radius:3px;font-size:10px;
-  background:var(--tooltip-bg);color:var(--tooltip-fg);
-  visibility:hidden;pointer-events:none;white-space:nowrap
-}
+  background:var(--tt-bg);color:var(--tt-fg);
+  visibility:hidden;opacity:0;pointer-events:none;white-space:nowrap;
+  transition:opacity .15s}
 #log,#summary,#preview{
   margin-top:1em;padding:5px;background:var(--panel);
-  border:1px solid var(--border);max-height:150px;overflow:auto
-}
+  border:1px solid var(--border);max-height:150px;overflow:auto}
 pre{margin:0;white-space:pre-wrap}
 #darkToggle{margin-left:auto;cursor:pointer}
 .dark body{background:var(--bg);color:var(--fg)}
@@ -72,114 +63,66 @@ pre{margin:0;white-space:pre-wrap}
 <div id="log"></div>
 
 <script>
-let cur=0;
-const sections=[{l:0,t:0},{l:0,t:0},{l:0,t:0}];
-const undo=[]; // {action,sec,before}
-const $=i=>document.getElementById(i);
-const stack=$('stack'),log=$('log'),sel=$('section'),secSum=$('sectionSum'),overall=$('overallSum'),preview=$('csvPreview');
+let cur=0,sections=[{l:0,t:0},{l:0,t:0},{l:0,t:0}],undo=[],$=i=>document.getElementById(i);
+const $s=$,log=$('log'),sel=$('section'),secSum=$('sectionSum'),overall=$('overallSum'),preview=$('csvPreview'),stack=$('stack');
 
 function draw(){
-  const s=sections[cur];
-  stack.innerHTML='';
+  const s=sections[cur];stack.innerHTML='';
   for(let i=0;i<s.l;i++){
-    const d=document.createElement('div');
-    d.className='block';
-    d.style.bottom=i*20+'px';
-    d.dataset.level=i+1;
-    const tip=document.createElement('div');
-    tip.className='tooltip';
-    tip.textContent='Level '+(i+1);
-    d.appendChild(tip);
-    const touch=document.createElement('div');
-    touch.className='touch';
-    d.appendChild(touch);
-    d.onmouseenter=e=>showTip(tip,e);
-    d.onmouseleave=()=>hideTip(tip);
-    d.ontouchstart=e=>{showTip(tip,e.touches[0]);e.preventDefault();};
-    d.ontouchend=()=>hideTip(tip);
+    const b=document.createElement('div');b.className='block';b.style.bottom=i*20+'px';
+    const tip=document.createElement('div');tip.className='tooltip';tip.textContent='Level '+(i+1);
+    const touch=document.createElement('div');touch.className='touch';
+    b.append(tip,touch);
+    b.onmouseenter=e=>showTip(tip,e);
+    b.onmouseleave=()=>hideTip(tip);
+    b.ontouchstart=e=>{showTip(tip,e.touches[0]);e.preventDefault();};
+    b.ontouchend=()=>hideTip(tip);
     touch.onclick=e=>{e.stopPropagation();showTip(tip,{offsetX:10,offsetY:10});setTimeout(()=>hideTip(tip),800);};
-    stack.appendChild(d);
+    stack.appendChild(b);
   }
   secSum.textContent='Section '+cur+' total: '+s.t;
   overall.textContent='Overall shims this floor: '+sections.reduce((a,x)=>a+x.t,0);
   updateCSV();
 }
+let tipTimer=null;
 function showTip(tip,e){
-  tip.style.visibility='visible';
+  clearTimeout(tipTimer);
   tip.style.left=e.offsetX+'px';
   tip.style.top=(e.offsetY-20)+'px';
+  tip.style.visibility='visible';
+  requestAnimationFrame(()=>tip.style.opacity='1');
 }
-function hideTip(tip){tip.style.visibility='hidden';}
-function logMsg(m){
-  const p=document.createElement('p');p.textContent=m;log.appendChild(p);
-  log.scrollTop=log.scrollHeight;
+function hideTip(tip){
+  tip.style.opacity='0';
+  tipTimer=setTimeout(()=>tip.style.visibility='hidden',150);
 }
-function add(){
-  const s=sections[cur];
-  undo.push({action:'add',sec:cur,before:s.l});
-  s.l++;s.t++;logMsg('Added shim '+s.l+' to sec '+cur);draw();
-}
-function rem(){
-  const s=sections[cur];
-  if(!s.l)return;
-  undo.push({action:'rem',sec:cur,before:s.l});
-  logMsg('Removed shim '+s.l+' from sec '+cur);
-  s.l--;draw();
-}
-function reset(){
-  if(!confirm('Reset section '+cur+'?'))return;
-  const s=sections[cur];
-  undo.push({action:'reset',sec:cur,before:{l:s.l,t:s.t}});
-  if(s.l)logMsg('Reset sec '+cur+', removed '+s.l+' shims');
-  s.l=0;s.t=0;draw();
-}
-function resetAll(){
-  if(!confirm('Reset all sections?'))return;
-  undo.push({action:'resetAll',before:sections.map(s=>({l:s.l,t:s.t}))});
-  sections.forEach(s=>{s.l=0;s.t=0});
-  logMsg('All sections cleared');draw();
-}
-function exportCSV(){
-  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='shim_summary.csv';a.click();URL.revokeObjectURL(a.href);
-}
+function logMsg(m){const p=document.createElement('p');p.textContent=m;log.append(p);log.scrollTop=log.scrollHeight;}
+
+function add(){const s=sections[cur];undo.push({a:'add',c:cur,b:s.l});s.l++;s.t++;logMsg('Added shim '+s.l);draw();}
+function rem(){const s=sections[cur];if(!s.l)return;undo.push({a:'rem',c:cur,b:s.l});logMsg('Removed shim '+s.l);s.l--;draw();}
+function reset(){if(!confirm('Reset section '+cur+'?'))return;const s=sections[cur];undo.push({a:'reset',c:cur,b:{l:s.l,t:s.t}});logMsg('Reset sec '+cur);s.l=s.t=0;draw();}
+function resetAll(){if(!confirm('Reset all sections?'))return;undo.push({a:'resetAll',b:sections.map(x=>({l:x.l,t:x.t}))});sections.forEach(x=>x.l=x.t=0);logMsg('All sections cleared');draw();}
+function exportCSV(){const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='shim_summary.csv';a.click();URL.revokeObjectURL(a.href);}
 function updateCSV(){preview.textContent='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n');}
-function exportTest(){
-  const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
-  const rows=csv.trim().split('\n');
-  const hdr=rows[0].split(',');
+function exportTest(){const csv='section,level,total\n'+sections.map((s,i)=>i+','+s.l+','+s.t).join('\n')+'\n';
+  const rows=csv.trim().split('\n');const hdr=rows[0].split(',');
   if(hdr.length!==3||hdr[0]!='section'||hdr[1]!='level'||hdr[2]!='total'){logMsg('Export test failed: header');return;}
-  for(let i=1;i<rows.length;i++){
-    const c=rows[i].split(',');
-    if(c.length!==3||+c[0]!==i-1){logMsg('Export test failed: row '+i);return;}
-  }
-  logMsg('Export test passed.');
-}
-function copyPreview(){
-  navigator.clipboard.writeText(preview.textContent).then(()=>logMsg('Preview copied')).catch(()=>logMsg('Copy failed'));
-}
-function runUITest(){
-  logMsg('UI test start');add();add();rem();reset();add();resetAll();logMsg('UI test end');
-}
-function undoLast(){
-  const act=undo.pop();
-  if(!act)return;
-  const s=sections[act.sec];
-  if(act.action==='add'){s.l=act.before;s.t=act.before;}
-  else if(act.action==='rem'){s.l=act.before;s.t=act.before;}
-  else if(act.action==='reset'){s.l=act.before.l;s.t=act.before.t;}
-  else if(act.action==='resetAll'){
-    act.before.forEach((b,i)=>{sections[i].l=b.l;sections[i].t=b.t;});
-  }
-  logMsg('Undo '+act.action);draw();
-}
+  for(let i=1;i<rows.length;i++){const c=rows[i].split(',');if(c.length!==3||+c[0]!==i-1){logMsg('Export test failed: row '+i);return;}}
+  logMsg('Export test passed.');}
+function copyPreview(){navigator.clipboard.writeText(preview.textContent).then(()=>logMsg('Preview copied')).catch(()=>logMsg('Copy failed'));}
+function runUITest(){logMsg('UI test start');add();add();rem();reset();add();resetAll();logMsg('UI test end');}
+function undoLast(){const act=undo.pop();if(!act)return;const s=sections[act.c];
+  if(act.a==='add'||act.a==='rem'){s.l=act.b;s.t=act.b;}
+  else if(act.a==='reset'){s.l=act.b.l;s.t=act.b.t;}
+  else if(act.a==='resetAll'){act.b.forEach((b,i)=>{sections[i].l=b.l;sections[i].t=b.t;});}
+  logMsg('Undo '+act.a);draw();}
 sel.onchange=()=>{cur=+sel.value;draw();};
 $('add').onclick=add;$('remove').onclick=rem;$('reset').onclick=reset;$('resetAll').onclick=resetAll;
 $('export').onclick=exportCSV;$('exportTest').onclick=exportTest;$('copy').onclick=copyPreview;
 $('clearLog').onclick=()=>log.innerHTML='';$('runTest').onclick=runUITest;
-$('darkToggle').querySelector('input').onchange=e=>document.documentElement.classList.toggle('dark',e.target.checked);
+$('#darkToggle input').onchange=e=>document.documentElement.classList.toggle('dark',e.target.checked);
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='z')undoLast();});
 draw();
 </script>

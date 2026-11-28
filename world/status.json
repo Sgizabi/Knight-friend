@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-28T02:39:42+00:00",
-  "place": "workbench",
-  "action": "work",
+  "awake": false,
+  "since": "2026-11-28T02:41:52+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "continue testing the tooltip and fix the flicker on tablet browsers",
-  "thought": "The fire feels steady, the roof is patched, and the bathhouse project is waiting."
+  "note": "",
+  "thought": ""
 }
