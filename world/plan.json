@@ -1,51 +1,50 @@
 {
-  "start": "2026-11-28T13:01:37+00:00",
-  "mood": "content",
+  "start": "2026-11-28T15:01:34+00:00",
+  "mood": "curious",
   "steps": [
-    {
-      "place": "forge",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "Sharpen hammer and check bellows.",
-      "thoughts": [
-        "The bellows still sigh when I pull them."
-      ]
-    },
     {
       "place": "workbench",
       "action": "work",
       "minutes": 20,
-      "emote": "spark",
-      "note": "Finish sanding the lantern guard corners.",
+      "emote": "question",
+      "note": "",
       "thoughts": [
-        "Metal shavings are oddly satisfying."
+        "Need to tighten the new guard bolts.",
+        "Stone still feels stubborn."
+      ]
+    },
+    {
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "question",
+      "note": "",
+      "thoughts": [
+        "Check bellows response.",
+        "Hope the fire stays hot enough."
+      ]
+    },
+    {
+      "place": "woodshed",
+      "action": "stand",
+      "minutes": 20,
+      "emote": "question",
+      "note": "",
+      "thoughts": [
+        "Find a dry log for later.",
+        "The damp one still smells stale."
       ]
     },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "spark",
-      "note": "Warm up and let the fire settle.",
+      "emote": "question",
+      "note": "",
       "thoughts": [
-        "The fire is a demanding coworker, as usual."
-      ]
-    },
-    {
-      "place": "bathhouse",
-      "action": "work",
-      "minutes": 20,
-      "emote": "spark",
-      "note": "Review the tablet fix notes.",
-      "thoughts": [
-        "Right‑edge padding might stop the tooltip cut‑off."
+        "Warmth feels good.",
+        "Wonder if the roof will hold."
       ]
     }
-  ],
-  "applied_until": "2026-11-28T14:30:24+00:00",
-  "live_thought": {
-    "text": "Stone cold, fire warm, I stare at the flame.",
-    "time": "2026-11-28T14:30:24+00:00"
-  }
+  ]
 }

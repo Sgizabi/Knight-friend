@@ -35,74 +35,73 @@
       ]
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 83,
-    "last_wake": "2026-11-28T13:01:37+00:00",
+    "wakeups": 84,
+    "last_wake": "2026-11-28T15:01:34+00:00",
     "nights_slept_through": 36
   },
   "plan": {
-    "start": "2026-11-28T13:01:37+00:00",
-    "mood": "content",
+    "start": "2026-11-28T15:01:34+00:00",
+    "mood": "curious",
     "steps": [
-      {
-        "place": "forge",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "Sharpen hammer and check bellows.",
-        "thoughts": [
-          "The bellows still sigh when I pull them."
-        ]
-      },
       {
         "place": "workbench",
         "action": "work",
         "minutes": 20,
-        "emote": "spark",
-        "note": "Finish sanding the lantern guard corners.",
+        "emote": "question",
+        "note": "",
         "thoughts": [
-          "Metal shavings are oddly satisfying."
+          "Need to tighten the new guard bolts.",
+          "Stone still feels stubborn."
+        ]
+      },
+      {
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "question",
+        "note": "",
+        "thoughts": [
+          "Check bellows response.",
+          "Hope the fire stays hot enough."
+        ]
+      },
+      {
+        "place": "woodshed",
+        "action": "stand",
+        "minutes": 20,
+        "emote": "question",
+        "note": "",
+        "thoughts": [
+          "Find a dry log for later.",
+          "The damp one still smells stale."
         ]
       },
       {
         "place": "fire",
         "action": "sit",
         "minutes": 20,
-        "emote": "spark",
-        "note": "Warm up and let the fire settle.",
+        "emote": "question",
+        "note": "",
         "thoughts": [
-          "The fire is a demanding coworker, as usual."
-        ]
-      },
-      {
-        "place": "bathhouse",
-        "action": "work",
-        "minutes": 20,
-        "emote": "spark",
-        "note": "Review the tablet fix notes.",
-        "thoughts": [
-          "Right‑edge padding might stop the tooltip cut‑off."
+          "Warmth feels good.",
+          "Wonder if the roof will hold."
         ]
       }
-    ],
-    "applied_until": "2026-11-28T14:30:24+00:00",
-    "live_thought": {
-      "text": "Stone cold, fire warm, I stare at the flame.",
-      "time": "2026-11-28T14:30:24+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-28T15:00:31+00:00",
-    "place": "courtyard",
-    "action": "pace",
+    "awake": false,
+    "since": "2026-11-28T15:01:34+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "count and note stone sizes",
-    "thought": "The stones in the courtyard wall are still uneven. I want to see how many are big enough to hold a lantern later."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 92.1,
+    "rest": 89.1,
     "warmth": 80.4,
-    "inspiration": 42.7,
+    "inspiration": 54.7,
     "spirit": 75.6
   },
   "needs_prev": {
@@ -111,7 +110,7 @@
     "inspiration": 42.7,
     "spirit": 76.2
   },
-  "needs_at": "2026-11-28T15:00:31+00:00",
+  "needs_at": "2026-11-28T15:01:35+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2287,8 +2286,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-28T14:30:24+00:00",
-    "seen_until": "2026-11-28T12:55:30+00:00"
+    "updated": "2026-11-28T15:01:34+00:00",
+    "seen_until": "2026-11-28T14:55:30+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2533,5 +2532,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T15:00:31+00:00"
+  "exported": "2026-11-28T15:01:35+00:00"
 }

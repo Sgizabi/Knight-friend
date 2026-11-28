@@ -1,9 +1,9 @@
 {
-  "awake": true,
-  "since": "2026-11-28T15:00:31+00:00",
-  "place": "courtyard",
-  "action": "pace",
+  "awake": false,
+  "since": "2026-11-28T15:01:34+00:00",
+  "place": "fire",
+  "action": "sit",
   "emote": "dots",
-  "note": "count and note stone sizes",
-  "thought": "The stones in the courtyard wall are still uneven. I want to see how many are big enough to hold a lantern later."
+  "note": "",
+  "thought": ""
 }

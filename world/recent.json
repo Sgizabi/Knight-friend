@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-20T23:01:39+00:00",
-    "activity": "repair",
-    "mood": "content",
-    "emote": "spark",
-    "text": "I added another board to the roof gap and the mortar held. The new piece sits tight, but a thin crack appeared in the adjacent stone. I muttered that the stone must be on a coffee break. The fire stayed quiet while I checked the fit.",
-    "creations": []
-  },
-  {
     "time": "2026-11-21T01:01:31+00:00",
     "activity": "repair",
     "mood": "content",
@@ -528,6 +520,15 @@
     "mood": "content",
     "emote": "spark",
     "text": "I forged a new Lantern Guard and bolted it to the wall. The metal sat tighter than I thought, so I nudged it a millimeter. The fire kept its heat while I worked. I slipped the extra glass shards into my pocket again.",
+    "creations": []
+  },
+  {
+    "time": "2026-11-28T15:01:34+00:00",
+    "activity": "stone-counting",
+    "label": "Stone Counting",
+    "mood": "curious",
+    "emote": "question",
+    "text": "I counted the stones on the broken stair again. Reached the fourteenth row and saw a new hairline crack near the edge. Marked it with chalk. The fire was steady while I knelt.",
     "creations": []
   }
 ]
