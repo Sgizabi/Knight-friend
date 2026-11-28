@@ -85,18 +85,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-28T02:33:35+00:00",
+    "since": "2026-11-28T02:36:38+00:00",
     "place": "workbench",
     "action": "work",
     "emote": "dots",
-    "note": "Attach the final lantern guard to the east wall and smooth the edges.",
-    "thought": "The fire is steady and the stone feels solid. I could finish the lantern guard while the night is quiet."
+    "note": "tighten and finish the lantern guard on the east wall",
+    "thought": "The fire is steady and the damp log is drying outside. I could tighten a few more lantern guards or just count stones for a while."
   },
   "needs": {
-    "rest": 56.0,
-    "warmth": 85.8,
-    "inspiration": 60.3,
-    "spirit": 78.3
+    "rest": 50.0,
+    "warmth": 87.3,
+    "inspiration": 48.3,
+    "spirit": 82.6
   },
   "needs_prev": {
     "rest": 57.7,
@@ -104,7 +104,7 @@
     "inspiration": 48.3,
     "spirit": 79.0
   },
-  "needs_at": "2026-11-28T02:33:35+00:00",
+  "needs_at": "2026-11-28T02:36:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -191,70 +191,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "Reinforced Lantern Handle",
-        "about": "A sturdy grip for a lantern, built from a metal bar and a ring",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.03,
-              0.03,
-              0.25
-            ],
-            "pos": [
-              0.0,
-              0.125,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "torus",
-            "size": [
-              0.07,
-              0.015
-            ],
-            "pos": [
-              0.0,
-              0.125,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.025,
-              0.025,
-              0.08
-            ],
-            "pos": [
-              0.0,
-              0.215,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          }
-        ],
-        "made": "2026-11-24T02:30:26+00:00"
-      },
       {
         "name": "DualSeal Lantern Oil Container",
         "about": "A small double‑seal oil pot to stop leaks",
@@ -2166,6 +2102,107 @@
           }
         ],
         "made": "2026-11-28T01:00:30+00:00"
+      },
+      {
+        "name": "Lantern Guard",
+        "about": "A small stand with a lantern and a protective cage",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.06,
+              0.06,
+              0.4
+            ],
+            "pos": [
+              0.0,
+              0.2,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.02,
+              0.02,
+              0.25
+            ],
+            "pos": [
+              0.0,
+              0.35,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#aaaaaa"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.15,
+              0.05,
+              0.15
+            ],
+            "pos": [
+              0.0,
+              0.45,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "sphere",
+            "size": [
+              0.07
+            ],
+            "pos": [
+              0.0,
+              0.52,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#ffdd88"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.09,
+              0.09,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.6,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#222222"
+          }
+        ],
+        "made": "2026-11-28T02:33:38+00:00"
       }
     ],
     "buildings": [
@@ -2494,5 +2531,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T02:33:35+00:00"
+  "exported": "2026-11-28T02:36:38+00:00"
 }
