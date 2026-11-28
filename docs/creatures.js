@@ -6586,6 +6586,7 @@ const BEASTS = {
       const env = (at, dur, a = .35, b = .35) => smooth(0, a, at) * (1 - smooth(dur - b, dur, at));
       const LOCAL = (w, out) => g.worldToLocal(out.copy(w));
       const reach = (sx, w) => reachFolk(J, sx, LOCAL(w, tmp3).toArray());
+      const reachFace = (sx, w) => reachPole(J, sx, LOCAL(w, tmp3).toArray(), [.55, -.8, .3]);   // (elbow down and a little forward)
       const pop = to => { g.getWorldPosition(tmp); tmp.y += 1; conf.burst(tmp, 46, CONF, 2.4, 1.8); st.gone = .45; st.popTo = to; };
       const TRICKS = { friendly: ['spin', 'juggle', 'bow', 'jingle', 'flower', 'flip', 'maskoff'], cheeky: ['flip', 'flower', 'spin', 'jingle', 'flip', 'flower', 'bow'] };
       const start = (name, t) => {
@@ -6702,7 +6703,7 @@ const BEASTS = {
           if (n === 'spin') { pv.rotation.y = smooth(.25, 1.35, at) * Math.PI * 2; for (const x of arms) { R.want('sh' + x.sx, 0, 0, x.sx * 1.5 * k); R.want('el' + x.sx, -.1); }
             curl = 0; swing = .6; if (at > .25 && at < 1.4) for (const sx of [1, -1]) glow2(gloveW(sx, tmp), 2, '#ffd27a', 1.2, .8);
             if (st.cheeky && at > 1.35 && !a.sprayed) { a.sprayed = 1; gloveW(-1, tmp); tmp2.subVectors(cam, tmp).normalize(); for (let i = 0; i < 26; i++) sparks.emit(tmp.x, tmp.y, tmp.z, tmp2.x * 4 + (Math.random() - .5), tmp2.y * 4 + Math.random(), tmp2.z * 4 + (Math.random() - .5), .9, '#ffe2a0'); } }
-          if (n === 'flip') { flip = smooth(.5, 1.1, at) * (1 - smooth(st.cheeky ? 2.2 : 1.9, 2.6, at)); mask.updateMatrixWorld(true); reach(-1, mask.localToWorld(tmp.set(-.085, -.01, .02)));
+          if (n === 'flip') { flip = smooth(.5, 1.1, at) * (1 - smooth(st.cheeky ? 2.2 : 1.9, 2.6, at)); mask.updateMatrixWorld(true); reachFace(-1, mask.localToWorld(tmp.set(-.085, -.05, .03)));
             curl = .5; R.want('head', R.J.head.want[0], 0, Math.sin(at * 3) * .1); }
           if (n === 'juggle') { const P_ = .95, hy = H + .32;
             for (const x of arms) { const ph = (at / P_ + (x.sx > 0 ? 0 : .5)) * Math.PI * 2; reachFolk(J, x.sx, [x.sx * (.2 + Math.cos(ph) * .05), hy + Math.sin(ph) * .05, .34]); }
@@ -6720,8 +6721,9 @@ const BEASTS = {
               if (st.cheeky) { tmp2.subVectors(cam, tmp).normalize(); for (let i = 0; i < 30; i++) sparks.emit(tmp.x, tmp.y, tmp.z, tmp2.x * 5 + (Math.random() - .5) * .8, tmp2.y * 5 + Math.random() * .8, tmp2.z * 5 + (Math.random() - .5) * .8, .8, '#bfe9ff'); }
               else conf.burst(tmp, 18, ['#d4574a', '#e8d6c0', '#f4efe2'], 1, 1.4, 1); } }
           if (n === 'maskoff') { open = smooth(.8, 1.7, at) * (1 - smooth(5.6, 6.5, at)); mask.updateMatrixWorld(true);
-            if (at < 6.4) reach(-1, mask.localToWorld(tmp.set(-.095, -.015, -.01))); curl = .55;   // (its right hand holds the mask by its right edge)
-            R.want('sh1', -.4 * k, 0, .9 * smooth(1.6, 2.4, at) * (1 - smooth(5.5, 6.3, at))); R.want('el1', -.3); look = 'cam'; }
+            if (at < 6.4) reachFace(-1, mask.localToWorld(tmp.set(-.085, -.075, .02))); curl = .55;   // (its right hand holds the mask by its right edge)
+            const pr = smooth(1.6, 2.5, at) * (1 - smooth(5.3, 6.2, at));                   // the other hand presents the stars: elbow bent, palm up toward its face
+            if (pr > .02) reachPole(J, 1, [.18 + .12 * pr, H + .22 + .14 * pr, .14 + .22 * pr], [.4, -.9, .1]); look = 'cam'; }
           if (n === 'marionette') { marWant = smooth(.2, 1.5, at) * (1 - smooth(a.dur - 1.6, a.dur - .2, at));
             for (const x of arms) { R.want('sh' + x.sx, -1.2 * marWant + Math.sin(t * 4.2 + x.sx) * .08, 0, x.sx * .45 * marWant); R.want('el' + x.sx, -.5 * marWant); } look = 'puppet'; }
           if (n === 'cartwheel' && a.dur > 0) { const u = smooth(.15, a.dur - .1, at), dx = a.dir[0], dz = a.dir[1];
@@ -6744,7 +6746,7 @@ const BEASTS = {
             if (at < 4.2) { g.getWorldPosition(tmp); tmp.y += 1.5 * J.SC; tmp3.subVectors(K0, tmp).setY(0).setLength(.9); tmp.add(tmp3); tmp.y += .3; reach(-1, tmp); curl = 0; look = 'knight';
               wantYaw = Math.atan2(K0.x - st.x, K0.z - st.z) + .6; }
             else { const b = smooth(4.3, 4.9, at) * (1 - smooth(6.1, 6.8, at)); R.want('chest', .9 * b, 0, 0); R.want('sh-1', -.9 * b, 0, -.4 * b); R.want('el-1', -1.3 * b); R.want('sh1', .6 * b, 0, .9 * b); look = 'down'; } }
-          if (n === 'aside') { if (at < 3) { head.updateMatrixWorld(true); reach(1, head.localToWorld(tmp.set(.14, .1, .1))); curl = .1; } R.want('head', R.J.head.want[0], R.J.head.want[1], .18 * k); }
+          if (n === 'aside') { if (at < 3) { head.updateMatrixWorld(true); reachFace(1, head.localToWorld(tmp.set(.13, .06, .13))); curl = .1; } R.want('head', R.J.head.want[0], R.J.head.want[1], .18 * k); }
           if (n === 'cheese') { const i = Math.min(2, Math.floor(at / 1.15)), pk = env(at % 1.15, 1.15, .15, .2) * (at < 3.45 ? 1 : 0);
             if (i === 0) for (const x of arms) { R.want('sh' + x.sx, 0, 0, x.sx * 2.5 * pk); R.want('el' + x.sx, -.2); }
             if (i === 1) { reachFolk(J, 1, [.2, H + .06, .03]); R.want('sh-1', -2.5 * pk, 0, -.5 * pk); R.want('el-1', -1.8 * pk); R.want('head', 0, 0, .25 * pk); }
@@ -6754,9 +6756,9 @@ const BEASTS = {
           if (n === 'bored') { R.want('sh-1', -1.6 * k, 0, -.3); R.want('el-1', -.8 + Math.sin(at * 9) * .4 * k); look = 'away'; curl = .1; }
           if (n === 'stare') { look = 'cam'; }
           if (n === 'unmask') { gOpen = smooth(1.1, 2.2, at); gShow = 1 - smooth(2.5, 3.2, at); grin.updateMatrixWorld(true);
-            if (at > .5 && at < 3.2) reach(-1, grin.localToWorld(tmp.set(-.095, -.015, -.01))); else if (at >= 3.2) reachFolk(J, -1, [-.24, H + .2, .12]); curl = at > 2.5 ? .9 : .5; look = 'cam'; }
+            if (at > .5 && at < 3.2) reachFace(-1, grin.localToWorld(tmp.set(-.085, -.075, .02))); else if (at >= 3.2) reachFolk(J, -1, [-.24, H + .2, .12]); curl = at > 2.5 ? .9 : .5; look = 'cam'; }
           if (n === 'remask') { gShow = smooth(.3, .9, at); gOpen = 1 - smooth(1.2, 2.2, at); grin.updateMatrixWorld(true);
-            if (at < 2.4) reach(-1, grin.localToWorld(tmp.set(-.095, -.015, -.01))); curl = at < .9 ? .9 : .5; look = 'cam'; }
+            if (at < 2.4) reachFace(-1, grin.localToWorld(tmp.set(-.085, -.075, .02))); curl = at < .9 ? .9 : .5; look = 'cam'; }
           if (n === 'comeback' && !st.target && st.gone <= 0) { a.arr ??= at; const w = env(at - a.arr, 2.6); R.want('sh-1', -2.5 * w, 0, -.35 * w); R.want('el-1', -.35 * w + Math.sin(at * 9) * .25 * w); curl = 0; }
           if (n === 'hide' && st.gone <= 0) { wantYaw = Math.PI;
             if (!a.caught) { crouchPose(1, 1.02); R.want('chest', .9, 0, 0); for (const x of arms) reachFolk(J, x.sx, [x.sx * .26, .66, .42]);
@@ -6804,10 +6806,10 @@ const BEASTS = {
         // the mask: askew when cheeky, swung aside to show the stars, flipped upside down for a laugh
         // taking a mask off: drawn straight forward off the face first, then carried out beside the head and held there,
         // turned a little outward (as a mask on a stick is held aside). The hand on that side holds its near edge throughout.
-        const aside = (k, o) => { const p1 = smooth(0, .4, k), p2 = smooth(.3, 1, k); o.set(-.3 * p2, -.03 * p2, .1 * p1 + .04 * p2); return p2; };
-        let ak = aside(open, tmp2); maskHinge.position.set(tmp2.x, .1 + tmp2.y, .03 + tmp2.z); maskHinge.rotation.set(0, -.5 * ak, .12 * ak);
+        const aside = (k, o) => { const p1 = smooth(0, .4, k), p2 = smooth(.3, 1, k); o.set(-.34 * p2, -.24 * p2, .1 * p1 + .16 * p2); return p2; };   // (held out at shoulder height, a little forward)
+        let ak = aside(open, tmp2); maskHinge.position.set(tmp2.x, .1 + tmp2.y, .03 + tmp2.z); maskHinge.rotation.set(0, -.22 * ak, .1 * ak);
         mask.rotation.z = flip * Math.PI + maskTilt * (1 - flip);
-        ak = aside(gOpen, tmp2); grinHinge.position.copy(tmp2); grinHinge.rotation.set(0, -.5 * ak, .12 * ak); grin.scale.setScalar(Math.max(.001, gShow)); grin.visible = gShow > .01;
+        ak = aside(gOpen, tmp2); grinHinge.position.copy(tmp2); grinHinge.rotation.set(0, -.22 * ak, .1 * ak); grin.scale.setScalar(Math.max(.001, gShow)); grin.visible = gShow > .01;
         const bare = gShow < .99 || gOpen > .05;                                          // (the face under the grin is showing: stars glint through its eyes)
         vortex.visible = open > .02 || bare; vortex.material.uniforms.uOpen.value = Math.max(smooth(0, .6, open), bare ? 1.3 : 0);
         glints.forEach((sp, i) => { sp.visible = bare && open < .3; const tw = .55 + .45 * Math.sin(t * (2.3 + i * .9) + i * 2) * Math.sin(t * .7 + i); sp.material.opacity = tw; sp.scale.setScalar(.022 + tw * .014); }); vortex.material.uniforms.uT.value = t;
@@ -6819,6 +6821,7 @@ const BEASTS = {
         mar.tick(t, dt, st.mar, mp.x, mp.z, st.yaw);
         for (const x of arms) x.gl.h.visible = st.mar < .4;
         for (const x of arms) x.gl.curl(curl, hos > .5 ? 0 : 1);
+        if (st.act?.name === 'maskoff') arms[0].gl.curl(.05, 1);                         // (the presenting hand open)
         // the bells swing with every move; when it turns hostile they stop dead, mid-swing
         if (hush < .5) { const amp = swing * (a?.name === 'sulk' ? .1 : 1); bells.forEach((b, i) => { const w = 8 + (i % 5) * 1.3; b.rotation.x = Math.sin(t * w + i) * amp + Math.sin(t * 1.7 + i) * .04; b.rotation.z = Math.cos(t * w * .8 + i * 2) * amp * .7; }); }
         R.step(dt);
@@ -8170,6 +8173,24 @@ function reachFolk(p, sx, target) {
   const qU = _fq().setFromUnitVectors(DOWNV(), u);
   const f = t.clone().sub(s.clone().addScaledVector(u, LA)).normalize().applyQuaternion(qU.clone().invert());
   const want = (name, q) => { const cur = p.R.J[name].cur; (_fe ??= new T.Euler()).setFromQuaternion(q);   // (each angle the nearest way round from where it is)
+    p.R.want(name, ...[_fe.x, _fe.y, _fe.z].map((v, i) => v + Math.round((cur[i] - v) / (Math.PI * 2)) * Math.PI * 2)); };
+  want('sh' + sx, qU); want('el' + sx, _fq().setFromUnitVectors(DOWNV(), f));
+}
+// the same reach, with the elbow aimed where we say (pole, in the chest's frame: x out to its side, -y down,
+// +z forward). Hands brought up to the face keep the elbow down and a little forward, as a real arm does.
+function reachPole(p, sx, target, pole) {
+  const arm = p.arms.find(x => x.sx === sx), chest = arm.sh.parent;
+  p.g.updateMatrixWorld(true);
+  const t = V(...target); p.g.localToWorld(t); chest.worldToLocal(t);
+  const s = arm.sh.position, d = t.clone().sub(s), LA = .28, LB = .25;
+  const c = Math.min(Math.max(d.length(), .05), LA + LB - .001), dir = d.normalize();
+  const ang = Math.acos(Math.min(1, Math.max(-1, (LA * LA + c * c - LB * LB) / (2 * LA * c))));
+  const pl = V(sx * pole[0], pole[1], pole[2]).normalize(), axis = V(0, 0, 0).crossVectors(dir, pl);
+  if (axis.lengthSq() < 1e-6) axis.set(1, 0, 0);
+  const u = dir.clone().applyAxisAngle(axis.normalize(), ang);   // (turning toward the pole: the elbow goes that way)
+  const qU = _fq().setFromUnitVectors(DOWNV(), u);
+  const f = t.clone().sub(s.clone().addScaledVector(u, LA)).normalize().applyQuaternion(qU.clone().invert());
+  const want = (name, q) => { const cur = p.R.J[name].cur; (_fe ??= new T.Euler()).setFromQuaternion(q);
     p.R.want(name, ...[_fe.x, _fe.y, _fe.z].map((v, i) => v + Math.round((cur[i] - v) / (Math.PI * 2)) * Math.PI * 2)); };
   want('sh' + sx, qU); want('el' + sx, _fq().setFromUnitVectors(DOWNV(), f));
 }
