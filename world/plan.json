@@ -1,7 +1,7 @@
 {
   "start": "2026-11-28T11:00:31+00:00",
   "mood": "absorbed",
-  "applied_until": "2026-11-28T11:00:31+00:00",
+  "applied_until": "2026-11-28T12:00:31+00:00",
   "steps": [
     {
       "place": "bedroll",
@@ -10,5 +10,9 @@
       "emote": "zzz",
       "note": "asleep for the night"
     }
-  ]
+  ],
+  "live_thought": {
+    "text": "Stone cools my cheek, fire hums low.",
+    "time": "2026-11-28T12:00:31+00:00"
+  }
 }
