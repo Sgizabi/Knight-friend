@@ -85,18 +85,18 @@
   },
   "status": {
     "awake": true,
-    "since": "2026-11-28T02:36:38+00:00",
+    "since": "2026-11-28T02:39:42+00:00",
     "place": "workbench",
     "action": "work",
     "emote": "dots",
-    "note": "tighten and finish the lantern guard on the east wall",
-    "thought": "The fire is steady and the damp log is drying outside. I could tighten a few more lantern guards or just count stones for a while."
+    "note": "continue testing the tooltip and fix the flicker on tablet browsers",
+    "thought": "The fire feels steady, the roof is patched, and the bathhouse project is waiting."
   },
   "needs": {
-    "rest": 50.0,
-    "warmth": 87.3,
-    "inspiration": 48.3,
-    "spirit": 82.6
+    "rest": 44.0,
+    "warmth": 88.6,
+    "inspiration": 36.3,
+    "spirit": 86.1
   },
   "needs_prev": {
     "rest": 57.7,
@@ -104,7 +104,7 @@
     "inspiration": 48.3,
     "spirit": 79.0
   },
-  "needs_at": "2026-11-28T02:36:38+00:00",
+  "needs_at": "2026-11-28T02:39:42+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -191,146 +191,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "DualSeal Lantern Oil Container",
-        "about": "A small double‑seal oil pot to stop leaks",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.06,
-              0.06,
-              0.12
-            ],
-            "pos": [
-              0.0,
-              0.06,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#7f7f7f"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.045,
-              0.045,
-              0.025
-            ],
-            "pos": [
-              0.0,
-              0.12,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#b5651d"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.045,
-              0.045,
-              0.015
-            ],
-            "pos": [
-              0.0,
-              0.145,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#c2c2c2"
-          },
-          {
-            "shape": "torus",
-            "size": [
-              0.05,
-              0.005
-            ],
-            "pos": [
-              0.0,
-              0.16,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.12,
-              0.015,
-              0.12
-            ],
-            "pos": [
-              0.0,
-              0.165,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#8b4513"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.015,
-              0.015,
-              0.005
-            ],
-            "pos": [
-              0.0,
-              0.17,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#c0c0c0"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.018,
-              0.018,
-              0.005
-            ],
-            "pos": [
-              0.0,
-              0.173,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#ffcc00"
-          }
-        ],
-        "made": "2026-11-24T02:36:32+00:00"
-      },
       {
         "name": "Reinforced Lantern Handle",
         "about": "A sturdy handle for a lantern, easy to grip and attach to the metal frame.",
@@ -2203,6 +2063,107 @@
           }
         ],
         "made": "2026-11-28T02:33:38+00:00"
+      },
+      {
+        "name": "Lantern Guard",
+        "about": "A small metal stand that holds a lantern and protects it from wind",
+        "placement": "table",
+        "parts": [
+          {
+            "shape": "cylinder",
+            "size": [
+              0.05,
+              0.05,
+              0.6
+            ],
+            "pos": [
+              0.0,
+              0.3,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.07,
+              0.07,
+              0.02
+            ],
+            "pos": [
+              0.0,
+              0.6,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cone",
+            "size": [
+              0.08,
+              0.04
+            ],
+            "pos": [
+              0.0,
+              0.62,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.12,
+              0.02,
+              0.12
+            ],
+            "pos": [
+              0.0,
+              0.04,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#333333"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.09,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.65,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#bbbbbb"
+          }
+        ],
+        "made": "2026-11-28T02:36:41+00:00"
       }
     ],
     "buildings": [
@@ -2531,5 +2492,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T02:36:38+00:00"
+  "exported": "2026-11-28T02:39:42+00:00"
 }
