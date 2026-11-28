@@ -1,45 +1,45 @@
 {
-  "start": "2026-11-28T02:41:52+00:00",
-  "mood": "absorbed",
+  "start": "2026-11-28T13:01:37+00:00",
+  "mood": "content",
   "steps": [
-    {
-      "place": "workbench",
-      "action": "work",
-      "minutes": 20,
-      "emote": "question",
-      "note": "Finish tooltip padding fix",
-      "thoughts": [
-        "Why does the text get cut off only on tablets?"
-      ]
-    },
     {
       "place": "forge",
       "action": "work",
       "minutes": 20,
-      "emote": "music",
-      "note": "Heat the bellows and check the new lantern guard fit",
+      "emote": "spark",
+      "note": "Sharpen hammer and check bellows.",
       "thoughts": [
-        "The metal expands a bit when hot."
+        "The bellows still sigh when I pull them."
       ]
     },
     {
-      "place": "woodshed",
-      "action": "stand",
+      "place": "workbench",
+      "action": "work",
       "minutes": 20,
-      "emote": "sigh",
-      "note": "Rotate the drying log for even drying",
+      "emote": "spark",
+      "note": "Finish sanding the lantern guard corners.",
       "thoughts": [
-        "Stone floor still feels cold under my boots."
+        "Metal shavings are oddly satisfying."
       ]
     },
     {
       "place": "fire",
       "action": "sit",
       "minutes": 20,
-      "emote": "heart",
-      "note": "Warm up and sip the tea from the desk cup",
+      "emote": "spark",
+      "note": "Warm up and let the fire settle.",
       "thoughts": [
-        "The fire crackles like a coworker on break."
+        "The fire is a demanding coworker, as usual."
+      ]
+    },
+    {
+      "place": "bathhouse",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Review the tablet fix notes.",
+      "thoughts": [
+        "Right‑edge padding might stop the tooltip cut‑off."
       ]
     }
   ]

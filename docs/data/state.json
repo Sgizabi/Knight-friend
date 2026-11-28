@@ -35,42 +35,70 @@
       ]
     },
     "born": "2026-11-18T02:54:43+00:00",
-    "wakeups": 82,
-    "last_wake": "2026-11-28T11:00:31+00:00",
+    "wakeups": 83,
+    "last_wake": "2026-11-28T13:01:37+00:00",
     "nights_slept_through": 36
   },
   "plan": {
-    "start": "2026-11-28T11:00:31+00:00",
-    "mood": "absorbed",
-    "applied_until": "2026-11-28T12:29:59+00:00",
+    "start": "2026-11-28T13:01:37+00:00",
+    "mood": "content",
     "steps": [
       {
-        "place": "bedroll",
-        "action": "sleep",
-        "minutes": 120,
-        "emote": "zzz",
-        "note": "asleep for the night"
+        "place": "forge",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Sharpen hammer and check bellows.",
+        "thoughts": [
+          "The bellows still sigh when I pull them."
+        ]
+      },
+      {
+        "place": "workbench",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Finish sanding the lantern guard corners.",
+        "thoughts": [
+          "Metal shavings are oddly satisfying."
+        ]
+      },
+      {
+        "place": "fire",
+        "action": "sit",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Warm up and let the fire settle.",
+        "thoughts": [
+          "The fire is a demanding coworker, as usual."
+        ]
+      },
+      {
+        "place": "bathhouse",
+        "action": "work",
+        "minutes": 20,
+        "emote": "spark",
+        "note": "Review the tablet fix notes.",
+        "thoughts": [
+          "Right‑edge padding might stop the tooltip cut‑off."
+        ]
       }
-    ],
-    "live_thought": {
-      "text": "The stone feels cool against my cheek.",
-      "time": "2026-11-28T12:29:59+00:00"
-    }
+    ]
   },
   "status": {
-    "awake": true,
-    "since": "2026-11-28T13:00:31+00:00",
-    "place": "workbench",
-    "action": "work",
+    "awake": false,
+    "since": "2026-11-28T13:01:37+00:00",
+    "place": "fire",
+    "action": "sit",
     "emote": "dots",
-    "note": "complete the next lantern guard and install it on the east wall",
-    "thought": "The fire's still warm and the forge tools are ready. I think I'll finish the next lantern guard while the wood dries."
+    "note": "",
+    "thought": ""
   },
   "needs": {
-    "rest": 100.0,
-    "warmth": 65.3,
-    "inspiration": 54.7,
-    "spirit": 72.9
+    "rest": 94.0,
+    "warmth": 68.9,
+    "inspiration": 42.7,
+    "spirit": 78.3
   },
   "needs_prev": {
     "rest": 100.0,
@@ -78,7 +106,7 @@
     "inspiration": 52.5,
     "spirit": 73.5
   },
-  "needs_at": "2026-11-28T13:00:31+00:00",
+  "needs_at": "2026-11-28T13:01:38+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -165,128 +193,6 @@
     },
     "damage": {},
     "objects": [
-      {
-        "name": "Reinforced Lantern Handle",
-        "about": "A sturdy handle for a lantern, easy to grip and attach to the metal frame.",
-        "placement": "table",
-        "parts": [
-          {
-            "shape": "cylinder",
-            "size": [
-              0.03,
-              0.03,
-              0.2
-            ],
-            "pos": [
-              0.0,
-              0.1,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.06,
-              0.02,
-              0.02
-            ],
-            "pos": [
-              0.0,
-              0.2,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#777777"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.015,
-              0.015,
-              0.04
-            ],
-            "pos": [
-              0.0,
-              0.22,
-              0.03
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.015,
-              0.015,
-              0.04
-            ],
-            "pos": [
-              0.0,
-              0.22,
-              -0.03
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          },
-          {
-            "shape": "box",
-            "size": [
-              0.04,
-              0.04,
-              0.01
-            ],
-            "pos": [
-              0.0,
-              0.18,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#999999"
-          },
-          {
-            "shape": "cylinder",
-            "size": [
-              0.02,
-              0.02,
-              0.03
-            ],
-            "pos": [
-              0.0,
-              0.12,
-              0.0
-            ],
-            "rot": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "color": "#555555"
-          }
-        ],
-        "made": "2026-11-24T13:00:34+00:00"
-      },
       {
         "name": "Reinforced Lantern Handle",
         "about": "A sturdy grip with side brackets and a protective ring",
@@ -2138,6 +2044,145 @@
           }
         ],
         "made": "2026-11-28T02:36:41+00:00"
+      },
+      {
+        "name": "Lantern Guard",
+        "about": "A simple metal bracket with a lantern holder to keep the fire steady",
+        "placement": "wall",
+        "parts": [
+          {
+            "shape": "box",
+            "size": [
+              0.02,
+              0.6,
+              0.04
+            ],
+            "pos": [
+              0.0,
+              0.3,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#555555"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.025,
+              0.025,
+              0.1
+            ],
+            "pos": [
+              0.0,
+              0.55,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#777777"
+          },
+          {
+            "shape": "cone",
+            "size": [
+              0.05,
+              0.08
+            ],
+            "pos": [
+              0.0,
+              0.62,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#999999"
+          },
+          {
+            "shape": "box",
+            "size": [
+              0.3,
+              0.02,
+              0.2
+            ],
+            "pos": [
+              0.0,
+              0.65,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#444444"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.01,
+              0.01,
+              0.12
+            ],
+            "pos": [
+              -0.12,
+              0.65,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#333333"
+          },
+          {
+            "shape": "cylinder",
+            "size": [
+              0.01,
+              0.01,
+              0.12
+            ],
+            "pos": [
+              0.12,
+              0.65,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#333333"
+          },
+          {
+            "shape": "torus",
+            "size": [
+              0.04,
+              0.01
+            ],
+            "pos": [
+              0.0,
+              0.7,
+              0.0
+            ],
+            "rot": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "color": "#aaaaaa"
+          }
+        ],
+        "made": "2026-11-28T13:00:34+00:00"
       }
     ],
     "buildings": [
@@ -2237,8 +2282,8 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-28T12:29:59+00:00",
-    "seen_until": "2026-11-28T02:25:32+00:00"
+    "updated": "2026-11-28T13:01:37+00:00",
+    "seen_until": "2026-11-28T12:55:30+00:00"
   },
   "gifts": [],
   "gate": [
@@ -2493,5 +2538,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T13:00:31+00:00"
+  "exported": "2026-11-28T13:01:38+00:00"
 }

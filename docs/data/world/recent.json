@@ -1,13 +1,5 @@
 [
   {
-    "time": "2026-11-20T21:01:32+00:00",
-    "activity": "raise",
-    "mood": "content",
-    "emote": "spark",
-    "text": "I slipped a fresh plank into the roof gap and the mortar set faster than expected. The fire kept nudging me about the next spot, but I ignored it. The new board holds.",
-    "creations": []
-  },
-  {
     "time": "2026-11-20T23:01:39+00:00",
     "activity": "repair",
     "mood": "content",
@@ -529,5 +521,13 @@
     "creations": [
       "workshop/bathhouse-builder-73.html"
     ]
+  },
+  {
+    "time": "2026-11-28T13:01:37+00:00",
+    "activity": "craft",
+    "mood": "content",
+    "emote": "spark",
+    "text": "I forged a new Lantern Guard and bolted it to the wall. The metal sat tighter than I thought, so I nudged it a millimeter. The fire kept its heat while I worked. I slipped the extra glass shards into my pocket again.",
+    "creations": []
   }
 ]

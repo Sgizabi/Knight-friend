@@ -1,8 +1,8 @@
 {
   "summary": "I wake on cold stone and count each step on the broken stair before I climb. I talk to the fire like a coworker while I measure wood and stone with my thumb. I keep cracked glass shards in my pockets and sweep them up when they rattle. I clear the doorway slab by slab, nudging loose stones back into place and noting crack patterns. I patch windows, trim wicks, tighten hearth stones and mark where the roof gap lets wind in. I added mortar to the east wall, built a forge, tightened bolts on the bellows and replaced roof boards one at a time. My desk holds a leaky lantern, a rusted dagger and a half‑full ink bottle. I write inventory lists and catalog broken things. I joke that the stone is stubborn and the fire a demanding supervisor. I fear the roof collapsing and being forgotten. I value practicality, quiet work and keeping the keep tidy one small repair at a time.",
   "interests": {
-    "repair": 24.122,
-    "craft": 24.122
+    "repair": 24.157,
+    "craft": 24.157
   },
   "projects": [
     {
@@ -27,7 +27,7 @@
     }
   ],
   "letters_seen": "",
-  "entries_since_condense": 2,
+  "entries_since_condense": 3,
   "pastimes": [
     {
       "slug": "stone-counting",
@@ -38,7 +38,7 @@
       "kind": "thoughtful",
       "invented": "2026-11-22T02:42:41+00:00",
       "times": 27,
-      "strength": 11.787,
+      "strength": 11.316,
       "last": "2026-11-28T02:30:35+00:00"
     }
   ],
@@ -58,7 +58,7 @@
     "The stone feels cool against my cheek."
   ],
   "last_glance": "2026-11-28T12:29:59+00:00",
-  "visits_seen_until": "2026-11-28T02:25:32+00:00",
+  "visits_seen_until": "2026-11-28T12:55:30+00:00",
   "visits_today": {
     "date": "20261120",
     "gift_each": {},
@@ -67,7 +67,7 @@
     "answer": 1
   },
   "questions_waiting": [],
-  "questions_date": "20261127",
+  "questions_date": "20261128",
   "beings_since": [],
   "last_encounter": "2026-11-24T00:31:49+00:00"
 }

@@ -1,18 +1,46 @@
 {
-  "start": "2026-11-28T11:00:31+00:00",
-  "mood": "absorbed",
-  "applied_until": "2026-11-28T12:29:59+00:00",
+  "start": "2026-11-28T13:01:37+00:00",
+  "mood": "content",
   "steps": [
     {
-      "place": "bedroll",
-      "action": "sleep",
-      "minutes": 120,
-      "emote": "zzz",
-      "note": "asleep for the night"
+      "place": "forge",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Sharpen hammer and check bellows.",
+      "thoughts": [
+        "The bellows still sigh when I pull them."
+      ]
+    },
+    {
+      "place": "workbench",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Finish sanding the lantern guard corners.",
+      "thoughts": [
+        "Metal shavings are oddly satisfying."
+      ]
+    },
+    {
+      "place": "fire",
+      "action": "sit",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Warm up and let the fire settle.",
+      "thoughts": [
+        "The fire is a demanding coworker, as usual."
+      ]
+    },
+    {
+      "place": "bathhouse",
+      "action": "work",
+      "minutes": 20,
+      "emote": "spark",
+      "note": "Review the tablet fix notes.",
+      "thoughts": [
+        "Right‑edge padding might stop the tooltip cut‑off."
+      ]
     }
-  ],
-  "live_thought": {
-    "text": "The stone feels cool against my cheek.",
-    "time": "2026-11-28T12:29:59+00:00"
-  }
+  ]
 }

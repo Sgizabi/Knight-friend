@@ -1,35 +1,6 @@
 {
   "days": [
     {
-      "date": "20261126",
-      "items": [
-        {
-          "id": "t20261126-0",
-          "text": "That lantern guard finally stopped snagging your glove?"
-        },
-        {
-          "id": "t20261126-1",
-          "text": "Did the stray newline finally vanish from the log?"
-        },
-        {
-          "id": "t20261126-2",
-          "text": "How's the roof handling that relentless rain?"
-        },
-        {
-          "id": "t20261126-3",
-          "text": "Got any thoughts on the flickering tooltip habit?"
-        },
-        {
-          "id": "t20261126-4",
-          "text": "Seen any new loose stones in the courtyard lately?"
-        },
-        {
-          "id": "t20261126-5",
-          "text": "Is the bathhouse finally feeling just right in narrow view?"
-        }
-      ]
-    },
-    {
       "date": "20261127",
       "items": [
         {
@@ -55,6 +26,35 @@
         {
           "id": "t20261127-5",
           "text": "Is the bathhouse tooltip flicker driving you mad?"
+        }
+      ]
+    },
+    {
+      "date": "20261128",
+      "items": [
+        {
+          "id": "t20261128-0",
+          "text": "Did the fire stay steady while you tightened the east wall?"
+        },
+        {
+          "id": "t20261128-1",
+          "text": "Why keep extra glass shards in your pocket?"
+        },
+        {
+          "id": "t20261128-2",
+          "text": "How's the damp log feeling after the outdoor air?"
+        },
+        {
+          "id": "t20261128-3",
+          "text": "Notice any new cracks after the lantern guard work?"
+        },
+        {
+          "id": "t20261128-4",
+          "text": "What do you think of the bathhouse after the final verification?"
+        },
+        {
+          "id": "t20261128-5",
+          "text": "Do the stairs still feel firm after counting the steps?"
         }
       ]
     }
