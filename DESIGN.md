@@ -655,6 +655,18 @@ south wall to talk to him over it (he goes to the page's 'roadside' spot, inside
   facing it and follows it with his head (at the window); prepare, he stands in the courtyard facing
   it with a hand on his hilt; hide, he keeps back by the fire, eyes down. Other choices take him to
   it, as before. Once the meeting is over, an occasional glance.
+- **Gentle and shy beings (that screen only).** The axolotl turns its head to a viewer who comes near
+  (the old one slowly); the young axolotl ducks into the water if you come within a few metres. The
+  whale's eye on your side follows you, slowly. The great moth's wings stir as you come close, and the
+  swarm parts round your head. The Listener's ears swing to a knock, a log landing in the fire, or your
+  click; its young drops behind its bush if you come close or at a sound.
+- **The fog's eyes.** Smooth and wet against the faceted world: a domed iris with a dark rim, a faint
+  sliver of light, small flicks aside and back; the same at any frame rate.
+- **Big beings: anticipation and an eased settle.** The dragon rears back and draws breath (chest
+  swelling, nostrils brightening) before its fire, then throws its head into it. The golem's idles
+  wander instead of looping, and now and then it sinks, heaves its weight over, and settles. The wyrm
+  draws down and coils, then surges up and eases back. The whale comes down out of the high sky and
+  climbs away into it, so its loop never pops in view.
 
 ---
 

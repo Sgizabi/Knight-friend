@@ -320,6 +320,20 @@ function forestTrees() {
   if (trunks) { const m = new T.Matrix4(); for (let i = 0; i < trunks.count; i++) { trunks.getMatrixAt(i, m); const e = m.elements; out.push([e[12], e[14], Math.hypot(e[0], e[1], e[2])]); } }
   return out;
 }
+// A big being's gesture (motion polish for the spectacle beings): now and then, at uneven times, it
+// gathers itself (a small move the other way: anticipation), does the thing, holds, and eases back down
+// (no overshoot: that stays the stranger's). Returns -dip..1: below 0 gathering, 1 at the height of it.
+function gesture(t, seed, every, wind, act, hold, back, dip = .3) {
+  const c = Math.floor(t / every), u = t - c * every - nz(c * 1.7 + seed) * every * .35;
+  if (u < 0) return 0;
+  if (u < wind) return -dip * smooth(0, wind, u);
+  if (u < wind + act) return -dip + (1 + dip) * smooth(wind, wind + act, u);
+  if (u < wind + act + hold) return 1;
+  return 1 - smooth(wind + act + hold, wind + act + hold + back, u);
+}
+// a sound on this screen just now (a knock, a log in the fire, the viewer's click: keep.html sets it), if any
+const heardNow = (secs = 3) => { const h = window.__heard; return h && performance.now() - h.t < secs * 1000 ? { at: h.at, ago: (performance.now() - h.t) / 1000 } : null; };
+const clampA = (a, m) => Math.max(-m, Math.min(m, a));
 // the angle (about y) from obj's parent frame toward the camera, for a head that turns to the viewer
 function yawToCamera(obj, v) { obj.parent.worldToLocal(v.copy(A.camera.position)); return Math.atan2(v.x - obj.position.x, v.z - obj.position.z); }
 
@@ -1029,24 +1043,27 @@ const BEASTS = {
         floaters.push({ m, a: r() * 6.28, rad: .5 + r() * .9, h: r(), sp: .3 + r() * .3 });
       }
       const handPos = new T.Vector3();
-      return (t) => {
-        const b = Math.sin(t * .9);
-        torso.position.y = 2.05 + b * .03; torso.rotation.y = Math.sin(t * .25) * .12;
-        head.rotation.y = Math.sin(t * .4) * .35; head.rotation.x = .05 + Math.sin(t * .31) * .05;
-        const lift = .5 + .5 * Math.sin(t * .35);
-        arms[0].sh.rotation.x = -.15 + Math.sin(t * .6) * .08;
+      return (t, dt = 1 / 60) => {
+        // its idles wander rather than loop; and now and then it shifts its whole weight: it sinks a
+        // little first (the stones grinding), heaves up and over to one side, holds, and settles back
+        const b = breath(t, 4), shift = gesture(t, 11, 15, .9, 1.1, 2.2, 1.6, .5), side = nz(Math.floor(t / 15) + 3) < .5 ? -1 : 1;
+        torso.position.y = 2.05 + (b - .5) * .06 + shift * .09; torso.rotation.y = drift(t * .5, 2) * .14;
+        torso.rotation.z = Math.max(0, shift) * side * .07;
+        head.rotation.y = drift(t * .7, 5) * .4; head.rotation.x = .05 + drift(t * .6, 8) * .06 - Math.min(0, shift) * .1;
+        const lift = .5 + .5 * drift(t * .6, 1);
+        arms[0].sh.rotation.x = -.15 + drift(t * .9, 6) * .1 + Math.min(0, shift) * .15;
         arms[1].sh.rotation.x = -.35 - lift * .9; arms[1].el.rotation.x = -.6 - lift * .5;
         arms[1].el.getWorldPosition(handPos);
         for (const f of floaters) {
           const k = (t * f.sp * .25 + f.h) % 1;
           const a = f.a + t * f.sp;
           f.m.position.set(handPos.x + Math.cos(a) * f.rad, .2 + k * (handPos.y - .2) + Math.sin(t * 2 + f.a) * .08, handPos.z + Math.sin(a) * f.rad);
-          f.m.rotation.set(t * f.sp, t * .7, 0);
+          f.m.rotation.set(t * f.sp, t * .7, 0); f.m.scale.setScalar(Math.min(1, k * 8, (1 - k) * 8));   // (each grows out of the ground and shrinks into the hand: no jump back)
         }
         seam.emissiveIntensity = eyes.emissiveIntensity = 2.2 + Math.sin(t * 1.3) * .8; core.material.opacity = .4 + Math.sin(t * 1.3) * .15;
         heat.material.opacity = .42 + Math.sin(t * 1.3) * .12 + Math.sin(t * 7) * .04;
         for (let i = 0; i < EN; i++) {
-          eLife[i] += .006 + (i % 4) * .0015; if (eLife[i] > 1) eLife[i] = 0;
+          eLife[i] += (.006 + (i % 4) * .0015) * Math.min(4, dt * 60); if (eLife[i] > 1) eLife[i] = 0;   // (the same at any frame rate)
           const k = eLife[i], [x, y] = eFrom[i];
           ep[i * 3] = x + Math.sin(i * 5.3 + k * 4) * .2; ep[i * 3 + 1] = y + k * 1.4; ep[i * 3 + 2] = .1 + Math.cos(i * 2.7) * .25;
         }
@@ -1281,7 +1298,8 @@ const BEASTS = {
           const e = G(g, [sx * 1.58, .05, 5.2], [0, sx * 1.35, 0]); if (calf) e.scale.setScalar(1.5);
           P(e, A.ico(.17, 1), A.mat('#05080d', .3, .1), [0, 0, 0], { cast: false, jitter: 0 });
           const ring = new T.Mesh(new T.TorusGeometry(.19, .025, 4, 14), new T.MeshBasicMaterial({ color: '#6fd8cf', fog: false })); e.add(ring);
-          eyes.push(e);
+          P(e, A.ico(.035, 0), glow('#ffffff', .7, { fog: false }), [.05, .06, .15], { cast: false, jitter: 0 });   // a catch-light (it is a gentle thing)
+          e.userData.rest = sx * 1.35; eyes.push(e);
         }
         const fins = [];
         for (const sx of [-1, 1]) {
@@ -1307,7 +1325,7 @@ const BEASTS = {
       const dg = new T.BufferGeometry(); dg.setAttribute('position', new T.BufferAttribute(dp, 3));
       root.add(new T.Points(dg, new T.PointsMaterial({ color: old ? '#cffaf2' : '#9ff3ea', size: old ? .16 : .09, transparent: true, opacity: old ? .85 : .7, depthWrite: false, fog: false })));
       const songs = [0, 1, 2, 3].map(() => { const m = new T.Mesh(new T.TorusGeometry(1, .018, 3, 48), new T.MeshBasicMaterial({ color: '#8fe6dd', transparent: true, opacity: 0, depthWrite: false, fog: false })); root.add(m); return { m, born: -99, size: 12, dur: 5 }; });
-      const tail = V(), head = V(), side = V(); let lastSong = -99, lastPeep = -99, si = 0;
+      const tail = V(), head = V(), side = V(), ev = V(); let lastSong = -99, lastPeep = -99, si = 0;
       const sing = (w, t, size, dur) => { const sg = songs[si++ % songs.length]; sg.born = t; sg.size = size; sg.dur = dur; w.g.localToWorld(head.set(0, 0, 6.5)); sg.m.position.copy(head); };
       const swim = (w, t, beat) => {
         for (const { f, sx } of w.fins) f.rotation.z = sx * Math.sin(t * .7 * beat) * .28;
@@ -1315,11 +1333,24 @@ const BEASTS = {
         w.tendrils.forEach((c, n) => c.forEach((j, i) => { j.rotation.x = Math.sin(t * .8 - i * .5 + n) * .08; j.rotation.z = Math.sin(t * .5 - i * .4 + n * 2) * .06; }));
         w.spotMeshes.forEach(m => m.scale.setScalar(.6 + .55 * Math.max(0, Math.sin(t * 1.2 - m.position.z * .5)) + .25 * Math.max(0, Math.sin(t * 3.1 + m.userData.ph))));
         w.eyes.forEach(e => { e.scale.y = (e.scale.x) * (1 - pulse(t + beat, 9, .35) * .85); });
+        // the eye on your side follows you, slowly (that screen only); the other rests
+        for (const e of w.eyes) {
+          w.g.worldToLocal(ev.copy(A.camera.position)).sub(e.position);
+          const yaw = Math.atan2(ev.x, ev.z), off = Math.atan2(Math.sin(yaw - e.userData.rest), Math.cos(yaw - e.userData.rest));
+          const sees = Math.abs(off) < 1.3 && ev.length() < 60;
+          e.rotation.y += ((sees ? e.userData.rest + clampA(off, .45) : e.userData.rest) - e.rotation.y) * .02;
+          e.rotation.x += ((sees ? clampA(-Math.atan2(ev.y, Math.hypot(ev.x, ev.z)), .35) : 0) - e.rotation.x) * .02;
+        }
       };
       return (t, dt = 1 / 60) => {
-        const sp = old ? .36 : .55, at = u => [22 - (u * sp + 14) % 50, 15 + Math.sin(u * .2) * .5, -1 + Math.sin(u * .07) * 2];
+        // it comes down out of the high sky in the east, swims over the keep, and climbs away into it in the
+        // west, as a whale surfaces and dives (so its long loop never pops back in view: it turns round up there)
+        const sp = old ? .36 : .55, lift = u => { const k = ((u * sp + 14) % 50) / 50, l = 1 - smooth(0, .22, k) + smooth(.78, 1, k); return l * l * 34; };
+        const at = u => [22 - (u * sp + 14) % 50, 15 + Math.sin(u * .2) * .5 + lift(u), -1 + Math.sin(u * .07) * 2];
         lead.g.position.set(...at(t));                                   // high enough that nothing it trails touches a roof
-        lead.g.rotation.z = Math.sin(t * .3) * .05; lead.g.rotation.x = Math.sin(t * .23) * .03;
+        const climb = (lift(t + .5) - lift(t - .5)) / sp;                 // (it noses down coming in, up going out)
+        lead.g.rotation.order = 'YXZ'; lead.g.rotation.z = Math.sin(t * .3) * .05; lead.g.rotation.x = Math.sin(t * .23) * .03 - Math.atan(Math.max(-1.5, Math.min(1.5, climb))) * .8;
+        lead.g.visible = lift(t) < 30; if (calf) calf.g.visible = lead.g.visible;
         swim(lead, t, old ? .6 : 1);
         if (calf) {                                                      // tucked in by its mother's flipper, wandering ahead and back, rolling
           const off = Math.sin(t * .19) * 2.2, roll = Math.sin(t * .41);
@@ -1424,12 +1455,15 @@ const BEASTS = {
             w.segs.forEach((j, i) => { j.rotation.z = (i === 0 ? .05 : -.09) * up + Math.sin(t * 1.3 + w.ph + i) * .06 * up; j.rotation.x = Math.sin(t * 1.1 - i * .5 + w.ph) * .08 * up; });
             w.base.rotation.y = Math.PI + Math.sin(t * .7 + w.ph) * 1.2;
           } else {
-            w.base.position.y = old ? -.7 + .06 * Math.sin(t * .1) : -.75 + .25 * (.5 + .5 * Math.sin(t * .23));
-            w.segs.forEach((j, i) => { j.rotation.z = (old ? (i === 0 ? .02 : -.012) : (i === 0 ? .05 : -.07)) + sway * (old ? .008 : .025); j.rotation.x = Math.sin(t * (old ? .2 : .5) - i * .4) * (old ? .01 : .035); });
+            // now and then it draws down and coils (anticipation), surges up higher, holds, and eases back
+            const surge = old ? gesture(t, 21, 34, 3, 3.5, 4, 6, .25) * .5 : gesture(t, 21, 17, 1.2, 1.3, 1.8, 2.4, .35);
+            w.base.position.y = (old ? -.7 + .06 * drift(t * .3, 1) : -.75 + .25 * (.5 + .5 * drift(t * .5, 1))) + surge * (old ? .35 : .7);
+            w.segs.forEach((j, i) => { j.rotation.z = (old ? (i === 0 ? .02 : -.012) : (i === 0 ? .05 : -.07)) * (1 - Math.min(0, surge) * 1.5) + sway * (old ? .008 : .025);
+              j.rotation.x = Math.sin(t * (old ? .2 : .5) - i * .4) * (old ? .01 : .035) + Math.max(0, surge) * (i > 3 ? .02 : 0); });
           }
           w.rings.forEach((rg, i) => { rg.rotation.y = t * (i % 2 ? -.4 : .3) * (old ? .4 : 1); });
         }
-        throat.emissiveIntensity = 1 + Math.sin(t * 1.6) * .5;
+        throat.emissiveIntensity = 1 + Math.sin(t * 1.6) * .5 + (young ? 0 : Math.max(0, gesture(t, 21, old ? 34 : 17, old ? 3 : 1.2, old ? 3.5 : 1.3, old ? 4 : 1.8, old ? 6 : 2.4, .3)) * 1.2);
         worms[0].segs[Math.min(5, worms[0].segs.length - 1)].getWorldPosition(tip);
         for (const c of crumbs) {
           const k = (t * .5 + c.ph) % 1;
@@ -1487,11 +1521,14 @@ const BEASTS = {
         const m = new T.Mesh(plane, bigMat); m.position.x = sx * .33; m.castShadow = true; w.add(m);
         wings.push({ w, sx });
       }
-      return (t) => {
+      const cam = V(), bp = V(), push = V(); let stir = 0;
+      return (t, dt = 1 / 60) => {
+        A.camera.getWorldPosition(cam); root.worldToLocal(cam);
         for (let i = 0; i < N; i++) {
           const sd = seeds[i], k = (t * .06 * sd.sp + sd.h) % 1;
           const a = sd.a + t * sd.sp * (1.2 - k * .5), rad = sd.rad * (1 - k * .45) + .15;
           p.set(Math.cos(a) * rad, .45 + k * 4.2 + Math.sin(t * 3 + sd.fl) * .08, Math.sin(a) * rad);
+          const dc = p.distanceTo(cam); if (dc < 1.1 && dc > 1e-3) p.addScaledVector(push.copy(p).sub(cam).normalize(), (1.1 - dc) * .8);   // they flutter aside round your head
           e.set(Math.sin(t * 5 + sd.fl) * .4, -a, Math.sin(t * 4 + sd.fl) * .3); q.setFromEuler(e);
           const flap = .25 + .75 * Math.abs(Math.sin(t * 22 + sd.fl));
           s.set(flap, 1, 1).multiplyScalar(.8 + (i % 5) * .1);
@@ -1501,7 +1538,9 @@ const BEASTS = {
         const eat = .55 + .45 * Math.sin(t * .25);
         A.setFireDim(.75 - eat * .5); mothMat.emissiveIntensity = .35 + eat * .7;
         const open = .5 + .5 * Math.sin(t * .7);
-        for (const { w, sx } of wings) w.rotation.y = -sx * (1 - open) * 1.25;
+        big.getWorldPosition(bp); A.camera.getWorldPosition(cam);
+        stir += ((1 - smooth(1.4, 3.6, bp.distanceTo(cam))) - stir) * Math.min(1, dt * 3);   // come close, and its wings stir
+        for (const { w, sx } of wings) w.rotation.y = -sx * ((1 - open) * 1.25 * (1 - stir) + stir * (.35 + .3 * Math.abs(Math.sin(t * 14 + sx))));
       };
     },
     exit() { A.setFireDim(1); },
@@ -1633,23 +1672,29 @@ const BEASTS = {
         root.add(sp); return sp;
       });
       // the eyes: wet, pale, slow to blink; most of them watch whoever is watching
-      const sclera = A.mat('#8e9184', 0, .2, { emissive: '#3c3f38', emissiveIntensity: .5, fog: false });   // wet, grey, not white
-      const iris = [glow('#b8b06a', .55, { fog: false }), glow('#8fae63', .5, { fog: false }), glow('#b98d55', .5, { fog: false })];
+      // (smooth-shaded, unlike the faceted world around them: they are the one wet, living thing in the fog)
+      const sclera = A.mat('#8e9184', 0, .14, { emissive: '#3c3f38', emissiveIntensity: .5, fog: false, flatShading: false });   // wet, grey, not white
+      const iris = [glow('#b8b06a', .55, { fog: false, flatShading: false }), glow('#8fae63', .5, { fog: false, flatShading: false }), glow('#b98d55', .5, { fog: false, flatShading: false })];
       const pupil = A.mat('#030304', 0, .2, { fog: false });
-      const lidMat = A.mat('#4b5260', 0, 1, { fog: false });
+      const rim = A.mat('#1c1d17', 0, .4, { fog: false });
+      const wet = new T.MeshBasicMaterial({ color: '#f2f4ee', fog: false, transparent: true, opacity: .45, depthWrite: false });
+      const lidMat = A.mat('#4b5260', 0, 1, { fog: false, flatShading: false });
       const eyes = [];
+      const capGeo = r => { const g = new T.SphereGeometry(r * 1.012, 18, 6, 0, Math.PI * 2, 0, .58); g.rotateX(Math.PI / 2); return g; };   // the iris: a low dome, not a flat disc
       const makeEye = (parent, r, irisMat, slit) => {
         const e = G(parent);
-        P(e, new T.SphereGeometry(r, 14, 10), sclera, [0, 0, 0], { jitter: 0, cast: false });
-        P(e, new T.CircleGeometry(r * .5, 14), irisMat, [0, 0, r * 1.002], { jitter: 0, cast: false });
-        const pu = P(e, new T.CircleGeometry(r * .3, 12), pupil, [0, 0, r * 1.006], { jitter: 0, cast: false });
+        P(e, new T.SphereGeometry(r, 22, 16), sclera, [0, 0, 0], { jitter: 0, cast: false });
+        P(e, capGeo(r), irisMat, [0, 0, 0], { jitter: 0, cast: false });
+        const ring = new T.Mesh(new T.TorusGeometry(r * .55, r * .03, 4, 20), rim); ring.position.z = r * .835; e.add(ring);   // a dark ring round the iris
+        const pu = P(e, new T.CircleGeometry(r * .3, 14), pupil, [0, 0, r * 1.016], { jitter: 0, cast: false });
         if (slit) pu.scale.set(.22, 1.5, 1);
+        const shine = new T.Mesh(new T.CircleGeometry(r * .06, 8), wet); shine.position.set(r * .3, r * .3, r * .97); shine.lookAt(r * .6, r * .7, r * 3); shine.scale.set(2, .7, 1); e.add(shine);   // wet: a faint sliver of light, not a bright dot
         // lids: two shells of fog-dark that close over it
         const lids = [1, -1].map(s => {
-          const l = P(e, new T.SphereGeometry(r * 1.08, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), lidMat, [0, 0, 0], { jitter: 0, cast: false });
+          const l = P(e, new T.SphereGeometry(r * 1.08, 16, 6, 0, Math.PI * 2, 0, Math.PI / 2), lidMat, [0, 0, 0], { jitter: 0, cast: false });
           l.rotation.x = s > 0 ? -.15 : Math.PI + .15; return l;
         });
-        return { e, lids, pu };
+        return { e, lids, pu, shine };
       };
       const n = Math.round((age === 'young' ? 8 : age === 'old' ? 15 : 11) * size);
       for (let i = 0; i < n; i++) {
@@ -1664,10 +1709,11 @@ const BEASTS = {
         eyes.push({ holder, set, home: holder.position.clone(), ph: rnd() * 30, every: 5 + rnd() * 9, open: 0,
                     drift: .2 + rnd() * .4, look: rnd() < .8 });
       }
-      const cam = V(), fire = V(0, .6, -1.35), tmp = V(), q = new T.Quaternion(), m4 = new T.Matrix4();
+      const cam = V(), fire = V(0, .6, -1.35), tmp = V(), q = new T.Quaternion(), m4 = new T.Matrix4(), up = V(0, 1, 0);
       let t0 = null;
-      return (t) => {
+      return (t, dt = 1 / 60) => {
         if (t0 === null) t0 = t;
+        const f60 = Math.min(4, dt * 60);                              // (eases per frame at 60 fps, the same at any frame rate)
         const age_t = t - t0;
         const roll = smooth(0, 70, age_t);                              // it rolls in over a minute or so
         const front = FRONT0 + (FRONT1 - FRONT0) * roll;
@@ -1693,7 +1739,7 @@ const BEASTS = {
           const inside = ey.home.x < front - 1.5;                       // only where the fog already is
           const k = (t + ey.ph) % ey.every;
           const want = inside ? 1 : 0;
-          ey.open += (want - ey.open) * .02;
+          ey.open += (want - ey.open) * (1 - (1 - .02) ** f60);
           const blink = k < .22 ? 1 - Math.sin(k / .22 * Math.PI) : 1;  // a slow, heavy blink
           const near = smooth(16, 6, ey.holder.position.distanceTo(cam));   // heavy-lidded, until you come closer
           const lid = Math.min(ey.open, blink) * (.42 + .58 * near);
@@ -1701,10 +1747,13 @@ const BEASTS = {
                                  ey.home.z + Math.cos(t * .07 * ey.drift + ey.ph) * .5);
           // turn (slowly) toward the watcher, or toward the light
           tmp.copy(ey.look ? cam : fire);
-          m4.lookAt(tmp, ey.holder.position, V(0, 1, 0)); q.setFromRotationMatrix(m4);
-          ey.holder.quaternion.slerp(q, .03);
+          m4.lookAt(tmp, ey.holder.position, up); q.setFromRotationMatrix(m4);
+          ey.holder.quaternion.slerp(q, 1 - (1 - .03) ** f60);
+          // now and then the eyes flick a little aside and back (both of a pair together), the way eyes do
+          const sac = Math.floor((t + ey.ph) / 2.7), sx = (nz(sac + ey.ph) - .5) * .35, sy = (nz(sac * 1.3 + ey.ph) - .5) * .2;
           for (const { e, lids, pu } of ey.set) {
             e.visible = ey.open > .03;
+            e.rotation.y += (sx - e.rotation.y) * (1 - .6 ** f60); e.rotation.x += (sy - e.rotation.x) * (1 - .6 ** f60);
             lids[0].rotation.x = -Math.PI / 2 * lid; lids[1].rotation.x = Math.PI + Math.PI / 2 * lid;   // 0 shut, 1 tucked behind
             pu.scale.x = pu.scale.y > 1 ? .22 + near * .3 : 1 + near * .3;   // and the pupils widen
           }
@@ -2168,11 +2217,17 @@ const BEASTS = {
         const leaf = A.mat('#2f4424', 0, 1), leafD = A.mat('#23341c', 0, 1);
         for (let k = 0; k < 7; k++) P(root, A.ico(.42 + r() * .25, 1), k % 2 ? leaf : leafD, [base[0] + (k - 3) * .32, .35 + r() * .3, base[2] - 1.0 - r() * .3], { jitter: .08 });
       }
-      const kn = V(), tmp = V();
-      return (t) => {
+      const kn = V(), tmp = V(), snd = V(), cam = V(); let shy = 0;
+      return (t, dt = 1 / 60) => {
         A.K.J.hips.getWorldPosition(kn); kn.y += 1;
+        // a knock, a log in the fire, a click: every living ear swings to it at once (that screen only)
+        const h = heardNow(3.5), toSound = h ? 1 - smooth(1.8, 3.5, h.ago) : 0;
+        if (h) snd.set(...h.at);
+        A.camera.getWorldPosition(cam);
         if (young) {                                                     // down behind the bush; up to peek; down again
-          const k = (t % 9) / 9, up = smooth(.15, .3, k) * (1 - smooth(.72, .85, k));
+          const scared = cam.distanceTo(tmp.set(base[0], 1, base[2])) < 7 || (h && h.ago < 2);   // (and straight down if you come close, or at a sound)
+          shy += ((scared ? 1 : 0) - shy) * Math.min(1, dt * (scared ? 8 : .7));
+          const k = (t % 9) / 9, up = smooth(.15, .3, k) * (1 - smooth(.72, .85, k)) * (1 - shy);
           body.position.y = -1.1 * (1 - up); body.rotation.x = .25 * (1 - up);
           head.rotation.z = Math.sin(t * 1.7) * .2 * up;
         } else {
@@ -2183,7 +2238,7 @@ const BEASTS = {
         // every living ear turns toward him, with a flick now and then (the young: restless, turning about)
         for (const { e, ph, withered } of ears) {
           if (withered) { e.rotation.set(1.2, 0, 0); continue; }
-          e.getWorldPosition(tmp); e.lookAt(kn.x, tmp.y, kn.z);
+          e.getWorldPosition(tmp); e.lookAt(kn.x + (snd.x - kn.x) * toSound, tmp.y, kn.z + (snd.z - kn.z) * toSound);
           if (young) e.rotateY(Math.sin(t * 2.3 + ph) * .8 * (1 - pulse(t + ph, 5, 2)));
           e.rotateX(-pulse(t + ph, (old ? 9 : 3.5) + ph * .3, .3) * .6);
         }
@@ -3816,7 +3871,7 @@ const BEASTS = {
         // the old one lies in its pool, half under the water, and barely stirs
         const OX = -9.6, OZ = 7.9; body.position.y = .12 * scale;
         g.position.set(OX, gy(OX, OZ), OZ);
-        const cam = V(); let tilt = 0;
+        const cam = V(), cv = V(); let tilt = 0, oy = 0;
         return (t, dt) => {
           g.rotation.y = Math.PI / 2 + Math.sin(t * .05) * .12;
           segs[1].rotation.y = Math.sin(t * .12) * .05; segs[2].rotation.y = Math.sin(t * .12 - .6) * .06;
@@ -3825,7 +3880,10 @@ const BEASTS = {
           gills.forEach(({ c, ph, droop }) => c.forEach((j, i) => { j.rotation.x = (i ? .28 - droop : 0) + Math.sin(t * .9 + ph + i * .7) * .07; }));
           gillM.emissiveIntensity = .4 + Math.sin(t * .6) * .08 + pulse(t + 3, 14, 4) * .2;
           const look = pulse(t + 2, 16, 6); tilt += (look * .2 - tilt) * Math.min(1, dt * 1.2);   // once in a long while it lifts its head toward the keep
-          head.rotation.z = tilt * .5; neck.rotation.x = -tilt * .9; neck.rotation.y = -tilt * 1.2;
+          A.camera.getWorldPosition(cam);
+          const nearO = onView(head, 1.1) ? 1 - smooth(5, 12, cam.distanceTo(g.position)) : 0;   // (or, slowly, toward someone who comes close)
+          oy += ((nearO > .1 ? clampA(yawToCamera(neck, cv), .7) : -tilt * 1.2) - oy) * Math.min(1, dt * .5);
+          head.rotation.z = tilt * .5; neck.rotation.x = -tilt * .9 - nearO * .12; neck.rotation.y = oy;
           eyes.forEach(e => { e.scale.y = 1 - pulse(t, 8.3, .3) * .9; });
           ripples.forEach((rp, i) => {
             rp.t += dt; if (rp.t > 4) { rp.t = 0; const k = i / 4 * 6.28; rp.m.position.set(OX - 1.6 + Math.cos(k) * 2.2, gy(OX, OZ) + .045, OZ + Math.sin(k) * .9); }
@@ -3833,7 +3891,7 @@ const BEASTS = {
           });
         };
       }
-      const cam = V(); let tilt = 0, step = 0, lastD = 0;
+      const cam = V(), cv = V(); let tilt = 0, step = 0, lastD = 0, yawL = 0, duck = 0;
       return (t, dt) => {
         const d = travelled(t), speed = (d - lastD) / Math.max(dt, 1e-3); lastD = d;
         const [x, z] = along(d), h0 = heading(d);
@@ -3851,16 +3909,23 @@ const BEASTS = {
           const c = Math.sin(step * 1.6 + ph);
           upper.rotation.y = c * .45 * sx; upper.rotation.z = Math.max(0, -c) * .35 * sx; knee.rotation.x = Math.max(0, c) * .2;
         });
-        body.position.y = (young ? .3 : .5 + Math.abs(sw) * .02) * scale;   // the young: low, swimming
+        // the young are shy: come close and it ducks down into the water until you back off
+        A.camera.getWorldPosition(cam);
+        const dist = cam.distanceTo(g.position), close = young && dist < 4.5;
+        duck += ((close ? 1 : 0) - duck) * Math.min(1, dt * (close ? 6 : 1.2));
+        body.position.y = (young ? .3 - duck * .22 : .5 + Math.abs(sw) * .02) * scale;   // the young: low, swimming
         const swim = young ? Math.min(1, speed * 4) : 0;
         if (young) { segs[0].rotation.y += Math.sin(t * 7) * .1 * swim; segs[1].rotation.y += Math.sin(t * 7 - .8) * .12 * swim; }
         tail.forEach((j, i) => { j.rotation.y += Math.sin(step * 1.6 - i * .55) * .06 * walking + Math.sin(t * .4 + i * .5) * .03 + Math.sin(t * 7 - i * .7) * .16 * swim; });
         gills.forEach(({ c, ph, droop }) => c.forEach((j, i) => { j.rotation.x = (i ? .28 - droop : 0) + Math.sin(t * 1.8 + ph + i * .7) * .12; }));   // curling fronds (drooping, when old)
         gillM.emissiveIntensity = .75 + Math.sin(t * 1.2) * .2 + pulse(t + 3, 9, 3) * .3;   // flushes when it is happy
-        // every so often it notices whoever is watching and tilts its head, smiling
-        A.camera.getWorldPosition(cam);
-        const look = pulse(t + 2, 9, 3); tilt += (look * .35 - tilt) * Math.min(1, dt * 3);
-        head.rotation.z = tilt; neck.rotation.y = Math.sin(t * .3) * .2 * (1 - look);
+        // it notices whoever is watching: now and then, and more the closer they come, it turns its head
+        // to them and tilts it, smiling (that screen only)
+        const near = onView(head, 1.1) ? 1 - smooth(5, 15, dist) : 0;
+        const look = Math.max(pulse(t + 2, 9, 3) * .6, near * (.55 + .45 * pulse(t, 7, 4))) * (1 - duck);
+        tilt += (look * .35 - tilt) * Math.min(1, dt * 3);
+        yawL += ((look > .25 ? clampA(yawToCamera(neck, cv), .8) * look : Math.sin(t * .3) * .2) - yawL) * Math.min(1, dt * 2);
+        head.rotation.z = tilt; neck.rotation.y = yawL; neck.rotation.x = duck * .35;
         eyes.forEach(e => { e.scale.y = 1 - pulse(t, 5.3, .16) * .9; });
         // ripples where it treads
         ripples.forEach((rp, i) => {
@@ -4374,11 +4439,16 @@ const BEASTS = {
           g.position.x = -8.15 + zAt; g.rotation.y = face; g.position.y = 1.15 + Math.abs(Math.sin(t * 11)) * .04 * Math.min(1, Math.abs(v));
           g.rotation.z = Math.sin(t * 11) * .05 * Math.min(1, Math.abs(v));
         }
-        const fireOn = young ? 0 : pulse(t + 3, old ? 20 : 14, 2.6), idle = pulse(t, 7, 1.4) * .35;   // the young have only smoke yet
+        const FP = old ? 20 : 14, fu = (t + 3) % FP, fireOn = young ? 0 : pulse(t + 3, FP, 2.6), idle = pulse(t, 7, 1.4) * .35;   // the young have only smoke yet
+        // before the fire it rears back and draws breath, chest swelling and nostrils brightening, then
+        // throws its head forward into the gout, and eases back after (no pop between the two)
+        const rear = young ? 0 : fu > FP - 1.4 ? smooth(FP - 1.4, FP - .1, fu) : fu < 2.6 ? 1 - smooth(0, .6, fu) : 0;
+        neck[0].rotation.x += -rear * (old ? .22 : .38) + fireOn * (old ? .1 : .2);
+        torso.scale.x *= 1 + rear * .05; torso.scale.y *= 1 + rear * .04;
         const snap = young ? Math.max(0, Math.sin(t * 5.3)) ** 8 * Math.max(pulse(t, 3.1, 1.2), pulse(t + 5, 13, 4)) : 0;   // snapping at the moths (most of all while it sits)
         jaw.rotation.x = .04 + Math.max(idle, fireOn, snap) * .55;
         breath.intensity = fireOn * 7 + idle * 1.5;
-        nostrils.emissiveIntensity = 1.2 + fireOn * 4 + Math.sin(t * 3) * .3;
+        nostrils.emissiveIntensity = 1.2 + fireOn * 4 + rear * 2.5 + Math.sin(t * 3) * .3;
         const glowK = 2 + Math.sin(t * 1.05) * .6 + fireOn * 2; fire.emissiveIntensity = glowK; seams.forEach(s => { s.visible = true; });
         head.children.forEach(c => { if (c.material === eyeM) c.scale.y = 1 - pulse(t, 6.5, .2) * .85; });
         if (young) { tailSide = -Math.sin(face); tail[0].rotation.z = tailSide * 1.1; }   // the young turn about: its tail always hangs down the outside (north) of the wall

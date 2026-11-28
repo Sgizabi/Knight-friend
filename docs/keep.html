@@ -1261,7 +1261,7 @@ function notice(at, glyph, guard, seconds) {
 }
 function react(kind, item, someoneElse) {
   if (kind === 'knock') {
-    hearAt.copy(DOOR); hearGuard = false;
+    hearAt.copy(DOOR); hearGuard = false; heard(DOOR);
     hearUntil = clock.elapsedTime + 3.4; hearGlyph = lie > .5 ? 'z…?' : (Math.random() < .6 ? '?' : '!');
     toast(someoneElse ? '🚪 Someone knocked at the gate' : '🚪 Knock knock!');
   } else if (kind === 'candle' && (candleTime() || DEMO)) {
@@ -2291,7 +2291,10 @@ $('helpbtn').onclick = () => { const h = $('help'); h.style.display = h.style.di
 // click on something to learn what it is
 const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
 let downAt = null, cardTimer = 0;
-renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; heard(camera.position); });
+// A sound at the keep, on this screen (a knock, a log landing in the fire, the viewer's own click): shy
+// beings hear it (window.__heard: where, and when). Cosmetic, this screen only.
+function heard(at) { window.__heard = { at: [at.x, at.y, at.z], t: performance.now() }; }
 let lastTap = { t: 0, x: 0, y: 0 };
 renderer.domElement.addEventListener('pointerup', e => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
@@ -2453,7 +2456,8 @@ function greet() {          // click Rooken: it turns to you and waves (or mumbl
 }
 const logs = [];
 let logFlareUntil = -10, lastToss = -10;
-function tossLog() {        // 🪵: a log arcs from where you are into the fire, which flares up
+function tossLog() {
+  heard(new THREE.Vector3(0, .6, -1.35));        // 🪵: a log arcs from where you are into the fire, which flares up
   const t = clock.elapsedTime;
   if (t - lastToss < 2.5) return;
   lastToss = t;
