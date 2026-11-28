@@ -746,7 +746,8 @@ def update(world: Path, sched=None, now=None, keep=None):
         if r:
             state["appearances"].append(r)
             state["cooldowns"][r["kind"]] = _iso(_parse(r["start"]) + dt.timedelta(days=COOLDOWN_DAYS[KINDS[r["kind"]]["rarity"]]))
-    state["appearances"] = state["appearances"][-60:]
+    witness(state, best, now)                      # (again: a visit just planned may already be over by now, e.g. a morning
+    state["appearances"] = state["appearances"][-60:]   #  traveller planned at noon; credited here, so asking twice changes nothing)
     keep_people(state)
     if len(best.get("people") or {}) > PEOPLE_KEPT:    # what he knows of people: those still about, and the latest met
         roster = state.get("people") or {}

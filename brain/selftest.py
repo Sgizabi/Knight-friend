@@ -226,6 +226,16 @@ _fresh = Path(tempfile.mkdtemp())
 _s0 = creatures.update(_fresh, weather.update(_fresh, _t0), _t0)
 assert all(creatures.KINDS[a["kind"]]["step"] == 0 for a in _s0["appearances"])   # at first, only what anyone can see
 assert creatures.update(_fresh, weather.load(_fresh), _t0) == _s0          # planned once: asking again changes nothing
+# ...even when what is planned is already over by then (a morning traveller, planned at noon): forced here, every time
+_rd, _over = creatures.road_day, _dt.timedelta(hours=3)
+creatures.road_day = lambda st, day, sch, rng=None: ({**creatures._appearance("traveller", day, _t0 - _over, __import__("random").Random(5), st),
+                                                       "start": creatures._iso(_t0 - _over), "end": creatures._iso(_t0 - _over + _dt.timedelta(minutes=30))}
+                                                      if day == creatures._keeper_day(_t0) else None)
+_fresh2 = Path(tempfile.mkdtemp())
+_s2 = creatures.update(_fresh2, weather.update(_fresh2, _t0), _t0)
+assert any(a["kind"] == "traveller" and a.get("witnessed") is not None for a in _s2["appearances"])
+assert creatures.update(_fresh2, weather.load(_fresh2), _t0) == _s2
+creatures.road_day = _rd
 _old = __import__("os").environ.pop("KNIGHT_CREATURES", None)
 assert creatures.export(_cw) is None                                     # switched off: the keep shows nothing
 __import__("os").environ["KNIGHT_CREATURES"] = "on"
