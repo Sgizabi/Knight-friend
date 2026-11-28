@@ -91,12 +91,12 @@
     }
   },
   "status": {
-    "awake": false,
-    "since": "2026-11-28T00:00:33+00:00",
+    "awake": true,
+    "since": "2026-11-28T01:00:24+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
-    "note": "",
+    "note": "stirring by the fire",
     "thought": ""
   },
   "needs": {
@@ -106,12 +106,12 @@
     "spirit": 77.1
   },
   "needs_prev": {
-    "rest": 65.7,
-    "warmth": 85.7,
+    "rest": 64.4,
+    "warmth": 85.0,
     "inspiration": 60.3,
-    "spirit": 78.5
+    "spirit": 77.1
   },
-  "needs_at": "2026-11-28T00:00:33+00:00",
+  "needs_at": "2026-11-28T01:00:24+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2193,12 +2193,6 @@
   "weather": {
     "periods": [
       {
-        "start": "2026-11-26T17:34:05+00:00",
-        "end": "2026-11-26T22:17:15+00:00",
-        "kind": "clear",
-        "intensity": 0.62
-      },
-      {
         "start": "2026-11-26T22:17:15+00:00",
         "end": "2026-11-27T00:22:41+00:00",
         "kind": "storm",
@@ -2351,17 +2345,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-28T00:00:00+00:00",
-      "end": "2026-11-28T01:00:00+00:00",
-      "kinds": [
-        "crows",
-        "songbirds",
-        "hares",
-        "bats",
-        "fish"
-      ]
-    },
-    {
       "start": "2026-11-28T01:00:00+00:00",
       "end": "2026-11-28T02:00:00+00:00",
       "kinds": [
@@ -2422,6 +2405,11 @@
         "owl",
         "fox"
       ]
+    },
+    {
+      "start": "2026-11-28T08:00:00+00:00",
+      "end": "2026-11-28T09:00:00+00:00",
+      "kinds": []
     }
   ],
   "creatures": {
@@ -2429,5 +2417,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-28T00:00:33+00:00"
+  "exported": "2026-11-28T01:00:24+00:00"
 }
