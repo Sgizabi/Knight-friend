@@ -282,6 +282,47 @@ function rig() {
 const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
 const pulse = (t, every, len) => { const p = t % every; return p < len ? Math.sin(p / len * Math.PI) : 0; };
 
+// ---------------------------------------------------------------- the horror pass: hidden in plain sight
+// The horror beings (Long Man, Thin Crowd, Window Watcher, Bent One, Doorway Figure) are not staged for
+// the camera: they stand where something would really stand (behind a tree, beyond the barrow, far on a
+// rise), a different place each visit, more in the open visit after visit. They keep a living stillness
+// (slow uneven breathing, weight shifts, fingers that curl, a head that turns too slowly to see), and
+// what moves when no one looks is caught finishing its move as you look back (an eased settle, never a
+// springy overshoot: sprung motion stays the stranger's alone). What any of them does toward the viewer
+// happens on that screen only and changes nothing in Rooken's world.
+const KC = [-3, .5];                                   // the middle of the keep, roughly
+const seedOf = s => { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+// smooth wandering in -1..1 that never repeats (unrelated speeds), for idles that aren't loops
+const drift = (t, s = 0) => Math.sin(t * .31 + s * 1.7) * .5 + Math.sin(t * .173 + s * 4.1) * .3 + Math.sin(t * .071 + s * 2.3) * .2;
+// a slow breath, 0..1, each being (and each figure) on its own uneven rhythm
+const breath = (t, s = 0) => .5 + .5 * Math.sin((t * (.19 + nz(s) * .06) + drift(t * .4, s) * .35) * 6.283);
+// the tail of a move: 1 when it is caught, easing to 0 with no overshoot
+const tail = (since, len = .9) => since < 0 || since > len ? 0 : (1 - since / len) ** 3;
+// which way something is from the keep, in words (north is -z, east is +x)
+function compass(x, z) {
+  const a = Math.atan2(x - KC[0], -(z - KC[1]));
+  return ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8];
+}
+// is this on the viewer's screen? (each screen its own: this is what the viewer is looking at)
+let _onv = null;
+function onView(obj, m = 1.02) { const p = obj.getWorldPosition(_onv ??= new T.Vector3()).project(A.camera); return Math.abs(p.x) < m && Math.abs(p.y) < m && p.z < 1; }
+// how long it has been watched, and when it last came back into view after being out of it
+function watching() {
+  const w = { on: false, since: 0, back: -99, away: false };
+  w.tick = (on, t, dt) => { if (on && !w.on) { w.back = t; w.since = 0; } w.since = on ? w.since + dt : 0; w.away = w.on && !on; w.on = on; return w; };
+  return w;
+}
+// the trees at the forest edge (where the instanced trunks stand), for something to stand behind
+function forestTrees() {
+  let trunks = null; const out = [];
+  const hex = A.M.woodD.color.getHexString();   // (the new look gives the trunks their own copy of the dark wood)
+  A.scene.traverse(o => { if (!trunks && o.isInstancedMesh && (o.material === A.M.woodD || o.material?.color?.getHexString?.() === hex)) trunks = o; });
+  if (trunks) { const m = new T.Matrix4(); for (let i = 0; i < trunks.count; i++) { trunks.getMatrixAt(i, m); const e = m.elements; out.push([e[12], e[14], Math.hypot(e[0], e[1], e[2])]); } }
+  return out;
+}
+// the angle (about y) from obj's parent frame toward the camera, for a head that turns to the viewer
+function yawToCamera(obj, v) { obj.parent.worldToLocal(v.copy(A.camera.position)); return Math.atan2(v.x - obj.position.x, v.z - obj.position.z); }
+
 // The visit's own clock, for beings whose visit has a beginning and an end (an arrival, a landing,
 // a leaving): at the real keep it is the real time since the visit began (so someone who looks in
 // half an hour later finds the ship already down), and the time left before it ends. The preview has
@@ -3873,41 +3914,61 @@ const BEASTS = {
           sheet(st, [[-.09, 0, 0], [.09, 0, 0], [.05, -len, .02], [-.07, -len * .9, 0]], [[0, 1, 2], [0, 2, 3]], cloth);
           strips.push(st);
         }
-        return { g, head, arms, strips, ph: r() * 9 };
+        return { g, body, k, head, arms, strips, ph: r() * 9 };
       };
       const MAX = 7, figs = Array.from({ length: MAX }, () => figure(3.4 + r() * 1.2));
       // a loose crowd, not a line: where each stands, and the postures it can be found in
       const spots = figs.map((_, i) => [(i % 2 ? 1 : -1) * Math.ceil(i / 2) * 1.25 + (r() - .5) * .5, (r() - .5) * 1.6]);
+      // which way they come: the same way every evening of one coming (seeded by the day it began),
+      // another way the next time they come: up the rise to the south, from the south-west past the
+      // courtyard, or over the slope to the east. far: where the first evening finds them; near: the wall.
+      const day0 = ap.start ? Math.floor((Date.parse(ap.start) - (chainN - 1) * 864e5) / 864e5) : Math.floor(Math.random() * 999);
+      const WAYS = [{ far: [-.6, 15], near: [-.6, 6.4], says: 'the rise to the south' },
+                    { far: [-17, 17.5], near: [-12, 8.6], says: 'the slope to the south-west' },
+                    { far: [19.5, 5], near: [10.2, 1.8], says: 'the slope to the east' }];
+      const way = WAYS[seedOf('thincrowd' + day0) % WAYS.length];
+      const wd = [way.near[0] - way.far[0], way.near[1] - way.far[1]], wl = Math.hypot(...wd), fwd = [wd[0] / wl, wd[1] / wl], side = [-fwd[1], fwd[0]];
+      root.userData.hint = way.says; root.userData.horror = true;   // (the keep page: where Rooken keeps glancing)
+      root.userData.view = [[way.near[0] - fwd[0] * -3.5 + side[0] * -2.2, gy(...way.near) + 2.4, way.near[1] - fwd[1] * -3.5 + side[1] * -2.2], [way.far[0] + wd[0] * .7, gy(...way.far) + 2.4, way.far[1] + wd[1] * .7]];
       const poses = [() => [0, 0, 0, 0], () => [.25, -.1, .12, 0], () => [-.3, 0, -.08, .25], () => [.1, .2, .3, -.15], () => [-.15, -.25, 0, .2]];
       figs.forEach(f => { f.pose = Math.floor(r() * poses.length); });
       const mist = Array.from({ length: 12 }, (_, i) => {
         const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8c8697', transparent: true, opacity: .24, depthWrite: false }));
-        sp.userData = { x: -9 + (i % 6) * 3.6, z: 8 + Math.floor(i / 6) * 5 }; root.add(sp); return sp;
+        const u = -9 + (i % 6) * 3.6, w = Math.floor(i / 6) * 5 - 2.5;   // across their way, and along it
+        sp.userData = { x: way.near[0] - fwd[0] * (4 + w) + side[0] * u, z: way.near[1] - fwd[1] * (4 + w) + side[1] * u }; root.add(sp); return sp;
       });
-      const cam = V(), hp = V();
-      let seen = true;
-      return (t) => {
+      const v = V(), w = watching(), prev = figs.map(f => f.pose);
+      // one of them (a different one on each screen), watched long enough, slowly turns its head to the viewer
+      const turner = Math.floor(Math.random() * 3), turnAfter = 4 + Math.random() * 5;
+      return (t, dt) => {
         // how many, and how near: in the keep, from which evening this is; in the preview, sped up
         const n = live ? Math.min(MAX, chainN + 2) : Math.min(MAX, 3 + Math.floor((t % 50) / 6));
         const near = live ? (ap.last ? 1 : (chainN - 1) / 4) : (n - 3) / 4;
-        const z0 = 15 - near * 8.6;                                    // from the rise to the foot of the wall
-        // look away and back: they stand differently, and perhaps a little closer
-        figs[0].head.getWorldPosition(hp); hp.project(A.camera);
-        const onScreen = Math.abs(hp.x) < 1.05 && Math.abs(hp.y) < 1.05 && hp.z < 1;
-        if (seen && !onScreen) figs.forEach(f => { f.pose = (f.pose + 1 + Math.floor(r() * 3)) % poses.length; });
-        seen = onScreen;
+        const cx = way.far[0] + wd[0] * near, cz = way.far[1] + wd[1] * near;   // from the far slope to the foot of the wall
+        // look away and back: they stand differently (and are caught settling into it)
+        w.tick(onView(figs[0].head, 1.05), t, dt);
+        if (w.away) figs.forEach((f, i) => { prev[i] = f.pose; f.pose = (f.pose + 1 + Math.floor(r() * 3)) % poses.length; });
+        const k = tail(t - w.back, 1.0) * .45;
         const together = pulse(t, 23, 4);                              // now and then, every head tilts the same way at once
+        const gust = .05 + (A.wind?.s || 0) * .2;
         figs.forEach((f, i) => {
           f.g.visible = i < n;
-          const [sx, sz] = spots[i];
-          f.g.position.set(-.6 + sx, gy(-.6 + sx, z0 + sz), z0 + sz);
-          f.g.rotation.y = Math.PI + Math.atan2(-.6 + sx - (-1), 6) * .3;   // all facing the keep
-          const [a0, a1, tilt, turn] = poses[f.pose]();
-          f.arms[0].sh.rotation.x = a0; f.arms[1].sh.rotation.x = a1;
-          f.head.rotation.z = tilt * (1 - together) + .45 * together; f.head.rotation.y = turn * (1 - together);
-          f.strips.forEach((s, k) => { s.rotation.x = Math.sin(t * .6 + k + f.ph) * .05; s.rotation.z = Math.sin(t * .4 + k * 1.3) * .03; });
+          const [sx, sz] = spots[i], x = cx + side[0] * sx + fwd[0] * sz, z = cz + side[1] * sx + fwd[1] * sz;
+          f.g.position.set(x, gy(x, z), z);
+          f.g.rotation.y = Math.atan2(KC[0] - x, KC[1] - z) * .85 + Math.atan2(fwd[0], fwd[1]) * .15;   // all facing the keep
+          // a living stillness, each on its own breath: chests that barely rise, weight that shifts
+          const b = breath(t, f.ph);
+          f.body.scale.set(f.k * (1 + b * .012), f.k * (1 + b * .005), f.k);
+          f.g.rotation.z = drift(t * .25, f.ph) * .015;
+          const P1 = poses[f.pose](), P0 = poses[prev[i]](), at = j => P1[j] + (P0[j] - P1[j]) * k;
+          f.arms[0].sh.rotation.x = at(0) + drift(t * .3, f.ph + 2) * .02; f.arms[1].sh.rotation.x = at(1) - drift(t * .3, f.ph + 5) * .02;
+          const look = i === turner % n ? smooth(turnAfter, turnAfter + 6, w.since) : 0;
+          const toCam = Math.max(-1.2, Math.min(1.2, yawToCamera(f.head, v)));
+          f.head.rotation.z = (at(2) * (1 - together) + .45 * together) * (1 - look);
+          f.head.rotation.y = (at(3) * (1 - together) + drift(t * .1, f.ph) * .04) * (1 - look) + toCam * look;
+          f.strips.forEach((s, j) => { s.rotation.x = Math.sin(t * .6 + j + f.ph) * gust; s.rotation.z = Math.sin(t * .4 + j * 1.3) * gust * .6; });
         });
-        for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.z) * .8, .4, u.z); m.scale.setScalar(4.5); }
+        for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.z) * .8, gy(u.x, u.z) + .4, u.z); m.scale.setScalar(4.5); }
       };
     },
   },
@@ -3929,6 +3990,7 @@ const BEASTS = {
       const H = young ? .62 : old ? 1.55 : 1.0, ARC = young ? .1 : old ? .65 : .25, LZ = young ? .8 : old ? 1.15 : 1, L = young ? .72 : old ? 1.5 : 1;
       const pale = A.mat(old ? '#d8d4cc' : '#cfc8bd', 0, .65), paleD = A.mat(old ? '#aaa59c' : '#a59d92', 0, .7), hairM = A.mat(old ? '#d6d2ca' : '#1a1614', 0, .9);
       const g = G(root, [-14.5, 0, .7], [0, Math.PI / 2, 0]); g.scale.setScalar(v.size || 1);
+      root.userData.hint = 'the dark beyond the courtyard'; root.userData.horror = true;
       const body = G(g);
       // the spine: an arch from hips (back) to shoulders (front), the knobs of it showing
       const spineAt = u => [0, H + Math.sin(Math.PI * u) * ARC + .1, (-.45 + .9 * u) * LZ];
@@ -3964,18 +4026,31 @@ const BEASTS = {
       const N = young ? 14 : old ? 6 : 9, X0 = -14.5, X1 = -8.9 - .85 * L;   // it stops short of where he stands in the courtyard (its fingers reach far ahead of it)
       const steps = Array.from({ length: N }, (_, i) => X0 + (X1 - X0) * i / (N - 1));
       const poses = Array.from({ length: N }, () => limbs.map(() => [(r() - .5) * .3, (r() - .5) * .25]).concat([[(r() - .5) * .5, (r() - .5) * .3]]));
-      let idx = 0, lastFlick = 0, flickUntil = 0, wait = 0, moved = -99;
-      const setPose = i => { poses[i].forEach(([x, z], k) => { if (k < limbs.length) { limbs[k].pv.rotation.set(x, 0, z); } else { head.rotation.set(Math.PI + x * .4, 0, z); } }); };
+      let idx = 0, from = 0, lastFlick = 0, flickUntil = 0, wait = 0, moved = -99;
+      // its pose, part way from one stance to the next (u 0..1); mid-step, each limb lifts in turn
+      const setPose = (i0, i1 = i0, u = 1, lift = 0) => poses[i1].forEach(([x, z], k) => {
+        const [x0, z0] = poses[i0][k], px = x0 + (x - x0) * u, pz = z0 + (z - z0) * u;
+        if (k < limbs.length) limbs[k].pv.rotation.set(px - Math.max(0, Math.sin(lift * Math.PI * 2 - k * 1.6)) * .45 * (limbs[k].front ? 1 : .7), 0, pz);
+        else head.rotation.set(Math.PI + px * .4, 0, pz);
+      });
       setPose(0);
+      const sd = nz(23) * 9, by = body.position.y;
       return (t) => {
         if (t > lastFlick + 4.5) {   // the fire gutters for a moment
-          lastFlick = t; flickUntil = t + .35;
-          if (idx < steps.length - 1) idx = Math.min(steps.length - 1, idx + (young ? 2 : 1)); else if (++wait > 2) { idx = 0; wait = 0; }
-          setPose(idx); moved = t;
+          lastFlick = t; flickUntil = t + .5; from = idx;
+          if (idx < steps.length - 1) idx = Math.min(steps.length - 1, idx + (young ? 2 : 1)); else if (++wait > 2) { idx = 0; wait = 0; from = 0; }
+          moved = t;
         }
         A.setFireDim(t < flickUntil ? .18 : 1);
-        g.position.x = steps[idx];
-        // otherwise utterly still (the young: a twitch now and then, as if it can't help it)
+        // and in that near-darkness it is glimpsed moving: a quick scuttle, hands and feet in turn, then
+        // still again before the light comes back (only ever while the fire is low)
+        const u = smooth(lastFlick + .04, flickUntil - .06, t);
+        g.position.x = steps[from] + (steps[idx] - steps[from]) * u;
+        setPose(from, idx, u, u > 0 && u < 1 ? u * (young ? 2 : 1.5) : 0);
+        // settled: no motion at all while the light holds, but for a breath so slow it is hard to be sure of
+        const b = breath(t, sd), k = tail(t - flickUntil, .7);
+        body.scale.y = 1 + b * .01; body.position.y = by - k * .03;
+        // (the young: a twitch now and then, as if it can't help it)
         body.rotation.z = young ? pulse(t - moved, 1.9, .12) * .05 * Math.sin(t * 40) : 0;
       };
     },
@@ -4039,10 +4114,19 @@ const BEASTS = {
         if (old) { const fg = new T.Mesh(new T.PlaneGeometry(1.4, 1.75), fogM); fg.position.set(WX, WY, GZ - .006); root.add(fg); }
       }
       const moon = softLight('#b8c8ff', 2.5, 4); moon.position.set(-2.2, 3.2, -5.6); root.add(moon);
-      return (t) => {
+      root.userData.hint = 'the window'; root.userData.horror = true;
+      // it looks at whoever is looking in: on each screen the face turns, slowly and late, to follow the viewer
+      // (only from inside the hall: from outside there is nothing at the window to see)
+      const cv = V(), look = [0, 0];
+      return (t, dt) => {
+        g.worldToLocal(cv.copy(A.camera.position)).sub(head.position);
+        const inside = A.camera.position.z > GZ + .1, ease = 1 - Math.exp(-(dt || .016) * .7);
+        const want = inside ? [Math.max(-.5, Math.min(.5, -Math.atan2(cv.y, Math.hypot(cv.x, cv.z)) * .8)), Math.max(-.8, Math.min(.8, Math.atan2(cv.x, cv.z)))] : [0, 0];
+        look[0] += (want[0] - look[0]) * ease; look[1] += (want[1] - look[1]) * ease;
         const sink = young ? pulse(t + 4, 11, 3) : pulse(t + 8, old ? 30 : 16, old ? 4 : 5);   // now and then it slides down out of sight
         g.position.y = -sink * (young ? 1.2 : 2.4);
-        head.rotation.z = Math.sin(t * (old ? .08 : .25)) * (old ? .08 : .25); head.rotation.y = Math.sin(t * .17) * (old ? .05 : .15);
+        head.rotation.x = look[0];
+        head.rotation.z = drift(t * (old ? .3 : .6), 4) * (old ? .08 : .18); head.rotation.y = look[1] + drift(t * .4, 9) * (old ? .04 : .08);
         for (const { fingers } of hands) fingers.forEach((f, i) => { f.rotation.x = young ? -(Math.max(0, Math.sin(t * 6 - i * .9)) ** 6) * .6 * (1 - sink) : 0; });   // tap, tap
         crackM.opacity = smooth(8, old ? 40 : 70, t) * .8;              // its tell: the longer it is left, the more the glass cracks
         fogM.opacity = old ? .12 + Math.max(0, Math.sin(t * .4)) * .22 : 0;   // breath on the glass
@@ -4110,10 +4194,11 @@ const BEASTS = {
       const a = V(), b = V(), mid = V(), q = new T.Quaternion(), up = V(0, 1, 0);
       const place = (m, from, to) => { mid.copy(from).add(to).multiplyScalar(.5); m.position.copy(mid);
         const d = to.clone().sub(from); m.scale.set(1, d.length(), 1); q.setFromUnitVectors(up, d.normalize()); m.quaternion.copy(q); };
+      root.userData.hint = 'the door'; root.userData.horror = true;
       return (t) => {
-        spine.rotation.x = 1.25 + Math.sin(t * .5) * .01;               // breathing, barely
-        neck.rotation.z = Math.sin(t * .13) * .18;                       // the head tilts, slowly, one way then the other
-        head.rotation.y = Math.sin(t * .09) * .12;
+        spine.rotation.x = 1.25 + breath(t, 5) * .02;                    // breathing, barely, and never quite evenly
+        neck.rotation.z = drift(t * .45, 2) * .2;                        // the head tilts, slowly, one way then the other
+        head.rotation.y = drift(t * .3, 6) * .13;
         const shut = pulse(t + 4, 11, 1.1);                              // a slow blink, now and then
         eyes.forEach(e => { e.scale.set(1, Math.max(.05, 1 - shut * 1.2), 1); });
         hands.forEach(({ sh }, i) => {
@@ -4325,7 +4410,26 @@ const BEASTS = {
     build(root) {
       const skin = A.mat('#2c2a28', 0, .65), skinD = A.mat('#1b1a19', 0, .8), coat = ds('#121113', 0, .95), coatL = ds('#1d1b1e', 0, .95);
       const face = A.mat('#e2ded6', 0, .5, { emissive: '#4a4844', emissiveIntensity: .5 }), faceD = A.mat('#bcb6ac', 0, .6, { emissive: '#2e2c2a', emissiveIntensity: .5 });
-      const g = G(root, [-27.5, 0, 6.2], [0, Math.PI / 2, 0]);   // the field south-west of the keep, clear of the barrow
+      // where it stands this visit (a different place each time): first visits, somewhere half hidden
+      // (behind a tree at the forest edge, beyond the barrow); visit after visit, further into the open
+      const ap = root.userData.appearance || {}, live = !!ap.id, times = ap.times || 0;
+      const r = A.rand(ap.id ? seedOf(ap.id) % 99991 + 1 : 1 + Math.floor(Math.random() * 99990));
+      const trees = forestTrees().filter(([x, z]) => x < -33 && x > -46 && z > -16 && z < 20);   // (the forest edge, west)
+      const away = (x, z, k) => { const dx = x - KC[0], dz = z - KC[1], d = Math.hypot(dx, dz); return [x + dx / d * k, z + dz / d * k]; };
+      // (beyond the barrow it stands off to the north side, so its way in passes the mound and its stones)
+      const spots = [{ at: [-27.5, 6.2 + (r() - .5) * 3], cover: 0, says: 'the field to the west' },
+                     { at: [-31.5, 3.5 + r() * 5], cover: 1, says: 'the far side of the field' },
+                     { at: [-17 + r() * 6, 24 + r() * 4], cover: 1, says: 'the rise to the south-west' },
+                     { at: [-29.8 + r() * .6, -9.4 + r() * .6], cover: 2, says: 'the barrow' }];
+      if (trees.length) { const [x, z, s] = trees[Math.floor(r() * trees.length)]; spots.push({ at: away(x, z, .45 + s * .3), cover: 2, says: `the trees to the ${compass(x, z)}` }); }
+      const weight = s => s.cover === 2 ? Math.max(.4, 3 - times * .6) : s.cover === 1 ? 1.6 : .4 + times * .5;
+      let pick = r() * spots.reduce((n, s) => n + weight(s), 0), spot = spots[0];
+      for (const s of spots) if ((pick -= weight(s)) < 0) { spot = s; break; }
+      root.userData.hint = spot.says; root.userData.horror = true;   // (the keep page: where Rooken keeps glancing)
+      const S0 = spot.at, toK = [KC[0] - S0[0], KC[1] - S0[1]], dK = Math.hypot(...toK), dir = [toK[0] / dK, toK[1] / dK];
+      const STEP = 2.3, TRAVEL = Math.max(0, dK - 16.5);            // it comes no nearer than about the old field's edge
+      root.userData.view = [[S0[0] + dir[0] * 14, gy(...S0) + 1.9, S0[1] + dir[1] * 14], [S0[0], gy(...S0) + 3, S0[1]]];   // (the preview's camera: it is somewhere else each time)
+      const g = G(root, [S0[0], gy(...S0), S0[1]]); g.rotation.order = 'YXZ'; g.rotation.y = Math.atan2(dir[0], dir[1]);   // facing the keep
       for (const sx of [-1, 1]) {
         bone(g, [sx * .15, 3.25, 0], [sx * .19, 1.65, .06], .075, .05, skin); P(g, A.ico(.075, 1), skinD, [sx * .19, 1.65, .06]);
         bone(g, [sx * .19, 1.65, .06], [sx * .16, .12, -.02], .05, .038, skin); P(g, A.ico(.05, 1), skinD, [sx * .16, .12, -.02]);
@@ -4334,7 +4438,8 @@ const BEASTS = {
       }
       P(g, A.ico(.17, 1), skin, [0, 3.3, 0], { scale: [1.3, .7, .8] });
       P(g, A.cyl(.19, .13, 1.35, 7), skin, [0, 3.98, 0], { scale: [1, 1, .6] });
-      for (let i = 0; i < 6; i++) { const rib = new T.Mesh(new T.TorusGeometry(.15 - Math.abs(i - 2.5) * .01, .012, 3, 8, Math.PI), skinD); rib.position.set(0, 3.65 + i * .11, .02); rib.rotation.set(0, 0, Math.PI); rib.scale.z = .6; g.add(rib); }
+      const ribs = [];
+      for (let i = 0; i < 6; i++) { const rib = new T.Mesh(new T.TorusGeometry(.15 - Math.abs(i - 2.5) * .01, .012, 3, 8, Math.PI), skinD); rib.position.set(0, 3.65 + i * .11, .02); rib.rotation.set(0, 0, Math.PI); rib.scale.z = .6; g.add(rib); ribs.push(rib); }
       bone(g, [-.31, 4.62, 0], [.31, 4.62, 0], .055, .055, skin);
       const arms = [];
       for (const sx of [-1, 1]) {
@@ -4370,23 +4475,46 @@ const BEASTS = {
       P(g, A.cyl(.11, .17, .14, 8), coat, [0, 4.68, 0]);
       const mist = Array.from({ length: 18 }, (_, i) => {
         const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: i % 2 ? '#8c8697' : '#7a7686', transparent: true, opacity: .26, depthWrite: false }));
-        sp.userData = { x: -32 + (i % 6) * 2.4, z: -5.5 + Math.floor(i / 6) * 4, y: .3 + (i % 3) * .35, ph: i }; root.add(sp); return sp;
+        sp.userData = { x: S0[0] - 6 + (i % 6) * 2.4 + dir[0] * 3, z: S0[1] - 4 + Math.floor(i / 6) * 4 + dir[1] * 3, y: .3 + (i % 3) * .35, ph: i }; root.add(sp); return sp;
       });
       const poses = [{ l: 0, r: 0, tilt: .12, turn: 0 }, { l: -.15, r: 0, tilt: -.35, turn: .1 }, { l: 0, r: -.55, tilt: .45, turn: -.1 }, { l: -.35, r: -.2, tilt: 0, turn: 0 }];
-      let pi = 0;
-      const p = V(); let seen = true;
+      let pi = 0, extra = 0, moved = false, shown = null;
+      const w = watching(), v = V(), sh0 = arms.map(a => a.sh.position.y), hy = head.position.y, sd = nz(S0[0]) * 9;
+      // the one rare time it is seen to move at all: on some screens, after it has been watched a while,
+      // its head turns, very slowly, toward the one watching (once; then never again on that screen)
+      const turnAfter = Math.random() < .4 ? 8 + Math.random() * 14 : Infinity; let turnAt = null;
+      const clk = visitClock(root, 600);
       return (t, dt) => {
         voidTick(t);
-        head.getWorldPosition(p); p.project(A.camera);
-        const onScreen = Math.abs(p.x) < 1.02 && Math.abs(p.y) < 1.02 && p.z < 1;
-        if (seen && !onScreen && g.position.x < -19.8) { g.position.x = Math.min(-19.8, g.position.x + 2.3); pi = (pi + 1) % poses.length; }
-        seen = onScreen;
+        w.tick(onView(head), t, dt);
+        // closer: as the evening goes on (the same for everyone), and each time this viewer looks away
+        // (it only ever moves while this screen isn't looking at it; at its nearest it just stands differently)
+        const { since, left } = clk(t), base = live ? Math.floor(3 * since / Math.max(1, since + left)) : 0;
+        if (shown === null) shown = base; else if (!w.on && base !== shown) { shown = base; pi = (pi + 1) % poses.length; moved = true; }
+        if (w.away) { if ((shown + extra) * STEP < TRAVEL) extra++; pi = (pi + 1) % poses.length; moved = true; if (turnAt !== null) turnAt = -1; }
+        const go = Math.min(TRAVEL, (shown + extra) * STEP);
+        // looked back at: caught finishing the move (the last of the step, the coat and arms still swinging forward)
+        const k = moved ? tail(t - w.back, 1.1) : 0;
+        if (moved && t - w.back > 1.1 && w.on) moved = false;
+        const at = go - k * .3, x = S0[0] + dir[0] * at, z = S0[1] + dir[1] * at;
+        g.position.set(x, gy(x, z), z);
+        // a living stillness: slow uneven breath, weight shifting from foot to foot, fingers that curl
+        const b = breath(t, sd), ws = drift(t * .3, sd + 3);
+        ribs.forEach((rb, i) => { rb.scale.x = 1 + b * .05 * (1 - Math.abs(i - 2.5) / 4); });
+        arms.forEach((a, i) => { a.sh.position.y = sh0[i] + b * .014; });
+        head.position.y = hy + b * .01;
+        g.rotation.x = k * .07; g.rotation.z = ws * .014;
         const ps = poses[pi];
-        arms[0].sh.rotation.x = ps.l; arms[1].sh.rotation.x = ps.r;
-        head.rotation.z = ps.tilt + Math.sin(t * .15) * .05; head.rotation.y = ps.turn + Math.sin(t * .11) * .05;
-        for (const { fingers } of arms) fingers.forEach((c, f) => c.forEach((j, i) => { j.rotation.x = pulse(t + f * 1.3, 7 + f, .25) * .4 * (i + 1) / 3; }));
-        panels.forEach((pn, i) => { pn.rotation.x = Math.sin(t * .7 + i) * .04 + (i === 0 ? -.03 : 0); pn.rotation.z = Math.sin(t * .5 + i * 1.3) * .02; });
-        for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.ph) * .9, u.y, u.z + Math.cos(t * .07 + u.ph) * .5); m.scale.setScalar(3.5 + Math.sin(t * .2 + u.ph)); }
+        arms[0].sh.rotation.x = ps.l - k * .22 + ws * .015; arms[1].sh.rotation.x = ps.r - k * .18 - ws * .015;
+        if (w.on && turnAt === null && w.since > turnAfter) turnAt = t;
+        const turn = turnAt > 0 ? smooth(turnAt, turnAt + 4.5, t) : 0;
+        const toCam = Math.max(-1.1, Math.min(1.1, yawToCamera(head, v)));
+        head.rotation.z = (ps.tilt + drift(t * .2, sd) * .05) * (1 - turn * .7);
+        head.rotation.y = (ps.turn + drift(t * .15, sd + 7) * .06) * (1 - turn) + toCam * turn;
+        for (const { fingers, sx } of arms) fingers.forEach((c, f) => { const curl = Math.max(0, drift(t * .5, sd + f * 1.7 + sx)) ** 2 * .45; c.forEach((j, i) => { j.rotation.x = curl * (i + 1) / 3; }); });
+        const gust = .04 + (A.wind?.s || 0) * .22;   // the coat stirs with the wind (and swings on when it stops)
+        panels.forEach((pn, i) => { pn.rotation.x = Math.sin(t * .7 + i) * gust + (i === 0 ? -.03 : 0) - k * .16 + b * .01; pn.rotation.z = Math.sin(t * .5 + i * 1.3) * gust * .5; });
+        for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.ph) * .9, gy(u.x, u.z) + u.y, u.z + Math.cos(t * .07 + u.ph) * .5); m.scale.setScalar(3.5 + Math.sin(t * .2 + u.ph)); }
       };
     },
   },
@@ -4422,9 +4550,7 @@ const BEASTS = {
     build(root) {
       const v = root.userData.appearance?.variant || {}, only = v.kind || '', k = v.size || 1;
       // a real tree at the forest edge to hide behind, with open ground between it and the keep
-      const trees = []; let trunks = null;
-      A.scene.traverse(o => { if (!trunks && o.isInstancedMesh && o.material === A.M.woodD) trunks = o; });
-      if (trunks) { const m = new T.Matrix4(); for (let i = 0; i < trunks.count; i++) { trunks.getMatrixAt(i, m); const e = m.elements; trees.push([e[12], e[14], Math.hypot(e[0], e[1], e[2])]); } }
+      const trees = forestTrees();
       let room = 1;   // how much room it wants round other trees (eased off if no tree has that much)
       const clearOf = (x0, z0, x1, z1, skip) => trees.every(([x, z, s], i) => { if (i === skip) return true; const dx = x1 - x0, dz = z1 - z0, u = Math.max(0, Math.min(1, ((x - x0) * dx + (z - z0) * dz) / (dx * dx + dz * dz))); return Math.hypot(x - x0 - dx * u, z - z0 - dz * u) > (.5 + s * .8) * room; });
       // its tree: on the keep side of a stand of trees, with open ground between it and the keep. It hides
@@ -9155,7 +9281,7 @@ function show(key, hour) {
   A.onTick.push(tick);
   A.setHour(hour ?? def.hour);
   A.force({ ...def.knight, awake: false });
-  const [pos, at] = def.views?.[root.userData.appearance.variant.age] || def.view, far = innerWidth / innerHeight < 1 ? 1.75 : 1;   // (an age can have its own view); tall screens: step back to fit it in
+  const [pos, at] = root.userData.view || def.views?.[root.userData.appearance.variant.age] || def.view, far = innerWidth / innerHeight < 1 ? 1.75 : 1;   // (an age can have its own view); tall screens: step back to fit it in
   A.view(pos.map((v, i) => at[i] + (v - at[i]) * far), at);
   const u = new URL(location.href); u.searchParams.set('creature', key); u.searchParams.set('hour', A.hour);
   if (kinds) u.searchParams.set('kind', root.userData.appearance.variant.kind); else u.searchParams.delete('kind');

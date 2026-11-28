@@ -2252,6 +2252,9 @@ function whatsHere() {
     obj.updateMatrixWorld(true);
     obj.traverse(o => { if (!o.isMesh || o.isSprite) return; let v = o, shown = true; while (v) { if (!v.visible) shown = false; v = v.parent; } if (shown) box.union(new THREE.Box3().setFromObject(o)); });
     if (box.isEmpty()) continue;
+    if (obj.userData.horror) {   // (the horror beings are never framed: the camera goes back to him, and his glances show where)
+      setCam('follow'); return toast(`Something is here. ${firstName()} keeps looking toward ${obj.userData.hint || 'something'}.${list.length > 1 ? ' (📍 again for the next)' : ''}`);
+    }
     const c = box.getCenter(new THREE.Vector3()), size = Math.min(60, box.getSize(new THREE.Vector3()).length());
     const dir = c.clone().sub(new THREE.Vector3(-5, c.y, 0)); dir.y = 0; if (dir.lengthSq() < 1) dir.set(0, 0, 1); dir.normalize();
     const dist = THREE.MathUtils.clamp(size * .8, 4, 32);
@@ -2523,7 +2526,7 @@ function tick(nowMs, stepDt) {   // (stepDt: the test hook play() stepping the w
     }
   } else {
     pose = poseFor(goal.action, spot, t, phase);
-    if (!((t < reactUntil || t < hearUntil) && lie < .3)) yaw += Math.atan2(Math.sin(spot.yaw - yaw), Math.cos(spot.yaw - yaw)) * Math.min(1, dt * 4);
+    if (!((t < reactUntil || t < hearUntil || t < trackUntil) && lie < .3)) yaw += Math.atan2(Math.sin(spot.yaw - yaw), Math.cos(spot.yaw - yaw)) * Math.min(1, dt * 4);
   }
   // say hello: standing, it turns to face you; seated, it just looks up. Either way it waves.
   const seated = (pose.hipsY ?? .95) < .8;
@@ -2572,6 +2575,21 @@ function tick(nowMs, stepDt) {   // (stepDt: the test hook play() stepping the w
       yaw += Math.atan2(Math.sin(toIt - yaw), Math.cos(toIt - yaw)) * Math.min(1, dt * 1.5);
       if (hearGuard && !pose.tool && !pose.book) pose = { ...pose, ik: { ...(pose.ik || {}), R: [.17, 1.0, .13] } };   // a hand to the hilt
     }
+  }
+  // his choice, acted out (see beingsAbout): facing it and following it with his head, a hand on his
+  // hilt if he is preparing; or keeping back, eyes down
+  if (t < trackUntil && !(t < hearUntil) && !(t < reactUntil) && !moving && lie < .3) {
+    const local = K.root.worldToLocal(trackAt.clone());
+    const up = -THREE.MathUtils.clamp(Math.atan2(local.y - 1.7, Math.hypot(local.x, local.z)), -.25, .45);
+    pose = { ...pose, joints: { ...pose.joints, head: [up, THREE.MathUtils.clamp(Math.atan2(local.x, local.z), -1.2, 1.2), 0] } };
+    if (!seated) {
+      const toIt = Math.atan2(trackAt.x - pos.x, trackAt.z - pos.z);
+      yaw += Math.atan2(Math.sin(toIt - yaw), Math.cos(toIt - yaw)) * Math.min(1, dt * 1.2);
+      if (trackGuard && !pose.tool && !pose.book) pose = { ...pose, ik: { ...(pose.ik || {}), R: [.17, 1.0, .13] } };   // a hand to the hilt
+    }
+  } else if (t < hideUntil && !(t < reactUntil) && !moving && lie < .3) {
+    const head = pose.joints.head || [0, 0, 0];
+    pose = { ...pose, joints: { ...pose.joints, head: [head[0] + .2, head[1] * .5, head[2]] } };
   }
   setSword(moving ? false : pose.sword === true ? 'planted' : pose.sword === 'hand' ? 'hand' : false);
   lie += ((pose.lie ? 1 : 0) - lie) * k * .6;
@@ -2826,13 +2844,49 @@ function noticeBeing(b, a, seconds) {
   const n = a.nature, glyph = seconds < 4 ? '' : n === 'gentle' ? '♥' : ['hostile', 'nuisance', 'proud'].includes(n) ? '!' : '?';
   notice(beingAt(b), glyph, n === 'hostile' || n === 'proud', seconds);
 }
-// while one is here, it keeps an eye on it: a glance its way now and then
+// While one is here, his body shows what he makes of it (scripted, on the page only: his mind decides,
+// this only acts it out). Before he has met it he looks its way far more often (the bigger it is, the
+// more often and the longer); once he has chosen, his body does what he chose for as long as the meeting
+// goes on: watch, he keeps facing it and follows it with his head; prepare, he faces it with a hand on
+// his hilt; hide, he keeps back by the fire and doesn't look its way. Other choices (offer, speak, drive
+// it off...) take him to it, as his status says. Once his meeting is over: a glance now and then.
+// People on the road have their own choreography, so for them only the occasional glance.
+let trackUntil = -10, trackGuard = false, hideUntil = -10, nextLook = 0;
+const trackAt = new THREE.Vector3();
+const firstName = () => (state?.identity?.name || 'Rooken').split(' ')[0];
+function bodyBox(root) {   // its body, without mist or glow sprites
+  const box = new THREE.Box3(); root.updateMatrixWorld(true);
+  root.traverse(o => { if (!o.isMesh || o.isSprite) return; for (let v = o; v; v = v.parent) if (!v.visible) return; box.union(new THREE.Box3().setFromObject(o)); });
+  return box;
+}
+const sizes = new WeakMap();
+const sizeOf = root => { if (!sizes.has(root)) { const b = bodyBox(root); sizes.set(root, b.isEmpty() ? 2 : Math.min(60, b.getSize(new THREE.Vector3()).length())); } return sizes.get(root); };
+const PREVIEW_CHOSE = new URLSearchParams(location.search).get('chose');   // (the preview: ?chose=watch|prepare|hide shows his choice)
+function beingsAbout() {
+  if (CREATURE) { const root = window.__preview?.root; return root ? [{ root, a: { id: 'preview', nature: 'hostile', ...(PREVIEW_CHOSE ? { chose: { choice: PREVIEW_CHOSE } } : {}) } }] : []; }
+  return (state?.creatures?.current || []).filter(a => beings.get(a.id)?.root).map(a => ({ a, root: beings.get(a.id).root }));
+}
 setInterval(() => {
-  if (CREATURE || !beings.size || clock.elapsedTime < hearUntil) return;
-  const list = (state?.creatures?.current || []).filter(a => beings.get(a.id)?.root);
-  const a = list[Math.floor(Math.random() * list.length)];
-  if (a && Math.random() < .6) noticeBeing(beings.get(a.id), a, 2.5);
-}, 17000);
+  const now = clock.elapsedTime + benchT, list = beingsAbout();
+  if (!list.length) return;
+  const facing = list.filter(x => x.a.chose && !x.a.met && !x.a.person).sort((p, q) => Date.parse(q.a.chose.at || 0) - Date.parse(p.a.chose.at || 0))[0];
+  if (facing) {
+    const c = facing.a.chose.choice;
+    if (c === 'watch' || c === 'prepare') { const b = bodyBox(facing.root); if (!b.isEmpty()) b.getCenter(trackAt); trackUntil = now + 1.6; trackGuard = c === 'prepare'; }
+    else if (c === 'hide') hideUntil = now + 1.6;
+    return;
+  }
+  if (now < nextLook || clock.elapsedTime < hearUntil) return;
+  const unmet = list.filter(x => !x.a.met && !x.a.person), pool = unmet.length ? unmet : list, x = pool[Math.floor(Math.random() * pool.length)];
+  if (unmet.length) {   // not met yet: he looks often, and longer at something huge
+    const s = sizeOf(x.root), big = s > 14 ? 2 : s > 5 ? 1 : 0, b = bodyBox(x.root);
+    if (!b.isEmpty()) notice(b.getCenter(new THREE.Vector3()), '', x.a.nature === 'hostile', [2.6, 3.2, 3.8][big]);
+    nextLook = now + [10, 7, 4.5][big] * (.75 + Math.random() * .5);
+  } else {
+    if (Math.random() < .6) noticeBeing({ root: x.root }, x.a, 2.5);
+    nextLook = now + 17;
+  }
+}, 1000);
 // what is going on with the beings, for the caption: the latest that happened (screened before it
 // was published), or what is going on between two of them
 function beingCaption(now) {
@@ -2846,7 +2900,11 @@ function beingCaption(now) {
   if (told) return told.caption;
   const next = coming.find(a => a.help_open !== false);
   if (next) return `Something is coming: ${next.sign}. (📣 Help from ${visitWhere()}.)`;
-  return list.find(a => a.stance_says)?.stance_says || '';
+  const said = list.find(a => a.stance_says)?.stance_says;
+  if (said) return said;
+  // something he hasn't met yet, standing where it's easy to miss: he has noticed it first
+  const hid = list.find(a => !a.met && beings.get(a.id)?.root?.userData.hint);
+  return hid && current(now).action !== 'sleep' ? `${firstName()} keeps glancing toward ${beings.get(hid.id).root.userData.hint}.` : '';
 }
 const SIGNS_BEFORE = 20 * 60000;   // its signs begin this long before it arrives (visitors.HELP_SIGNS)
 const visitWhere = () => window.parent !== window ? 'the Visit tab below' : 'the Visit tab on its home page';

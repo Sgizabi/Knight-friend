@@ -215,7 +215,7 @@ ENCOUNTER_PAUSE = int(os.environ.get("KNIGHT_ENCOUNTER_PAUSE", "75"))   # second
 PEOPLE_POSE = {"offer": ("roadside", "stand", "heart"), "speak": ("roadside", "stand", "question"), "approach": ("roadside", "stand", "question"),
                "trade": ("roadside", "stand", "spark"), "spar": ("bout", "spar", "exclaim"), "drive_off": ("roadside", "stand", "anger")}
 POSE = {   # where he goes and how he stands for each choice, while it plays out on the page
-    "watch": ("window", "gaze", "exclaim"), "hide": ("fire", "sit", "sigh"), "prepare": ("workbench", "work", "dots"),
+    "watch": ("window", "gaze", "exclaim"), "hide": ("fire", "sit", "sigh"), "prepare": ("courtyard", "stand", "exclaim"),
     "offer": ("courtyard", "stand", "heart"), "speak": ("courtyard", "stand", "question"),
     "drive_off": ("courtyard", "pace", "anger"), "approach": ("courtyard", "stand", "question"),
 }
@@ -1587,6 +1587,10 @@ class Knight:
                 (current["place"], current["action"], "dots") if current else ("fire", "sit", "dots"))
             if place in ("courtyard", "roadside", "bout") and "courtyard" not in life.places(self.keep):
                 place = "window"
+            for x in state["appearances"]:                         # what he chose: his body on the page acts it out
+                if x.get("id") == a["id"]:                         # (watching it, keeping back, a hand on his hilt)
+                    x["chose"] = {"choice": choice, "at": iso()}
+            (WORLD / "creatures.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
             self.set_status(True, place, action, emote, how[:100], thought=thought)
             checkpoint(f"{self.identity['name']} faces something")
             out = encounters.resolve(a, choice, how, {

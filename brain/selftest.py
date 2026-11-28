@@ -603,5 +603,11 @@ _ka = creatures._appearance("kite3", _d0, _t0, _rnd.Random(3), _kt)
 assert _ka.get("arrival") in (None, "silk") and "silk" in creatures.LEFT_AFTER and creatures.TRACE_DAYS["silk"] == 2
 # knights on the road: released; for a bout he goes out over the wall (the page's 'bout' spot), and how it went reaches the page
 assert "knight" in creatures.RELEASED and _kn.PEOPLE_POSE["spar"][:2] == ("bout", "spar")
-assert '"bout") if k in a' in open(creatures.__file__, encoding="utf-8").read()
+assert '"bout", "chose") if k in a' in open(creatures.__file__, encoding="utf-8").read()
+# the horror pass: what he chose reaches the page as he chooses it (so his body acts it out); the page
+# also learns when his meeting is over, and how often a being has come before (some show themselves more)
+_src = open(creatures.__file__, encoding="utf-8").read()
+assert 'item["met"] = True' in _src and 'item["times"]' in _src
+assert 'x["chose"] = {"choice": choice, "at": iso()}' in open(_kn.__file__, encoding="utf-8").read()
+assert _kn.POSE["prepare"][:2] == ("courtyard", "stand") and _kn.POSE["watch"][0] == "window" and _kn.POSE["hide"][:2] == ("fire", "sit")
 print("all checks passed")

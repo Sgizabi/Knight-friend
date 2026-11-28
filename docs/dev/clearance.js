@@ -92,15 +92,15 @@ function surfaceIn(mesh, o) {
   return false;
 }
 
-export async function run({ kinds = Object.keys(NATURE), seconds = 150, step = 2.5 } = {}) {
+export async function run({ kinds = Object.keys(NATURE), seconds = 150, step = 2.5, visits = 1 } = {}) {   // visits: several visits each (beings that stand somewhere else each visit)
   const K = window.__keep, hits = [];
   let scene = K.camera.parent; while (scene.parent) scene = scene.parent;
   const iso = ms => new Date(ms).toISOString(), now = Date.now();
-  for (const kind of kinds) for (const age of AGED.includes(kind) ? ['', 'young', 'old'] : FORMS[kind] || ['']) {
-    const form = FORMS[kind] ? age : '';
-    await K.setCreatures([{ id: `${kind}-${age}-check`, kind, render: kind, nature: NATURE[kind] || 'neutral', variant: { size: 1, age: form ? '' : age, kind: form },
-                            start: iso(now - 30000), end: iso(now + 3600e3), chain: 5, last: true }]);
-    let root = null; scene.traverse(o => { if (!root && o.userData?.appearance?.id === `${kind}-${age}-check`) root = o; });
+  for (const kind of kinds) for (const age of AGED.includes(kind) ? ['', 'young', 'old'] : FORMS[kind] || ['']) for (let v = 0; v < visits; v++) {
+    const form = FORMS[kind] ? age : '', id = `${kind}-${age}-check${v || ''}`;
+    await K.setCreatures([{ id, kind, render: kind, nature: NATURE[kind] || 'neutral', variant: { size: 1, age: form ? '' : age, kind: form },
+                            start: iso(now - 30000 - v * 864e5), end: iso(now + 3600e3), chain: 5, last: true }]);
+    let root = null; scene.traverse(o => { if (!root && o.userData?.appearance?.id === id) root = o; });
     if (!root) { hits.push({ being: kind, age, part: '-', obstacle: 'did not appear', t: 0 }); continue; }
     const seen = new Set();
     for (let t = 0; t < seconds; t += step) {

@@ -627,6 +627,35 @@ south wall to talk to him over it (he goes to the page's 'roadside' spot, inside
 - **Lures** (bell, scraps, lanterns: which being comes, never how often) are for later, near the
   jester or people on the road.
 
+### Hidden in plain sight (the horror pass)
+
+- **Where they stand.** The horror beings are never staged for the camera. The Long Man stands
+  somewhere else each visit (behind a tree at the forest edge, beyond the barrow, far on the
+  south-west rise, at the far side of the field, in the field); first visits favour the hidden
+  places, and visit after visit (the bestiary's count) he stands more in the open. The Thin Crowd
+  comes the same way every evening of one coming (up the south rise, from the south-west past the
+  courtyard, or over the east slope) and another way the next time.
+- **Closer as the evening goes.** The Long Man comes a step nearer a third and two thirds of the
+  way through his visit (the same on every screen, and only while that screen isn't looking), and
+  a step nearer each time a viewer looks away (that screen only). He stops about 16.5 m from the
+  keep.
+- **Living stillness.** Slow, uneven breathing, each figure on its own rhythm; weight shifting;
+  fingers that curl; heads that drift too slowly to see; coats and rags in the wind. What moved
+  while unwatched is caught finishing its move as you look back (eased, never springy: sprung
+  overshoot stays the stranger's alone). The Bent One is glimpsed scuttling while the fire is low.
+- **Toward the viewer (that screen only, never the record).** The Window Watcher's face follows
+  whoever is inside the hall, slowly and late. One of the Thin Crowd, watched long enough, turns its
+  head to the viewer. On about two screens in five, the Long Man, watched long enough, turns his head
+  once, very slowly, toward the viewer.
+- **His glances show the way.** Before he has met it, Rooken looks toward a being far more often
+  (every ~10 s for something small, ~7 s for something big, ~4.5 s for something huge), and the
+  caption says where he keeps glancing. "What is about?" never frames a horror being: it goes back
+  to him and says where he is looking.
+- **His choice, acted out.** As he chooses in a meeting, the page learns the choice: watch, he keeps
+  facing it and follows it with his head (at the window); prepare, he stands in the courtyard facing
+  it with a hand on his hilt; hide, he keeps back by the fire, eyes down. Other choices take him to
+  it, as before. Once the meeting is over, an occasional glance.
+
 ---
 
 ## 8b. Performance rules

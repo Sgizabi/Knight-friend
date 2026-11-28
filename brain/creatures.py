@@ -842,8 +842,12 @@ def export(world: Path, now=None):
             continue
         both_here = bool(a.get("with") in here_ids)   # a stance is only shown while both of them are here
         item = {**{k: a[k] for k in ("id", "kind", "start", "end", "variant", "arrival", "chain", "last", "with",
-                                     "with_met", "prevails", "caption", "caption_at", "regard", "person", "bout") if k in a},
+                                     "with_met", "prevails", "caption", "caption_at", "regard", "person", "bout", "chose") if k in a},
                 "render": KINDS[a["kind"]].get("render", a["kind"]), "nature": nature_of(a)}
+        if a.get("met"):                           # (his meeting with it is over: the page stops acting out a choice in progress)
+            item["met"] = True
+        count = (best["kinds"].get(a["kind"]) or {}).get("count", 0)
+        item["times"] = max(0, count - (1 if a.get("witnessed") else 0))   # how often it came before (some show themselves more each time)
         if item["nature"] in visitors.HELP_NATURES:   # the "driving it off" meter, as of his last check-in
             item["help"] = (a.get("help") or {}).get("count", 0)   # (the page also counts help live, from the Visit runs)
             item["help_full"] = visitors.HELP_FULL
