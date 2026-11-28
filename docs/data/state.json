@@ -83,11 +83,16 @@
           "Time to note the new guard"
         ]
       }
-    ]
+    ],
+    "applied_until": "2026-11-28T00:00:33+00:00",
+    "live_thought": {
+      "text": "The damp log will dry out in the night air.",
+      "time": "2026-11-28T00:00:33+00:00"
+    }
   },
   "status": {
     "awake": false,
-    "since": "2026-11-27T23:02:45+00:00",
+    "since": "2026-11-28T00:00:33+00:00",
     "place": "fire",
     "action": "sit",
     "emote": "dots",
@@ -95,18 +100,18 @@
     "thought": ""
   },
   "needs": {
+    "rest": 64.4,
+    "warmth": 85.0,
+    "inspiration": 60.3,
+    "spirit": 77.1
+  },
+  "needs_prev": {
     "rest": 65.7,
     "warmth": 85.7,
     "inspiration": 60.3,
     "spirit": 78.5
   },
-  "needs_prev": {
-    "rest": 71.3,
-    "warmth": 85.0,
-    "inspiration": 72.3,
-    "spirit": 74.3
-  },
-  "needs_at": "2026-11-27T23:02:45+00:00",
+  "needs_at": "2026-11-28T00:00:33+00:00",
   "needs_model": {
     "rates": {
       "sleep": {
@@ -2172,7 +2177,7 @@
   "visits": {
     "candles_tonight": 0,
     "knocks_today": 0,
-    "updated": "2026-11-27T23:02:45+00:00",
+    "updated": "2026-11-28T00:00:33+00:00",
     "seen_until": "2026-11-27T22:55:35+00:00"
   },
   "gifts": [],
@@ -2346,13 +2351,6 @@
   },
   "animals": [
     {
-      "start": "2026-11-27T23:00:00+00:00",
-      "end": "2026-11-28T00:00:00+00:00",
-      "kinds": [
-        "hares"
-      ]
-    },
-    {
       "start": "2026-11-28T00:00:00+00:00",
       "end": "2026-11-28T01:00:00+00:00",
       "kinds": [
@@ -2416,6 +2414,14 @@
         "owl",
         "fox"
       ]
+    },
+    {
+      "start": "2026-11-28T07:00:00+00:00",
+      "end": "2026-11-28T08:00:00+00:00",
+      "kinds": [
+        "owl",
+        "fox"
+      ]
     }
   ],
   "creatures": {
@@ -2423,5 +2429,5 @@
     "seeing": 1,
     "traces": []
   },
-  "exported": "2026-11-27T23:02:45+00:00"
+  "exported": "2026-11-28T00:00:33+00:00"
 }
