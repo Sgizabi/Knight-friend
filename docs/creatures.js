@@ -3955,7 +3955,8 @@ const BEASTS = {
           f.g.visible = i < n;
           const [sx, sz] = spots[i], x = cx + side[0] * sx + fwd[0] * sz, z = cz + side[1] * sx + fwd[1] * sz;
           f.g.position.set(x, gy(x, z), z);
-          f.g.rotation.y = Math.atan2(KC[0] - x, KC[1] - z) * .85 + Math.atan2(fwd[0], fwd[1]) * .15;   // all facing the keep
+          const kx = KC[0] - x, kz = KC[1] - z, kd = Math.hypot(kx, kz);   // all facing the keep (blended as directions: angles wrap at the back)
+          f.g.rotation.y = Math.atan2(kx / kd * .85 + fwd[0] * .15, kz / kd * .85 + fwd[1] * .15);
           // a living stillness, each on its own breath: chests that barely rise, weight that shifts
           const b = breath(t, f.ph);
           f.body.scale.set(f.k * (1 + b * .012), f.k * (1 + b * .005), f.k);
