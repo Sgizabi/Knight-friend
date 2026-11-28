@@ -6540,7 +6540,7 @@ const BEASTS = {
       // the mouse (computers only): where it points; a click (not a drag) on the jester asks for a trick
       const ptr = { x: 0, y: 0, at: -1e9 }; let down = null;
       const toPtr = e => { const r = cv.getBoundingClientRect(); ptr.x = (e.clientX - r.left) / r.width * 2 - 1; ptr.y = -(e.clientY - r.top) / r.height * 2 + 1; };
-      const onMove = e => { if (e.pointerType === 'mouse') { toPtr(e); ptr.at = performance.now(); } };
+      const onMove = e => { if (e.pointerType !== 'mouse') return; if (e.target === cv) { toPtr(e); ptr.at = performance.now(); } else ptr.at = -1e9; };   // (not over the panels and buttons)
       const onDown = e => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; };
       const onUp = e => { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 7 && performance.now() - down.t < 450) { toPtr(e); if (hit() < .3) st.clicked = true; } down = null; };
       addEventListener('pointermove', onMove); cv.addEventListener('pointerdown', onDown); cv.addEventListener('pointerup', onUp);
@@ -6702,7 +6702,7 @@ const BEASTS = {
           if (n === 'spin') { pv.rotation.y = smooth(.25, 1.35, at) * Math.PI * 2; for (const x of arms) { R.want('sh' + x.sx, 0, 0, x.sx * 1.5 * k); R.want('el' + x.sx, -.1); }
             curl = 0; swing = .6; if (at > .25 && at < 1.4) for (const sx of [1, -1]) glow2(gloveW(sx, tmp), 2, '#ffd27a', 1.2, .8);
             if (st.cheeky && at > 1.35 && !a.sprayed) { a.sprayed = 1; gloveW(-1, tmp); tmp2.subVectors(cam, tmp).normalize(); for (let i = 0; i < 26; i++) sparks.emit(tmp.x, tmp.y, tmp.z, tmp2.x * 4 + (Math.random() - .5), tmp2.y * 4 + Math.random(), tmp2.z * 4 + (Math.random() - .5), .9, '#ffe2a0'); } }
-          if (n === 'flip') { flip = smooth(.5, 1.1, at) * (1 - smooth(st.cheeky ? 2.2 : 1.9, 2.6, at)); mask.updateMatrixWorld(true); reach(-1, mask.localToWorld(tmp.set(.06, .02, .05)));
+          if (n === 'flip') { flip = smooth(.5, 1.1, at) * (1 - smooth(st.cheeky ? 2.2 : 1.9, 2.6, at)); mask.updateMatrixWorld(true); reach(-1, mask.localToWorld(tmp.set(-.085, -.01, .02)));
             curl = .5; R.want('head', R.J.head.want[0], 0, Math.sin(at * 3) * .1); }
           if (n === 'juggle') { const P_ = .95, hy = H + .32;
             for (const x of arms) { const ph = (at / P_ + (x.sx > 0 ? 0 : .5)) * Math.PI * 2; reachFolk(J, x.sx, [x.sx * (.2 + Math.cos(ph) * .05), hy + Math.sin(ph) * .05, .34]); }
@@ -6720,7 +6720,7 @@ const BEASTS = {
               if (st.cheeky) { tmp2.subVectors(cam, tmp).normalize(); for (let i = 0; i < 30; i++) sparks.emit(tmp.x, tmp.y, tmp.z, tmp2.x * 5 + (Math.random() - .5) * .8, tmp2.y * 5 + Math.random() * .8, tmp2.z * 5 + (Math.random() - .5) * .8, .8, '#bfe9ff'); }
               else conf.burst(tmp, 18, ['#d4574a', '#e8d6c0', '#f4efe2'], 1, 1.4, 1); } }
           if (n === 'maskoff') { open = smooth(.8, 1.7, at) * (1 - smooth(5.6, 6.5, at)); mask.updateMatrixWorld(true);
-            if (at < 6.4) reach(-1, mask.localToWorld(tmp.set(.1, -.02, -.02))); curl = .55;
+            if (at < 6.4) reach(-1, mask.localToWorld(tmp.set(-.095, -.015, -.01))); curl = .55;   // (its right hand holds the mask by its right edge)
             R.want('sh1', -.4 * k, 0, .9 * smooth(1.6, 2.4, at) * (1 - smooth(5.5, 6.3, at))); R.want('el1', -.3); look = 'cam'; }
           if (n === 'marionette') { marWant = smooth(.2, 1.5, at) * (1 - smooth(a.dur - 1.6, a.dur - .2, at));
             for (const x of arms) { R.want('sh' + x.sx, -1.2 * marWant + Math.sin(t * 4.2 + x.sx) * .08, 0, x.sx * .45 * marWant); R.want('el' + x.sx, -.5 * marWant); } look = 'puppet'; }
@@ -6753,10 +6753,10 @@ const BEASTS = {
           if (n === 'duck') { crouchPose(k, .45); head.updateMatrixWorld(true); for (const x of arms) reach(x.sx, head.localToWorld(tmp.set(x.sx * .04, .1, .2))); curl = .05; look = 'down'; st.crouch = true; }
           if (n === 'bored') { R.want('sh-1', -1.6 * k, 0, -.3); R.want('el-1', -.8 + Math.sin(at * 9) * .4 * k); look = 'away'; curl = .1; }
           if (n === 'stare') { look = 'cam'; }
-          if (n === 'unmask') { gOpen = smooth(1.1, 2.1, at); gShow = 1 - smooth(2.4, 3.2, at); grin.updateMatrixWorld(true);
-            if (at > .8 && at < 2.5) reach(-1, grin.localToWorld(tmp.set(.1, -.02, -.02))); else if (at >= 2.5) reachFolk(J, -1, [-.22, H + .1 + (1 - smooth(2.5, 3.4, at)) * .5, .14]); curl = at > 2.3 ? .9 : .5; look = 'cam'; }
+          if (n === 'unmask') { gOpen = smooth(1.1, 2.2, at); gShow = 1 - smooth(2.5, 3.2, at); grin.updateMatrixWorld(true);
+            if (at > .5 && at < 3.2) reach(-1, grin.localToWorld(tmp.set(-.095, -.015, -.01))); else if (at >= 3.2) reachFolk(J, -1, [-.24, H + .2, .12]); curl = at > 2.5 ? .9 : .5; look = 'cam'; }
           if (n === 'remask') { gShow = smooth(.3, .9, at); gOpen = 1 - smooth(1.2, 2.2, at); grin.updateMatrixWorld(true);
-            if (at < 2.3) reach(-1, grin.localToWorld(tmp.set(.1, -.02, -.02))); curl = at < .9 ? .9 : .5; look = 'cam'; }
+            if (at < 2.4) reach(-1, grin.localToWorld(tmp.set(-.095, -.015, -.01))); curl = at < .9 ? .9 : .5; look = 'cam'; }
           if (n === 'comeback' && !st.target && st.gone <= 0) { a.arr ??= at; const w = env(at - a.arr, 2.6); R.want('sh-1', -2.5 * w, 0, -.35 * w); R.want('el-1', -.35 * w + Math.sin(at * 9) * .25 * w); curl = 0; }
           if (n === 'hide' && st.gone <= 0) { wantYaw = Math.PI;
             if (!a.caught) { crouchPose(1, 1.02); R.want('chest', .9, 0, 0); for (const x of arms) reachFolk(J, x.sx, [x.sx * .26, .66, .42]);
@@ -6791,7 +6791,7 @@ const BEASTS = {
         if (!a || a.name !== 'flower') flower.visible = false;
         if (!a || a.name !== 'fog') fogPlane.visible = false;
         // where it looks: at you (it plays to you), at the mouse if one is moving, at Rooken, down, away
-        if (look === 'cam') { if (!phone && performance.now() - ptr.at < 2500 && hos < .5) { rc.setFromCamera(ptr, A.camera); lookW(tmp.copy(rc.ray.origin).addScaledVector(rc.ray.direction, dist), 1); }
+        if (look === 'cam') { if (!phone && performance.now() - ptr.at < 2500 && hos < .5) { rc.setFromCamera(ptr, A.camera); lookW(tmp.copy(rc.ray.origin).addScaledVector(rc.ray.direction, 1.2), 1); }   // (your pointer, as if on the glass in front of you: it faces you and its gaze follows it)
           else { lookW(cam, hos > .5 ? 1 : .9); if (hos < .5) R.want('head', R.J.head.want[0], R.J.head.want[1], Math.sin(t * .7) * .12 + (st.cheeky ? .1 : 0)); } }
         else if (look === 'knight') { const K0 = A.K?.root?.getWorldPosition(tmp2); if (K0) lookW(K0, .8); }
         else if (look === 'down') { R.want('neck', .5, 0, 0); R.want('head', .3, 0, 0); }
@@ -6802,9 +6802,12 @@ const BEASTS = {
         let e = wantYaw - st.yaw; e = Math.atan2(Math.sin(e), Math.cos(e)); st.yaw += e * Math.min(1, dt * (walking ? 7 : hos > .5 ? .7 : 3.2));
         g.position.set(st.x, gy(st.x, st.z), st.z); g.rotation.y = st.yaw;
         // the mask: askew when cheeky, swung aside to show the stars, flipped upside down for a laugh
-        maskHinge.rotation.set(0, -open * 1.2, open * .25); maskHinge.position.set(-.085 - open * .07, .1 + open * .03, .03 + open * .05);
+        // taking a mask off: drawn straight forward off the face first, then carried out beside the head and held there,
+        // turned a little outward (as a mask on a stick is held aside). The hand on that side holds its near edge throughout.
+        const aside = (k, o) => { const p1 = smooth(0, .4, k), p2 = smooth(.3, 1, k); o.set(-.3 * p2, -.03 * p2, .1 * p1 + .04 * p2); return p2; };
+        let ak = aside(open, tmp2); maskHinge.position.set(tmp2.x, .1 + tmp2.y, .03 + tmp2.z); maskHinge.rotation.set(0, -.5 * ak, .12 * ak);
         mask.rotation.z = flip * Math.PI + maskTilt * (1 - flip);
-        grinHinge.rotation.set(0, -gOpen * 1.3, gOpen * .2); grin.scale.setScalar(Math.max(.001, gShow)); grin.visible = gShow > .01;
+        ak = aside(gOpen, tmp2); grinHinge.position.copy(tmp2); grinHinge.rotation.set(0, -.5 * ak, .12 * ak); grin.scale.setScalar(Math.max(.001, gShow)); grin.visible = gShow > .01;
         const bare = gShow < .99 || gOpen > .05;                                          // (the face under the grin is showing: stars glint through its eyes)
         vortex.visible = open > .02 || bare; vortex.material.uniforms.uOpen.value = Math.max(smooth(0, .6, open), bare ? 1.3 : 0);
         glints.forEach((sp, i) => { sp.visible = bare && open < .3; const tw = .55 + .45 * Math.sin(t * (2.3 + i * .9) + i * 2) * Math.sin(t * .7 + i); sp.material.opacity = tw; sp.scale.setScalar(.022 + tw * .014); }); vortex.material.uniforms.uT.value = t;
@@ -9837,10 +9840,10 @@ function jesterBody(parent, root, o = {}) {
   const motes = Array.from({ length: 9 }, (_, i) => P(head, A.ico(.0045, 0), new T.MeshBasicMaterial({ color: i % 3 ? '#fff1d0' : '#9ff3ee', toneMapped: false }), [0, .1, .1], { jitter: 0, cast: false }));
   motes.forEach(m => m.visible = false);
   // the mask hangs on a hinge at its right edge (so a hand can swing it aside like a little door)
-  const maskHinge = G(head, [-.085, .1, .03]), mask = G(maskHinge, [.085, 0, 0]);
+  const maskHinge = G(head, [0, .1, .03]), mask = G(maskHinge);   // (moved as a whole: drawn off the face and held beside it)
   const faceGeo = new T.SphereGeometry(.12, 22, 16, Math.PI / 2 - .95, 1.9, .5, 2.05);
   const face = new T.Mesh(faceGeo, new T.MeshStandardMaterial({ map: X.face, roughness: .26, metalness: .02, flatShading: true }));
-  const grinHinge = G(mask, [-.095, 0, 0]), grin = G(grinHinge, [.095, 0, 0]);       // (the grin can be turned aside on its own)
+  const grinHinge = G(mask), grin = G(grinHinge);       // (the grin can be taken off on its own)
   face.scale.set(.88, 1.12, .62); face.position.z = .016; face.castShadow = true; grin.add(face);
   const rim = new T.Mesh(faceGeo, brass); rim.scale.set(.915, 1.16, .6); rim.position.z = .01; grin.add(rim);
   const under = new T.Mesh(faceGeo, new T.MeshStandardMaterial({ map: X.split, alphaTest: .5, roughness: .28, metalness: .02, flatShading: true }));
