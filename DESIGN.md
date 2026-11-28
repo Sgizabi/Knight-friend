@@ -633,8 +633,12 @@ south wall to talk to him over it (he goes to the page's 'roadside' spot, inside
   somewhere else each visit (behind a tree at the forest edge, beyond the barrow, far on the
   south-west rise, at the far side of the field, in the field); first visits favour the hidden
   places, and visit after visit (the bestiary's count) he stands more in the open. The Thin Crowd
-  comes the same way every evening of one coming (up the south rise, from the south-west past the
-  courtyard, or over the east slope) and another way the next time.
+  comes the same way every evening of one coming (across the plain from the south, out of the forest
+  edge to the west, or down the east slopes) and another way the next time. The land out there is too
+  flat to hide behind, so the fog and the trees do it: the first evening a few stand scattered about
+  45-50 m out at the edge of the dusk fog (from the west, each beside a tree trunk, half hidden,
+  grey among grey trunks); each evening they are more, nearer and closer together; by the third they
+  are a crowd in plain view, and at the last they stand at the wall.
 - **Closer as the evening goes.** The Long Man comes a step nearer a third and two thirds of the
   way through his visit (the same on every screen, and only while that screen isn't looking), and
   a step nearer each time a viewer looks away (that screen only). He stops about 16.5 m from the

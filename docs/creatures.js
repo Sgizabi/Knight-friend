@@ -3985,22 +3985,32 @@ const BEASTS = {
       // a loose crowd, not a line: where each stands, and the postures it can be found in
       const spots = figs.map((_, i) => [(i % 2 ? 1 : -1) * Math.ceil(i / 2) * 1.25 + (r() - .5) * .5, (r() - .5) * 1.6]);
       // which way they come: the same way every evening of one coming (seeded by the day it began),
-      // another way the next time they come: up the rise to the south, from the south-west past the
-      // courtyard, or over the slope to the east. far: where the first evening finds them; near: the wall.
+      // another way the next time they come: across the plain from the south, out of the forest edge to
+      // the west, or down the slopes to the east. They are hard to be sure of at first and impossible to
+      // miss at the end: the first evening a few stand far out at the edge of the dusk fog, scattered (from
+      // the west: each half behind a tree trunk, grey among the grey trunks); each evening there are more,
+      // nearer and closer together; by the third they are a crowd in plain view, and at the last, the wall.
+      // out: the first evening; far: the third; near: the foot of the wall. (The land is too flat out there
+      // to hide behind, so the fog and the trees do it.)
       const day0 = ap.start ? Math.floor((Date.parse(ap.start) - (chainN - 1) * 864e5) / 864e5) : Math.floor(Math.random() * 999);
-      const WAYS = [{ far: [-.6, 15], near: [-.6, 6.4], says: 'the rise to the south' },
-                    { far: [-17, 17.5], near: [-12, 8.6], says: 'the slope to the south-west' },
-                    { far: [19.5, 5], near: [10.2, 1.8], says: 'the slope to the east' }];
+      const WAYS = [{ out: [-.6, 50], far: [-.6, 15], near: [-.6, 6.4], says: ['the far end of the plain to the south', 'the plain to the south'] },
+                    { out: [-40.5, 12.5], far: [-26, 11.5], near: [-12, 8.6], says: ['the trees to the west', 'the field to the south-west'], trees: true },
+                    { out: [50, 15.5], far: [19.5, 5], near: [10.2, 1.8], says: ['the slopes to the east', 'the slope to the east'] }];
       const way = WAYS[seedOf('thincrowd' + day0) % WAYS.length];
-      const wd = [way.near[0] - way.far[0], way.near[1] - way.far[1]], wl = Math.hypot(...wd), fwd = [wd[0] / wl, wd[1] / wl], side = [-fwd[1], fwd[0]];
-      root.userData.hint = way.says; root.userData.horror = true;   // (the keep page: where Rooken keeps glancing)
-      root.userData.view = [[way.near[0] - fwd[0] * -3.5 + side[0] * -2.2, gy(...way.near) + 2.4, way.near[1] - fwd[1] * -3.5 + side[1] * -2.2], [way.far[0] + wd[0] * .7, gy(...way.far) + 2.4, way.far[1] + wd[1] * .7]];
+      const lerp2 = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+      const along = k => k < .5 ? lerp2(way.out, way.far, k * 2) : lerp2(way.far, way.near, (k - .5) * 2);   // where the crowd stands, evening by evening
+      const unit = (a, b) => { const d = [b[0] - a[0], b[1] - a[1]], l = Math.hypot(...d); return [d[0] / l, d[1] / l]; };
+      const fwd0 = unit(way.out, way.far), fwd1 = unit(way.far, way.near);
+      // from the west, the first evenings: each stands half behind one of the trees at the forest edge
+      const cover = way.trees ? forestTrees().filter(([x, z]) => x < -33).sort((a, b) => Math.hypot(a[0] - way.out[0], a[1] - way.out[1]) - Math.hypot(b[0] - way.out[0], b[1] - way.out[1])).slice(0, MAX)
+        .map(([x, z, s], i) => { const d = unit(KC, [x, z]), o = .35 + s * .2, l = (i % 2 ? 1 : -1) * (.5 + s * .25); return [x + d[0] * o - d[1] * l, z + d[1] * o + d[0] * l]; }) : [];   // (beside the trunk, a little behind: half of it shows)
+      root.userData.horror = true;   // (the keep page: where Rooken keeps glancing, root.userData.hint, set as they come)
+      root.userData.view = [[way.near[0] - fwd1[0] * -3.5 + fwd1[1] * 2.2, gy(...way.near) + 2.4, way.near[1] - fwd1[1] * -3.5 - fwd1[0] * 2.2], [way.far[0], gy(...way.far) + 2.4, way.far[1]]];
       const poses = [() => [0, 0, 0, 0], () => [.25, -.1, .12, 0], () => [-.3, 0, -.08, .25], () => [.1, .2, .3, -.15], () => [-.15, -.25, 0, .2]];
       figs.forEach(f => { f.pose = Math.floor(r() * poses.length); });
       const mist = Array.from({ length: 12 }, (_, i) => {
         const sp = new T.Sprite(new T.SpriteMaterial({ map: puff(), color: '#8c8697', transparent: true, opacity: .24, depthWrite: false }));
-        const u = -9 + (i % 6) * 3.6, w = Math.floor(i / 6) * 5 - 2.5;   // across their way, and along it
-        sp.userData = { x: way.near[0] - fwd[0] * (4 + w) + side[0] * u, z: way.near[1] - fwd[1] * (4 + w) + side[1] * u }; root.add(sp); return sp;
+        sp.userData = { u: -9 + (i % 6) * 3.6, w: Math.floor(i / 6) * 5 - 2.5 }; root.add(sp); return sp;   // across their way, and along it (round wherever they stand)
       });
       const v = V(), w = watching(), prev = figs.map(f => f.pose);
       // one of them (a different one on each screen), watched long enough, slowly turns its head to the viewer
@@ -4009,7 +4019,9 @@ const BEASTS = {
         // how many, and how near: in the keep, from which evening this is; in the preview, sped up
         const n = live ? Math.min(MAX, chainN + 2) : Math.min(MAX, 3 + Math.floor((t % 50) / 6));
         const near = live ? (ap.last ? 1 : (chainN - 1) / 4) : (n - 3) / 4;
-        const cx = way.far[0] + wd[0] * near, cz = way.far[1] + wd[1] * near;   // from the far slope to the foot of the wall
+        const [cx, cz] = along(near), fwd = near < .5 ? fwd0 : fwd1, side = [-fwd[1], fwd[0]];
+        const hide = 1 - smooth(0, .55, near), spread = 1 + hide * 1.8;   // far out and scattered at first; a crowd by the third evening
+        root.userData.hint = way.says[near < .4 ? 0 : 1];
         // look away and back: they stand differently (and are caught settling into it)
         w.tick(onView(figs[0].head, 1.05), t, dt);
         if (w.away) figs.forEach((f, i) => { prev[i] = f.pose; f.pose = (f.pose + 1 + Math.floor(r() * 3)) % poses.length; });
@@ -4018,7 +4030,8 @@ const BEASTS = {
         const gust = .05 + (A.wind?.s || 0) * .2;
         figs.forEach((f, i) => {
           f.g.visible = i < n;
-          const [sx, sz] = spots[i], x = cx + side[0] * sx + fwd[0] * sz, z = cz + side[1] * sx + fwd[1] * sz;
+          const [sx, sz] = spots[i], inTrees = cover.length > i && near < .2;
+          const x = inTrees ? cover[i][0] : cx + side[0] * sx * spread + fwd[0] * sz * spread, z = inTrees ? cover[i][1] : cz + side[1] * sx * spread + fwd[1] * sz * spread;
           f.g.position.set(x, gy(x, z), z);
           const kx = KC[0] - x, kz = KC[1] - z, kd = Math.hypot(kx, kz);   // all facing the keep (blended as directions: angles wrap at the back)
           f.g.rotation.y = Math.atan2(kx / kd * .85 + fwd[0] * .15, kz / kd * .85 + fwd[1] * .15);
@@ -4034,7 +4047,7 @@ const BEASTS = {
           f.head.rotation.y = (at(3) * (1 - together) + drift(t * .1, f.ph) * .04) * (1 - look) + toCam * look;
           f.strips.forEach((s, j) => { s.rotation.x = Math.sin(t * .6 + j + f.ph) * gust; s.rotation.z = Math.sin(t * .4 + j * 1.3) * gust * .6; });
         });
-        for (const m of mist) { const u = m.userData; m.position.set(u.x + Math.sin(t * .1 + u.z) * .8, gy(u.x, u.z) + .4, u.z); m.scale.setScalar(4.5); }
+        for (const m of mist) { const { u, w: wl } = m.userData, mx = cx - fwd[0] * (wl - 1) + side[0] * u * (1 + hide * .6) + Math.sin(t * .1 + u) * .8, mz = cz - fwd[1] * (wl - 1) + side[1] * u * (1 + hide * .6); m.position.set(mx, gy(mx, mz) + .4, mz); m.scale.setScalar(4.5); }
       };
     },
   },
